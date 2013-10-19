@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+'use strict';
+
+var Fs;
+var json;
+
+Fs = require('fs');
+
+json = Fs.readFileSync('package.json') + '';
+json = JSON.parse(json);
+json.readme = Fs.readFileSync('README.md') + '';
+
+Fs.writeFileSync('package.json', JSON.stringify(json, null, 4) + '\n');

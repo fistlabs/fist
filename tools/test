@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+'use strict';
+
+var Fs;
+var Nodeunit;
+var Path;
+var tests;
+
+Fs = require('fs');
+Path = require('path');
+Nodeunit = require('nodeunit');
+tests = Fs.readdirSync('test');
+
+tests = tests.map(function (fileName) {
+
+    return Path.join('test', fileName);
+}).filter(function (fileName) {
+
+    return Fs.statSync(fileName).isFile();
+});
+
+Nodeunit.reporters.default.run(tests, null, function (error) {
+    process.exit( +!!error );
+});

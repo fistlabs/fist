@@ -1,0 +1,34 @@
+{
+    "author": {
+        "name": "Golyshev Dmitrii",
+        "email": "golyshev.dmitry@yandex.ru"
+    },
+    "bugs": {
+        "url": "https://github.com/golyshevd/module/issues"
+    },
+    "contributors": [
+        {
+            "name": "Golyshev Dmitrii",
+            "email": "golyshev.dmitry@yandex.ru"
+        }
+    ],
+    "dependencies": {},
+    "description": "",
+    "devDependencies": {
+        "jshint": "",
+        "nodeunit": "",
+        "istanbul": ""
+    },
+    "license": "MIT",
+    "main": "",
+    "name": "",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/golyshevd/module.git"
+    },
+    "scripts": {
+        "test": "./tools/test"
+    },
+    "version": "0.0.0",
+    "readme": ""
+}
