@@ -25,4 +25,4 @@ readme:
 test: modules
 	./tools/test
 
-.PHONY: modules all cover hooks lint test
+.PHONY: all cover hooks lint modules test
