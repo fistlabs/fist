@@ -1,2 +1,2 @@
 #!/bin/sh
-./tools/istanbul cover tools/test
+node_modules/.bin/istanbul cover tools/test
