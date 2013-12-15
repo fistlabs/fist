@@ -1,11 +1,15 @@
 #!/usr/bin/make
 
 .DEFAULT_GOAL := all
+NODE_MODULES := ./node_modules/
 
 all:: hooks
 all:: lint
 all:: cover
 all:: readme
+
+$(NODE_MODULES):
+	npm install
 
 cover: modules
 	./tools/cover
@@ -16,8 +20,7 @@ hooks:
 lint: modules
 	./tools/lint
 
-modules:
-	npm install
+modules: $(NODE_MODULES)
 
 readme:
 	./tools/readme
