@@ -1,3 +1,2 @@
 #!/bin/sh
-node_modules/.bin/jshint src/ &&
-node_modules/.bin/jshint test/
+node_modules/.bin/jshint src/ test/

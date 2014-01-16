@@ -12,20 +12,20 @@ $(NODE_MODULES):
 	npm install
 
 cover: modules
-	./tools/cover
+	tools/cover
 
 hooks:
-	./tools/init-githooks
+	tools/init-githooks
 
 lint: modules
-	./tools/lint
+	tools/lint
 
 modules: $(NODE_MODULES)
 
 readme:
-	./tools/readme
+	tools/readme
 
 test: modules
-	./tools/test
+	tools/test
 
 .PHONY: all cover hooks lint modules test

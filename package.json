@@ -27,7 +27,7 @@
         "url": "git://github.com/golyshevd/module.git"
     },
     "scripts": {
-        "test": "./tools/test"
+        "test": "tools/test"
     },
     "version": "0.0.0",
     "readme": ""
