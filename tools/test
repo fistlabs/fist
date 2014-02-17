@@ -1,15 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
-var Fs;
-var Nodeunit;
-var Path;
-var tests;
-
-Fs = require('fs');
-Path = require('path');
-Nodeunit = require('nodeunit');
-tests = Fs.readdirSync('test');
+var Fs = require('fs');
+var Nodeunit = require('nodeunit');
+var Path = require('path');
+var tests = Fs.readdirSync('test');
 
 tests = tests.map(function (fileName) {
 
