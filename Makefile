@@ -4,12 +4,15 @@
 NODE_MODULES := ./node_modules/
 
 all:: hooks
-all:: lint
+all:: check
 all:: cover
 all:: readme
 
 $(NODE_MODULES):
 	npm install
+
+check: modules
+	tools/check
 
 cover: modules
 	tools/cover
