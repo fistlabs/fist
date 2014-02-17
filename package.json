@@ -15,7 +15,8 @@
     "dependencies": {},
     "description": "",
     "devDependencies": {
-        "jshint": "",
+        "jscs": "",
+        "eslint": "",
         "nodeunit": "",
         "istanbul": ""
     },

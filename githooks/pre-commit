@@ -1,4 +1,4 @@
-tools/lint
+tools/lint && tools/style
 
 if [ $? -ne 0 ]; then
     exit 1;

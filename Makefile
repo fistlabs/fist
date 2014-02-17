@@ -20,6 +20,9 @@ hooks:
 lint: modules
 	tools/lint
 
+style: modules
+	tools/style
+
 modules: $(NODE_MODULES)
 
 readme:
