@@ -30,7 +30,7 @@
         "beforeOpeningCurlyBrace": true
     },
 
-    "requireMultipleVarDecl": true,
+    "disallowMultipleVarDecl": true,
 
     "disallowEmptyBlocks": true,
 
