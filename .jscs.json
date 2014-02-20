@@ -38,8 +38,6 @@
 
     "disallowSpacesInsideArrayBrackets": true,
 
-    "disallowSpacesInsideParentheses": true,
-
     "disallowQuotedKeysInObjects": "allButReserved",
 
     "disallowSpaceAfterObjectKeys": true,
