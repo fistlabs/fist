@@ -25,6 +25,8 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
+        this._router.addRoutes(this.params.routes);
+
         /**
          * @public
          * @memberOf {Fist}
@@ -33,28 +35,23 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @param {}
          * */
         this._ready = new Task(this._init, this);
-    },
 
-    /**
-     * @public
-     * @memberOf {Fist}
-     * @method
-     *
-     * @param {Activity} track
-     * */
-    _handle: function (track) {
-        var args = arguments;
-        this._ready.done(function (err, res) {
+        this._handle = function (track) {
 
-            if ( 2 > arguments.length ) {
-                setTimeout(function () {
+            this._ready.done(function (err, res) {
 
-                    throw err;
-                }, 0);
-            }
+                if ( 2 > arguments.length ) {
+                    setTimeout(function () {
+                        throw err;
+                    }, 0);
+                } else {
+                    Fist.Parent.prototype._handle.call(this, track);
+                }
 
-            Fist.Parent.prototype._handle.apply(this, args);
-        }, this);
+                delete this._handle;
+
+            }, this);
+        };
     },
 
     /**
@@ -72,34 +69,14 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     },
 
     /**
-     * @protected
-     * @memberOf {Fist}
-     * @method
-     *
-     * @param {Function} done
-     * */
-    _init: function (done) {
-        this._declsInit(function () {
-
-            var routerConf = require(this.params.conf);
-
-            routerConf.forEach(function (route) {
-                this.route(route.verb, route.expr, route.data);
-            }, this);
-
-            done.apply(this, arguments);
-        });
-    },
-
-    /**
      * @public
      * @memberOf {Fist}
      * @method
      *
      * @param {Function} done
      * */
-    _declsInit: function (done) {
-        this._declsCreate(this.params, function (err, decls) {
+    _init: function (done) {
+        this._declsCreate(function (err, decls) {
 
             if ( 2 > arguments.length ) {
 
@@ -119,15 +96,14 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @memberOf {Fist}
      * @method
      *
-     * @param {Object} params
      * @param {Function} done
      * */
-    _declsCreate: function (params, done) {
+    _declsCreate: function (done) {
 
         var count;
         var isError = false;
         var result = Object.create(null);
-        var dirs = /** @type {Array} */ toArray(params.dirs);
+        var dirs = /** @type {Array} */ toArray(this.params.dirs);
 
         count = dirs.length;
 
@@ -160,7 +136,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
                 if ( 'function' === typeof action ) {
 
-                    action = new action(params);
+                    action = new action(this.params);
                 }
 
                 data = action.data;
@@ -187,7 +163,6 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             if ( 0 === count ) {
                 done.call(this, null, result);
             }
-
         }
 
         dirs.forEach(function (dir) {

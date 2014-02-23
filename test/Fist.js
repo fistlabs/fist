@@ -5,6 +5,11 @@ var Fist = require('../Fist');
 var Fs = require('fs');
 var Path = require('path');
 var asker = require('asker');
+var routes = require('./conf/router');
+
+//process.on('uncaughtException', function (err) {
+//    console.error(err);
+//});
 
 module.exports = {
 
@@ -15,7 +20,7 @@ module.exports = {
                 'test/data',
                 'test/stuff'
             ],
-            conf: Path.resolve('test/conf/router.json')
+            routes: routes
         });
 
         var spy = {
@@ -69,7 +74,7 @@ module.exports = {
                             'test/data',
                             'test/stuff'
                         ],
-                        conf: Path.resolve('test/conf/router.json')
+                        routes: routes
                     }
                 },
                 errors: {
@@ -96,7 +101,7 @@ module.exports = {
                 'asdasd',
                 'test/data'
             ],
-            conf: Path.resolve('test/conf/router.json')
+            routes: routes
         });
 
         try {
@@ -122,7 +127,7 @@ module.exports = {
 
         var fist = new Fist({
             dirs: [],
-            conf: Path.resolve('test/conf/router.json')
+            routes: routes
         });
 
         try {

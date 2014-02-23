@@ -1,7 +1,7 @@
 [
     {
+        "name": "index",
         "verb": "GET",
-        "expr": "/",
-        "data": "index"
+        "expr": "/"
     }
 ]
