@@ -25,14 +25,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
-        this._router.addRoutes(this.params.routes);
+        this._router.addRoutes(toArray(this.params.routes));
 
         /**
-         * @public
+         * @protected
          * @memberOf {Fist}
-         * @method
-         *
-         * @param {}
+         * @property {Task}
          * */
         this._ready = new Task(this._init, this);
 
