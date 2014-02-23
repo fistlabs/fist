@@ -34,7 +34,9 @@ module.exports = function (s) {
     buf = '';
 
     for ( i = 0, l = s.length; i < l; i += 1 ) {
+
         if ( isCap(s.charAt(i + 1)) ) {
+
             continue;
         }
 

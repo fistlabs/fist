@@ -23,10 +23,8 @@ var Action = Component.extend(/** @lends Action.prototype */ {
      * @param {Activity} track
      * @param {Object} result
      * @param {Function} done
-     * @param {Object} errors
      * */
-    data: function (track, result, done, errors) {
-        // jshint unused: false
+    data: function (track, result, done) {
         done(null, this.params);
     }
 
