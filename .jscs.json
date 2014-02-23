@@ -112,8 +112,6 @@
 
     "maximumLineLength": 80,
 
-    "requireCapitalizedConstructors": true,
-
     "requireDotNotation": true,
 
     "validateJSDoc": {

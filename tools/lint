@@ -1,3 +1,6 @@
 #!/bin/sh
 node_modules/.bin/eslint -c .eslint.json \
-    test
+    test \
+    util \
+    Fist.js
+

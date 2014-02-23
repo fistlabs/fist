@@ -4,7 +4,7 @@
         "email": "golyshev.dmitry@yandex.ru"
     },
     "bugs": {
-        "url": "https://github.com/golyshevd/module/issues"
+        "url": "https://github.com/fistlabs/fist.app/issues"
     },
     "contributors": [
         {
@@ -12,24 +12,31 @@
             "email": "golyshev.dmitry@yandex.ru"
         }
     ],
-    "dependencies": {},
-    "description": "",
+    "dependencies": {
+        "fist.lang.foreach": "0.0.x",
+        "fist.lang.toarray": "0.0.x",
+        "fist.util.component": "0.0.x",
+        "fist.io.server": "0.0.x",
+        "fist.util.task": "0.0.x"
+    },
+    "description": "fist application",
     "devDependencies": {
         "jscs": "",
         "eslint": "",
         "nodeunit": "",
-        "istanbul": ""
+        "istanbul": "",
+        "asker": ""
     },
     "license": "MIT",
-    "main": "",
-    "name": "",
+    "main": "Fist",
+    "name": "fist.app",
     "repository": {
         "type": "git",
-        "url": "git://github.com/golyshevd/module.git"
+        "url": "git://github.com/fistlabs/fist.app.git"
     },
     "scripts": {
         "test": "tools/test"
     },
     "version": "0.0.0",
-    "readme": ""
+    "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n\nfist application\n"
 }

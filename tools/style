@@ -1,3 +1,5 @@
 #!/bin/sh
 node_modules/.bin/jscs \
-    test
+    test \
+    util \
+    Fist.js
