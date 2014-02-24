@@ -7,16 +7,12 @@ var Path = require('path');
 var asker = require('asker');
 var routes = require('./conf/router');
 
-//process.on('uncaughtException', function (err) {
-//    console.error(err);
-//});
-
 module.exports = {
 
     Fist0: function (test) {
 
         var fist = new Fist({
-            dirs: [
+            action: [
                 'test/data',
                 'test/stuff'
             ],
@@ -28,7 +24,6 @@ module.exports = {
             ac: [],
             rq: [],
             rs: [],
-
             mt: []
         };
 
@@ -70,7 +65,7 @@ module.exports = {
                     className: 'by-stuff',
                     data: 42,
                     action: {
-                        dirs: [
+                        action: [
                             'test/data',
                             'test/stuff'
                         ],
@@ -97,7 +92,7 @@ module.exports = {
     Fist1: function (test) {
 
         var fist = new Fist({
-            dirs: [
+            action: [
                 'asdasd',
                 'test/data'
             ],
@@ -126,7 +121,7 @@ module.exports = {
     Fist2: function (test) {
 
         var fist = new Fist({
-            dirs: [],
+            action: [],
             routes: routes
         });
 

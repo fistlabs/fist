@@ -35,19 +35,18 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         this._ready = new Task(this._init, this);
 
         this._handle = function (track) {
-
             this._ready.done(function (err, res) {
 
                 if ( 2 > arguments.length ) {
                     setTimeout(function () {
                         throw err;
                     }, 0);
+
                 } else {
                     Fist.Parent.prototype._handle.call(this, track);
                 }
 
                 delete this._handle;
-
             }, this);
         };
     },
@@ -98,14 +97,14 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _declsCreate: function (done) {
 
-        var count;
-        var isError = false;
+        var action = /** @type {Array} */ toArray(this.params.action);
+        var actlen;
+        var reject = false;
         var result = Object.create(null);
-        var dirs = /** @type {Array} */ toArray(this.params.dirs);
 
-        count = dirs.length;
+        actlen = action.length;
 
-        if ( 0 === count ) {
+        if ( 0 === actlen ) {
             done.call(this, null, result);
 
             return;
@@ -113,14 +112,13 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         function read (err, list) {
 
-            if ( isError ) {
+            if ( reject ) {
 
                 return;
             }
 
             if ( 2 > arguments.length ) {
-                isError = true;
-
+                reject = true;
                 done.call(this, err);
 
                 return;
@@ -129,42 +127,40 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             list.forEach(function (filename) {
 
                 var data;
-                var name = Path.basename(filename, '.js');
-                var action = require(filename);
+                var orig = require(filename);
 
-                if ( 'function' === typeof action ) {
+                if ( 'function' === typeof orig ) {
 
-                    action = new action(this.params);
+                    orig = new orig(this.params);
                 }
 
-                data = action.data;
+                data = orig.data;
 
                 if ( 'function' === typeof data ) {
-                    data = data.bind(action);
+                    data = data.bind(orig);
+
                 } else {
                     data = function (track, result, done) {
-                        done(null, action.data);
+                        done(null, orig.data);
                     };
                 }
 
-                name = camelize(name);
-
-                result[name] = {
-                    deps: action.deps,
+                result[camelize(Path.basename(filename, '.js'))] = {
+                    deps: orig.deps,
                     data: data
                 };
 
             }, this);
 
-            count -= 1;
+            actlen -= 1;
 
-            if ( 0 === count ) {
+            if ( 0 === actlen ) {
                 done.call(this, null, result);
             }
         }
 
-        dirs.forEach(function (dir) {
-            readdir(dir, read, this);
+        action.forEach(function (dirname) {
+            readdir(dirname, read, this);
         }, this);
     }
 
