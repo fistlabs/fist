@@ -55,10 +55,10 @@ exports.data = ['pete', 'abraham'];
 У датапровайдеров есть несколько фишек и особенностей. Во первых имена файлов. Имя файла является ключом под которым результат резолвинга будет помещен в ```result``` или в ```errors``` соответственно. Но есть одно "но".
 Это имя всегда приводится к camelCase по таким правилам:
 
-users -> users
-Users -> users
-USERS -> users
-ABBRUsers -> abbrUsers
+ * users -> users
+ * Users -> users
+ * USERS -> users
+ * ABBRUsers -> abbrUsers
 
 И указывая зависимости необходимо это учитывать.
 
