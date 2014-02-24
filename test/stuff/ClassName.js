@@ -1,12 +1,12 @@
 'use strict';
 
-var Action = /** @type Action */ require('../../Action');
+var Knot = /** @type Knot */ require('../../Knot');
 
 /**
  * @class ClassName
- * @extends Action
+ * @extends Knot
  * */
-var ClassName = Action.extend(/** @lends ClassName.prototype */ {
+var ClassName = Knot.extend(/** @lends ClassName.prototype */ {
 
     deps: ['abbr'],
 

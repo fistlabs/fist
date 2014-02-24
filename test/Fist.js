@@ -3,7 +3,6 @@
 var SOCK = 'test/conf/fist.sock';
 var Fist = require('../Fist');
 var Fs = require('fs');
-var Path = require('path');
 var asker = require('asker');
 var routes = require('./conf/router');
 
@@ -64,7 +63,7 @@ module.exports = {
                 result: {
                     className: 'by-stuff',
                     data: 42,
-                    action: {
+                    knot: {
                         action: [
                             'test/data',
                             'test/stuff'
@@ -79,7 +78,7 @@ module.exports = {
 
             test.deepEqual(spy, {
                 rq: ['/'],
-                ac: ['abbr', 'className', 'data', 'action'],
+                ac: ['abbr', 'className', 'data', 'knot'],
                 rj: ['error'],
                 rs: ['/'],
                 mt: ['/']

@@ -2,7 +2,7 @@
 node_modules/.bin/eslint -c .eslint.json \
     test \
     util \
-    Action.js \
     Fist.js \
+    Knot.js \
     Runtime.js
 

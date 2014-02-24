@@ -1,6 +1,6 @@
 'use strict';
 
-exports.deps = ['className', 'error', 'data', 'action'];
+exports.deps = ['className', 'error', 'data', 'knot'];
 
 exports.data = function (track, result, done, errors) {
 

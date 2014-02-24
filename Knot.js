@@ -3,21 +3,21 @@
 var Component = /** @type Component */ require('fist.util.component/Component');
 
 /**
- * @class Action
+ * @class Knot
  * @extends Component
  * */
-var Action = Component.extend(/** @lends Action.prototype */ {
+var Knot = Component.extend(/** @lends Knot.prototype */ {
 
     /**
      * @public
-     * @memberOf {Action}
+     * @memberOf {Knot}
      * @property {Array<String>}
      * */
     deps: [],
 
     /**
      * @public
-     * @memberOf {Action}
+     * @memberOf {Knot}
      * @method
      *
      * @param {Activity} track
@@ -30,4 +30,4 @@ var Action = Component.extend(/** @lends Action.prototype */ {
 
 });
 
-module.exports = Action;
+module.exports = Knot;
