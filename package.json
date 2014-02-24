@@ -38,5 +38,5 @@
         "test": "tools/test"
     },
     "version": "0.0.3",
-    "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n\nfist application\n"
+    "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n\nManual usage (not recommended)\n---------\n\n```js\nvar Fist = require('fist.app/Fist');\nvar fist = new Fist();\n\n//  actions declaration\nfist.decl('users', function (track, result, done) {\n  done(null, ['pete', 'abraham']);\n});\n\nfist.decl('index', ['users'], function (track, result) {\n\n  var users = result.users.map(function (name) {\n      return '<li>' + name + '</li>';\n  }).join('');\n  track.header('Content-Type', 'text/html');\n  track.send(200, '<ul>' + users + '</ul>');\n});\n\n//  binding routes to actions\nfist.route('GET', '/', 'index');\n\n//  listen to port\nfist.listen(1337);\n\n```\n"
 }
