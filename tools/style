@@ -3,4 +3,5 @@ node_modules/.bin/jscs \
     test \
     util \
     Action.js \
-    Fist.js
+    Fist.js \
+    Runtime.js
