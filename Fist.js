@@ -3,6 +3,7 @@
 var Path = require('path');
 var Server = /** @type Server */ require('fist.io.server/Server');
 var Task = /** @type Task */ require('fist.util.task/Task');
+var Runtime = require('./Runtime');
 
 var camelize = require('./util/camelize');
 var forEach = require('fist.lang.foreach');
@@ -25,7 +26,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
-        this._router.addRoutes(toArray(this.params.routes));
+        this.router.addRoutes(toArray(this.params.routes));
 
         /**
          * @protected
@@ -63,6 +64,19 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _call: function (func, track, bundle, done) {
         func(track, bundle.result, done, bundle.errors);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Object} [params]
+     * @returns {Runtime}
+     * */
+    _createTrack: function (params) {
+
+        return new Runtime(this, params);
     },
 
     /**
