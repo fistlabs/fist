@@ -77,27 +77,34 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     _call: function (func, track, bundle, done) {
 
         var result;
-        var called;
-        var returned;
-
-        function sent () {
-
-            return track.send === Connect.noop;
-        }
+        var sent;
+        var called = false;
+        var returned = false;
+        var resolve;
 
         //  тело датапровайдера может быть разного типа
         //  общий случай - функция
         if ( 'function' === typeof func ) {
 
+            resolve = function () {
+
+                if ( called || returned ) {
+
+                    return;
+                }
+
+                called = true;
+                done.apply(this, arguments);
+            };
+
+            sent = function () {
+
+                return track.send === Connect.noop || called;
+            };
+
             //  Может быть даже генератор
             if ( 'GeneratorFunction' === func.constructor.name ) {
-                //  Если это генератор, то разрешенным он будет считаться
-                // только тогда, когда он завершит все остановки
-                //  и поэтому вместо done в него будет передан noop
-                //  между остановками может быть вызван send,
-                // тогда не имеет смысла продолать выполнять генератор.
-                // Для этой проверки передается функция sent
-                result = [track, bundle.errors, bundle.result, Connect.noop];
+                result = [track, bundle.errors, bundle.result, resolve];
                 this._callGeneratorFn(func, result, done, sent);
 
                 return;
@@ -105,26 +112,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
             called = returned = false;
 
-            //  простая функция - частный случай, thunk
-            //  управлять им можно по-разному. Можно вернуть значение
-            // или вызвать done. Если значение было возвращено до того как был
-            // вызван done, то done работать не будет. и наоборот, если был
-            // вызван done до того как было что-то возвращено, то возвращенное
-            // значение будет проигнорировано.
-            //  возвращаемые значения могут быть тоже особых типов. Например
-            // Promise, GeneratorFunction, {GeneratorFunction}
-            //  такие узлы будут разрешены только когда возвращенные
-            // объекты не завершат свою работу
-            result = func(track, bundle.errors, bundle.result, function () {
-
-                if ( returned ) {
-
-                    return;
-                }
-
-                called = true;
-                done.apply(this, arguments);
-            });
+            result = func(track, bundle.errors, bundle.result, resolve);
 
             if ( called ) {
 
@@ -179,6 +167,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _callGenerator: function (gen, result, isError, done, sent) {
 
+        if ( sent() ) {
+            //  если данные уже были отправлены, то нет смысла
+            // продолжать выполнять генератор
+            return;
+        }
+
         try {
             result = isError ? gen.throw(result) : gen.next(result);
         } catch (err) {
@@ -195,15 +189,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         this._callYieldable(result.value, function () {
 
-            var stat;
-
-            if ( sent() ) {
-                //  если данные уже были отправлены, то нет смысла
-                // продолжать выполнять генератор
-                return;
-            }
-
-            stat = +(1 > arguments.length);
+            var stat = +(1 > arguments.length);
 
             this._callGenerator(gen, arguments[stat], !stat, done, sent);
         }, sent);
