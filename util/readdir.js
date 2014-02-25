@@ -1,9 +1,10 @@
 'use strict';
 
 var Fs = require('fs');
-var Path = require('path');
 
-module.exports = function (dirname, done, ctx) {
+module.exports = function (dirname, done) {
+
+    var ctx = this;
 
     try {
         Fs.readdir(dirname, function (err, list) {
@@ -13,11 +14,7 @@ module.exports = function (dirname, done, ctx) {
                 return done.call(ctx, err);
             }
 
-            list = list.map(function (filename) {
-
-                return Path.resolve( Path.join(dirname, filename) );
-            }).sort();
-
+            list = list.sort();
             return done.call(ctx, null, list);
         });
 

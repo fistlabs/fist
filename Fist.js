@@ -8,6 +8,7 @@ var Runtime = require('./Runtime');
 var camelize = require('./util/camelize');
 var forEach = require('fist.lang.foreach');
 var readdir = require('./util/readdir');
+var readdirs = require('./util/readdirs');
 var toArray = require('fist.lang.toarray');
 
 /**
@@ -111,71 +112,51 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _declsCreate: function (done) {
 
-        var action = /** @type {Array} */ toArray(this.params.action);
-        var actlen;
-        var reject = false;
         var result = Object.create(null);
 
-        actlen = action.length;
-
-        if ( 0 === actlen ) {
-            done.call(this, null, result);
-
-            return;
-        }
-
-        function read (err, list) {
-
-            if ( reject ) {
-
-                return;
-            }
+        function onReadDirs (err, dirs) {
 
             if ( 2 > arguments.length ) {
-                reject = true;
-                done.call(this, err);
 
-                return;
+                return done.call(this, err);
             }
 
-            list.forEach(function (filename) {
+            function processDir (dirlist) {
 
-                var data;
-                var orig = require(filename);
+                function processList (filename) {
 
-                if ( 'function' === typeof orig ) {
+                    var data;
+                    var orig = require( Path.join(dirlist.name, filename) );
 
-                    orig = new orig(this.params);
-                }
+                    if ( 'function' === typeof orig ) {
+                        orig = new orig(this.params);
+                    }
 
-                data = orig.data;
+                    data = orig.data;
 
-                if ( 'function' === typeof data ) {
-                    data = data.bind(orig);
+                    if ( 'function' === typeof data ) {
+                        data = data.bind(orig);
+                    } else {
+                        data = function (track, result, done) {
+                            done(null, orig.data);
+                        };
+                    }
 
-                } else {
-                    data = function (track, result, done) {
-                        done(null, orig.data);
+                    result[camelize(Path.basename(filename, '.js'))] = {
+                        deps: orig.deps,
+                        data: data
                     };
                 }
 
-                result[camelize(Path.basename(filename, '.js'))] = {
-                    deps: orig.deps,
-                    data: data
-                };
-
-            }, this);
-
-            actlen -= 1;
-
-            if ( 0 === actlen ) {
-                done.call(this, null, result);
+                dirlist.list.forEach(processList, this);
             }
+
+            dirs.forEach(processDir, this);
+
+            return done.call(this, null, result);
         }
 
-        action.forEach(function (dirname) {
-            readdir(dirname, read, this);
-        }, this);
+        readdirs.call(this, toArray(this.params.action), onReadDirs);
     }
 
 });

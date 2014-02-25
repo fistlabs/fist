@@ -23,8 +23,9 @@ module.exports = {
 
         readdir('test/stuff', function (err, list) {
             test.deepEqual(list, [
-                Path.resolve('test/stuff/ABBR.js'),
-                Path.resolve('test/stuff/ClassName.js')
+                'ABBR.js',
+                'ClassName.js',
+                'data.js'
             ]);
             test.done();
         });

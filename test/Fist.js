@@ -3,6 +3,7 @@
 var SOCK = 'test/conf/fist.sock';
 var Fist = require('../Fist');
 var Fs = require('fs');
+var Path = require('path');
 var asker = require('asker');
 var routes = require('./conf/router');
 
@@ -12,8 +13,8 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                'test/data',
-                'test/stuff'
+                Path.resolve('test/data'),
+                Path.resolve('test/stuff')
             ],
             routes: routes
         });
@@ -62,11 +63,11 @@ module.exports = {
             test.strictEqual(data.data + '', JSON.stringify({
                 result: {
                     className: 'by-stuff',
-                    data: 42,
+                    data: 100500,
                     knot: {
                         action: [
-                            'test/data',
-                            'test/stuff'
+                            Path.resolve('test/data'),
+                            Path.resolve('test/stuff')
                         ],
                         routes: routes
                     }
@@ -92,8 +93,8 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                'asdasd',
-                'test/data'
+                Path.resolve('asdasd'),
+                Path.resolve('test/data')
             ],
             routes: routes
         });
