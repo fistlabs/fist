@@ -144,7 +144,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                         data = data.bind(orig);
                     }
 
-                    result[camelize(Path.basename(filename, '.js'))] = {
+                    filename = camelize(Path.basename(filename, '.js'));
+
+                    result[filename] = {
                         deps: orig.deps,
                         data: data
                     };
