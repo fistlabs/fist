@@ -25,7 +25,8 @@
         "eslint": "",
         "nodeunit": "",
         "istanbul": "",
-        "asker": ""
+        "asker": "",
+        "fist.util.promise": ""
     },
     "license": "MIT",
     "main": "Fist",

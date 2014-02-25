@@ -2,7 +2,7 @@
 
 exports.deps = ['className', 'error', 'data', 'knot'];
 
-exports.data = function (track, result, done, errors) {
+exports.data = function (track, errors, result) {
 
     track.send(200, {
         result: result,

@@ -2,6 +2,6 @@
 
 exports.deps = [];
 
-exports.data = function (track, result, done) {
+exports.data = function (track, errors, result, done) {
     done('error');
 };

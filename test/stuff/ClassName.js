@@ -15,7 +15,7 @@ var ClassName = Knot.extend(/** @lends ClassName.prototype */ {
      * @memberOf {ClassName}
      * @method
      * */
-    data: function (track, result, done) {
+    data: function (track, errors, result, done) {
         done(null, 'by-stuff');
     }
 

@@ -6,6 +6,7 @@ var Fs = require('fs');
 var Path = require('path');
 var asker = require('asker');
 var routes = require('./conf/router');
+var Promise = require('fist.util.promise');
 
 module.exports = {
 
@@ -144,6 +145,184 @@ module.exports = {
             test.strictEqual(res.statusCode, 500);
             test.strictEqual(res.data + '',
                 require('http').STATUS_CODES[res.statusCode]);
+            test.done();
+        });
+    },
+
+    Fist3: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('users', function (track, result, errors, done) {
+
+            setTimeout(function () {
+                done(null, ['john']);
+            }, 0);
+
+            return ['mike'];
+        });
+
+        fist.route('GET', '/', 'users');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.data + '', '["mike"]');
+            test.done();
+        });
+    },
+
+    Fist4: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('users', function () {
+
+            return Promise.resolve(['mike']);
+        });
+
+        fist.route('GET', '/', 'users');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.data + '', '["mike"]');
+            test.done();
+        });
+    },
+
+    Fist5: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('users', function () {
+
+            return {
+                then: function () {
+                    throw 0;
+                }
+            };
+        });
+
+        fist.route('GET', '/', 'users');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.strictEqual(res.data + '', '0');
+            test.done();
+        });
+    },
+
+    Fist6: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('users', function () {
+
+            return {
+                then: function (onResolved, onRejected) {
+                    onRejected(0);
+                    onRejected(5);
+                }
+            };
+        });
+
+        fist.route('GET', '/', 'users');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.strictEqual(res.data + '', '0');
+            test.done();
+        });
+    },
+
+    Fist7: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('users', function () {
+
+            return function (done) {
+                done(42);
+            }
+        });
+
+        fist.route('GET', '/', 'users');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.strictEqual(res.data + '', '42');
             test.done();
         });
     }

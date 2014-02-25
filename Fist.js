@@ -4,6 +4,7 @@ var Path = require('path');
 var Server = /** @type Server */ require('fist.io.server/Server');
 var Task = /** @type Task */ require('fist.util.task/Task');
 var Runtime = require('./Runtime');
+var Connect = require('fist.io.server/track/Connect');
 
 var camelize = require('./util/camelize');
 var forEach = require('fist.lang.foreach');
@@ -32,22 +33,32 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         /**
          * @protected
          * @memberOf {Fist}
-         * @property {Task}
+         * @property {Task} задача на инициализацию приложения по требованию
          * */
         this._ready = new Task(this._init, this);
 
+        //  Сервер начинает отвечать сразу, но первые запросы выволнятся только
+        // после того как будут проинициализированы узлы
         this._handle = function (track) {
+            //  запрос инициализации
             this._ready.done(function (err, res) {
 
                 if ( 2 > arguments.length ) {
+                    //  приложение упадет если при
+                    // инициализации произошла ошибка
                     setTimeout(function () {
+
                         throw err;
                     }, 0);
 
                 } else {
+                    //  А если все ок то вызваем метод суперкласса
                     Fist.Parent.prototype._handle.call(this, track);
                 }
 
+                //  когда узлы проинициализированы - начинаем отвечать
+                // ручкой родителя, а эту удаляем из тела,
+                // метод остается только в прототипе
                 delete this._handle;
             }, this);
         };
@@ -65,12 +76,337 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _call: function (func, track, bundle, done) {
 
-        if ( 'function' === typeof func ) {
+        var result;
+        var called;
+        var returned;
 
-            return func(track, bundle.result, done, bundle.errors, bundle);
+        function sent () {
+
+            return track.send === Connect.noop;
         }
 
-        return done(null, func);
+        //  тело датапровайдера может быть разного типа
+        //  общий случай - функция
+        if ( 'function' === typeof func ) {
+
+            //  Может быть даже генератор
+            if ( 'GeneratorFunction' === func.constructor.name ) {
+                //  Если это генератор, то разрешенным он будет считаться
+                // только тогда, когда он завершит все остановки
+                //  и поэтому вместо done в него будет передан noop
+                //  между остановками может быть вызван send,
+                // тогда не имеет смысла продолать выполнять генератор.
+                // Для этой проверки передается функция sent
+                result = [track, bundle.errors, bundle.result, Connect.noop];
+                this._callGeneratorFn(func, result, done, sent);
+
+                return;
+            }
+
+            called = returned = false;
+
+            //  простая функция - частный случай, thunk
+            //  управлять им можно по-разному. Можно вернуть значение
+            // или вызвать done. Если значение было возвращено до того как был
+            // вызван done, то done работать не будет. и наоборот, если был
+            // вызван done до того как было что-то возвращено, то возвращенное
+            // значение будет проигнорировано.
+            //  возвращаемые значения могут быть тоже особых типов. Например
+            // Promise, GeneratorFunction, {GeneratorFunction}
+            //  такие узлы будут разрешены только когда возвращенные
+            // объекты не завершат свою работу
+            result = func(track, bundle.errors, bundle.result, function () {
+
+                if ( returned ) {
+
+                    return;
+                }
+
+                called = true;
+                done.apply(this, arguments);
+            });
+
+            if ( called ) {
+
+                return;
+            }
+
+            //  если было возвращено нечто кроме undefined
+            returned = void 0 !== result;
+
+            if ( returned ) {
+
+                if ( 2 === this._callReturned(result, done, sent) ) {
+
+                    return;
+                }
+
+                done.call(this, null, result);
+            }
+
+            return;
+        }
+
+        //  примитивы сразу резолвим
+        done(null, func);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Function} func
+     * @param {Array|Arguments} args
+     * @param {Function} done
+     * @param {Function} sent
+     * */
+    _callGeneratorFn: function (func, args, done, sent) {
+        func = func.apply(this, args);
+        this._callGenerator(func, void 0, false, done, sent);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Object} gen
+     * @param {*} result
+     * @param {Boolean} isError
+     * @param {Function} done
+     * @param {Function} sent
+     * */
+    _callGenerator: function (gen, result, isError, done, sent) {
+
+        try {
+            result = isError ? gen.throw(result) : gen.next(result);
+        } catch (err) {
+            done.call(this, err);
+
+            return;
+        }
+
+        if ( result.done ) {
+            this._callYieldable(result.value, done, sent);
+
+            return;
+        }
+
+        this._callYieldable(result.value, function () {
+
+            var stat;
+
+            if ( sent() ) {
+                //  если данные уже были отправлены, то нет смысла
+                // продолжать выполнять генератор
+                return;
+            }
+
+            stat = +(1 > arguments.length);
+
+            this._callGenerator(gen, arguments[stat], !stat, done, sent);
+        }, sent);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {*} value
+     * @param {Function} done
+     * @param {Function} sent
+     * */
+    _callYieldable: function (value, done, sent) {
+
+        switch ( this._callReturned(value, done, sent) ) {
+
+            //  вызова не было, примитив
+            case 0: {
+                done.call(this, null, value);
+
+                break;
+            }
+
+            //  вызова не было, объект
+            case 1: {
+                this._callObj(value, done, sent);
+
+                break;
+            }
+
+            default: {
+
+                //  был вызов
+                break;
+            }
+        }
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Function} func
+     * @param {Function} done
+     * @param {Function} sent
+     * */
+    _callFunction: function (func, done, sent) {
+
+        //  если герератор, то обрабатываем генератор
+        if ( 'GeneratorFunction' === func.constructor.name ) {
+            this._callGeneratorFn(func, [], done, sent);
+
+            return;
+        }
+
+        //  иначе предполагаем thunk
+        func(done);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {*} val
+     * @param {Function} done
+     * @param {Function} sent
+     *
+     * @returns {Number}
+     * */
+    _callReturned: function (val, done, sent) {
+
+        if ( Object(val) === val ) {
+
+            if ( 'function' === typeof val ) {
+                this._callFunction(val, done, sent);
+
+                return 2;
+            }
+
+            if ( 'function' === typeof val.next &&
+                 'function' === typeof val.throw ) {
+                this._callGenerator(val, void 0, false, done, sent);
+
+                return 2;
+            }
+
+            //  если есть метод then, то это promise
+            try {
+                //  по спецификации геттер может выбросить исключение
+                if ( 'function' === typeof val.then ) {
+                    this._callPromise(val, done);
+
+                    return 2;
+                }
+            } catch (err) {
+                //  тогда надо реджектить promise c этим исключением
+                done.call(this, err);
+
+                return 2;
+            }
+
+            return 1;
+        }
+
+        return 0;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Object} promise
+     * @param {Function} done
+     * */
+    _callPromise: function (promise, done) {
+
+        var called = false;
+        var tracker = this;
+
+        function callDone () {
+
+            if ( called ) {
+
+                return;
+            }
+
+            called = true;
+
+            done.apply(tracker, arguments);
+        }
+
+        try {
+
+            promise.then(function (res) {
+                callDone(null, res);
+            }, callDone);
+
+        } catch (err) {
+            callDone(err);
+        }
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Object} obj
+     * @param {Function} done
+     * @param {Function} sent
+     * */
+    _callObj: function (obj, done, sent) {
+
+        var isError;
+        var keys = Object.keys(obj);
+        var klen = keys.length;
+        var result = Array.isArray(obj) ? [] : {};
+
+        if ( 0 === klen ) {
+            done.call(this, null, result);
+
+            return;
+        }
+
+        isError = true;
+
+        keys.forEach(function (i) {
+
+            function onReturned (err, res) {
+
+                if ( isError ) {
+
+                    return;
+                }
+
+                if ( 2 > arguments.length ) {
+                    isError = true;
+                    done.call(this, err);
+
+                    return;
+                }
+
+                result[i] = res;
+                klen -= 1;
+
+                if ( 0 === klen ) {
+                    done.call(this, null, result);
+                }
+            }
+
+            if ( 2 === this._callReturned(obj[i], onReturned, sent) ) {
+
+                return;
+            }
+
+            done.call(this, null, obj[i]);
+
+        }, this);
     },
 
     /**

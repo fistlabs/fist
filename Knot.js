@@ -21,10 +21,11 @@ var Knot = Component.extend(/** @lends Knot.prototype */ {
      * @method
      *
      * @param {Activity} track
+     * @param {Object} errors
      * @param {Object} result
      * @param {Function} done
      * */
-    data: function (track, result, done) {
+    data: function (track, errors, result, done) {
         done(null, this.params);
     }
 

@@ -14,7 +14,7 @@ module.exports = {
 
         fist.route('GET', '/(<pageName>/)', 'url');
 
-        fist.decl('url', function (track, result, done) {
+        fist.decl('url', function (track, errors, result, done) {
             done(null, track.buildUrl('url', {
                 pageName: 'about',
                 text: 'test'
