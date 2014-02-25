@@ -14,12 +14,11 @@ module.exports = function (dirname, done) {
                 return done.call(ctx, err);
             }
 
-            list = list.sort();
-            return done.call(ctx, null, list);
+            return done.call(ctx, null, list.sort());
         });
 
     } catch (err) {
 
-        done.call(ctx, err, done);
+        done.call(ctx, err);
     }
 };

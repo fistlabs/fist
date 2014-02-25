@@ -152,10 +152,10 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                     };
                 }
 
-                dirlist.list.forEach(processList, this);
+                forEach(dirlist.list, processList, this);
             }
 
-            dirs.forEach(processDir, this);
+            forEach(dirs, processDir, this);
 
             return done.call(this, null, result);
         }

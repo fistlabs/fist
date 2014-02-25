@@ -1,11 +1,10 @@
 'use strict';
 
 var readdir = require('./readdir');
+var forEach = require('fist.lang.foreach');
 
 module.exports = function (dirs, done) {
 
-    var i;
-    var l;
     var result = [];
     var reject = false;
     var count = dirs.length;
@@ -16,7 +15,7 @@ module.exports = function (dirs, done) {
         return;
     }
 
-    function read (i, name) {
+    forEach(dirs, function (name, i) {
         readdir.call(this, name, function (err, list) {
 
             if ( reject ) {
@@ -43,10 +42,5 @@ module.exports = function (dirs, done) {
                 done.call(this, null, result);
             }
         });
-    }
-
-    for ( i = 0, l = dirs.length; i < l; i += 1) {
-        read.call(this, i, dirs[i]);
-    }
-
+    }, this);
 };
