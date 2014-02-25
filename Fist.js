@@ -64,7 +64,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     _call: function (func, track, bundle, done) {
-        func(track, bundle.result, done, bundle.errors);
+        func(track, bundle.result, done, bundle.errors, bundle);
     },
 
     /**
