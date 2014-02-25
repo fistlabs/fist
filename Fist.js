@@ -64,7 +64,13 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     _call: function (func, track, bundle, done) {
-        func(track, bundle.result, done, bundle.errors, bundle);
+
+        if ( 'function' === typeof func ) {
+
+            return func(track, bundle.result, done, bundle.errors, bundle);
+        }
+
+        return done(null, func);
     },
 
     /**
@@ -136,10 +142,6 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
                     if ( 'function' === typeof data ) {
                         data = data.bind(orig);
-                    } else {
-                        data = function (track, result, done) {
-                            done(null, orig.data);
-                        };
                     }
 
                     result[camelize(Path.basename(filename, '.js'))] = {
