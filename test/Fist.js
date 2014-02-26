@@ -144,7 +144,7 @@ module.exports = {
         }, function (err, res) {
             test.strictEqual(res.statusCode, 500);
             test.strictEqual(res.data + '',
-                require('http').STATUS_CODES[res.statusCode]);
+            require('http').STATUS_CODES[res.statusCode]);
             test.done();
         });
     },
@@ -300,6 +300,7 @@ module.exports = {
 
             return function (done) {
                 done(42);
+                done(43);
             }
         });
 

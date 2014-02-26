@@ -78,7 +78,6 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         var result;
         var sent;
-        var called = false;
         var returned = false;
         var resolve;
 
@@ -88,18 +87,18 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
             resolve = function () {
 
-                if ( called || returned ) {
+                if ( returned ) {
 
                     return;
                 }
 
-                called = true;
+                returned = true;
                 done.apply(this, arguments);
             };
 
             sent = function () {
 
-                return track.send === Connect.noop || called;
+                return track.send === Connect.noop || returned;
             };
 
             //  Может быть даже генератор
@@ -110,11 +109,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                 return;
             }
 
-            called = returned = false;
-
             result = func(track, bundle.errors, bundle.result, resolve);
 
-            if ( called ) {
+            if ( returned ) {
 
                 return;
             }
