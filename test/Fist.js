@@ -326,5 +326,40 @@ module.exports = {
             test.strictEqual(res.data + '', '42');
             test.done();
         });
+    },
+
+    Fist8: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('stream', function (track) {
+            //  так в реальной жизни делать нельзя
+            return track._req;
+        });
+
+        fist.route('POST', '/', 'stream');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'post',
+            path: '/',
+            body: ':)',
+            socketPath: SOCK,
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 200);
+            test.strictEqual(res.data + '', ':)');
+            test.done();
+        });
     }
 };

@@ -1,6 +1,8 @@
 'use strict';
 
 var Path = require('path');
+var StreamLoader = /** @type StreamLoader */
+    require('fist.util.streamloader/StreamLoader');
 var Server = /** @type Server */ require('fist.io.server/Server');
 var Task = /** @type Task */ require('fist.util.task/Task');
 var Runtime = require('./Runtime');
@@ -277,6 +279,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                 return 2;
             }
 
+            if ( 'function' === typeof val.pipe ) {
+                this._callStream(val, done);
+
+                return 2;
+            }
+
             //  если есть метод then, то это promise
             try {
                 //  по спецификации геттер может выбросить исключение
@@ -390,6 +398,10 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             done.call(this, null, obj[i]);
 
         }, this);
+    },
+
+    _callStream: function (readable, done) {
+        ( new StreamLoader(readable) ).done(done);
     },
 
     /**

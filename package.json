@@ -13,6 +13,7 @@
         }
     ],
     "dependencies": {
+        "fist.util.streamloader": "0.0.x",
         "fist.lang.foreach": "0.0.x",
         "fist.lang.toarray": "0.0.x",
         "fist.util.component": "0.0.x",

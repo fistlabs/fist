@@ -30,7 +30,7 @@
         "valid-jsdoc": 0,
 
         "block-scoped-var": 0,
-        "complexity": [2, 6],
+        "complexity": [2, 7],
         "curly": 2,
         "dot-notation": 2,
         "eqeqeq": 2,
