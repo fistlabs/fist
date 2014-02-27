@@ -361,5 +361,82 @@ module.exports = {
             test.strictEqual(res.data + '', ':)');
             test.done();
         });
+    },
+
+    Fist9: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('promise', function () {
+
+            var x = {};
+
+            Object.defineProperty(x, 'then', {
+                get: function () {
+
+                    throw 1;
+                }
+            });
+
+            return x;
+        });
+
+        fist.route('GET', '/', 'promise');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.strictEqual(res.data + '', '1');
+            test.done();
+        });
+    },
+
+    Fist10: function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('primitive', function () {
+
+            return 5;
+        });
+
+        fist.route('GET', '/', 'primitive');
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK,
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 200);
+            test.strictEqual(res.data + '', '5');
+            test.done();
+        });
     }
 };
