@@ -1,7 +1,0 @@
-#!/bin/sh
-node_modules/.bin/jscs \
-    test \
-    util \
-    Fist.js \
-    Knot.js \
-    Runtime.js

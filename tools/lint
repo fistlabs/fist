@@ -1,8 +1,0 @@
-#!/bin/sh
-node_modules/.bin/eslint -c .eslint.json \
-    test \
-    util \
-    Fist.js \
-    Knot.js \
-    Runtime.js
-

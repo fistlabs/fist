@@ -37,7 +37,7 @@
         "url": "git://github.com/fistlabs/fist.app.git"
     },
     "scripts": {
-        "test": "tools/test"
+        "test": "eslint -c .eslintrc test util Fist.js Knot.js Runtime.js && jscs -c .jscsrc test util Fist.js Knot.js Runtime.js && tools/test"
     },
     "version": "0.0.5",
     "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n"
