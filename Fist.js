@@ -42,26 +42,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         //  Сервер начинает отвечать сразу, но первые запросы выволнятся только
         // после того как будут проинициализированы узлы
         this._handle = function (track) {
-            //  запрос инициализации
-            this._ready.done(function (err, res) {
-
-                if ( 2 > arguments.length ) {
-                    //  приложение упадет если при
-                    // инициализации произошла ошибка
-                    setTimeout(function () {
-
-                        throw err;
-                    }, 0);
-
-                } else {
-                    //  А если все ок то вызваем метод суперкласса
-                    Fist.Parent.prototype._handle.call(this, track);
-                }
-
-                //  когда узлы проинициализированы - начинаем отвечать
-                // ручкой родителя, а эту удаляем из тела,
-                // метод остается только в прототипе
-                delete this._handle;
+            this._ready.done(function () {
+                //  Метод уже удален из тела, остался только метод прототипа
+                this._handle.call(this, track);
             }, this);
         };
     },
@@ -492,6 +475,21 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         }
 
         readdirs.call(this, toArray(this.params.action), onReadDirs);
+    },
+
+    listen: function () {
+        //  запрос инициализации
+        this._ready.done(function (err, res) {
+
+            if ( 2 > arguments.length ) {
+
+                throw err;
+            }
+
+            delete this._handle;
+        }, this);
+
+        Fist.parent.listen.apply(this, arguments);
     }
 
 });
