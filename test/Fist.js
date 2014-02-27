@@ -301,7 +301,7 @@ module.exports = {
             return function (done) {
                 done(42);
                 done(43);
-            }
+            };
         });
 
         fist.route('GET', '/', 'users');

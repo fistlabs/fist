@@ -34,4 +34,7 @@ readme:
 test: modules
 	tools/test
 
+test-harmony: modules
+	tools/test-harmony
+
 .PHONY: all cover hooks lint modules test

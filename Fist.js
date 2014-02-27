@@ -78,6 +78,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                 }
 
                 returned = true;
+
                 done.apply(this, arguments);
             };
 
@@ -89,7 +90,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             //  Может быть даже генератор
             if ( 'GeneratorFunction' === func.constructor.name ) {
                 result = [track, bundle.errors, bundle.result, resolve];
-                this._callGeneratorFn(func, result, done, sent);
+                this._callGeneratorFn(func, result, resolve, sent);
 
                 return;
             }
@@ -118,7 +119,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         }
 
         //  примитивы сразу резолвим
-        done(null, func);
+        done.call(this, null, func);
     },
 
     /**
@@ -171,7 +172,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         this._callYieldable(result.value, function () {
 
-            var stat = +(1 > arguments.length);
+            var stat = +(1 < arguments.length);
 
             this._callGenerator(gen, arguments[stat], !stat, done, sent);
         }, sent);
@@ -231,7 +232,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         }
 
         //  иначе предполагаем thunk
-        func(done);
+        func(done.bind(this));
     },
 
     /**
@@ -347,7 +348,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             return;
         }
 
-        isError = true;
+        isError = false;
 
         keys.forEach(function (i) {
 
@@ -378,13 +379,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                 return;
             }
 
-            done.call(this, null, obj[i]);
-
+            onReturned.call(this, null, obj[i]);
         }, this);
     },
 
     _callStream: function (readable, done) {
-        ( new StreamLoader(readable) ).done(done);
+        ( new StreamLoader(readable) ).done(done, this);
     },
 
     /**

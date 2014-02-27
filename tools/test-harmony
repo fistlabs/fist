@@ -1,0 +1,19 @@
+#!/usr/bin/env node --harmony
+'use strict';
+
+var Fs = require('fs');
+var Nodeunit = require('nodeunit');
+var Path = require('path');
+var tests = Fs.readdirSync('test/harmony');
+
+tests = tests.map(function (fileName) {
+
+    return Path.join('test/harmony', fileName);
+}).filter(function (fileName) {
+
+    return Fs.statSync(fileName).isFile();
+});
+
+Nodeunit.reporters.default.run(tests, null, function (error) {
+    process.exit( +!!error );
+});
