@@ -42,11 +42,15 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         //  Сервер начинает отвечать сразу, но первые запросы выволнятся только
         // после того как будут проинициализированы узлы
         this._handle = function (track) {
-            this._ready.done(function () {
+            this.ready(function () {
                 //  Метод уже удален из тела, остался только метод прототипа
                 this._handle.call(this, track);
-            }, this);
+            });
         };
+    },
+
+    ready: function (done) {
+        this._ready.done(done, this);
     },
 
     /**
@@ -481,15 +485,10 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
     listen: function () {
         //  запрос инициализации
-        this._ready.done(function (err, res) {
-
-            if ( 2 > arguments.length ) {
-
-                throw err;
-            }
+        this.ready(function () {
 
             delete this._handle;
-        }, this);
+        });
 
         Fist.parent.listen.apply(this, arguments);
     }

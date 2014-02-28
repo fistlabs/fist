@@ -89,34 +89,28 @@ module.exports = {
             test.done();
         });
     },
-//
-//    Fist1: function (test) {
-//
-//        var fist = new Fist({
-//            action: [
-//                Path.resolve('asdasd'),
-//                Path.resolve('test/data')
-//            ],
-//            routes: routes
-//        });
-//
-//        try {
-//            Fs.unlinkSync(SOCK);
-//        } catch (err) {}
-//
-//        fist.listen(SOCK);
-//
-////        process.once('uncaughtException', function one (ex) {
-////            test;
-//            // .done();
-////        });
-//
-//        asker({
-//            method: 'get',
-//            path: '/',
-//            socketPath: SOCK
-//        }, function (err, res) {});
-//    },
+
+    Fist1: function (test) {
+
+        var fist = new Fist({
+            action: [
+                Path.resolve('asdasd'),
+                Path.resolve('test/data')
+            ],
+            routes: routes
+        });
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        fist.ready(function (err) {
+            test.ok(err);
+            test.done();
+        });
+    },
 
     Fist2: function (test) {
 
