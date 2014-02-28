@@ -36,6 +36,13 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         this._ready = new KnotsReady(this.params);
     },
 
+    /**
+     * @public
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Function} done
+     * */
     ready: function (done) {
         this._ready.done(done, this);
     },
