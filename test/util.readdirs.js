@@ -17,23 +17,13 @@ module.exports = {
 
             test.strictEqual(this, 42);
             test.deepEqual(result, [
-                {
-                    name: 'test/data',
-                    list: [
-                        'Knot.js',
-                        'data.js',
-                        'error.js',
-                        'index.js'
-                    ]
-                },
-                {
-                    name: 'test/stuff',
-                    list: [
-                        'ABBR.js',
-                        'ClassName.js',
-                        'data.js'
-                    ]
-                }
+                'test/data/Knot.js',
+                'test/data/data.js',
+                'test/data/error.js',
+                'test/data/index.js',
+                'test/stuff/ABBR.js',
+                'test/stuff/ClassName.js',
+                'test/stuff/data.js'
             ]);
 
             test.done();

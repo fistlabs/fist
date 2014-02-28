@@ -2,10 +2,12 @@
 
 var readdir = require('./readdir');
 var forEach = require('fist.lang.foreach');
+var Path = require('path');
 
 module.exports = function (dirs, done) {
 
     var result = [];
+    var files = [];
     var reject = false;
     var count = dirs.length;
 
@@ -15,8 +17,18 @@ module.exports = function (dirs, done) {
         return;
     }
 
-    forEach(dirs, function (name, i) {
-        readdir.call(this, name, function (err, list) {
+    function merge (list) {
+        [].push.apply(files, list);
+    }
+
+    function eachPath (name, i) {
+
+        function join (filename) {
+
+            return Path.join(name, filename);
+        }
+
+        function onread (err, list) {
 
             if ( reject ) {
 
@@ -25,22 +37,23 @@ module.exports = function (dirs, done) {
 
             if ( 2 > arguments.length ) {
                 reject = true;
-
                 done.call(this, err);
 
                 return;
             }
 
-            result[i] = {
-                name: name,
-                list: list
-            };
+            result[i] = list.map(join);
 
             count -= 1;
 
             if ( 0 === count ) {
-                done.call(this, null, result);
+                forEach(result, merge);
+                done.call(this, null, files);
             }
-        });
-    }, this);
+        }
+
+        readdir.call(this, name, onread);
+    }
+
+    forEach(dirs, eachPath, this);
 };

@@ -440,42 +440,37 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         var result = Object.create(null);
 
-        function onReadDirs (err, dirs) {
+        function onReadDirs (err, files) {
 
             if ( 2 > arguments.length ) {
 
                 return done.call(this, err);
             }
 
-            function processDir (dirlist) {
+            function processList (filename) {
 
-                function processList (filename) {
+                var data;
+                var orig = require(filename);
 
-                    var data;
-                    var orig = require( Path.join(dirlist.name, filename) );
-
-                    if ( 'function' === typeof orig ) {
-                        orig = new orig(this.params);
-                    }
-
-                    data = orig.data;
-
-                    if ( 'function' === typeof data ) {
-                        data = data.bind(orig);
-                    }
-
-                    filename = camelize(Path.basename(filename, '.js'));
-
-                    result[filename] = {
-                        deps: orig.deps,
-                        data: data
-                    };
+                if ( 'function' === typeof orig ) {
+                    orig = new orig(this.params);
                 }
 
-                forEach(dirlist.list, processList, this);
+                data = orig.data;
+
+                if ( 'function' === typeof data ) {
+                    data = data.bind(orig);
+                }
+
+                filename = camelize(Path.basename(filename, '.js'));
+
+                result[filename] = {
+                    deps: orig.deps,
+                    data: data
+                };
             }
 
-            forEach(dirs, processDir, this);
+            forEach(files, processList, this);
 
             return done.call(this, null, result);
         }
