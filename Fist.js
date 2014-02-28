@@ -1,6 +1,5 @@
 'use strict';
 
-var Path = require('path');
 var StreamLoader = /** @type StreamLoader */
     require('fist.util.streamloader/StreamLoader');
 var Server = /** @type Server */ require('fist.io.server/Server');
@@ -8,10 +7,8 @@ var Task = /** @type Task */ require('fist.util.task/Task');
 var Runtime = require('./Runtime');
 var Connect = require('fist.io.server/track/Connect');
 
-var camelize = require('./util/camelize');
-var forEach = require('fist.lang.foreach');
-var multiglob = require('./util/multiglob');
 var toArray = require('fist.lang.toarray');
+var KnotsReady = require('./util/KnotsReady');
 
 /**
  * @class Fist
@@ -36,16 +33,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @memberOf {Fist}
          * @property {Task} задача на инициализацию приложения по требованию
          * */
-        this._ready = new Task(this._init, this);
-
-        //  Сервер начинает отвечать сразу, но первые запросы выволнятся только
-        // после того как будут проинициализированы узлы
-        this._handle = function (track) {
-            this.ready(function () {
-                //  Метод уже удален из тела, остался только метод прототипа
-                this._handle.call(this, track);
-            });
-        };
+        this._ready = new KnotsReady(this.params);
     },
 
     ready: function (done) {
@@ -410,81 +398,24 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @memberOf {Fist}
      * @method
      *
-     * @param {Function} done
+     * @param {*} decls
      * */
-    _init: function (done) {
-        this._declsCreate(function (err, decls) {
-
-            if ( 2 > arguments.length ) {
-
-                return done.call(this, err);
-            }
-
-            forEach(decls, function (decl, path) {
-                this.decl(path, decl.deps, decl.data);
-            }, this);
-
-            return done.call(this, null, null);
-        });
-    },
-
-    /**
-     * @public
-     * @memberOf {Fist}
-     * @method
-     *
-     * @param {Function} done
-     * */
-    _declsCreate: function (done) {
-
-        var result = Object.create(null);
-
-        function onReadDirs (err, files) {
-
-            if ( 2 > arguments.length ) {
-
-                return done.call(this, err);
-            }
-
-            function processList (filename) {
-
-                var data;
-                var orig = require(filename);
-
-                if ( 'function' === typeof orig ) {
-                    orig = new orig(this.params);
-                }
-
-                data = orig.data;
-
-                if ( 'function' === typeof data ) {
-                    data = data.bind(orig);
-                }
-
-                filename = camelize(Path.basename(filename, '.js'));
-
-                result[filename] = {
-                    deps: orig.deps,
-                    data: data
-                };
-            }
-
-            forEach(files, processList, this);
-
-            return done.call(this, null, result);
-        }
-
-        multiglob.call(this, toArray(this.params.action), onReadDirs);
+    _init: function (decls) {
+        decls.forEach(function (decl) {
+            this.decl(decl.name, decl.deps, decl.data);
+        }, this);
     },
 
     listen: function () {
-        //  запрос инициализации
-        this.ready(function () {
-
-            delete this._handle;
-        });
-
         Fist.parent.listen.apply(this, arguments);
+
+        //  запрос инициализации
+        this.ready(function (err, decls) {
+
+            if ( Array.isArray(decls) ) {
+                this._init(decls);
+            }
+        });
     }
 
 });

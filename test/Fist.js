@@ -94,8 +94,8 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                null,
-                Path.resolve('test/data')
+                Path.resolve('test/data'),
+                null
             ],
             routes: routes
         });
@@ -106,7 +106,11 @@ module.exports = {
 
         fist.listen(SOCK);
 
-        fist.ready(function (err) {
+        asker({
+            method: 'GET',
+            path: '/',
+            socketPath: SOCK
+        }, function (err) {
             test.ok(err);
             test.done();
         });
@@ -431,5 +435,28 @@ module.exports = {
             test.strictEqual(res.data + '', '5');
             test.done();
         });
+    },
+
+    Fist11: function (test) {
+
+        var fist = new Fist({
+            routes: routes
+        });
+
+        try {
+            Fs.unlinkSync(SOCK);
+        } catch (err) {}
+
+        fist.listen(SOCK);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: SOCK
+        }, function (err) {
+            test.ok(err);
+            test.done();
+        });
     }
+
 };
