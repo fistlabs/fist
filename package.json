@@ -19,7 +19,7 @@
         "fist.util.component": "0.0.x",
         "fist.io.server": "0.1.x",
         "fist.util.task": "0.0.x",
-        "glob": ""
+        "glob": "3.2.x"
     },
     "description": "fist application",
     "devDependencies": {
@@ -29,7 +29,7 @@
         "istanbul": "",
         "asker": "",
         "fist.util.promise": "",
-        "glob": "3.2.x"
+        "glob": ""
     },
     "license": "MIT",
     "main": "Fist",
@@ -41,6 +41,6 @@
     "scripts": {
         "test": "eslint -c .eslintrc test util Fist.js Knot.js Runtime.js && jscs -c .jscsrc test util Fist.js Knot.js Runtime.js && tools/test"
     },
-    "version": "0.0.5",
+    "version": "0.0.6",
     "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n"
 }
