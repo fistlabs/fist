@@ -118,6 +118,11 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             return;
         }
 
+        if ( 2 === this._callReturned(func, done, sent) ) {
+
+            return;
+        }
+
         //  примитивы сразу резолвим
         done.call(this, null, func);
     },

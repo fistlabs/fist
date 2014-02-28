@@ -1,3 +1,5 @@
 'use strict';
 
-exports.data = 42;
+var Promise = require('fist.util.promise/Promise');
+
+exports.data = Promise.resolve(42);

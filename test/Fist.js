@@ -150,10 +150,12 @@ module.exports = {
 
         var fist = new Fist();
 
-        fist.decl('users', function (track, result, errors, done) {
+        fist.decl('john', Promise.resolve('john'));
+
+        fist.decl('users', ['john'], function (track, result, errors, done) {
 
             setTimeout(function () {
-                done(null, ['john']);
+                done(null, [result.john]);
             }, 0);
 
             return ['mike'];
