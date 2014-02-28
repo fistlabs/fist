@@ -1,17 +1,24 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --harmony
 'use strict';
 
 var Nodeunit = require('nodeunit');
-
-var child = require('child_process');
 var glob = require('glob');
-
 var tests = glob.sync('test/*.js');
 
 function supports () {
-    var version = process.version.split('.');
 
-    return +version[1] > 10 && +version[2] > 2;
+    try {
+        eval('(function * () {})');
+
+        return true;
+    } catch (ex) {
+
+        return false;
+    }
+}
+
+if ( supports() ) {
+    tests = tests.concat( glob.sync('test/harmony/*.js') );
 }
 
 Nodeunit.reporters.default.run(tests, null, function (error) {
@@ -22,17 +29,5 @@ Nodeunit.reporters.default.run(tests, null, function (error) {
         return;
     }
 
-//    if ( supports() ) {
-//
-//        child.exec('tools/test-harmony', function (err, so, se) {
-//            console.log(so);
-//            console.error(se);
-//            process.exit( +!!err );
-//        });
-//
-//        return;
-//    }
-
     process.exit(0);
-
 });

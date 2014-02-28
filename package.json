@@ -42,7 +42,8 @@
         "jscs": "jscs -c .jscsrc test util Fist.js Knot.js Runtime.js",
         "eslint": "eslint -c .eslintrc test util Fist.js Knot.js Runtime.js",
         "lint": "npm run jscs && npm run eslint",
-        "test": "npm run lint && tools/test"
+        "unit": "tools/test",
+        "test": "npm run lint && npm run unit"
     },
     "version": "0.0.6",
     "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n"
