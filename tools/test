@@ -30,16 +30,16 @@ Nodeunit.reporters.default.run(tests, null, function (error) {
         return;
     }
 
-    if ( supports() ) {
-
-        child.exec('tools/test-harmony', function (err, so, se) {
-            console.log(so);
-            console.error(se);
-            process.exit( +!!err );
-        });
-
-        return;
-    }
+//    if ( supports() ) {
+//
+//        child.exec('tools/test-harmony', function (err, so, se) {
+//            console.log(so);
+//            console.error(se);
+//            process.exit( +!!err );
+//        });
+//
+//        return;
+//    }
 
     process.exit(0);
 
