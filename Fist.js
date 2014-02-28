@@ -61,14 +61,16 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _call: function (func, track, bundle, done) {
 
-        var result;
-        var sent;
-        var returned = false;
         var resolve;
+        var result;
+        var returned;
+        var sent;
 
         //  тело датапровайдера может быть разного типа
         //  общий случай - функция
         if ( 'function' === typeof func ) {
+
+            returned = false;
 
             resolve = function () {
 

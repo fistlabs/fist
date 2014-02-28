@@ -4,6 +4,8 @@
 var Fs = require('fs');
 var Nodeunit = require('nodeunit');
 var Path = require('path');
+
+var child = require('child_process');
 var tests = Fs.readdirSync('test');
 
 tests = tests.map(function (fileName) {
@@ -14,6 +16,31 @@ tests = tests.map(function (fileName) {
     return Fs.statSync(fileName).isFile();
 });
 
+function supports () {
+    var version = process.version.split('.');
+
+    return +version[1] > 10 && +version[2] > 2;
+}
+
 Nodeunit.reporters.default.run(tests, null, function (error) {
-    process.exit( +!!error );
+
+    if ( error ) {
+        process.exit(1);
+
+        return;
+    }
+
+    if ( supports() ) {
+
+        child.exec('./tools/test-harmony', function (err, so, se) {
+            console.log(so);
+            console.error(se);
+            process.exit( +!!err );
+        });
+
+        return;
+    }
+
+    process.exit(0);
+
 });
