@@ -18,7 +18,8 @@
         "fist.lang.toarray": "0.0.x",
         "fist.util.component": "0.0.x",
         "fist.io.server": "0.1.x",
-        "fist.util.task": "0.0.x"
+        "fist.util.task": "0.0.x",
+        "glob": ""
     },
     "description": "fist application",
     "devDependencies": {
@@ -27,7 +28,8 @@
         "nodeunit": "",
         "istanbul": "",
         "asker": "",
-        "fist.util.promise": ""
+        "fist.util.promise": "",
+        "glob": "3.2.x"
     },
     "license": "MIT",
     "main": "Fist",

@@ -1,20 +1,12 @@
 #!/usr/bin/env node
 'use strict';
 
-var Fs = require('fs');
 var Nodeunit = require('nodeunit');
-var Path = require('path');
 
 var child = require('child_process');
-var tests = Fs.readdirSync('test');
+var glob = require('glob');
 
-tests = tests.map(function (fileName) {
-
-    return Path.join('test', fileName);
-}).filter(function (fileName) {
-
-    return Fs.statSync(fileName).isFile();
-});
+var tests = glob.sync('test/*.js');
 
 function supports () {
     var version = process.version.split('.');

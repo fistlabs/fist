@@ -1,18 +1,18 @@
 'use strict';
 
-var readdirs = require('../util/readdirs');
+var multiglob = require('../util/multiglob');
 
 module.exports = {
 
-    readdirs0: function (test) {
+    multiglob0: function (test) {
 
-        readdirs.call(42, [], function (err, res) {
+        multiglob.call(42, [], function (err, res) {
             test.deepEqual(res, []);
         });
 
-        readdirs.call(42, [
-            'test/data',
-            'test/stuff'
+        multiglob.call(42, [
+            'test/data/*.js',
+            'test/stuff/*.js'
         ], function (err, result) {
 
             test.strictEqual(this, 42);
@@ -31,14 +31,13 @@ module.exports = {
 
     },
 
-    readdirs1: function (test) {
+    multiglob1: function (test) {
 
-        readdirs.call(42, [
-            'test/stuff',
+        multiglob.call(42, [
             'test/data1'
-        ], function (err) {
+        ], function (err, res) {
             test.strictEqual(this, 42);
-            test.ok(err);
+            test.deepEqual(res, []);
             test.done();
         });
 

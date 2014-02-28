@@ -1,8 +1,7 @@
 'use strict';
 
-var readdir = require('./readdir');
+var glob = require('./glob');
 var forEach = require('fist.lang.foreach');
-var Path = require('path');
 
 module.exports = function (dirs, done) {
 
@@ -23,11 +22,6 @@ module.exports = function (dirs, done) {
 
     function eachPath (name, i) {
 
-        function join (filename) {
-
-            return Path.join(name, filename);
-        }
-
         function onread (err, list) {
 
             if ( reject ) {
@@ -42,7 +36,7 @@ module.exports = function (dirs, done) {
                 return;
             }
 
-            result[i] = list.map(join);
+            result[i] = list;
 
             count -= 1;
 
@@ -52,7 +46,7 @@ module.exports = function (dirs, done) {
             }
         }
 
-        readdir.call(this, name, onread);
+        glob.call(this, name, onread);
     }
 
     forEach(dirs, eachPath, this);

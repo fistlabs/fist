@@ -10,8 +10,7 @@ var Connect = require('fist.io.server/track/Connect');
 
 var camelize = require('./util/camelize');
 var forEach = require('fist.lang.foreach');
-var readdir = require('./util/readdir');
-var readdirs = require('./util/readdirs');
+var multiglob = require('./util/multiglob');
 var toArray = require('fist.lang.toarray');
 
 /**
@@ -475,7 +474,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             return done.call(this, null, result);
         }
 
-        readdirs.call(this, toArray(this.params.action), onReadDirs);
+        multiglob.call(this, toArray(this.params.action), onReadDirs);
     },
 
     listen: function () {

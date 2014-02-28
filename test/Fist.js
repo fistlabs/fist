@@ -14,8 +14,8 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                Path.resolve('test/data'),
-                Path.resolve('test/stuff')
+                Path.resolve('test/data/*.js'),
+                Path.resolve('test/stuff/*.js')
             ],
             routes: routes
         });
@@ -67,8 +67,8 @@ module.exports = {
                     data: 100500,
                     knot: {
                         action: [
-                            Path.resolve('test/data'),
-                            Path.resolve('test/stuff')
+                            Path.resolve('test/data/*.js'),
+                            Path.resolve('test/stuff/*.js')
                         ],
                         routes: routes
                     }
@@ -94,7 +94,7 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                Path.resolve('asdasd'),
+                null,
                 Path.resolve('test/data')
             ],
             routes: routes
