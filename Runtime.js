@@ -14,6 +14,28 @@ var Runtime = Activity.extend(/** @lends Runtime.prototype */ {
      * @method
      *
      * @param {String} name
+     * @param {Boolean} [only]
+     *
+     * @returns {String|void}
+     * */
+    arg: function (name, only) {
+
+        var result = this.match[name];
+
+        if ( only ) {
+
+            return result;
+        }
+
+        return result || this.url.query[name];
+    },
+
+    /**
+     * @public
+     * @memberOf {Runtime}
+     * @method
+     *
+     * @param {String} name
      * @param {Object} [params]
      *
      * @returns {String}
