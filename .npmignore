@@ -1,7 +1,5 @@
 /coverage
 /node_modules
 /test
-/tools
-/Makefile
 .log
 .*
