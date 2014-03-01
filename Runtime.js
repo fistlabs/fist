@@ -18,7 +18,7 @@ var Runtime = Activity.extend(/** @lends Runtime.prototype */ {
      *
      * @returns {String}
      * */
-    buildUrl: function (name, params) {
+    buildPath: function (name, params) {
 
         return this.agent.router.getRoute(name).build(params);
     }

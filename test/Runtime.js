@@ -8,14 +8,14 @@ var SOCK = 'test/conf/fist.sock';
 
 module.exports = {
 
-    buildUrl: function (test) {
+    buildPath: function (test) {
 
         var fist = new Fist();
 
         fist.route('GET', '/(<pageName>/)', 'url');
 
         fist.decl('url', function (track, errors, result, done) {
-            done(null, track.buildUrl('url', {
+            done(null, track.buildPath('url', {
                 pageName: 'about',
                 text: 'test'
             }));
