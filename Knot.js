@@ -1,12 +1,60 @@
 'use strict';
 
 var Component = /** @type Component */ require('fist.util.component/Component');
+var unique = require('fist.lang.unique');
 
 /**
  * @class Knot
  * @extends Component
  * */
 var Knot = Component.extend(/** @lends Knot.prototype */ {
+
+    /**
+     * @protected
+     * @memberOf {Knot}
+     * @method
+     *
+     * @constructs
+     * */
+    constructor: function () {
+        Knot.Parent.apply(this, arguments);
+
+        this.deps = unique(this.deps);
+    },
+
+    /**
+     * adds dependencies
+     *
+     * @public
+     * @memberOf {Knot}
+     * @method
+     * */
+    addDeps: function () {
+        this.deps = unique([].concat.apply(this.deps, arguments));
+    },
+
+    /**
+     * deletes dependencies
+     *
+     * @public
+     * @memberOf {Knot}
+     * @method
+     * */
+    delDeps: function () {
+
+        var i = arguments.length;
+
+        while (i) {
+            i -= 1;
+
+            if ( -1 === this.deps.indexOf(arguments[i]) ) {
+
+                continue;
+            }
+
+            this.deps.splice(i, 1);
+        }
+    },
 
     /**
      * @public
