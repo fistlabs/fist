@@ -1,14 +1,14 @@
 'use strict';
 
+var Connect = /** @type Connect */ require('fist.io.server/track/Connect');
+var KnotsReady = /** @type KnotsReady */ require('./util/KnotsReady');
+var Runtime = /** @type Runtime */ require('./Runtime');
+var Task = /** @type Task */ require('fist.util.task/Task');
+var Server = /** @type Server */ require('fist.io.server/Server');
 var StreamLoader = /** @type StreamLoader */
     require('fist.util.streamloader/StreamLoader');
-var Server = /** @type Server */ require('fist.io.server/Server');
-var Task = /** @type Task */ require('fist.util.task/Task');
-var Runtime = require('./Runtime');
-var Connect = require('fist.io.server/track/Connect');
 
 var toArray = require('fist.lang.toarray');
-var KnotsReady = require('./util/KnotsReady');
 
 /**
  * @class Fist
