@@ -1,4 +1,3 @@
-#!/usr/bin/env node --harmony
 'use strict';
 
 var Nodeunit = require('nodeunit');

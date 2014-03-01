@@ -1,2 +1,0 @@
-#!/bin/sh
-node_modules/.bin/istanbul cover tools/test
