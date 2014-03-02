@@ -1,6 +1,6 @@
 'use strict';
 
-var Knot = require('../Knot');
+var Knot = require('../../Knot');
 var K = Knot.extend({
     deps: ['a', 'b', 'a']
 });

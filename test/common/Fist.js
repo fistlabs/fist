@@ -1,11 +1,11 @@
 'use strict';
 
-var SOCK = 'test/conf/fist.sock';
-var Fist = require('../Fist');
+var sock = require('../stuff/conf/sock');
+var Fist = require('../../Fist');
 var Fs = require('fs');
 var Path = require('path');
 var asker = require('asker');
-var routes = require('./conf/router');
+var routes = require('../stuff/conf/router0');
 var Promise = require('fist.util.promise');
 
 module.exports = {
@@ -14,8 +14,8 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                Path.resolve('test/data/*.js'),
-                Path.resolve('test/stuff/*.js')
+                Path.resolve('test/stuff/action/data0/*.js'),
+                Path.resolve('test/stuff/action/data1/*.js')
             ],
             routes: routes
         });
@@ -49,15 +49,15 @@ module.exports = {
         });
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'GET',
             timeout: 10000,
-            socketPath: SOCK,
+            socketPath: sock,
             path: '/'
         }, function (err, data) {
 
@@ -67,8 +67,8 @@ module.exports = {
                     data: 100500,
                     knot: {
                         action: [
-                            Path.resolve('test/data/*.js'),
-                            Path.resolve('test/stuff/*.js')
+                            Path.resolve('test/stuff/action/data0/*.js'),
+                            Path.resolve('test/stuff/action/data1/*.js')
                         ],
                         routes: routes
                     }
@@ -94,22 +94,22 @@ module.exports = {
 
         var fist = new Fist({
             action: [
-                Path.resolve('test/data'),
+                Path.resolve('test/stuff/action/data0/*.js'),
                 null
             ],
             routes: routes
         });
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'GET',
             path: '/',
-            socketPath: SOCK
+            socketPath: sock
         }, function (err) {
             test.ok(err);
             test.done();
@@ -124,15 +124,15 @@ module.exports = {
         });
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
                 return {
                     accept: true
@@ -164,15 +164,15 @@ module.exports = {
         fist.route('GET', '/', 'users');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
                 return {
                     accept: true
@@ -196,15 +196,15 @@ module.exports = {
         fist.route('GET', '/', 'users');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
                 return {
                     accept: true
@@ -232,15 +232,15 @@ module.exports = {
         fist.route('GET', '/', 'users');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
                 return {
                     accept: true
@@ -270,15 +270,15 @@ module.exports = {
         fist.route('GET', '/', 'users');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
                 return {
                     accept: true
@@ -306,15 +306,15 @@ module.exports = {
         fist.route('GET', '/', 'users');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
                 return {
                     accept: true
@@ -339,16 +339,16 @@ module.exports = {
         fist.route('POST', '/', 'stream');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'post',
             path: '/',
             body: ':)',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
 
                 return {
@@ -383,15 +383,15 @@ module.exports = {
         fist.route('GET', '/', 'promise');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
 
                 return {
@@ -417,15 +417,15 @@ module.exports = {
         fist.route('GET', '/', 'primitive');
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK,
+            socketPath: sock,
             statusFilter: function () {
 
                 return {
@@ -446,15 +446,15 @@ module.exports = {
         });
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (err) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'get',
             path: '/',
-            socketPath: SOCK
+            socketPath: sock
         }, function (err) {
             test.ok(err);
             test.done();

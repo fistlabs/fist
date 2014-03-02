@@ -13,10 +13,27 @@ var toArray = require('fist.lang.toarray');
  * */
 var KnotsReady = Task.extend(/** @lends KnotsReady */ {
 
+    /**
+     * @protected
+     * @memberOf {KnotsReady}
+     * @method
+     *
+     * @constructs
+     *
+     * @param {Object} params
+     * */
     constructor: function (params) {
         KnotsReady.Parent.call(this, this._ready, this, params);
     },
 
+    /**
+     * @protected
+     * @memberOf {KnotsReady}
+     * @method
+     *
+     * @param {Object} params
+     * @param {Function} done
+     * */
     _ready: function (params, done) {
 
         var decls = [];
@@ -33,7 +50,7 @@ var KnotsReady = Task.extend(/** @lends KnotsReady */ {
                 return;
             }
 
-            for ( i = 0, l = files.length; i < l; i += 1) {
+            for ( i = 0, l = files.length; i < l; i += 1 ) {
 
                 try {
                     decl = this._createDecl(files[i], params);
@@ -50,11 +67,20 @@ var KnotsReady = Task.extend(/** @lends KnotsReady */ {
         });
     },
 
+    /**
+     * @protected
+     * @memberOf {KnotsReady}
+     * @method
+     *
+     * @param {String} filename
+     * @param {Object} params
+     *
+     * @returns {Object}
+     * */
     _createDecl: function (filename, params) {
 
         var decl = require(filename);
         var data;
-        var name = Path.basename(filename, '.js');
 
         if ( 'function' === typeof decl ) {
             decl = new decl(params);
@@ -66,11 +92,7 @@ var KnotsReady = Task.extend(/** @lends KnotsReady */ {
             data = data.bind(decl);
         }
 
-        return {
-            name: camelize(name),
-            deps: decl.deps,
-            data: data
-        };
+        return [camelize(Path.basename(filename, '.js')), decl.deps, data];
     }
 });
 

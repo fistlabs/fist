@@ -1,10 +1,10 @@
 'use strict';
 
-var Fist = require('../Fist');
+var Fist = require('../../Fist');
 var asker = require('asker');
 
 var Fs = require('fs');
-var SOCK = 'test/conf/fist.sock';
+var sock = require('../stuff/conf/sock');
 
 module.exports = {
 
@@ -14,21 +14,21 @@ module.exports = {
 
         fist.route('GET', '/<page>/(<sub>)', 'index');
 
-        fist.decl('index', function (track, errors, result, done) {
+        fist.decl('index', function (track) {
             test.strictEqual(track.arg('page', true), 'about');
             test.strictEqual(track.arg('sub'), '80');
             track.send(200);
         });
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'GET',
-            socketPath: SOCK,
+            socketPath: sock,
             path: '/about/?page=index&sub=80'
         }, function (err, data) {
             test.done();
@@ -49,14 +49,14 @@ module.exports = {
         });
 
         try {
-            Fs.unlinkSync(SOCK);
+            Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        fist.listen(SOCK);
+        fist.listen(sock);
 
         asker({
             method: 'GET',
-            socketPath: SOCK,
+            socketPath: sock,
             path: '/'
         }, function (err, data) {
             test.strictEqual(data.data + '', '/about/?text=test');

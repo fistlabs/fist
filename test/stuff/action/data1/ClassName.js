@@ -1,6 +1,6 @@
 'use strict';
 
-var Knot = /** @type Knot */ require('../../Knot');
+var Knot = /** @type Knot */ require('../../../../Knot');
 
 /**
  * @class ClassName

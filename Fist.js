@@ -413,8 +413,8 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {*} decls
      * */
     _init: function (decls) {
-        decls.forEach(function (decl) {
-            this.decl(decl.name, decl.deps, decl.data);
+        decls.forEach(function (args) {
+            this.decl.apply(this, args);
         }, this);
     },
 

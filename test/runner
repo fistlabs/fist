@@ -2,7 +2,7 @@
 
 var Nodeunit = require('nodeunit');
 var glob = require('glob');
-var tests = glob.sync('test/*.js');
+var tests = glob.sync('test/common/**/*.js');
 
 function supports () {
 
@@ -17,7 +17,7 @@ function supports () {
 }
 
 if ( supports() ) {
-    tests = tests.concat( glob.sync('test/harmony/*.js') );
+    tests = tests.concat( glob.sync('test/harmony/**/*.js') );
 }
 
 Nodeunit.reporters.default.run(tests, null, function (error) {
