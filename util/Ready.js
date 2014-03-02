@@ -96,11 +96,31 @@ var Ready = Task.extend(/** @lends Ready */ {
 
 }, {
 
+    /**
+     * @public
+     * @static
+     * @memberOf Ready
+     * @method
+     *
+     * @param {String} s
+     *
+     * @returns {Boolean}
+     * */
     isCap: function (s) {
 
         return s.toUpperCase() === s;
     },
 
+    /**
+     * @public
+     * @static
+     * @memberOf Ready
+     * @method
+     *
+     * @param {String} s
+     *
+     * @returns {String}
+     * */
     toCamel: function (s) {
 
         var buf;
