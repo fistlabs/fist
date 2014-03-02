@@ -71,6 +71,21 @@ module.exports = {
         test.done();
     },
 
+    'Ready.convert': function (test) {
+
+        var samples = [
+            ['a-b-c', 'aBC'],
+            ['foo--bar baz', 'fooBarBaz'],
+            ['--harmony', 'Harmony']
+        ];
+
+        samples.forEach(function (s) {
+            test.strictEqual(Ready.convert(s[0]), s[1]);
+        });
+
+        test.done();
+    },
+
     'Ready.toCamel': function (test) {
 
         var samples = [
@@ -78,7 +93,9 @@ module.exports = {
             ['DATA', 'data'],
             ['Data', 'data'],
             ['HttpData', 'httpData'],
-            ['HTTPData', 'httpData']
+            ['HTTPData', 'httpData'],
+            ['http-data', 'httpData'],
+            ['http data', 'httpData']
         ];
 
         samples.forEach(function (s) {

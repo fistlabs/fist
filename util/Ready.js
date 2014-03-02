@@ -127,6 +127,8 @@ var Ready = Task.extend(/** @lends Ready */ {
         var i;
         var l;
 
+        s = Ready.convert(s);
+
         //  data - > data
         if ( !Ready.isCap(s.charAt(0)) ) {
 
@@ -162,6 +164,24 @@ var Ready = Task.extend(/** @lends Ready */ {
         }
 
         return buf;
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Ready
+     * @method
+     *
+     * @param {String} s
+     *
+     * @returns {String}
+     * */
+    convert: function (s) {
+
+        return s.replace(/[-\s]+([^-\s])/g, function ($0, $1) {
+
+            return $1.toUpperCase();
+        });
     }
 });
 
