@@ -100,8 +100,6 @@
 
     "validateQuoteMarks": "'",
 
-    "validateIndentation": 4,
-
     "disallowMixedSpacesAndTabs": true,
 
     "disallowTrailingWhitespace": true,

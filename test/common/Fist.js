@@ -188,9 +188,21 @@ module.exports = {
 
         var fist = new Fist();
 
-        fist.decl('users', function () {
+        fist.decl('users', function (t, e, r, done) {
 
-            return Promise.resolve(['mike']);
+            var promise;
+
+            setTimeout(function () {
+                done(null, ['O_o']);
+            }, 0);
+
+            promise = new Promise();
+
+            setTimeout(function () {
+                promise.fulfill(['mike']);
+            }, 100);
+
+            return promise;
         });
 
         fist.route('GET', '/', 'users');
@@ -457,6 +469,63 @@ module.exports = {
             socketPath: sock
         }, function (err) {
             test.ok(err);
+            test.done();
+        });
+    },
+
+    Fist12: function (test) {
+
+        var fist = new Fist({
+            routes: routes
+        });
+
+        fist.decl('index', function (t, r, e, done) {
+            done(null, 55);
+
+            return 56;
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: sock
+        }, function (err, res) {
+            test.strictEqual(res.data + '', '55');
+            test.done();
+        });
+    },
+
+    Fist13: function (test) {
+
+        var fist = new Fist({
+            routes: routes
+        });
+
+        fist.decl('index', function (t, r, e, done) {
+            setTimeout(function () {
+                done(null, 55);
+            }, 0);
+            return 56;
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: sock
+        }, function (err, res) {
+            test.strictEqual(res.data + '', '56');
             test.done();
         });
     }

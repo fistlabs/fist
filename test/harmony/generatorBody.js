@@ -4,7 +4,9 @@ var Fist = require('../../Fist');
 var Track = require('../../Runtime');
 var Promise = require('fist.util.promise/Promise');
 var Fs = require('fs');
+
 var asker = require('asker');
+var sock = require('../stuff/conf/sock');
 
 module.exports = {
 
@@ -63,16 +65,16 @@ module.exports = {
         fist.route('POST', '/', 'gen');
 
         try {
-            Fs.unlinkSync('test/fist.sock');
+            Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        fist.listen('test/fist.sock');
+        fist.listen(sock);
 
         asker({
             path: '/',
             method: 'POST',
             body: '!!!',
-            socketPath: 'test/fist.sock'
+            socketPath: sock
         }, function (err, res) {
             test.strictEqual(res.data + '', '25');
             test.done();
@@ -91,16 +93,16 @@ module.exports = {
         fist.route('POST', '/', 'gen');
 
         try {
-            Fs.unlinkSync('test/fist.sock');
+            Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        fist.listen('test/fist.sock');
+        fist.listen(sock);
 
         asker({
             path: '/',
             method: 'POST',
             body: '!!!',
-            socketPath: 'test/fist.sock',
+            socketPath: sock,
             statusFilter: function () {
 
                 return {
@@ -129,16 +131,16 @@ module.exports = {
         fist.route('POST', '/', 'gen');
 
         try {
-            Fs.unlinkSync('test/fist.sock');
+            Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        fist.listen('test/fist.sock');
+        fist.listen(sock);
 
         asker({
             path: '/',
             method: 'POST',
             body: '!!!',
-            socketPath: 'test/fist.sock',
+            socketPath: sock,
             statusFilter: function () {
 
                 return {
@@ -158,7 +160,7 @@ module.exports = {
 
         var fist = new Fist();
 
-        fist.decl('gen', function * (track, errors, result, done) {
+        fist.decl('gen', function * (track) {
             track.send('!');
 
             return yield 45;
@@ -167,15 +169,15 @@ module.exports = {
         fist.route('POST', '/', 'gen');
 
         try {
-            Fs.unlinkSync('test/fist.sock');
+            Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        fist.listen('test/fist.sock');
+        fist.listen(sock);
 
         asker({
             path: '/',
             method: 'POST',
-            socketPath: 'test/fist.sock',
+            socketPath: sock,
             statusFilter: function () {
 
                 return {
@@ -186,6 +188,45 @@ module.exports = {
         }, function (err, res) {
             test.strictEqual(res.statusCode, 200);
             test.strictEqual(res.data + '', '!');
+
+            test.done();
+        });
+    },
+
+    Fist4: function (test) {
+
+        var fist = new Fist();
+        var spy = [];
+
+        fist.decl('a', function * (t, e, r, done) {
+            spy.push(yield 1);
+            done(null, 'a');
+            spy.push(yield 2);
+            spy.push(yield 3);
+        });
+
+        fist.decl('b', ['a'], function * (t, e, r, done) {
+            test.deepEqual(spy, [1]);
+            test.strictEqual(r.a, 'a');
+            spy.push(4);
+            done(null, 'b');
+        });
+
+        fist.route('GET', '/', 'b');
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        fist.listen(sock);
+
+        asker({
+            path: '/',
+            method: 'GET',
+            socketPath: sock
+        }, function (err, res) {
+            test.deepEqual(spy, [1,4,2,3]);
+            test.strictEqual(res.data + '', 'b');
 
             test.done();
         });
