@@ -1,7 +1,7 @@
 'use strict';
 
 var Connect = /** @type Connect */ require('fist.io.server/track/Connect');
-var KnotsReady = /** @type KnotsReady */ require('./util/KnotsReady');
+var Ready = /** @type Ready */ require('./util/Ready');
 var Runtime = /** @type Runtime */ require('./Runtime');
 var Task = /** @type Task */ require('fist.util.task/Task');
 var Server = /** @type Server */ require('fist.io.server/Server');
@@ -33,7 +33,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @memberOf {Fist}
          * @property {Task} задача на инициализацию приложения по требованию
          * */
-        this._ready = new KnotsReady(this.params);
+        this._ready = new Ready(this.params);
     },
 
     /**
