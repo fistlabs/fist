@@ -79,7 +79,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             return;
         }
 
-        if ( 2 === this._callReturned(func, done) ) {
+        if ( 2 === this._callRet(func, done) ) {
 
             return;
         }
@@ -97,9 +97,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Array|Arguments} args
      * @param {Function} done
      * */
-    _callGeneratorFn: function (func, args, done) {
+    _callGenFn: function (func, args, done) {
         func = func.apply(this, args);
-        this._callGenerator(func, void 0, false, done);
+        this._callGen(func, void 0, false, done);
     },
 
     /**
@@ -112,7 +112,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Boolean} isError
      * @param {Function} done
      * */
-    _callGenerator: function (gen, result, isError, done) {
+    _callGen: function (gen, result, isError, done) {
 
         var tracker = this;
 
@@ -125,16 +125,16 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         }
 
         if ( result.done ) {
-            this._callYieldable(result.value, done);
+            this._callYield(result.value, done);
 
             return;
         }
 
-        this._callYieldable(result.value, function () {
+        this._callYield(result.value, function () {
 
             var stat = +(1 < arguments.length);
 
-            tracker._callGenerator(gen, arguments[stat], !stat, done);
+            tracker._callGen(gen, arguments[stat], !stat, done);
         });
     },
 
@@ -146,9 +146,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {*} value
      * @param {Function} done
      * */
-    _callYieldable: function (value, done) {
+    _callYield: function (value, done) {
 
-        switch ( this._callReturned(value, done) ) {
+        switch ( this._callRet(value, done) ) {
 
             //  вызова не было, примитив
             case 0: {
@@ -199,26 +199,21 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         });
 
         if ( 'GeneratorFunction' === func.constructor.name ) {
-            this._callGeneratorFn(func, args, done);
+            this._callGenFn(func, args, done);
 
             return;
         }
 
         func = func.apply(this, args);
 
-        if ( called ) {
-
-            return;
-        }
-
-        if ( void 0 === func ) {
+        if ( called || void 0 === func ) {
 
             return;
         }
 
         called = true;
 
-        if ( 2 === this._callReturned(func, done) ) {
+        if ( 2 === this._callRet(func, done) ) {
 
             return;
         }
@@ -236,7 +231,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      *
      * @returns {Number}
      * */
-    _callReturned: function (val, done) {
+    _callRet: function (val, done) {
 
         if ( Object(val) === val ) {
 
@@ -248,7 +243,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
             if ( 'function' === typeof val.next &&
                  'function' === typeof val.throw ) {
-                this._callGenerator(val, void 0, false, done);
+                this._callGen(val, void 0, false, done);
 
                 return 2;
             }
@@ -347,7 +342,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                 }
             }
 
-            if ( 2 === this._callReturned(obj[i], onReturned) ) {
+            if ( 2 === this._callRet(obj[i], onReturned) ) {
 
                 return;
             }
