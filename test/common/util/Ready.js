@@ -103,6 +103,68 @@ module.exports = {
         });
 
         test.done();
+    },
+
+    'Ready.glob-0': function (test) {
+        Ready.glob(null, function (err) {
+            test.ok(err);
+            test.done();
+        });
+    },
+
+    'Ready.glob-1': function (test) {
+        Ready.glob('1231230123012', function (err, res) {
+            test.deepEqual(res, []);
+            test.done();
+        });
+    },
+
+    'Ready.glob-2': function (test) {
+        Ready.glob('test/stuff/action/data1/*.js', function (err, list) {
+            test.deepEqual(list, [
+                'test/stuff/action/data1/ABBR.js',
+                'test/stuff/action/data1/ClassName.js',
+                'test/stuff/action/data1/data.js'
+            ]);
+            test.done();
+        });
+    },
+
+    'Ready.multiglob-0': function (test) {
+
+        Ready.multiglob.call(42, [], function (err, res) {
+            test.deepEqual(res, []);
+        });
+
+        Ready.multiglob.call(42, [
+            'test/stuff/action/data0/*.js',
+            'test/stuff/action/data1/*.js'
+        ], function (err, result) {
+
+            test.strictEqual(this, 42);
+            test.deepEqual(result, [
+                'test/stuff/action/data0/Knot.js',
+                'test/stuff/action/data0/data.js',
+                'test/stuff/action/data0/error.js',
+                'test/stuff/action/data0/index.js',
+                'test/stuff/action/data1/ABBR.js',
+                'test/stuff/action/data1/ClassName.js',
+                'test/stuff/action/data1/data.js'
+            ]);
+
+            test.done();
+        });
+
+    },
+
+    'Ready.multiglob-1': function (test) {
+        Ready.multiglob.call(42, [
+            'test/data1'
+        ], function (err, res) {
+            test.strictEqual(this, 42);
+            test.deepEqual(res, []);
+            test.done();
+        });
     }
 
 };

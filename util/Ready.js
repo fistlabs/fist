@@ -3,7 +3,8 @@
 var Path = require('path');
 var Task = /** @type Task */ require('fist.util.task/Task');
 
-var multiglob = require('./multiglob');
+var forEach = require('fist.lang.foreach');
+var glob = require('glob');
 var toArray = require('fist.lang.toarray');
 
 /**
@@ -37,7 +38,7 @@ var Ready = Task.extend(/** @lends Ready */ {
 
         var decls = [];
 
-        multiglob.call(this, toArray(params.action), function (err, files) {
+        function onread (err, files) {
 
             var decl;
             var i;
@@ -63,7 +64,9 @@ var Ready = Task.extend(/** @lends Ready */ {
             }
 
             done.call(this, null, decls);
-        });
+        }
+
+        Ready.multiglob.call(this, toArray(params.action), onread);
     },
 
     /**
@@ -182,6 +185,85 @@ var Ready = Task.extend(/** @lends Ready */ {
 
             return $1.toUpperCase();
         });
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Ready
+     *
+     * @method
+     *
+     * @param {String} expr
+     * @param {Function} done
+     * */
+    glob: function (expr, done) {
+
+        try {
+            glob(expr, done.bind(this));
+
+        } catch (err) {
+            done.call(this, err);
+        }
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Ready
+     *
+     * @method
+     *
+     * @param {String} exprs
+     * @param {Function} done
+     * */
+    multiglob: function (exprs, done) {
+
+        var result = [];
+        var files = [];
+        var reject = false;
+        var count = exprs.length;
+
+        if ( 0 === count ) {
+            done.call(this, null, result);
+
+            return;
+        }
+
+        function merge (list) {
+            [].push.apply(files, list);
+        }
+
+        function eachPath (name, i) {
+
+            function onread (err, list) {
+
+                if ( reject ) {
+
+                    return;
+                }
+
+                if ( 2 > arguments.length ) {
+                    reject = true;
+                    done.call(this, err);
+
+                    return;
+                }
+
+                result[i] = list;
+
+                count -= 1;
+
+                if ( 0 === count ) {
+                    forEach(result, merge);
+                    done.call(this, null, files);
+                }
+            }
+
+            Ready.glob.call(this, name, onread);
+        }
+
+        forEach(exprs, eachPath, this);
     }
 });
 
