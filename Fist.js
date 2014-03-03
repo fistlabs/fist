@@ -33,6 +33,15 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @property {Ready}
          * */
         this._ready = new Ready(this.params);
+
+        //  Если запросы начали посылать пока узлы не проинициализировались
+        this._handle = function (track) {
+            this.ready(function () {
+
+                delete this._handle;
+                this._handle(track);
+            });
+        };
     },
 
     /**
