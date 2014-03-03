@@ -1,13 +1,13 @@
 'use strict';
 
-var Component = /** @type Component */ require('fist.util.component/Component');
+var Class = /** @type Class */ require('fist.lang.class/Class');
 var unique = require('fist.lang.unique');
 
 /**
  * @class Knot
- * @extends Component
+ * @extends Class
  * */
-var Knot = Component.extend(/** @lends Knot.prototype */ {
+var Knot = Class.extend(/** @lends Knot.prototype */ {
 
     /**
      * @protected

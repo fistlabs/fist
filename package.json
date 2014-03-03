@@ -18,7 +18,7 @@
         "fist.lang.unique": "0.0.x",
 
         "fist.util.streamloader": "0.0.x",
-        "fist.util.component": "0.0.x",
+        "fist.lang.class": "0.0.x",
 
         "fist.io.server": "0.1.x",
         "fist.util.task": "0.0.x",
