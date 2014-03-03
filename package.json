@@ -50,6 +50,5 @@
         "test": "npm run lint && npm run unit",
         "cover": "istanbul cover test/runner"
     },
-    "version": "0.0.6",
-    "readme": "fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.0.x)](https://travis-ci.org/fistlabs/fist.app)\n=========\n"
+    "version": "0.1.0"
 }
