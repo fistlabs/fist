@@ -1,12 +1,12 @@
 'use strict';
 
-var Knot = /** @type Knot */ require('../../../../Knot');
+var Component = /** @type Component */ require('../../../../Component');
 
 /**
  * @class ClassName
- * @extends Knot
+ * @extends Component
  * */
-var ClassName = Knot.extend(/** @lends ClassName.prototype */ {
+var ClassName = Component.extend(/** @lends ClassName.prototype */ {
 
     deps: ['abbr'],
 

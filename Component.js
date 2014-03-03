@@ -4,20 +4,20 @@ var Class = /** @type Class */ require('fist.lang.class/Class');
 var unique = require('fist.lang.unique');
 
 /**
- * @class Knot
+ * @class Component
  * @extends Class
  * */
-var Knot = Class.extend(/** @lends Knot.prototype */ {
+var Component = Class.extend(/** @lends Component.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Knot}
+     * @memberOf {Component}
      * @method
      *
      * @constructs
      * */
     constructor: function () {
-        Knot.Parent.apply(this, arguments);
+        Component.Parent.apply(this, arguments);
 
         this.deps = unique(this.deps);
     },
@@ -26,7 +26,7 @@ var Knot = Class.extend(/** @lends Knot.prototype */ {
      * adds dependencies
      *
      * @public
-     * @memberOf {Knot}
+     * @memberOf {Component}
      * @method
      * */
     addDeps: function () {
@@ -37,7 +37,7 @@ var Knot = Class.extend(/** @lends Knot.prototype */ {
      * deletes dependencies
      *
      * @public
-     * @memberOf {Knot}
+     * @memberOf {Component}
      * @method
      * */
     delDeps: function () {
@@ -58,14 +58,14 @@ var Knot = Class.extend(/** @lends Knot.prototype */ {
 
     /**
      * @public
-     * @memberOf {Knot}
+     * @memberOf {Component}
      * @property {Array<String>}
      * */
     deps: [],
 
     /**
      * @public
-     * @memberOf {Knot}
+     * @memberOf {Component}
      * @method
      *
      * @param {Activity} track
@@ -79,4 +79,4 @@ var Knot = Class.extend(/** @lends Knot.prototype */ {
 
 });
 
-module.exports = Knot;
+module.exports = Component;

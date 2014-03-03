@@ -1,15 +1,15 @@
 'use strict';
 
-var Knot = require('../../Knot');
-var K = Knot.extend({
+var Component = require('../../Component');
+var Knot = Component.extend({
     deps: ['a', 'b', 'a']
 });
 
 module.exports = {
 
-    Knot: function (test) {
+    Component: function (test) {
 
-        var k = new K();
+        var k = new Knot();
 
         test.deepEqual(k.deps, ['a', 'b']);
         test.ok(k.hasOwnProperty('deps'));
@@ -17,18 +17,18 @@ module.exports = {
         test.done();
     },
 
-    'Knot.prototype.addDeps': function (test) {
+    'Component.prototype.addDeps': function (test) {
 
-        var k = new K();
+        var k = new Knot();
 
         k.addDeps('a', 'c');
         test.deepEqual(k.deps, ['a', 'b', 'c']);
         test.done();
     },
 
-    'Knot.prototype.depDeps': function (test) {
+    'Component.prototype.depDeps': function (test) {
 
-        var k = new K();
+        var k = new Knot();
 
         k.delDeps('a', 'c');
         test.deepEqual(k.deps, ['b']);
