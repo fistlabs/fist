@@ -1,4 +1,4 @@
-fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.1.x)](https://travis-ci.org/fistlabs/fist.app)
+fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.2.x)](https://travis-ci.org/fistlabs/fist.app)
 =========
 
 [English version](README.en.md)

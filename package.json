@@ -20,7 +20,7 @@
         "fist.util.streamloader": "0.0.x",
         "fist.lang.class": "0.0.x",
 
-        "fist.io.server": "0.1.x",
+        "fist.io.server": "0.2.x",
         "fist.util.task": "0.0.x",
 
         "glob": "3.2.x"
@@ -50,5 +50,5 @@
         "test": "npm run lint && npm run unit",
         "cover": "istanbul cover test/runner"
     },
-    "version": "0.1.0"
+    "version": "0.2.0"
 }
