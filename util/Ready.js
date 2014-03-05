@@ -23,7 +23,7 @@ var Ready = Task.extend(/** @lends Ready */ {
      * @param {Object} params
      * */
     constructor: function (params) {
-        Ready.Parent.call(this, this._ready, this, params);
+        Ready.Parent.call(this, this._ready, this, [params]);
     },
 
     /**
@@ -81,20 +81,21 @@ var Ready = Task.extend(/** @lends Ready */ {
      * */
     _createDecl: function (filename, params) {
 
+        //  TODO (1.x): decl.data -> decl.body
         var decl = require(filename);
-        var data;
+        var body;
 
         if ( 'function' === typeof decl ) {
             decl = new decl(params);
         }
 
-        data = decl.data;
+        body = decl.data;
 
-        if ( 'function' === typeof data ) {
-            data = data.bind(decl);
+        if ( 'function' === typeof body ) {
+            body = body.bind(decl);
         }
 
-        return [Ready.toCamel(Path.basename(filename, '.js')), decl.deps, data];
+        return [Ready.toCamel(Path.basename(filename, '.js')), decl.deps, body];
     }
 
 }, {

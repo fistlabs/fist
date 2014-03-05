@@ -21,7 +21,7 @@
         "fist.lang.class": "0.0.x",
 
         "fist.io.server": "0.3.x",
-        "fist.util.task": "0.0.x",
+        "fist.util.task": "0.1.x",
 
         "glob": "3.2.x"
     },
