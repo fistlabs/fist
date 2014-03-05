@@ -4,20 +4,20 @@ var Class = /** @type Class */ require('fist.lang.class/Class');
 var unique = require('fist.lang.unique');
 
 /**
- * @class Component
+ * @class Unit
  * @extends Class
  * */
-var Component = Class.extend(/** @lends Component.prototype */ {
+var Unit = Class.extend(/** @lends Unit.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Component}
+     * @memberOf {Unit}
      * @method
      *
      * @constructs
      * */
     constructor: function () {
-        Component.Parent.apply(this, arguments);
+        Unit.Parent.apply(this, arguments);
 
         this.deps = unique(this.deps);
     },
@@ -26,7 +26,7 @@ var Component = Class.extend(/** @lends Component.prototype */ {
      * adds dependencies
      *
      * @public
-     * @memberOf {Component}
+     * @memberOf {Unit}
      * @method
      * */
     addDeps: function () {
@@ -37,7 +37,7 @@ var Component = Class.extend(/** @lends Component.prototype */ {
      * deletes dependencies
      *
      * @public
-     * @memberOf {Component}
+     * @memberOf {Unit}
      * @method
      * */
     delDeps: function () {
@@ -58,14 +58,14 @@ var Component = Class.extend(/** @lends Component.prototype */ {
 
     /**
      * @public
-     * @memberOf {Component}
+     * @memberOf {Unit}
      * @property {Array<String>}
      * */
     deps: [],
 
     /**
      * @public
-     * @memberOf {Component}
+     * @memberOf {Unit}
      * @method
      *
      * @param {Activity} track
@@ -79,4 +79,4 @@ var Component = Class.extend(/** @lends Component.prototype */ {
 
 });
 
-module.exports = Component;
+module.exports = Unit;
