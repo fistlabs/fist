@@ -1,0 +1,1 @@
+ * decl.data -> decl.body

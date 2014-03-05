@@ -81,9 +81,8 @@ var Ready = Task.extend(/** @lends Ready */ {
      * */
     _createDecl: function (filename, params) {
 
-        //  TODO (1.x): decl.data -> decl.body
-        var decl = require(filename);
         var body;
+        var decl = require(filename);
 
         if ( 'function' === typeof decl ) {
             decl = new decl(params);
