@@ -20,13 +20,12 @@ function diff (a, b) {
 
 [
     {
-        name: 'fist',
-        body: fistAdapter
-    }
-    ,
-    {
         name: 'express',
         body: expressAdapter
+    },
+    {
+        name: 'fist',
+        body: fistAdapter
     }
 ].
     forEach(function (guilty) {
