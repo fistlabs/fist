@@ -1,7 +1,13 @@
 'use strict';
 
 var Fs = require('fs');
-var Fist = require('../../Fist');
+
+var Fist = require('../../Fist').extend({
+    //  Не триггерить события во время бенчмарка
+    // для чистоты эксперимета
+    emitEvent: function () {}
+});
+
 var app = new Fist();
 var sock = 'benchmark/fist.sock';
 var Http = require('http');
