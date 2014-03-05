@@ -12,7 +12,7 @@ module.exports = {
 
         var fist = new Fist();
 
-        fist.route('GET', '/<page>/(<sub>)', 'index');
+        fist.route('GET', '/<page=about>/(<sub>)', 'index');
 
         fist.decl('index', function (track) {
             test.strictEqual(track.arg('page', true), 'about');
@@ -31,6 +31,8 @@ module.exports = {
             socketPath: sock,
             path: '/about/?page=index&sub=80'
         }, function (err, data) {
+            test.ok(data);
+            test.strictEqual(data.statusCode, 200);
             test.done();
         });
     },
