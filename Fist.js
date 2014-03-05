@@ -377,12 +377,11 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @memberOf {Fist}
      * @method
      *
-     * @param {Object} [params]
      * @returns {Runtime}
      * */
-    _createTrack: function (params) {
+    _createTrack: function (req, res) {
 
-        return new Runtime(this, params);
+        return new Runtime(this, req, res);
     }
 
 });
