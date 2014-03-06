@@ -119,7 +119,8 @@
     },
 
     "excludeFiles": [
-        "node_modules/**",
-        "test/harmony/**"
+        "coverage/*",
+        "node_modules/*",
+        "test/harmony/*"
     ]
 }

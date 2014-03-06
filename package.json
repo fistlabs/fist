@@ -43,8 +43,8 @@
         "url": "git://github.com/fistlabs/fist.app.git"
     },
     "scripts": {
-        "jscs": "jscs -c .jscsrc test util Fist.js Component.js Runtime.js",
-        "eslint": "eslint -c .eslintrc test util Fist.js Component.js Runtime.js",
+        "jscs": "jscs -c .jscsrc .",
+        "eslint": "eslint -c .eslintrc test util *.js",
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
