@@ -1,4 +1,4 @@
-fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.3.x)](https://travis-ci.org/fistlabs/fist.app)
+fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.4.x)](https://travis-ci.org/fistlabs/fist.app)
 =========
 
 [English version](README.en.md)
@@ -39,7 +39,7 @@ fist.decl('index', ['users'], function (track, result) {
   var users = result.users.map(function (name) {
       return '<li>' + name + '</li>';
   }).join('');
-  
+
   track.header('Content-Type', 'text/html');
   track.send(200, '<ul>' + users + '</ul>');
 });
