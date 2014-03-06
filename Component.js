@@ -68,7 +68,7 @@ var Unit = Class.extend(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Activity} track
+     * @param {Runtime} track
      * @param {Object} errors
      * @param {Object} result
      * @param {Function} done

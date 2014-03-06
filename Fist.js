@@ -76,7 +76,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @method
      *
      * @param {Function} func
-     * @param {Activity} track
+     * @param {Runtime} track
      * @param {Bundle} bundle
      * @param {Function} done
      * */

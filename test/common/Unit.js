@@ -1,13 +1,13 @@
 'use strict';
 
-var Component = require('../../Component');
-var Knot = Component.extend({
+var Unit = require('../../Component');
+var Knot = Unit.extend({
     deps: ['a', 'b', 'a']
 });
 
 module.exports = {
 
-    Component: function (test) {
+    Unit: function (test) {
 
         var k = new Knot();
 
@@ -17,7 +17,7 @@ module.exports = {
         test.done();
     },
 
-    'Component.prototype.addDeps': function (test) {
+    'Unit.prototype.addDeps': function (test) {
 
         var k = new Knot();
 
@@ -26,7 +26,7 @@ module.exports = {
         test.done();
     },
 
-    'Component.prototype.depDeps': function (test) {
+    'Unit.prototype.depDeps': function (test) {
 
         var k = new Knot();
 

@@ -8,6 +8,8 @@ var asker = require('asker');
 var routes = require('../stuff/conf/router0');
 var Promise = require('fist.util.promise');
 
+var STATUS_CODES = require('http').STATUS_CODES;
+
 module.exports = {
 
     Fist0: function (test) {
@@ -141,7 +143,7 @@ module.exports = {
         }, function (err, res) {
             test.strictEqual(res.statusCode, 500);
             test.strictEqual(res.data + '',
-            require('http').STATUS_CODES[res.statusCode]);
+                require('http').STATUS_CODES[res.statusCode]);
             test.done();
         });
     },
@@ -526,6 +528,78 @@ module.exports = {
             socketPath: sock
         }, function (err, res) {
             test.strictEqual(res.data + '', '56');
+            test.done();
+        });
+    },
+
+    'Server-0': function (test) {
+
+        var server = new Fist({
+            staging: true
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        server.decl('err', function (track, errors, result, done) {
+            done(new Error());
+        });
+
+        server.route('GET', '/error/', 'err');
+
+        server.listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/error/',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true,
+                    isRetryAllowed: false
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.strictEqual(res.data + '', STATUS_CODES[res.statusCode]);
+            test.done();
+        });
+    },
+
+    'Server-1': function (test) {
+
+        var server = new Fist({
+            staging: false
+        });
+
+        var er = new Error();
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        server.decl('err', function (track, errors, result, done) {
+            done(er);
+        });
+
+        server.route('GET', '/error/', 'err');
+
+        server.listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/error/',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true,
+                    isRetryAllowed: false
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.strictEqual(res.data + '', er.stack);
             test.done();
         });
     }

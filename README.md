@@ -1,8 +1,6 @@
 fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v0.4.x)](https://travis-ci.org/fistlabs/fist.app)
 =========
 
-[English version](README.en.md)
-
 ```js
 var fist = new Fist();
 ```

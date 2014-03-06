@@ -20,6 +20,17 @@ if ( supports() ) {
     tests = tests.concat( glob.sync('test/harmony/**/*.js') );
 }
 
+process.on('uncaughtException', function (er) {
+
+    if ( er instanceof Error ) {
+        er = er.stack;
+    }
+
+    console.error(er);
+
+    process.exit(1);
+});
+
 Nodeunit.reporters.default.run(tests, null, function (error) {
 
     if ( error ) {
