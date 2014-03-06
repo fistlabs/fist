@@ -33,9 +33,7 @@
         "istanbul": "",
         "asker": "",
         "fist.util.promise": "",
-        "glob": "",
-        "benchmark": "",
-        "express": ""
+        "glob": ""
     },
     "license": "MIT",
     "main": "Fist",
@@ -50,8 +48,7 @@
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
-        "cover": "istanbul cover test/runner",
-        "benchmark": "node benchmark/runner"
+        "cover": "istanbul cover test/runner"
     },
     "version": "0.3.0"
 }
