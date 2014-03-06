@@ -11,7 +11,7 @@ var toArray = require('fist.lang.toarray');
  * @class Ready
  * @extends Task
  * */
-var Ready = Task.extend(/** @lends Ready */ {
+var Ready = Task.extend(/** @lends Ready.prototype */ {
 
     /**
      * @protected

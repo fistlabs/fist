@@ -1,5 +1,6 @@
 'use strict';
 
+var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
 var Ready = /** @type Ready */ require('./util/Ready');
 var Runtime = /** @type Runtime */ require('./Runtime');
 var Server = /** @type Server */ require('fist.io.server/Server');
@@ -27,12 +28,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         this.router.addRoutes(toArray(this.params.routes));
 
-        /**
-         * @protected
-         * @memberOf {Fist}
-         * @property {Ready}
-         * */
-        this._ready = new Ready(this.params);
+        this._ready = new Multitask();
+
+        this._ready.push(new Ready(this.params));
 
         //  Если запросы начали посылать пока узлы не проинициализировались
         this._handle = function (track) {
@@ -52,8 +50,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     listen: function () {
         Fist.parent.listen.apply(this, arguments);
 
-        this.ready(function (err, decls) {
-            forEach(decls, function (args) {
+        this.ready(function (err, results) {
+
+            forEach((results || [])[0], function (args) {
                 this.decl.apply(this, args);
             }, this);
         });
@@ -67,7 +66,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     ready: function (done) {
-        this._ready.done(done, this);
+        this._ready.queue(done, this);
     },
 
     /**
