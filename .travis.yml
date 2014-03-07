@@ -5,4 +5,4 @@ node_js:
   - "0.11"
 branches:
   only:
-    - v0.4.x
+    - v1.0.x
