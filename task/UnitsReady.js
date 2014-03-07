@@ -8,14 +8,14 @@ var glob = require('glob');
 var toArray = require('fist.lang.toarray');
 
 /**
- * @class Ready
+ * @class UnitsReady
  * @extends Task
  * */
-var Ready = Task.extend(/** @lends Ready.prototype */ {
+var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Ready}
+     * @memberOf {UnitsReady}
      * @method
      *
      * @constructs
@@ -23,12 +23,12 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
      * @param {Object} params
      * */
     constructor: function (params) {
-        Ready.Parent.call(this, this._ready, this, [params]);
+        UnitsReady.Parent.call(this, this._ready, this, [params]);
     },
 
     /**
      * @protected
-     * @memberOf {Ready}
+     * @memberOf {UnitsReady}
      * @method
      *
      * @param {Object} params
@@ -66,12 +66,12 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
             done.call(this, null, decls);
         }
 
-        Ready.multiglob.call(this, toArray(params.action), onread);
+        UnitsReady.multiglob.call(this, toArray(params.action), onread);
     },
 
     /**
      * @protected
-     * @memberOf {Ready}
+     * @memberOf {UnitsReady}
      * @method
      *
      * @param {String} filename
@@ -94,7 +94,9 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
             body = body.bind(decl);
         }
 
-        return [Ready.toCamel(Path.basename(filename, '.js')), decl.deps, body];
+        filename = UnitsReady.toCamel(Path.basename(filename, '.js'));
+
+        return [filename, decl.deps, body];
     }
 
 }, {
@@ -102,7 +104,7 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Ready
+     * @memberOf UnitsReady
      * @method
      *
      * @param {String} s
@@ -117,7 +119,7 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Ready
+     * @memberOf UnitsReady
      * @method
      *
      * @param {String} s
@@ -130,22 +132,22 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
         var i;
         var l;
 
-        s = Ready.convert(s);
+        s = UnitsReady.convert(s);
 
         //  data - > data
-        if ( !Ready.isCap(s.charAt(0)) ) {
+        if ( !UnitsReady.isCap(s.charAt(0)) ) {
 
             return s;
         }
 
         //  DATA - > data
-        if ( Ready.isCap(s) ) {
+        if ( UnitsReady.isCap(s) ) {
 
             return s.toLowerCase();
         }
 
         //  Data - > data
-        if ( !Ready.isCap(s.charAt(1)) ) {
+        if ( !UnitsReady.isCap(s.charAt(1)) ) {
 
             return s.charAt(0).toLowerCase() + s.slice(1);
         }
@@ -156,7 +158,7 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
 
         for ( i = 0, l = s.length; i < l; i += 1 ) {
 
-            if ( Ready.isCap(s.charAt(i + 1)) ) {
+            if ( UnitsReady.isCap(s.charAt(i + 1)) ) {
 
                 continue;
             }
@@ -172,7 +174,7 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Ready
+     * @memberOf UnitsReady
      * @method
      *
      * @param {String} s
@@ -190,7 +192,7 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Ready
+     * @memberOf UnitsReady
      *
      * @method
      *
@@ -210,7 +212,7 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Ready
+     * @memberOf UnitsReady
      *
      * @method
      *
@@ -260,11 +262,11 @@ var Ready = Task.extend(/** @lends Ready.prototype */ {
                 }
             }
 
-            Ready.glob.call(this, name, onread);
+            UnitsReady.glob.call(this, name, onread);
         }
 
         forEach(exprs, eachPath, this);
     }
 });
 
-module.exports = Ready;
+module.exports = UnitsReady;

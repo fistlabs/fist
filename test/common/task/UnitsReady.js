@@ -1,13 +1,13 @@
 'use strict';
 
-var Ready = require('../../../util/Ready');
+var UnitsReady = require('../../../task/UnitsReady');
 var Path = require('path');
 
 module.exports = {
 
     ready0: function (test) {
 
-        var ready = new Ready({
+        var ready = new UnitsReady({
             action: [
                 null,
                 Path.resolve('test/stuff/action/data0/*.js')
@@ -22,7 +22,7 @@ module.exports = {
 
     ready1: function (test) {
 
-        var ready = new Ready({
+        var ready = new UnitsReady({
             action: Path.resolve('test/stuff/action/data0/error/*.js')
         });
 
@@ -34,7 +34,7 @@ module.exports = {
 
     ready2: function (test) {
 
-        var ready = new Ready({
+        var ready = new UnitsReady({
             action: Path.resolve('test/stuff/action/data0/*.js')
         });
 
@@ -52,26 +52,26 @@ module.exports = {
         });
     },
 
-    'Ready.isCap': function (test) {
+    'UnitsReady.isCap': function (test) {
 
         var samples;
 
         samples = ['t', 'tE', 'TEs', 'TeST'];
 
         samples.forEach(function (s) {
-            test.ok( !Ready.isCap(s) );
+            test.ok( !UnitsReady.isCap(s) );
         });
 
         samples = ['T', 'AS', 'ASD', 'TEST'];
 
         samples.forEach(function (s) {
-            test.ok(Ready.isCap(s));
+            test.ok(UnitsReady.isCap(s));
         });
 
         test.done();
     },
 
-    'Ready.convert': function (test) {
+    'UnitsReady.convert': function (test) {
 
         var samples = [
             ['a-b-c', 'aBC'],
@@ -80,13 +80,13 @@ module.exports = {
         ];
 
         samples.forEach(function (s) {
-            test.strictEqual(Ready.convert(s[0]), s[1]);
+            test.strictEqual(UnitsReady.convert(s[0]), s[1]);
         });
 
         test.done();
     },
 
-    'Ready.toCamel': function (test) {
+    'UnitsReady.toCamel': function (test) {
 
         var samples = [
             ['data', 'data'],
@@ -99,28 +99,28 @@ module.exports = {
         ];
 
         samples.forEach(function (s) {
-            test.strictEqual(Ready.toCamel(s[0]), s[1]);
+            test.strictEqual(UnitsReady.toCamel(s[0]), s[1]);
         });
 
         test.done();
     },
 
-    'Ready.glob-0': function (test) {
-        Ready.glob(null, function (err) {
+    'UnitsReady.glob-0': function (test) {
+        UnitsReady.glob(null, function (err) {
             test.ok(err);
             test.done();
         });
     },
 
-    'Ready.glob-1': function (test) {
-        Ready.glob('1231230123012', function (err, res) {
+    'UnitsReady.glob-1': function (test) {
+        UnitsReady.glob('1231230123012', function (err, res) {
             test.deepEqual(res, []);
             test.done();
         });
     },
 
-    'Ready.glob-2': function (test) {
-        Ready.glob('test/stuff/action/data1/*.js', function (err, list) {
+    'UnitsReady.glob-2': function (test) {
+        UnitsReady.glob('test/stuff/action/data1/*.js', function (err, list) {
             test.deepEqual(list, [
                 'test/stuff/action/data1/ABBR.js',
                 'test/stuff/action/data1/ClassName.js',
@@ -130,13 +130,13 @@ module.exports = {
         });
     },
 
-    'Ready.multiglob-0': function (test) {
+    'UnitsReady.multiglob-0': function (test) {
 
-        Ready.multiglob.call(42, [], function (err, res) {
+        UnitsReady.multiglob.call(42, [], function (err, res) {
             test.deepEqual(res, []);
         });
 
-        Ready.multiglob.call(42, [
+        UnitsReady.multiglob.call(42, [
             'test/stuff/action/data0/*.js',
             'test/stuff/action/data1/*.js'
         ], function (err, result) {
@@ -157,8 +157,8 @@ module.exports = {
 
     },
 
-    'Ready.multiglob-1': function (test) {
-        Ready.multiglob.call(42, [
+    'UnitsReady.multiglob-1': function (test) {
+        UnitsReady.multiglob.call(42, [
             'test/data1'
         ], function (err, res) {
             test.strictEqual(this, 42);

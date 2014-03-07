@@ -2,7 +2,7 @@
 
 var Http = require('http');
 var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
-var Ready = /** @type Ready */ require('./util/Ready');
+var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./Runtime');
 var Server = /** @type Server */ require('fist.io.server/Server');
 var StreamLoader = /** @type StreamLoader */
@@ -37,7 +37,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @memberOf {Fist}
          * @property {Multitask}
          * */
-        this._ready = new Multitask();
+        this.init = new Multitask();
 
         /**
          * Номер таска на инициализацию узлов
@@ -46,7 +46,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @memberOf {Fist}
          * @property {Number}
          * */
-        this._unitsN = this._ready.tasks.push(new Ready(this.params)) - 1;
+        this._unitsN = this.init.tasks.push(new UnitsReady(this.params)) - 1;
 
         //  Если запросы начали посылать пока узлы не проинициализировались
         this._handle = function (track) {
@@ -88,7 +88,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     ready: function (done) {
-        this._ready.queue(done, this);
+        this.init.queue(done, this);
     },
 
     /**
