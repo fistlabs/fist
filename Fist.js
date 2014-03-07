@@ -1,5 +1,6 @@
 'use strict';
 
+var Http = require('http');
 var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
 var Ready = /** @type Ready */ require('./util/Ready');
 var Runtime = /** @type Runtime */ require('./Runtime');
@@ -26,11 +27,26 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
+        //  Роуты из параметров добавляются при инстанцировании
         this.router.addRoutes(toArray(this.params.routes));
 
+        /**
+         * Таск на инициализацию
+         *
+         * @protected
+         * @memberOf {Fist}
+         * @property {Multitask}
+         * */
         this._ready = new Multitask();
 
-        this._ready.push(new Ready(this.params));
+        /**
+         * Номер таска на инициализацию узлов
+         *
+         * @protected
+         * @memberOf {Fist}
+         * @property {Number}
+         * */
+        this._unitsN = this._ready.tasks.push(new Ready(this.params)) - 1;
 
         //  Если запросы начали посылать пока узлы не проинициализировались
         this._handle = function (track) {
@@ -48,17 +64,23 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @method
      * */
     listen: function () {
-        Fist.parent.listen.apply(this, arguments);
+
+        var server = Http.createServer(this.getHandler());
+
+        server.listen.apply(server, arguments);
 
         this.ready(function (err, results) {
-
-            forEach((results || [])[0], function (args) {
+            results = (results || [])[this._unitsN];
+            forEach(results, function (args) {
                 this.decl.apply(this, args);
             }, this);
         });
     },
 
     /**
+     * Вызовет коллбэк когда выполнятся
+     * последовательно все таски
+     *
      * @public
      * @memberOf {Fist}
      * @method
@@ -368,7 +390,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     _callStream: function (readable, done) {
-        ( new StreamLoader(readable) ).done(done);
+        StreamLoader.download(readable, done);
     },
 
     /**

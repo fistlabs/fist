@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('../../../../Component');
+module.exports = require('../../../../Unit');

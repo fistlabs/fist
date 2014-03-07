@@ -1,12 +1,12 @@
 'use strict';
 
-var Component = /** @type Component */ require('../../../../Component');
+var Unit = /** @type Unit */ require('../../../../Unit');
 
 /**
  * @class ClassName
- * @extends Component
+ * @extends Unit
  * */
-var ClassName = Component.extend(/** @lends ClassName.prototype */ {
+var ClassName = Unit.extend(/** @lends ClassName.prototype */ {
 
     deps: ['abbr'],
 
