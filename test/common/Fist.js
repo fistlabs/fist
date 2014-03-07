@@ -532,6 +532,32 @@ module.exports = {
         });
     },
 
+    Fist14: function (test) {
+
+        var fist = new Fist({
+            routes: routes
+        });
+
+        fist.decl('index', function (t, r, e, done) {
+            done(null, new Error());
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'get',
+            path: '/',
+            socketPath: sock
+        }, function (err, res) {
+            test.strictEqual(res.data + '', '{}');
+            test.done();
+        });
+    },
+
     'Server-0': function (test) {
 
         var server = new Fist({

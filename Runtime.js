@@ -48,24 +48,27 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Connect}
+     * @memberOf {Runtime}
      * @method
      *
      * @param {*} body
      * */
-    _writeBody: function (body) {
+    _writeError: function (body) {
 
-        if ( body instanceof Error && this._res.statusCode >= 500 ) {
+        if ( this._res.statusCode >= 500 ) {
 
             if ( this.agent.params.staging ) {
-                body = STATUS_CODES[this._res.statusCode];
+                this._writeString(STATUS_CODES[this._res.statusCode]);
 
-            } else {
-                body = body.stack;
+                return;
             }
+
+            this._writeString(body.stack);
+
+            return;
         }
 
-        Runtime.parent._writeBody.call(this, body);
+        this._writeJson(body);
     }
 
 });
