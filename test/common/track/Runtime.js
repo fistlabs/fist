@@ -1,10 +1,10 @@
 'use strict';
 
-var Fist = require('../../Fist');
+var Fist = require('../../../Fist');
 var asker = require('asker');
 
 var Fs = require('fs');
-var sock = require('../stuff/conf/sock');
+var sock = require('../../stuff/conf/sock');
 
 module.exports = {
 

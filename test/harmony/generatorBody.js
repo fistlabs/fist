@@ -1,7 +1,7 @@
 'use strict';
 
 var Fist = require('../../Fist');
-var Track = require('../../Runtime');
+var Track = require('../../track/Runtime');
 var Promise = require('fist.util.promise/Promise');
 var Fs = require('fs');
 
