@@ -20,7 +20,7 @@
         "fist.util.streamloader": "0.0.x",
         "fist.lang.class": "0.0.x",
 
-        "fist.io.server": "1.0.x",
+        "fist.io.server": "2.0.x",
         "fist.util.task": "1.0.x",
 
         "glob": "3.2.x"
