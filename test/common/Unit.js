@@ -26,7 +26,7 @@ module.exports = {
         test.done();
     },
 
-    'Unit.prototype.depDeps': function (test) {
+    'Unit.prototype.delDeps': function (test) {
 
         var k = new Knot();
 

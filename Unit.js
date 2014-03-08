@@ -43,16 +43,18 @@ var Unit = Class.extend(/** @lends Unit.prototype */ {
     delDeps: function () {
 
         var i = arguments.length;
+        var ind;
 
         while (i) {
             i -= 1;
+            ind = this.deps.indexOf(arguments[i]);
 
-            if ( -1 === this.deps.indexOf(arguments[i]) ) {
+            if ( -1 === ind ) {
 
                 continue;
             }
 
-            this.deps.splice(i, 1);
+            this.deps.splice(ind, 1);
         }
     },
 
