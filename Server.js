@@ -2,7 +2,7 @@
 
 var Connect = /** @type Connect */ require('./track/Connect');
 var Tracker = /** @type Tracker */ require('./Tracker');
-var Router = /** @type Classic */ require('fist.router/Classic');
+var Classic = /** @type Classic */ require('fist.router/Classic');
 
 /**
  * @class Server
@@ -23,7 +23,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         /**
          * @public
          * @memberOf {Server}
-         * @property {Router}
+         * @property {Classic}
          * */
         this.router = this._createRouter(this.params.router);
     },
@@ -137,11 +137,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      *
      * @param {*} [params]
      *
-     * @returns {Router}
+     * @returns {Classic}
      * */
     _createRouter: function (params) {
 
-        return new Router(params);
+        return new Classic(params);
     },
 
     /**
