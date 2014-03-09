@@ -12,6 +12,7 @@ var Loader = /** @type Loader */ require('../util/reader/Loader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
+var extend = require('fist.lang.extend');
 var hasProperty = Object.prototype.hasOwnProperty;
 var uniqueId = require('fist.util.id');
 
@@ -100,9 +101,13 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     body: function (done) {
 
+        var opts;
         if ( !(this._body instanceof Body) ) {
-            //  TODO pass length option
-            this._body = new Body(this._req, this.agent.params.body);
+            opts = extend(Object.create(null), this.agent.params.body, {
+                length: this._req.headers['content-length']
+            });
+
+            this._body = new Body(this._req, opts);
         }
 
         this._body.done(done, this);

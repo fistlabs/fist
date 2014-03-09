@@ -221,7 +221,7 @@ module.exports = {
                 req.emit('error', 'ERR');
             });
 
-            parser.done(function (err, data) {
+            parser.done(function (err) {
                 test.strictEqual(err, 'ERR');
                 res.end();
             });

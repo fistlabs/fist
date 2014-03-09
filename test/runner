@@ -26,7 +26,7 @@ process.on('uncaughtException', function (er) {
         er = er.stack;
     }
 
-    console.error(er);
+    console.error('UNCAUGHT EXCEPTION', er);
 
     process.exit(1);
 });

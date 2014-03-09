@@ -46,9 +46,8 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
             files: Object.create(null),
             type: 'multipart'
         };
-        var streamError;
 
-        parser.on('part', function (part) {
+        function parserPart (part) {
 
             var file;
             var field;
@@ -56,7 +55,7 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
             var buf = [];
             var mime;
 
-            part.on('header', function (header) {
+            function partHeader (header) {
 
                 var disposition = (header['content-disposition'] || [])[0];
                 mime = (header['content-type'] || [])[0];
@@ -79,17 +78,18 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
                 }
 
                 file = file[1] || file[2];
-            });
+            }
 
-            part.on('data', function (chunk) {
+            function partData (chunk) {
                 buf[buf.length] = chunk;
-            });
+            }
 
-            part.on('end', function () {
+            function partEnd () {
 
                 var sect = 'input';
 
                 if ( partError ) {
+                    partCleanup();
 
                     return;
                 }
@@ -121,10 +121,20 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
                         result[sect][field] = buf;
                     }
                 }
-            });
-        });
 
-        streamError = parser.emit.bind(parser, 'error');
+                partCleanup();
+            }
+
+            function partCleanup () {
+                part.removeListener('header', partHeader);
+                part.removeListener('data', partData);
+                part.removeListener('end', partEnd);
+            }
+
+            part.on('header', partHeader);
+            part.on('data', partData);
+            part.on('end', partEnd);
+        }
 
         function parserFinish () {
 
@@ -169,16 +179,18 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
         }
 
         function cleanup () {
-            parser.removeListener('finish', parserFinish);
+            parser.removeListener('part', parserPart);
             parser.removeListener('error', parserError);
-            stream.removeListener('error', streamError);
+            parser.removeListener('finish', parserFinish);
             stream.removeListener('data', streamData);
+            stream.removeListener('error', parserError);
         }
 
-        parser.on('finish', parserFinish);
+        parser.on('part', parserPart);
         parser.on('error', parserError);
-        stream.on('error', streamError);
+        parser.on('finish', parserFinish);
         stream.on('data', streamData);
+        stream.on('error', parserError);
 
         stream.pipe(parser);
     },
