@@ -167,6 +167,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
         this.emitEvent('request', track);
 
+        if ( track.sent() ) {
+
+            return;
+        }
+
         mdata = this.router.find(track.method, track.url.pathname);
 
         if ( null === mdata ) {

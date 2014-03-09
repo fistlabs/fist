@@ -249,6 +249,31 @@ module.exports = {
             test.deepEqual(res.data + '', 'INDEX');
             test.done();
         });
+    },
+
+    'Server-9': function (test) {
+
+        var serv = new Server();
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        serv.on('request', function (track) {
+            track.send(201);
+        });
+
+        Http.createServer(serv.getHandler()).listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/',
+            socketPath: sock
+        }, function (err, res) {
+            test.deepEqual(res.statusCode, 201);
+            test.done();
+        });
     }
+
 
 };
