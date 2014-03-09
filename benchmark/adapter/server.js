@@ -38,6 +38,9 @@ try {
 Http.createServer(app.getHandler()).listen(sock);
 
 module.exports = function (done) {
-    Http.request({ method: 'GET', socketPath: sock, path: path }, done).end();
+    Http.request({
+        method: 'GET',
+        socketPath: sock,
+        path: path
+    }, done).end();
 };
-

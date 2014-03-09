@@ -34,30 +34,30 @@ module.exports = {
 
     'Server.prototype.resolve': function (test) {
 
-        var server = new Server();
+        var s = new Server();
 
-        server.decl('a', function (bundle, done) {
+        s.decl('a', function (bundle, done) {
             done(null, 'a');
         });
 
-        server.decl('b', function () {
+        s.decl('b', function () {
             this.send(201, 'b');
             test.strictEqual(this.send, Connect.noop);
         });
 
-        server.decl('c', function (bundle, done) {
+        s.decl('c', function (bundle, done) {
             setTimeout(function () {
                 done(null, 'c');
             }, 0);
         });
 
-        server.decl('x', ['a', 'b', 'c'], function () {});
+        s.decl('x', ['a', 'b', 'c'], function () {});
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
 
-            var connect = new Connect(server, req, res);
+            var connect = new Connect(s, req, res);
 
-            server.resolve(connect, 'x', function () {
+            s.resolve(connect, 'x', function () {
                 test.ok(false);
             });
         }, function (err, data) {

@@ -138,8 +138,9 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         if ( Object(name) === name  ) {
             soft = value;
+            value = name;
 
-            for ( name in (value = name) ) {
+            for ( name in value ) {
 
                 if ( hasProperty.call(value, name) ) {
                     this._setHead(name, value[name], soft);
@@ -243,8 +244,9 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
             return this._res.statusCode;
         }
+        this._res.statusCode = statusCode;
 
-        return (this._res.statusCode = statusCode);
+        return statusCode;
     },
 
     /**

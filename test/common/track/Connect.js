@@ -182,7 +182,7 @@ module.exports = {
         http({
             method: 'GET',
             headers: {
-                'Cookie': 'first=' + encodeURIComponent('Привет1')
+                Cookie: 'first=' + encodeURIComponent('Привет1')
             }
         }, function (req, res) {
             var tracker = new Tracker();
@@ -212,7 +212,7 @@ module.exports = {
 
     'Connect.prototype.send-0': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -227,7 +227,7 @@ module.exports = {
 
     'Connect.prototype.send-1': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -242,7 +242,7 @@ module.exports = {
 
     'Connect.prototype.send-2': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -257,7 +257,7 @@ module.exports = {
 
     'Connect.prototype.send-3': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -313,7 +313,7 @@ module.exports = {
 
     'Connect.prototype.send-6': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -328,7 +328,7 @@ module.exports = {
 
     'Connect.prototype.send-7': function (test) {
 
-        http({ method: 'HEAD' }, function (req, res) {
+        http({method: 'HEAD'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -344,7 +344,7 @@ module.exports = {
 
     'Connect.prototype.send-8': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -368,7 +368,7 @@ module.exports = {
 
     'Connect.prototype.send-9': function (test) {
 
-        http({ method: 'GET' }, function (req, res) {
+        http({method: 'GET'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -384,7 +384,7 @@ module.exports = {
 
     'Connect.prototype.send-10': function (test) {
 
-        http({ method: 'HEAD' }, function (req, res) {
+        http({method: 'HEAD'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -401,7 +401,7 @@ module.exports = {
 
     'Connect.prototype.send-11': function (test) {
 
-        http({ method: 'HEAD' }, function (req, res) {
+        http({method: 'HEAD'}, function (req, res) {
             var tracker = new Tracker();
 
             var track = new Connect(tracker, req, res);
@@ -484,7 +484,6 @@ module.exports = {
             test.done();
         });
     },
-
 
     'Connect.prototype.send-15': function (test) {
 
