@@ -102,6 +102,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     body: function (done) {
 
         var opts;
+
         if ( !(this._body instanceof Body) ) {
             opts = extend(Object.create(null), this.agent.params.body, {
                 length: this._req.headers['content-length']
