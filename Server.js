@@ -1,8 +1,8 @@
 'use strict';
 
+var Classic = /** @type Classic */ require('fist.router/Classic');
 var Connect = /** @type Connect */ require('./track/Connect');
 var Tracker = /** @type Tracker */ require('./Tracker');
-var Classic = /** @type Classic */ require('fist.router/Classic');
 
 /**
  * @class Server
@@ -92,13 +92,9 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      * @memberOf {Server}
      * @method
      *
-     * @param {String} verb
-     * @param {String} expr
-     * @param {String} name
-     * @param {String} [data]
      * */
-    route: function (verb, expr, name, data) {
-        this.router.addRoute(verb, expr, name, data);
+    route: function () {
+        this.router.addRoute.apply(this.router, arguments);
 
         return this;
     },
