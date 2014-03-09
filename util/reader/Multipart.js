@@ -5,7 +5,7 @@ var R_FILENAME = /;\s*filename=(?:"([^"]*)"|([^\s]*))/;
 var R_MULTIPART =
     /^multipart\/[^\s]+?;[\s\r\n]+boundary=(?:"([^"]+)"|([^\s]+))$/i;
 
-var Dicer = /** @type Dicer */ require('dicer');
+var Parser = /** @type Parser */ require('dicer');
 var Reader = /** @type Reader */ require('./Reader');
 
 /**
@@ -33,21 +33,22 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
      * @static
      * @memberOf Multipart
      *
-     * @param {Readable} stream
+     * @param {Object} stream
      * @param {Object} opts
      * @param {Function} done
      * */
     parse: function (stream, opts, done) {
 
-        var dicer = new Dicer(opts);
+        var parser = new Parser(opts);
+        var received = 0;
         var result = {
             input: Object.create(null),
             files: Object.create(null),
             type: 'multipart'
         };
-        var parserError = false;
+        var streamError;
 
-        dicer.on('part', function (part) {
+        parser.on('part', function (part) {
 
             var file;
             var field;
@@ -70,7 +71,6 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
 
                 //  заковыченное или простое значение заголовка
                 field = field[1] || field[2];
-
                 file = R_FILENAME.exec(disposition);
 
                 if ( null === file ) {
@@ -124,26 +124,63 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
             });
         });
 
-        dicer.on('finish', function () {
+        streamError = parser.emit.bind(parser, 'error');
 
-            if ( parserError ) {
+        function parserFinish () {
+
+            if ( Infinity !== opts.length && received !== opts.length ) {
+                parser.emit('error', Reader.ELENGTH({
+                    actual: received,
+                    expected: opts.length
+                }));
 
                 return;
             }
 
+            cleanup();
             done(null, result);
-        });
+        }
 
-        dicer.on('error', function (err) {
-            parserError = true;
+        function parserError (err) {
+
+            if ( 'function' === typeof stream.pause ) {
+                stream.pause();
+            }
+
+            cleanup();
+
             done(err);
-        });
+        }
 
-        stream.on('error', function (err) {
-            dicer.emit('error', err);
-        });
+        function streamData (chunk) {
 
-        stream.pipe(dicer);
+            if ( !Buffer.isBuffer(chunk) ) {
+                chunk = new Buffer(String(chunk));
+            }
+
+            received += chunk.length;
+
+            if ( received > opts.limit ) {
+                stream.emit('error', Reader.ELIMIT({
+                    actual: received,
+                    expected: opts.limit
+                }));
+            }
+        }
+
+        function cleanup () {
+            parser.removeListener('finish', parserFinish);
+            parser.removeListener('error', parserError);
+            stream.removeListener('error', streamError);
+            stream.removeListener('data', streamData);
+        }
+
+        parser.on('finish', parserFinish);
+        parser.on('error', parserError);
+        stream.on('error', streamError);
+        stream.on('data', streamData);
+
+        stream.pipe(parser);
     },
 
     /**
