@@ -1,0 +1,57 @@
+'use strict';
+
+var Benchmark = /** @type Benchmark */ require('benchmark').Benchmark;
+var Suite = /** @type Suite */ Benchmark.Suite;
+var reportFormat = require('./lib/reportFormat');
+var results = {};
+var suite = new Suite();
+
+var samples = {
+    express: require('./adapter/express'),
+    server: require('./adapter/server')
+};
+
+//  Для более точной статистики (ОЧЕНЬ ДОЛГО ДЕЛАЕТ 1000)
+Benchmark.options.minSamples = 1000;
+
+function diff (a, b) {
+
+    return b / ( a / 100 ) - 100;
+}
+
+Object.keys(samples).forEach(function (name) {
+    var body = samples[name];
+
+    suite.add(name, function (deferred) {
+        body(function (res) {
+
+            if ( res.statusCode === 200 ) {
+                deferred.resolve();
+
+                return;
+            }
+
+            throw 'ERR';
+        });
+    }, {
+
+        defer: true,
+
+        onComplete: function () {
+            results[name] = this.stats.mean;
+            console.log('%s: %s', name, reportFormat(this));
+        }
+    });
+});
+
+suite.on('complete', function () {
+    console.log();
+    console.log( '%d%', diff(results.server, results.express).toFixed(2) );
+    console.log();
+    process.exit(0);
+});
+
+suite.run({
+    async: true,
+    queued: true
+});

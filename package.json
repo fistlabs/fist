@@ -16,12 +16,13 @@
         "fist.lang.foreach": "0.0.x",
         "fist.lang.toarray": "0.0.x",
         "fist.lang.unique": "0.0.x",
-
-        "fist.util.streamloader": "0.0.x",
         "fist.lang.class": "0.0.x",
 
-        "fist.io.server": "2.0.x",
+        "fist.util.id": "0.0.x",
+        "fist.util.bodyparser": "0.1.x",
+        "fist.util.streamloader": "0.0.x",
         "fist.util.task": "1.0.x",
+        "fist.router": "0.4.x",
 
         "glob": "3.2.x"
     },
@@ -33,7 +34,9 @@
         "istanbul": "",
         "asker": "",
         "fist.util.promise": "",
-        "glob": ""
+        "glob": "",
+        "benchmark": "",
+        "express": ""
     },
     "license": "MIT",
     "main": "Fist",
@@ -44,11 +47,12 @@
     },
     "scripts": {
         "jscs": "jscs -c .jscsrc .",
-        "eslint": "eslint -c .eslintrc test task track unit *.js",
+        "eslint": "eslint -c .eslintrc benchmark test task track unit util *.js",
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
-        "cover": "istanbul cover test/runner"
+        "cover": "istanbul cover test/runner",
+        "benchmark": "node benchmark/runner"
     },
     "version": "1.0.2"
 }

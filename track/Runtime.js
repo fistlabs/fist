@@ -1,7 +1,7 @@
 'use strict';
 
 var STATUS_CODES = require('http').STATUS_CODES;
-var Connect = /** @type Connect */ require('fist.io.server/track/Connect');
+var Connect = /** @type Connect */ require('./Connect');
 
 /**
  * @class Runtime
