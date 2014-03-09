@@ -1,6 +1,7 @@
 'use strict';
 
 var Multipart = require('../../../../util/reader/Multipart');
+var Parted = require('../../../util/Parted');
 var http = require('../../../util/http');
 
 var BOUNDARY = 'AskerBoundary-7691254443489015';
@@ -43,6 +44,18 @@ var FIXTURE1 = [
     'content-type: application/octet-stream',
     '',
     'asd',
+    '--' + BOUNDARY + '--'
+].join('\r\n');
+
+var FIXTURE2 = [
+    '--' + BOUNDARY,
+    'content-disposition: form-data; name=first',
+    '',
+    'vasya',
+    '--' + BOUNDARY,
+    'content-disposition: form-data; name="last"',
+    '',
+    'petrov',
     '--' + BOUNDARY + '--'
 ].join('\r\n');
 
@@ -248,5 +261,43 @@ module.exports = {
         });
 
         test.done();
+    },
+
+    elimit: function (test) {
+
+        var stream = new Parted(FIXTURE2.split(''));
+
+        var parser = new Multipart(stream, {
+            boundary: BOUNDARY,
+            limit: 4
+        });
+
+        parser.done(function (err) {
+            test.deepEqual(err, {
+                code: 'ELIMIT',
+                actual: 5,
+                expected: 4
+            });
+            test.done();
+        });
+    },
+
+    elength: function (test) {
+
+        var stream = new Parted(FIXTURE2.split(''));
+
+        var parser = new Multipart(stream, {
+            boundary: BOUNDARY,
+            length: 4
+        });
+
+        parser.done(function (err) {
+            test.deepEqual(err, {
+                code: 'ELENGTH',
+                actual: FIXTURE2.length,
+                expected: 4
+            });
+            test.done();
+        });
     }
 };
