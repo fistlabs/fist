@@ -1,11 +1,11 @@
 'use strict';
 
 var Http = require('http');
+var Loader = /** @type Loader */ require('./util/reader/Loader');
 var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
 var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
-var Loader = /** @type Loader */ require('./util/reader/Loader');
 
 var forEach = require('fist.lang.foreach');
 var toArray = require('fist.lang.toarray');
