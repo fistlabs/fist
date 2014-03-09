@@ -101,6 +101,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     body: function (done) {
 
         if ( !(this._body instanceof Body) ) {
+            //  TODO pass length option
             this._body = new Body(this._req, this.agent.params.body);
         }
 

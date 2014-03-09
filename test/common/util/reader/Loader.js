@@ -1,7 +1,7 @@
 'use strict';
 
-var Emitter = require('events').EventEmitter;
 var Loader = require('../../../../util/reader/Loader');
+var Parted = require('../../../util/Parted');
 var Reader = require('../../../../util/reader/Reader');
 var http = require('../../../util/http');
 
@@ -102,27 +102,7 @@ module.exports = {
 
     custom: function (test) {
 
-        function Readable () {
-            Emitter.apply(this, arguments);
-
-            var pends = 'Привет'.split('');
-
-            this.on('newListener', function (type) {
-                if ( 'data' === type ) {
-                    setTimeout(function () {
-                        pends.forEach(function (chunk) {
-                            this.emit('data', chunk);
-                        }, this);
-                        this.emit('end');
-                    }.bind(this), 0);
-
-                }
-            });
-        }
-
-        Readable.prototype = Object.create(Emitter.prototype);
-
-        var stream = new Readable();
+        var stream = new Parted('Привет'.split(''));
 
         var parser = new Loader(stream, {
             limit: 4
