@@ -17,13 +17,13 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
      * @param {Function} done
      * */
     _parse: function (opts, done) {
-        Loader.download(this._readable, opts, done);
+        Loader._download(this._readable, opts, done);
     }
 
 }, {
 
     /**
-     * @public
+     * @protected
      * @static
      * @memberOf Loader
      * @method
@@ -32,7 +32,7 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
      * @param {Object} opts
      * @param {Function} done
      * */
-    download: function (stream, opts, done) {
+    _download: function (stream, opts, done) {
 
         var buf = [];
 
