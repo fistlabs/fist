@@ -21,7 +21,7 @@
 
         "fist.util.id": "0.0.x",
         "fist.util.task": "1.0.x",
-        "fist.router": "1.0.x",
+        "fist.router": "1.1.x",
 
         "dicer": "0.2.x",
         "glob": "3.2.x"

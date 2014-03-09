@@ -28,7 +28,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         //  Роуты из параметров добавляются при инстанцировании
         forEach(toArray(this.params.routes), function (desc) {
-            this.route(desc.verb, desc.expr, desc.name, desc.data);
+            this.route(desc.verb, desc.expr, desc.name, desc.data, desc.opts);
         }, this);
 
         /**

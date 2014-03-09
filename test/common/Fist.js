@@ -481,7 +481,7 @@ module.exports = {
             routes: routes
         });
 
-        fist.decl('index', function (t, r, e, done) {
+        fist.decl('index', function (t, e, r, done) {
             done(null, 55);
 
             return 56;
@@ -509,7 +509,7 @@ module.exports = {
             routes: routes
         });
 
-        fist.decl('index', function (t, r, e, done) {
+        fist.decl('index', function (t, e, r, done) {
             setTimeout(function () {
                 done(null, 55);
             }, 0);
@@ -538,7 +538,7 @@ module.exports = {
             routes: routes
         });
 
-        fist.decl('index', function (t, r, e, done) {
+        fist.decl('index', function (t, e, r, done) {
             done(null, new Error());
         });
 
@@ -556,6 +556,42 @@ module.exports = {
             test.strictEqual(res.data + '', '{}');
             test.done();
         });
+    },
+
+    Fist15: function (test) {
+
+        var fist = new Fist({
+            routes: routes
+        });
+
+        fist.decl('static', function (t, e, r, done) {
+            test.strictEqual(t.url.path, '/static/js/index.js');
+            done(null, t.url.path);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/static/js/index.js',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true,
+                    isRetryAllowed: false
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.data + '', '/static/js/index.js');
+            test.done();
+        });
+
+
+
     },
 
     'Server-0': function (test) {

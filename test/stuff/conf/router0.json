@@ -3,5 +3,14 @@
         "name": "index",
         "verb": "GET",
         "expr": "/"
+    },
+    {
+        "name": "static",
+        "verb": "GET",
+        "expr": "/static/",
+        "opts": {
+            "nocase": true,
+            "noend": true
+        }
     }
 ]
