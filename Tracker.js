@@ -3,7 +3,7 @@
 var Bundle = /** @type Bundle */ require('./util/Bundle');
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
-var Task = /** @type Task */ require('fist.util.task/Task');
+var Task = /** @type Task */ require('./task/Task');
 
 var toArray = require('fist.lang.toarray');
 

@@ -2,10 +2,10 @@
 
 var Http = require('http');
 var Loader = /** @type Loader */ require('./util/reader/Loader');
-var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
 var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
+var Task = require('./task/Task');
 
 var forEach = require('fist.lang.foreach');
 var toArray = require('fist.lang.toarray');
@@ -31,14 +31,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             this.route(desc.verb, desc.expr, desc.name, desc.data, desc.opts);
         }, this);
 
-        /**
-         * Таск на инициализацию
-         *
-         * @protected
-         * @memberOf {Fist}
-         * @property {Multitask}
-         * */
-        this.init = new Multitask();
+        this.init = [];
 
         /**
          * Номер таска на инициализацию узлов
@@ -47,7 +40,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @memberOf {Fist}
          * @property {Number}
          * */
-        this._unitsN = this.init.tasks.push(new UnitsReady(this.params)) - 1;
+        this._unitsN = this.init.push(new UnitsReady(this.params)) - 1;
 
         //  Если запросы начали посылать пока узлы не проинициализировались
         this._handle = function (track) {
@@ -89,7 +82,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     ready: function (done) {
-        this.init.queue(done, this);
+        Task.queue(this.init, done, this);
     },
 
     /**

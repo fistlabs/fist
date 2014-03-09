@@ -1,6 +1,6 @@
 'use strict';
 
-var Task = /** @type Task */ require('fist.util.task/Task');
+var Task = /** @type Task */ require('../../task/Task');
 var extend = require('fist.lang.extend');
 
 /**

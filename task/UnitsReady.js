@@ -1,7 +1,7 @@
 'use strict';
 
 var Path = require('path');
-var Task = /** @type Task */ require('fist.util.task/Task');
+var Task = /** @type Task */ require('./Task');
 
 var forEach = require('fist.lang.foreach');
 var glob = require('glob');
