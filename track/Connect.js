@@ -12,7 +12,6 @@ var Loader = /** @type Loader */ require('../util/reader/Loader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var cookie = require('../util/cookie');
 var hasProperty = Object.prototype.hasOwnProperty;
 var uniqueId = require('fist.util.id');
 
@@ -178,7 +177,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         if ( 2 > arguments.length ) {
 
             if ( !this._cookies ) {
-                this._cookies = cookie.parse(this._req.headers.cookie);
+                this._cookies = Connect.cookie.parse(this._req.headers.cookie);
             }
 
             cookies = this._cookies;
@@ -201,7 +200,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             opts.expires = -1;
         }
 
-        value = cookie.serial(name, encodeURIComponent(value), opts);
+        value = Connect.cookie.serial(name, encodeURIComponent(value), opts);
 
         return this._setHead('Set-Cookie', value);
     },
@@ -497,6 +496,13 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     }
 
 }, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Connect
+     * */
+    cookie: require('../util/cookie'),
 
     /**
      * @public
