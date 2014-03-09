@@ -2,7 +2,7 @@
 
 var Connect = /** @type Connect */ require('./track/Connect');
 var Tracker = /** @type Tracker */ require('./Tracker');
-var Routim = /** @type Routim */ require('fist.router/Routim');
+var Router = /** @type Classic */ require('fist.router/Classic');
 
 /**
  * @class Server
@@ -23,7 +23,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         /**
          * @public
          * @memberOf {Server}
-         * @property {Routim}
+         * @property {Router}
          * */
         this.router = this._createRouter(this.params.router);
     },
@@ -98,8 +98,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      * @param {String} [data]
      * */
     route: function (verb, expr, name, data) {
-        this.router.addRoute({verb: verb,
-            expr: expr, name: name, data: data});
+        this.router.addRoute(verb, expr, name, data);
 
         return this;
     },
@@ -138,11 +137,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      *
      * @param {*} [params]
      *
-     * @returns {Routim}
+     * @returns {Router}
      * */
     _createRouter: function (params) {
 
-        return new Routim(params);
+        return new Router(params);
     },
 
     /**
@@ -197,9 +196,9 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         this.emitEvent('match-done', track);
 
         track.match = mdata.match;
-        track.route = mdata.route.data.name;
+        track.route = mdata.route.name;
 
-        this.resolve(track, mdata.route.data.data || track.route, function () {
+        this.resolve(track, mdata.route.data || track.route, function () {
 
             var done = +(1 < arguments.length);
 
