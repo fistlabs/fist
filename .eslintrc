@@ -78,7 +78,7 @@
         "no-undef": 2,
         "no-undef-init": 0,
         "no-unused-vars": 2,
-        "no-use-before-define": 1,
+        "no-use-before-define": 0,
 
         "no-mixed-requires": [2, false],
         "no-path-concat": 0,

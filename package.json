@@ -20,7 +20,6 @@
 
         "fist.util.id": "0.0.x",
         "fist.util.bodyparser": "0.1.x",
-        "fist.util.streamloader": "0.0.x",
         "fist.util.task": "1.0.x",
         "fist.router": "0.4.x",
 

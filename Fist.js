@@ -5,8 +5,7 @@ var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
 var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
-var StreamLoader = /** @type StreamLoader */
-    require('fist.util.streamloader/StreamLoader');
+var StreamLoader = /** @type StreamLoader */ require('./util/StreamLoader');
 
 var forEach = require('fist.lang.foreach');
 var toArray = require('fist.lang.toarray');

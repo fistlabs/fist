@@ -8,8 +8,7 @@ var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
 }, Object.create(null));
 
 var Parser = /** @type BodyParser */ require('fist.util.bodyparser/BodyParser');
-var StreamLoader = /** @type StreamLoader */
-    require('fist.util.streamloader/StreamLoader');
+var StreamLoader = /** @type StreamLoader */ require('../util/StreamLoader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
