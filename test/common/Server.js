@@ -6,8 +6,8 @@ var Fs = require('fs');
 var Http = require('http');
 var STATUS_CODES = Http.STATUS_CODES;
 
-var http = require('./../util/http');
-var sock = require('./../util/sock');
+var http = require('../util/http');
+var sock = require('../stuff/conf/sock');
 var asker = require('asker');
 var server = new Server();
 

@@ -3,7 +3,7 @@
 var Fs = require('fs');
 var Http = require('http');
 var asker = require('asker');
-var sock = require('./sock');
+var sock = require('../stuff/conf/sock');
 
 module.exports = function (params, handle, receive) {
 
