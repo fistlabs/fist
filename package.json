@@ -19,10 +19,10 @@
         "fist.lang.class": "0.0.x",
 
         "fist.util.id": "0.0.x",
-        "fist.util.bodyparser": "0.1.x",
         "fist.util.task": "1.0.x",
         "fist.router": "0.4.x",
 
+        "dicer": "0.2.x",
         "glob": "3.2.x"
     },
     "description": "fist application",
