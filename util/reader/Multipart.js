@@ -23,7 +23,7 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
      * @param {Function} done
      * */
     _parse: function (opts, done) {
-        Multipart.parse(this._readable, opts.boundary, done);
+        Multipart.parse(this._readable, opts, done);
     }
 
 }, /** @lends Multipart */ {
@@ -34,12 +34,12 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
      * @memberOf Multipart
      *
      * @param {Readable} stream
-     * @param {String} boundary
+     * @param {Object} opts
      * @param {Function} done
      * */
-    parse: function (stream, boundary, done) {
+    parse: function (stream, opts, done) {
 
-        var dicer = new Dicer({boundary: boundary});
+        var dicer = new Dicer(opts);
         var result = {input: Object.create(null), files: Object.create(null)};
         var parserError = false;
 
