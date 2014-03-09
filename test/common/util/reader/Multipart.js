@@ -1,6 +1,6 @@
 'use strict';
 
-var Multipart = require('../../../../util/parser/Multipart');
+var Multipart = require('../../../../util/reader/Multipart');
 var http = require('../../../util/http');
 
 var BOUNDARY = 'AskerBoundary-7691254443489015';

@@ -1,14 +1,14 @@
 'use strict';
 
-var StreamLoader = /** @type StreamLoader */ require('../StreamLoader');
+var Loader = /** @type Loader */ require('./Loader');
 var QueryString = /** @type QueryString */ require('querystring');
 var R_URLENCODED = /^application\/x-www-form-urlencoded(?:;|$)/i;
 
 /**
  * @class Urlencoded
- * @extends StreamLoader
+ * @extends Loader
  * */
-var Urlencoded = StreamLoader.extend(/** @lends Urlencoded.prototype*/ {
+var Urlencoded = Loader.extend(/** @lends Urlencoded.prototype*/ {
 
     /**
      * @protected

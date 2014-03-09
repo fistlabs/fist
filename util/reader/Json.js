@@ -1,14 +1,14 @@
 'use strict';
 
 var R_JSON = /^application\/(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)(?:;|$)/i;
-var StreamLoader = /** @type StreamLoader */ require('../StreamLoader');
+var Loader = /** @type Loader */ require('./Loader');
 var QueryString = /** @type QueryString */ require('querystring');
 
 /**
  * @class JSON
- * @extends StreamLoader
+ * @extends Loader
  * */
-var Json = StreamLoader.extend(/** @lends JSON.prototype*/ {
+var Json = Loader.extend(/** @lends JSON.prototype*/ {
 
     /**
      * @protected

@@ -1,7 +1,7 @@
 'use strict';
 
-var BodyParser = require('../../../util/BodyParser');
-var http = require('../../util/http');
+var Body = require('../../../../util/reader/Body');
+var http = require('../../../util/http');
 
 module.exports = {
 
@@ -11,7 +11,7 @@ module.exports = {
             method: 'get'
         }, function (req, res) {
 
-            var parser = new BodyParser(req);
+            var parser = new Body(req);
 
             parser.done(function (err, data) {
                 test.deepEqual(data, {
@@ -33,7 +33,7 @@ module.exports = {
 
             delete req.headers['content-type'];
 
-            var parser = new BodyParser(req);
+            var parser = new Body(req);
 
             parser.done(function (err, data) {
                 test.deepEqual(data, {
@@ -56,7 +56,7 @@ module.exports = {
             }
         }, function (req, res) {
 
-            var parser = new BodyParser(req);
+            var parser = new Body(req);
 
             parser.done(function (err, data) {
                 test.deepEqual(data, {
@@ -79,7 +79,7 @@ module.exports = {
             }
         }, function (req, res) {
 
-            var parser = new BodyParser(req);
+            var parser = new Body(req);
 
             parser.done(function (err, data) {
                 test.deepEqual(data, {
@@ -104,7 +104,7 @@ module.exports = {
             }
         }, function (req, res) {
 
-            var parser = new BodyParser(req);
+            var parser = new Body(req);
 
             parser.done(function (err, data) {
                 test.deepEqual(data, {
@@ -129,7 +129,7 @@ module.exports = {
             }
         }, function (req, res) {
 
-            var parser = new BodyParser(req);
+            var parser = new Body(req);
 
             parser.done(function (err, data) {
                 test.ok(err);

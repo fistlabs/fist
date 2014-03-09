@@ -7,8 +7,8 @@ var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
     return NO_CONTENT;
 }, Object.create(null));
 
-var Parser = /** @type BodyParser */ require('../util/BodyParser');
-var StreamLoader = /** @type StreamLoader */ require('../util/StreamLoader');
+var Body = /** @type Body */ require('../util/reader/Body');
+var Loader = /** @type Loader */ require('../util/reader/Loader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
@@ -115,8 +115,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     body: function (done) {
 
-        if ( !(this._body instanceof Parser) ) {
-            this._body = new Parser(this._req);
+        if ( !(this._body instanceof Body) ) {
+            this._body = new Body(this._req);
         }
 
         this._body.done(done, this);
@@ -454,7 +454,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _writeReadable: function (body) {
 
         if ( 'HEAD' === this.method ) {
-            StreamLoader.download(body, function (err, body) {
+            Loader.download(body, function (err, body) {
 
                 if ( 2 > arguments.length ) {
                     this._respond(500, err);
@@ -480,7 +480,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        StreamLoader.download(body, function (err, body) {
+        Loader.download(body, function (err, body) {
 
             if ( 2 > arguments.length ) {
                 this._respond(500, err);

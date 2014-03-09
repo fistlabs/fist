@@ -3,14 +3,14 @@
 var Task = /** @type Task */ require('fist.util.task/Task');
 
 /**
- * @class Loader
+ * @class Reader
  * @extends Task
  * */
-var Loader = Task.extend(/** @lends Loader.prototype */ {
+var Reader = Task.extend(/** @lends Reader.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Loader}
+     * @memberOf {Reader}
      * @method
      *
      * @constructs
@@ -19,11 +19,11 @@ var Loader = Task.extend(/** @lends Loader.prototype */ {
      * @param {*} [opts]
      * */
     constructor: function (readable, opts) {
-        Loader.Parent.call(this, this._parse, this, [opts || {}]);
+        Reader.Parent.call(this, this._parse, this, [opts || {}]);
 
         /**
          * @protected
-         * @memberOf {Loader}
+         * @memberOf {Reader}
          * @property {Object}
          * */
         this._readable = readable;
@@ -31,7 +31,7 @@ var Loader = Task.extend(/** @lends Loader.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Loader}
+     * @memberOf {Reader}
      * @method
      *
      * @param {*} opts
@@ -43,4 +43,4 @@ var Loader = Task.extend(/** @lends Loader.prototype */ {
 
 });
 
-module.exports = Loader;
+module.exports = Reader;

@@ -1,22 +1,22 @@
 'use strict';
 
-var StreamLoader = require('../../../util/StreamLoader');
-var http = require('../../util/http');
+var Raw = require('../../../../util/reader/Raw');
+var http = require('../../../util/http');
 
 module.exports = {
 
     done: function (test) {
-
         http({
             method: 'post',
-            body: 'Hello, World!'
+            body: 'ПРИФФЕТ!'
         }, function (req, res) {
 
-            var parser = new StreamLoader(req);
+            var parser = new Raw(req);
 
-            parser.done(function (err, buf) {
-                test.ok(Buffer.isBuffer(buf));
-                test.strictEqual(String(buf), 'Hello, World!');
+            parser.done(function (err, data) {
+                test.ok(Buffer.isBuffer(data.input));
+                test.strictEqual(String(data.input), 'ПРИФФЕТ!');
+                test.deepEqual(data.files, Object.create(null));
                 res.end();
             });
 
@@ -29,10 +29,10 @@ module.exports = {
 
         http({
             method: 'post',
-            body: 'Hello, World!'
+            body: 'ПРИФФЕТ!'
         }, function (req, res) {
 
-            var parser = new StreamLoader(req);
+            var parser = new Raw(req);
 
             req.on('data', function () {
                 req.emit('error', 'ERR');

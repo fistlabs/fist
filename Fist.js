@@ -5,7 +5,7 @@ var Multitask = /** @type Multitask */ require('fist.util.task/Multitask');
 var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
-var StreamLoader = /** @type StreamLoader */ require('./util/StreamLoader');
+var Loader = /** @type Loader */ require('./util/reader/Loader');
 
 var forEach = require('fist.lang.foreach');
 var toArray = require('fist.lang.toarray');
@@ -391,7 +391,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     _callStream: function (readable, done) {
-        StreamLoader.download(readable, done);
+        Loader.download(readable, done);
     },
 
     /**

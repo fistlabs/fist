@@ -1,12 +1,12 @@
 'use strict';
 
-var StreamLoader = /** @type StreamLoader */ require('../StreamLoader');
+var Loader = /** @type Loader */ require('./Loader');
 
 /**
  * @class Raw
- * @extends StreamLoader
+ * @extends Loader
  * */
-var Raw = StreamLoader.extend(/** @lends Raw.prototype*/ {
+var Raw = Loader.extend(/** @lends Raw.prototype*/ {
 
     /**
      * @protected

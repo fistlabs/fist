@@ -1,22 +1,22 @@
 'use strict';
 
-var Raw = require('../../../../util/parser/Raw');
+var Loader = require('../../../../util/reader/Loader');
 var http = require('../../../util/http');
 
 module.exports = {
 
     done: function (test) {
+
         http({
             method: 'post',
-            body: 'ПРИФФЕТ!'
+            body: 'Hello, World!'
         }, function (req, res) {
 
-            var parser = new Raw(req);
+            var parser = new Loader(req);
 
-            parser.done(function (err, data) {
-                test.ok(Buffer.isBuffer(data.input));
-                test.strictEqual(String(data.input), 'ПРИФФЕТ!');
-                test.deepEqual(data.files, Object.create(null));
+            parser.done(function (err, buf) {
+                test.ok(Buffer.isBuffer(buf));
+                test.strictEqual(String(buf), 'Hello, World!');
                 res.end();
             });
 
@@ -29,10 +29,10 @@ module.exports = {
 
         http({
             method: 'post',
-            body: 'ПРИФФЕТ!'
+            body: 'Hello, World!'
         }, function (req, res) {
 
-            var parser = new Raw(req);
+            var parser = new Loader(req);
 
             req.on('data', function () {
                 req.emit('error', 'ERR');

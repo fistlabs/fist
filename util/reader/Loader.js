@@ -1,23 +1,23 @@
 'use strict';
 
-var Loader = /** @type Loader */ require('./Loader');
+var Reader = /** @type Reader */ require('./Reader');
 
 /**
- * @class StreamLoader
- * @extends Loader
+ * @class Loader
+ * @extends Reader
  * */
-var StreamLoader = Loader.extend(/** @lends StreamLoader.prototype */ {
+var Loader = Reader.extend(/** @lends Loader.prototype */ {
 
     /**
      * @protected
-     * @memberOf {StreamLoader}
+     * @memberOf {Loader}
      * @method
      *
      * @param {*} opts
      * @param {Function} done
      * */
     _parse: function (opts, done) {
-        StreamLoader.download(this._readable, done);
+        Loader.download(this._readable, done);
     }
 
 }, {
@@ -25,7 +25,7 @@ var StreamLoader = Loader.extend(/** @lends StreamLoader.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf StreamLoader
+     * @memberOf Loader
      * @method
      *
      * @param {EventEmitter} stream
@@ -63,4 +63,4 @@ var StreamLoader = Loader.extend(/** @lends StreamLoader.prototype */ {
     }
 });
 
-module.exports = StreamLoader;
+module.exports = Loader;

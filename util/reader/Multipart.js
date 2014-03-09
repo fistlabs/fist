@@ -6,13 +6,13 @@ var R_MULTIPART =
     /^multipart\/[^\s]+?;[\s\r\n]+boundary=(?:"([^"]+)"|([^\s]+))$/i;
 
 var Dicer = /** @type Dicer */ require('dicer');
-var Loader = /** @type Loader */ require('../Loader');
+var Reader = /** @type Reader */ require('./Reader');
 
 /**
  * @class Multipart
- * @extends Loader
+ * @extends Reader
  * */
-var Multipart = Loader.extend(/** @lends Multipart.prototype */ {
+var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
 
     /**
      * @protected

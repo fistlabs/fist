@@ -2,21 +2,21 @@
 
 var QueryString = /** @type QueryString */ require('querystring');
 
-var Loader = /** @type Loader */ require('./Loader');
-var Raw = /** @type Raw */ require('./parser/Raw');
-var Urlencoded = /** @type Urlencoded */ require('./parser/Urlencoded');
-var Json = /** @type Json */ require('./parser/Json');
-var Multipart = /** @type Multipart */ require('./parser/Multipart');
+var Reader = /** @type Reader */ require('./Reader');
+var Raw = /** @type Raw */ require('./Raw');
+var Urlencoded = /** @type Urlencoded */ require('./Urlencoded');
+var Json = /** @type Json */ require('./Json');
+var Multipart = /** @type Multipart */ require('./Multipart');
 
 /**
- * @class BodyParser
- * @extends Loader
+ * @class Body
+ * @extends Reader
  * */
-var BodyParser = Loader.extend(/** @lends BodyParser.prototype */ {
+var Body = Reader.extend(/** @lends Body.prototype */ {
 
     /**
      * @protected
-     * @memberOf {BodyParser}
+     * @memberOf {Body}
      * @method
      *
      * @param {*} [opts]
@@ -26,7 +26,7 @@ var BodyParser = Loader.extend(/** @lends BodyParser.prototype */ {
 
         var boundary;
 
-        if ( !BodyParser.hasBody(this._readable) ) {
+        if ( !Body.hasBody(this._readable) ) {
 
             return done(null, {
                 input: Object.create(null),
@@ -55,7 +55,7 @@ var BodyParser = Loader.extend(/** @lends BodyParser.prototype */ {
         return Raw.prototype._parse.call(this, opts, done);
     }
 
-}, /** @lends BodyParser */ {
+}, /** @lends Body */ {
 
     hasBody: function (req) {
 
@@ -66,4 +66,4 @@ var BodyParser = Loader.extend(/** @lends BodyParser.prototype */ {
     }
 });
 
-module.exports = BodyParser;
+module.exports = Body;

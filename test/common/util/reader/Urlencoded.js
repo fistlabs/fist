@@ -1,6 +1,6 @@
 'use strict';
 
-var Json = require('../../../../util/parser/Json');
+var Urlencoded = require('../../../../util/reader/Urlencoded');
 var http = require('../../../util/http');
 
 module.exports = {
@@ -8,30 +8,32 @@ module.exports = {
     done: function (test) {
         http({
             method: 'post',
-            body: '{"a":42}'
+            body: 'a=5&b=6'
         }, function (req, res) {
 
-            var parser = new Json(req);
+            var parser = new Urlencoded(req);
 
             parser.done(function (err, data) {
                 test.deepEqual(data.input, {
-                    a: '42'
+                    a: '5',
+                    b: '6'
                 });
                 test.deepEqual(data.files, Object.create(null));
                 res.end();
             });
+
         }, function () {
             test.done();
         });
     },
 
-    fail0: function (test) {
+    fail: function (test) {
         http({
             method: 'post',
             body: 'ПРИФФЕТ!'
         }, function (req, res) {
 
-            var parser = new Json(req);
+            var parser = new Urlencoded(req);
 
             req.on('data', function () {
                 req.emit('error', 'ERR');
@@ -46,33 +48,12 @@ module.exports = {
         });
     },
 
-    fail1: function (test) {
-        http({
-            method: 'post',
-            body: 'ПРИФФЕТ!'
-        }, function (req, res) {
-
-            var parser = new Json(req);
-
-            parser.done(function (err) {
-                test.ok(err instanceof SyntaxError);
-                res.end();
-            });
-
-        }, function () {
-            test.done();
-        });
-    },
-
-    isJSON: function (test) {
+    isUrlencoded: function (test) {
 
         var equal = [
-            'json+schema',
-            'schema+json',
-            'bunker-schema+json',
-            'bunker.schema+JSON; charset=utf-8',
-            'json',
-            'json+bunker.schema'
+            'x-www-form-urlencoded',
+            'x-www-form-urlencoded; charset=UTF8',
+            'x-www-form-URLENCODED'
         ];
 
         var nequal = [
@@ -83,7 +64,7 @@ module.exports = {
         ];
 
         equal.forEach(function (type) {
-            test.ok(Json.isJSON({
+            test.ok(Urlencoded.isUrlencoded({
                 headers: {
                     'content-type': 'application/' + type
                 }
@@ -91,7 +72,7 @@ module.exports = {
         });
 
         nequal.forEach(function (type) {
-            test.ok(!Json.isJSON({
+            test.ok(!Urlencoded.isUrlencoded({
                 headers: {
                     'content-type': 'application/' + type
                 }

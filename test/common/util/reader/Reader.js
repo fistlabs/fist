@@ -1,7 +1,7 @@
 'use strict';
 
-var Loader = require('../../../util/Loader');
-var http = require('../../util/http');
+var Reader = require('../../../../util/reader/Reader');
+var http = require('../../../util/http');
 
 module.exports = {
 
@@ -12,7 +12,7 @@ module.exports = {
             body: 'Hello, World!'
         }, function (req, res) {
 
-            var parser = new Loader(req);
+            var parser = new Reader(req);
 
             parser.done(function (err, buf) {
                 test.ok(Buffer.isBuffer(buf));
