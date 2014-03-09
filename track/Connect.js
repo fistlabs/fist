@@ -116,7 +116,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     body: function (done) {
 
         if ( !(this._body instanceof Body) ) {
-            this._body = new Body(this._req);
+            this._body = new Body(this._req, this.agent.params.body);
         }
 
         this._body.done(done, this);
