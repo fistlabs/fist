@@ -41,9 +41,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
         return function (req, res) {
 
+            var date = new Date();
             var track = agent._createTrack(req, res);
 
             res.once('finish', function () {
+                track.time = new Date() - date;
                 agent.emitEvent('response', track);
             });
 

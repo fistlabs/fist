@@ -29,10 +29,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @constructs
      * */
     constructor: function (agent, req, res) {
-
-        var date = new Date();
-        var track = this;
-
         Connect.Parent.apply(this, arguments);
 
         /**
@@ -79,16 +75,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @property {Array}
          * */
         this._reshead = Object.create(null);
-
-        res.once('finish', function () {
-
-            /**
-             * @public
-             * @memberOf {Connect}
-             * @property {Number}
-             * */
-            track.time = new Date() - date;
-        });
     },
 
     /**
