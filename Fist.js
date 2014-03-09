@@ -31,6 +31,11 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             this.route(desc.verb, desc.expr, desc.name, desc.data, desc.opts);
         }, this);
 
+        /**
+         * @public
+         * @memberOf {Fist}
+         * @property {Array<Task>}
+         * */
         this.init = [];
 
         /**
