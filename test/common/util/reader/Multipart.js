@@ -80,7 +80,8 @@ module.exports = {
                             name: 'buf',
                             data: new Buffer('asd')
                         }
-                    }
+                    },
+                    type: 'multipart'
                 });
                 res.end();
             });
@@ -114,7 +115,8 @@ module.exports = {
                             name: 'buf',
                             data: new Buffer('asd')
                         }
-                    }
+                    },
+                    type: 'multipart'
                 });
                 res.end();
             });
@@ -147,7 +149,8 @@ module.exports = {
                             name: 'buf',
                             data: new Buffer('asd')
                         }
-                    }
+                    },
+                    type: 'multipart'
                 });
                 res.end();
             });

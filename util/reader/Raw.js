@@ -24,7 +24,11 @@ var Raw = Loader.extend(/** @lends Raw.prototype*/ {
                 return done(err);
             }
 
-            return done(null, {input: res, files: Object.create(null)});
+            return done(null, {
+                input: res,
+                files: Object.create(null),
+                type: 'raw'
+            });
         });
     }
 });

@@ -40,7 +40,11 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
     parse: function (stream, opts, done) {
 
         var dicer = new Dicer(opts);
-        var result = {input: Object.create(null), files: Object.create(null)};
+        var result = {
+            input: Object.create(null),
+            files: Object.create(null),
+            type: 'multipart'
+        };
         var parserError = false;
 
         dicer.on('part', function (part) {

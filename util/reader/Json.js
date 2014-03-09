@@ -32,7 +32,8 @@ var Json = Loader.extend(/** @lends JSON.prototype*/ {
 
                 result = {
                     input: JSON.parse(res),
-                    files: Object.create(null)
+                    files: Object.create(null),
+                    type: 'json'
                 };
             } catch (ex) {
 

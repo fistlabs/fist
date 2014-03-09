@@ -96,7 +96,8 @@ module.exports = {
                     input: {
                         a: '5'
                     },
-                    files: {}
+                    files: {},
+                    type: 'urlencoded'
                 });
             });
 
@@ -106,7 +107,8 @@ module.exports = {
                     input: {
                         a: '5'
                     },
-                    files: {}
+                    files: {},
+                    type: 'urlencoded'
                 });
                 res.end();
             });

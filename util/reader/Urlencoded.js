@@ -29,7 +29,8 @@ var Urlencoded = Loader.extend(/** @lends Urlencoded.prototype*/ {
 
             return done(null, {
                 input: QueryString.parse(String(res)),
-                files: Object.create(null)
+                files: Object.create(null),
+                type: 'urlencoded'
             });
         }
 

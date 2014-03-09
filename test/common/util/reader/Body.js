@@ -38,7 +38,8 @@ module.exports = {
             parser.done(function (err, data) {
                 test.deepEqual(data, {
                     input: new Buffer('asd'),
-                    files: {}
+                    files: {},
+                    type: 'raw'
                 });
                 res.end();
             });
@@ -61,7 +62,8 @@ module.exports = {
             parser.done(function (err, data) {
                 test.deepEqual(data, {
                     input: new Buffer('asd'),
-                    files: {}
+                    files: {},
+                    type: 'raw'
                 });
                 res.end();
             });
@@ -86,7 +88,8 @@ module.exports = {
                     input: {
                         a: '42'
                     },
-                    files: {}
+                    files: {},
+                    type: 'urlencoded'
                 });
                 res.end();
             });
@@ -111,7 +114,8 @@ module.exports = {
                     input: {
                         a: '42'
                     },
-                    files: {}
+                    files: {},
+                    type: 'json'
                 });
                 res.end();
             });
