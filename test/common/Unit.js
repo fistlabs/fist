@@ -1,6 +1,6 @@
 'use strict';
 
-var Unit = require('../../Unit');
+var Unit = require('../../unit/Unit');
 var Knot = Unit.extend({
     deps: ['a', 'b', 'a']
 });
