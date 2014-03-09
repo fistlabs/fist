@@ -24,11 +24,15 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
         //  clone options
         opts = extend(true, Object.create(null), opts);
 
-        if ( 'number' !== typeof opts.limit || !isNaN(opts.limit) ) {
+        opts.limit = +opts.limit;
+
+        if ( isNaN(opts.limit) ) {
             opts.limit = Infinity;
         }
 
-        if ( 'number' !== typeof opts.length || !isNaN(opts.length) ) {
+        opts.length = +opts.length;
+
+        if ( isNaN(opts.length) ) {
             opts.length = Infinity;
         }
 
@@ -65,10 +69,26 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
      *
      * @returns {Error}
      * */
-    getELIMIT: function (opts) {
+    ELIMIT: function (opts) {
 
         return extend(new Error(), {
             code: 'ELIMIT'
+        }, opts);
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Reader
+     *
+     * @method
+     *
+     * @returns {Error}
+     * */
+    ELENGTH: function (opts) {
+
+        return extend(new Error(), {
+            code: 'ELENGTH'
         }, opts);
     },
 
@@ -84,6 +104,20 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
     isELIMIT: function (e) {
 
         return e instanceof Error && 'ELIMIT' === e.code;
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Reader
+     *
+     * @method
+     *
+     * @returns {Boolean}
+     * */
+    isELENGTH: function (e) {
+
+        return e instanceof Error && 'ELENGTH' === e.code;
     }
 
 });

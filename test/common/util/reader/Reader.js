@@ -20,19 +20,31 @@ module.exports = {
         });
     },
 
-    ELIMIT: function (test) {
+    errors: function (test) {
 
-        var elimit = Reader.getELIMIT({
+        var error = Reader.ELIMIT({
             message: 'x'
         });
 
-        test.deepEqual(elimit, {
+        test.deepEqual(error, {
             code: 'ELIMIT',
             message: 'x'
         });
 
         test.ok(!Reader.isELIMIT());
-        test.ok(Reader.isELIMIT(elimit));
+        test.ok(Reader.isELIMIT(error));
+
+        error = Reader.ELENGTH({
+            message: 'xxx'
+        });
+
+        test.deepEqual(error, {
+            code: 'ELENGTH',
+            message: 'xxx'
+        });
+
+        test.ok(!Reader.isELENGTH(Reader.ELIMIT()));
+        test.ok(Reader.isELENGTH(error));
 
         test.done();
     }

@@ -28,13 +28,14 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
      * @memberOf Loader
      * @method
      *
-     * @param {EventEmitter} stream
+     * @param {Object} stream
      * @param {Object} opts
      * @param {Function} done
      * */
     _download: function (stream, opts, done) {
 
         var buf = [];
+        var received = 0;
 
         function cleanup () {
             stream.removeListener('data', data);
@@ -44,15 +45,46 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
         }
 
         function data (chunk) {
+
+            if ( !Buffer.isBuffer(chunk) ) {
+                chunk = new Buffer(String(chunk));
+            }
+
+            received += chunk.length;
+
+            if ( received > opts.limit ) {
+                stream.emit('error', Reader.ELIMIT({
+                    expected: opts.limit,
+                    actual: received
+                }));
+
+                return;
+            }
+
             buf[buf.length] = chunk;
         }
 
         function error (err) {
+
+            if ( 'function' === typeof stream.pause ) {
+                stream.pause();
+            }
+
             cleanup();
             done(err);
         }
 
         function end () {
+
+            if ( Infinity !== opts.length && received !== opts.length ) {
+                stream.emit('error', Reader.ELENGTH({
+                    expected: opts.length,
+                    actual: received
+                }));
+
+                return;
+            }
+
             cleanup();
             done(null, Buffer.concat(buf));
         }
