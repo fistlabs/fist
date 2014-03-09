@@ -57,6 +57,16 @@ var Body = Reader.extend(/** @lends Body.prototype */ {
 
 }, /** @lends Body */ {
 
+    /**
+     * @public
+     * @static
+     * @memberOf Body
+     * @method
+     *
+     * @param {Object} req
+     *
+     * @returns {Boolean}
+     * */
     hasBody: function (req) {
 
         var clen = req.headers['content-length'];

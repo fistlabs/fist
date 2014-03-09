@@ -1,6 +1,7 @@
 'use strict';
 
 var Task = /** @type Task */ require('fist.util.task/Task');
+var extend = require('fist.lang.extend');
 
 /**
  * @class Reader
@@ -19,7 +20,19 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
      * @param {*} [opts]
      * */
     constructor: function (readable, opts) {
-        Reader.Parent.call(this, this._parse, this, [opts || {}]);
+
+        //  clone options
+        opts = extend(true, Object.create(null), opts);
+
+        if ( 'number' !== typeof opts.limit || !isNaN(opts.limit) ) {
+            opts.limit = Infinity;
+        }
+
+        if ( 'number' !== typeof opts.length || !isNaN(opts.length) ) {
+            opts.length = Infinity;
+        }
+
+        Reader.Parent.call(this, this._parse, this, [opts]);
 
         /**
          * @protected
@@ -39,6 +52,38 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
      * */
     _parse: function (opts, done) {
         done(null, new Buffer(0));
+    }
+
+}, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Reader
+     *
+     * @method
+     *
+     * @returns {Error}
+     * */
+    getELIMIT: function (opts) {
+
+        return extend(new Error(), {
+            code: 'ELIMIT'
+        }, opts);
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Reader
+     *
+     * @method
+     *
+     * @returns {Boolean}
+     * */
+    isELIMIT: function (e) {
+
+        return e instanceof Error && 'ELIMIT' === e.code;
     }
 
 });

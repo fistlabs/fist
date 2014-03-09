@@ -17,7 +17,7 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
      * @param {Function} done
      * */
     _parse: function (opts, done) {
-        Loader.download(this._readable, done);
+        Loader.download(this._readable, opts, done);
     }
 
 }, {
@@ -29,9 +29,10 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
      * @method
      *
      * @param {EventEmitter} stream
+     * @param {Object} opts
      * @param {Function} done
      * */
-    download: function (stream, done) {
+    download: function (stream, opts, done) {
 
         var buf = [];
 

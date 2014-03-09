@@ -391,7 +391,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     _callStream: function (readable, done) {
-        Loader.download(readable, done);
+        new Loader(readable, null).done(done, this);
     },
 
     /**
