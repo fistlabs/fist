@@ -110,6 +110,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
      * @protected
      * @static
      * @memberOf Cookie
+     * @method
      *
      * @param {*} expires
      *
