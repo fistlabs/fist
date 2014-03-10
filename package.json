@@ -46,7 +46,7 @@
     },
     "scripts": {
         "jscs": "jscs -c .jscsrc .",
-        "eslint": "eslint -c .eslintrc benchmark test task track unit util *.js",
+        "eslint": "eslint -c .eslintrc benchmark bundle test task track unit util *.js",
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
