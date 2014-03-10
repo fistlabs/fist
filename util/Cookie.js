@@ -1,5 +1,9 @@
 'use strict';
 
+var R_SEPARATOR = /[;,]\s*/;
+var R_QUOTED = /^"(?:\\[\s\S]|[^"])+"$/;
+var R_ESCCHAR = /\\([\s\S])/g;
+
 var Base = /** @type Base */ require('fist.lang.class/Base');
 
 /**
@@ -7,27 +11,6 @@ var Base = /** @type Base */ require('fist.lang.class/Base');
  * @extends Base
  * */
 var Cookie = Base.extend(/** @lends Cookie.prototype */ {
-
-    /**
-     * @protected
-     * @memberOf {Cookie}
-     * @property {RegExp}
-     * */
-    R_SEPARATOR: /[;,]\s*/,
-
-    /**
-     * @protected
-     * @memberOf {Cookie}
-     * @property {RegExp}
-     * */
-    R_QUOTED: /^"(?:\\[\s\S]|[^"])+"$/,
-
-    /**
-     * @protected
-     * @memberOf {Cookie}
-     * @property {RegExp}
-     * */
-    R_ESCCHAR: /\\([\s\S])/g,
 
     /**
      * @public
@@ -52,7 +35,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
             return result;
         }
 
-        cookies = cookies.split(this.R_SEPARATOR);
+        cookies = cookies.split(R_SEPARATOR);
 
         for ( i = 0, l = cookies.length; i < l; i += 1 ) {
             cookie = cookies[i];
@@ -66,9 +49,9 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
             name = cookie.slice(0, e).trim();
             cookie = cookie.slice(e + 1, cookie.length).trim();
 
-            if ( this.R_QUOTED.test(cookie) ) {
+            if ( R_QUOTED.test(cookie) ) {
                 //  unquote, unescape
-                cookie = cookie.slice(1, -1).replace(this.R_ESCCHAR, '$1');
+                cookie = cookie.slice(1, -1).replace(R_ESCCHAR, '$1');
             }
 
             result[name] = cookie;
