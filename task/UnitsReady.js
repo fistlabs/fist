@@ -216,27 +216,22 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
      *
      * @method
      *
-     * @param {String} exprs
+     * @param {Array<String>} exprs
      * @param {Function} done
      * */
     multiglob: function (exprs, done) {
 
-        var result = [];
-        var files = [];
+        var length = exprs.length;
         var reject = false;
-        var count = exprs.length;
+        var result = [];
 
-        if ( 0 === count ) {
+        if ( 0 === length ) {
             done.call(this, null, result);
 
             return;
         }
 
-        function merge (list) {
-            [].push.apply(files, list);
-        }
-
-        function eachPath (name, i) {
+        function eachExpr (name, i) {
 
             function onread (err, list) {
 
@@ -253,19 +248,21 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
                 }
 
                 result[i] = list;
+                length -= 1;
 
-                count -= 1;
+                if ( 0 === length ) {
+                    result = result.reduce(function (files, list) {
 
-                if ( 0 === count ) {
-                    forEach(result, merge);
-                    done.call(this, null, files);
+                        return files.concat(list);
+                    }, []);
+                    done.call(this, null, result);
                 }
             }
 
             UnitsReady.glob.call(this, name, onread);
         }
 
-        forEach(exprs, eachPath, this);
+        forEach(exprs, eachExpr, this);
     }
 });
 
