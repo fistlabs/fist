@@ -6,7 +6,7 @@ var Fs = require('fs');
 var Path = require('path');
 var asker = require('asker');
 var routes = require('../stuff/conf/router0');
-var Promise = require('fist.util.promise');
+var Vow = require('vow');
 
 var STATUS_CODES = require('http').STATUS_CODES;
 
@@ -152,7 +152,7 @@ module.exports = {
 
         var fist = new Fist();
 
-        fist.decl('john', Promise.resolve('john'));
+        fist.decl('john', Vow.resolve('john'));
 
         fist.decl('users', ['john'], function (track, result, errors, done) {
 
@@ -192,19 +192,19 @@ module.exports = {
 
         fist.decl('users', function (t, e, r, done) {
 
-            var promise;
+            var defer;
 
             setTimeout(function () {
                 done(null, ['O_o']);
             }, 0);
 
-            promise = new Promise();
+            defer = Vow.defer();
 
             setTimeout(function () {
-                promise.fulfill(['mike']);
+                defer.resolve(['mike']);
             }, 100);
 
-            return promise;
+            return defer.promise();
         });
 
         fist.route('GET', '/', 'users');

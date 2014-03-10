@@ -2,7 +2,7 @@
 
 var Fist = require('../../Fist');
 var Track = require('../../track/Runtime');
-var Promise = require('fist.util.promise/Promise');
+var Vow = require('vow');
 var Fs = require('fs');
 
 var asker = require('asker');
@@ -27,7 +27,7 @@ module.exports = {
 
             test.strictEqual(res, 5);
 
-            res = yield Promise.resolve(42);
+            res = yield Vow.resolve(42);
 
             test.strictEqual(res, 42);
 
@@ -44,7 +44,7 @@ module.exports = {
 
             test.strictEqual(res, 777);
 
-            res = yield [Promise.resolve(146), function (done) {
+            res = yield [Vow.resolve(146), function (done) {
                 setTimeout(function () {
                     done(null, 99);
                 }, 0);

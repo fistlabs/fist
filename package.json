@@ -32,7 +32,7 @@
         "nodeunit": "",
         "istanbul": "",
         "asker": "",
-        "fist.util.promise": "",
+        "vow": "",
         "glob": "",
         "benchmark": "",
         "express": ""
