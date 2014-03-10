@@ -1,5 +1,6 @@
 'use strict';
 
+var R_DASHED = /[-\s]+([^-\s])/g;
 var Path = require('path');
 var Task = /** @type Task */ require('./Task');
 
@@ -132,7 +133,7 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
         var i;
         var l;
 
-        s = UnitsReady.convert(s);
+        s = UnitsReady.undash(s);
 
         //  data - > data
         if ( !UnitsReady.isCap(s.charAt(0)) ) {
@@ -181,9 +182,9 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
      *
      * @returns {String}
      * */
-    convert: function (s) {
+    undash: function (s) {
 
-        return s.replace(/[-\s]+([^-\s])/g, function ($0, $1) {
+        return s.replace(R_DASHED, function ($0, $1) {
 
             return $1.toUpperCase();
         });
@@ -193,7 +194,6 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
      * @public
      * @static
      * @memberOf UnitsReady
-     *
      * @method
      *
      * @param {String} expr
@@ -264,6 +264,7 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
 
         forEach(exprs, eachExpr, this);
     }
+
 });
 
 module.exports = UnitsReady;

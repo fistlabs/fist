@@ -71,7 +71,7 @@ module.exports = {
         test.done();
     },
 
-    'UnitsReady.convert': function (test) {
+    'UnitsReady.undash': function (test) {
 
         var samples = [
             ['a-b-c', 'aBC'],
@@ -80,7 +80,7 @@ module.exports = {
         ];
 
         samples.forEach(function (s) {
-            test.strictEqual(UnitsReady.convert(s[0]), s[1]);
+            test.strictEqual(UnitsReady.undash(s[0]), s[1]);
         });
 
         test.done();
