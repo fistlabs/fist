@@ -194,7 +194,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             opts.expires = -1;
         }
 
-        value = Connect.cookie.serial(name, encodeURIComponent(value), opts);
+        value = Connect.cookie.serialize(name, encodeURIComponent(value), opts);
 
         return this._setHead('Set-Cookie', value);
     },

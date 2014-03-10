@@ -21,34 +21,33 @@ module.exports = {
 
     serialCookie: function (test) {
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE'), 'NAME=VALUE');
+        test.strictEqual(cookie.serialize('NAME', 'VALUE'), 'NAME=VALUE');
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE', {}), 'NAME=VALUE');
+        test.strictEqual(cookie.serialize('NAME', 'VALUE', {}), 'NAME=VALUE');
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE', {
+        test.strictEqual(cookie.serialize('NAME', 'VALUE', {
             domain: 'yandex.ru',
             secure: true,
             path: '/'
         }), 'NAME=VALUE; domain=yandex.ru; path=/; secure');
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE', {
+        test.strictEqual(cookie.serialize('NAME', 'VALUE', {
             expires: 0
         }), 'NAME=VALUE; expires=' + (new Date()).toUTCString());
 
         var d = new Date(9000);
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE', {
+        test.strictEqual(cookie.serialize('NAME', 'VALUE', {
             expires: String(d)
         }), 'NAME=VALUE; expires=' + d.toUTCString());
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE', {
+        test.strictEqual(cookie.serialize('NAME', 'VALUE', {
             expires: d
         }), 'NAME=VALUE; expires=' + d.toUTCString());
 
-        test.strictEqual(cookie.serial('NAME', 'VALUE', {
+        test.strictEqual(cookie.serialize('NAME', 'VALUE', {
             expires: 'Invalid expires'
         }), 'NAME=VALUE');
-
 
         test.done();
     }

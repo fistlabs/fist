@@ -88,7 +88,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
      *
      * @returns {String}
      * */
-    serial: function (name, value, opts) {
+    serialize: function (name, value, opts) {
 
         var expires;
         var buf = [name + '=' + value];
@@ -143,7 +143,6 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
                 expires = new Date(expires);
             }
         }
-
 
         //  Invalid Date
         if ( isNaN(expires.getTime()) ) {
