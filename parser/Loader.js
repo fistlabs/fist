@@ -1,12 +1,12 @@
 'use strict';
 
-var Reader = /** @type Reader */ require('./Reader');
+var Parser = /** @type Parser */ require('./Parser');
 
 /**
  * @class Loader
- * @extends Reader
+ * @extends Parser
  * */
-var Loader = Reader.extend(/** @lends Loader.prototype */ {
+var Loader = Parser.extend(/** @lends Loader.prototype */ {
 
     /**
      * @protected
@@ -53,7 +53,7 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
             received += chunk.length;
 
             if ( received > opts.limit ) {
-                stream.emit('error', Reader.ELIMIT({
+                stream.emit('error', Parser.ELIMIT({
                     expected: opts.limit,
                     actual: received
                 }));
@@ -77,7 +77,7 @@ var Loader = Reader.extend(/** @lends Loader.prototype */ {
         function end () {
 
             if ( Infinity !== opts.length && received !== opts.length ) {
-                stream.emit('error', Reader.ELENGTH({
+                stream.emit('error', Parser.ELENGTH({
                     expected: opts.length,
                     actual: received
                 }));

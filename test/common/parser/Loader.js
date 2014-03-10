@@ -1,9 +1,9 @@
 'use strict';
 
-var Loader = require('../../../../util/reader/Loader');
-var Parted = require('../../../util/Parted');
-var Reader = require('../../../../util/reader/Reader');
-var http = require('../../../util/http');
+var Loader = require('../../../parser/Loader');
+var Parted = require('../../util/Parted');
+var Parser = require('../../../parser/Parser');
+var http = require('../../util/http');
 
 module.exports = {
 
@@ -61,7 +61,6 @@ module.exports = {
             });
 
             parser.done(function (err, body) {
-                test.ok(Reader.isELIMIT(err));
                 test.deepEqual(err, {
                     code: 'ELIMIT',
                     actual: 13,
@@ -82,11 +81,10 @@ module.exports = {
         }, function (req, res) {
 
             var parser = new Loader(req, {
-                length: req.headers['content-length']  - 1
+                length: req.headers['content-length'] - 1
             });
 
             parser.done(function (err, body) {
-                test.ok(Reader.isELENGTH(err));
                 test.deepEqual(err, {
                     code: 'ELENGTH',
                     actual: 13,
@@ -109,8 +107,6 @@ module.exports = {
         });
 
         parser.done(function (err) {
-
-            test.ok( Reader.isELIMIT(err) );
             test.deepEqual(err, {
                 actual: 6,
                 expected: 4,

@@ -1,7 +1,7 @@
 'use strict';
 
-var Body = require('../../../../util/reader/Body');
-var http = require('../../../util/http');
+var Body = require('../../../parser/Body');
+var http = require('../../util/http');
 
 module.exports = {
 

@@ -1,7 +1,7 @@
 'use strict';
 
-var Raw = require('../../../../util/reader/Raw');
-var http = require('../../../util/http');
+var Raw = require('../../../parser/Raw');
+var http = require('../../util/http');
 
 module.exports = {
 

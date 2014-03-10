@@ -1,13 +1,13 @@
 'use strict';
 
-var Reader = require('../../../../util/reader/Reader');
-var http = require('../../../util/http');
+var Parser = require('../../../parser/Parser');
+var http = require('../../util/http');
 
 module.exports = {
 
     done: function (test) {
         http({method: 'post', body: 'hi'}, function (req, res) {
-            var parser = new Reader(req);
+            var parser = new Parser(req);
 
             parser.done(function (err, buf) {
                 test.ok(Buffer.isBuffer(buf));
@@ -22,7 +22,7 @@ module.exports = {
 
     errors: function (test) {
 
-        var error = Reader.ELIMIT({
+        var error = Parser.ELIMIT({
             message: 'x'
         });
 
@@ -31,10 +31,7 @@ module.exports = {
             message: 'x'
         });
 
-        test.ok(!Reader.isELIMIT());
-        test.ok(Reader.isELIMIT(error));
-
-        error = Reader.ELENGTH({
+        error = Parser.ELENGTH({
             message: 'xxx'
         });
 
@@ -42,9 +39,6 @@ module.exports = {
             code: 'ELENGTH',
             message: 'xxx'
         });
-
-        test.ok(!Reader.isELENGTH(Reader.ELIMIT()));
-        test.ok(Reader.isELENGTH(error));
 
         test.done();
     }

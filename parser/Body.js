@@ -2,7 +2,7 @@
 
 var QueryString = /** @type QueryString */ require('querystring');
 
-var Reader = /** @type Reader */ require('./Reader');
+var Parser = /** @type Parser */ require('./Parser');
 var Raw = /** @type Raw */ require('./Raw');
 var Urlencoded = /** @type Urlencoded */ require('./Urlencoded');
 var Json = /** @type Json */ require('./Json');
@@ -10,9 +10,9 @@ var Multipart = /** @type Multipart */ require('./Multipart');
 
 /**
  * @class Body
- * @extends Reader
+ * @extends Parser
  * */
-var Body = Reader.extend(/** @lends Body.prototype */ {
+var Body = Parser.extend(/** @lends Body.prototype */ {
 
     /**
      * @protected

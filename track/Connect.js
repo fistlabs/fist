@@ -7,8 +7,8 @@ var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
     return NO_CONTENT;
 }, Object.create(null));
 
-var Body = /** @type Body */ require('../util/reader/Body');
-var Loader = /** @type Loader */ require('../util/reader/Loader');
+var Body = /** @type Body */ require('../parser/Body');
+var Loader = /** @type Loader */ require('../parser/Loader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 

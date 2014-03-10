@@ -1,7 +1,7 @@
 'use strict';
 
-var Json = require('../../../../util/reader/Json');
-var http = require('../../../util/http');
+var Json = require('../../../parser/Json');
+var http = require('../../util/http');
 
 module.exports = {
 

@@ -5,14 +5,14 @@ var R_FILENAME = /;\s*filename=(?:"([^"]*)"|([^\s]*))/;
 var R_MULTIPART =
     /^multipart\/[^\s]+?;[\s\r\n]+boundary=(?:"([^"]+)"|([^\s]+))$/i;
 
-var Parser = /** @type Parser */ require('dicer');
-var Reader = /** @type Reader */ require('./Reader');
+var Dicer = /** @type Dicer */ require('dicer');
+var Parser = /** @type Parser */ require('./Parser');
 
 /**
  * @class Multipart
- * @extends Reader
+ * @extends Parser
  * */
-var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
+var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
     /**
      * @protected
@@ -39,7 +39,7 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
      * */
     parse: function (stream, opts, done) {
 
-        var parser = new Parser(opts);
+        var parser = new Dicer(opts);
         var received = 0;
         var result = {
             input: Object.create(null),
@@ -139,7 +139,7 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
         function parserFinish () {
 
             if ( Infinity !== opts.length && received !== opts.length ) {
-                parser.emit('error', Reader.ELENGTH({
+                parser.emit('error', Parser.ELENGTH({
                     actual: received,
                     expected: opts.length
                 }));
@@ -171,7 +171,7 @@ var Multipart = Reader.extend(/** @lends Multipart.prototype */ {
             received += chunk.length;
 
             if ( received > opts.limit ) {
-                stream.emit('error', Reader.ELIMIT({
+                stream.emit('error', Parser.ELIMIT({
                     actual: received,
                     expected: opts.limit
                 }));

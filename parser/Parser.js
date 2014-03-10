@@ -1,17 +1,17 @@
 'use strict';
 
-var Task = /** @type Task */ require('../../task/Task');
+var Task = /** @type Task */ require('../task/Task');
 var extend = require('fist.lang.extend');
 
 /**
- * @class Reader
+ * @class Parser
  * @extends Task
  * */
-var Reader = Task.extend(/** @lends Reader.prototype */ {
+var Parser = Task.extend(/** @lends Parser.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Reader}
+     * @memberOf {Parser}
      * @method
      *
      * @constructs
@@ -36,11 +36,11 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
             opts.length = Infinity;
         }
 
-        Reader.Parent.call(this, this._parse, this, [opts]);
+        Parser.Parent.call(this, this._parse, this, [opts]);
 
         /**
          * @protected
-         * @memberOf {Reader}
+         * @memberOf {Parser}
          * @property {Object}
          * */
         this._readable = readable;
@@ -48,7 +48,7 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Reader}
+     * @memberOf {Parser}
      * @method
      *
      * @param {*} opts
@@ -63,7 +63,7 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Reader
+     * @memberOf Parser
      *
      * @method
      *
@@ -79,7 +79,7 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Reader
+     * @memberOf Parser
      *
      * @method
      *
@@ -90,36 +90,8 @@ var Reader = Task.extend(/** @lends Reader.prototype */ {
         return extend(new Error(), {
             code: 'ELENGTH'
         }, opts);
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Reader
-     *
-     * @method
-     *
-     * @returns {Boolean}
-     * */
-    isELIMIT: function (e) {
-
-        return e instanceof Error && 'ELIMIT' === e.code;
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Reader
-     *
-     * @method
-     *
-     * @returns {Boolean}
-     * */
-    isELENGTH: function (e) {
-
-        return e instanceof Error && 'ELENGTH' === e.code;
     }
 
 });
 
-module.exports = Reader;
+module.exports = Parser;

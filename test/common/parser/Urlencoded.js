@@ -1,7 +1,7 @@
 'use strict';
 
-var Urlencoded = require('../../../../util/reader/Urlencoded');
-var http = require('../../../util/http');
+var Urlencoded = require('../../../parser/Urlencoded');
+var http = require('../../util/http');
 
 module.exports = {
 

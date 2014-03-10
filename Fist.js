@@ -1,7 +1,7 @@
 'use strict';
 
 var Http = require('http');
-var Loader = /** @type Loader */ require('./util/reader/Loader');
+var Loader = /** @type Loader */ require('./parser/Loader');
 var Nested = /** @type Nested */ require('./bundle/Nested');
 var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
