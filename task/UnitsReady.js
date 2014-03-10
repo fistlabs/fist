@@ -233,7 +233,7 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
 
         function eachExpr (name, i) {
 
-            function onread (err, list) {
+            function onread (err, files) {
 
                 if ( reject ) {
 
@@ -247,14 +247,14 @@ var UnitsReady = Task.extend(/** @lends UnitsReady.prototype */ {
                     return;
                 }
 
-                result[i] = list;
+                result[i] = files;
                 length -= 1;
 
                 if ( 0 === length ) {
-                    result = result.reduce(function (files, list) {
+                    result = result.reduce(function (result, files) {
 
-                        return files.concat(list);
-                    }, []);
+                        return result.concat(files);
+                    });
                     done.call(this, null, result);
                 }
             }
