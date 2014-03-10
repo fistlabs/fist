@@ -2,6 +2,7 @@
 
 var Http = require('http');
 var Loader = /** @type Loader */ require('./util/reader/Loader');
+var Nested = /** @type Nested */ require('./bundle/Nested');
 var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
@@ -390,6 +391,18 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _callStream: function (readable, done) {
         new Loader(readable, null).done(done, this);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @returns {Nested}
+     * */
+    _createBundle: function () {
+
+        return new Nested();
     },
 
     /**
