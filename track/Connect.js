@@ -1,13 +1,14 @@
 'use strict';
 
-var STATUS_CODES = require('http').STATUS_CODES;
 var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
     NO_CONTENT[code] = true;
 
     return NO_CONTENT;
 }, Object.create(null));
+var STATUS_CODES = require('http').STATUS_CODES;
 
 var Body = /** @type Body */ require('../parser/Body');
+var Cookie = /** @type Cookie */ require('../util/Cookie');
 var Loader = /** @type Loader */ require('../parser/Loader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
@@ -494,8 +495,10 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @public
      * @static
      * @memberOf Connect
+     *
+     * @property {Cookie}
      * */
-    cookie: require('../util/cookie'),
+    cookie: new Cookie(),
 
     /**
      * @public
