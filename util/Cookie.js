@@ -136,11 +136,14 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
 
         if ( 'number' === typeof expires ) {
             expires = new Date(Date.now() + expires);
+
+        } else {
+
+            if ( !(expires instanceof Date) ) {
+                expires = new Date(expires);
+            }
         }
 
-        if ( !(expires instanceof Date) ) {
-            expires = new Date(expires);
-        }
 
         //  Invalid Date
         if ( isNaN(expires.getTime()) ) {

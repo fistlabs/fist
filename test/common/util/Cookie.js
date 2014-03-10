@@ -42,8 +42,13 @@ module.exports = {
         }), 'NAME=VALUE; expires=' + d.toUTCString());
 
         test.strictEqual(cookie.serial('NAME', 'VALUE', {
+            expires: d
+        }), 'NAME=VALUE; expires=' + d.toUTCString());
+
+        test.strictEqual(cookie.serial('NAME', 'VALUE', {
             expires: 'Invalid expires'
         }), 'NAME=VALUE');
+
 
         test.done();
     }
