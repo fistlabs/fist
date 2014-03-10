@@ -14,7 +14,7 @@ module.exports = {
             e: '"'
         });
 
-        test.deepEqual(cookie.parse(), {});
+        test.deepEqual(cookie.parse({NOT_A_STRING: 0}), {});
 
         test.done();
     },
