@@ -69,10 +69,10 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * */
     hasBody: function (req) {
 
-        var clen = req.headers['content-length'];
+        var length = req.headers['content-length'];
 
         return 'string' === typeof req.headers['transfer-encoding'] ||
-            'string' === typeof clen && '0' !== clen;
+            'string' === typeof length && '0' !== length;
     }
 });
 
