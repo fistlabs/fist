@@ -2,27 +2,21 @@
 
 function buildGMTTime (expires) {
 
-    //  max-age
     if ( 'number' === typeof expires ) {
         expires = new Date(Date.now() + expires);
     }
 
-    //  expires as {Date}
-    if ( expires instanceof Date ) {
-
-        return expires.toUTCString();
+    if ( !(expires instanceof Date) ) {
+        expires = new Date(expires);
     }
 
-    //  guess any supported date format
-    expires = new Date(expires).toUTCString();
-
-    //  fail
-    if ( 'Invalid Date' === expires ) {
+    //  Invalid Date
+    if ( isNaN(expires.getTime()) ) {
 
         return null;
     }
 
-    return expires;
+    return expires.toUTCString();
 }
 
 module.exports = function serial (name, value, opts) {
