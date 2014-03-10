@@ -3,10 +3,10 @@
 var Http = require('http');
 var Loader = /** @type Loader */ require('./parser/Loader');
 var Nested = /** @type Nested */ require('./bundle/Nested');
-var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 var Task = require('./task/Task');
+var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 
 var forEach = require('fist.lang.foreach');
 var toArray = require('fist.lang.toarray');
@@ -160,11 +160,15 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
             return;
         }
 
-        this._callYield(result.value, function () {
+        this._callYield(result.value, function (err, res) {
 
-            var stat = +(1 < arguments.length);
+            if ( 2 > arguments.length ) {
+                tracker._callGen(gen, err, true, done);
 
-            tracker._callGen(gen, arguments[stat], !stat, done);
+                return;
+            }
+
+            tracker._callGen(gen, res, false, done);
         });
     },
 

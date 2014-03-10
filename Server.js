@@ -201,11 +201,17 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         track.match = mdata.match;
         track.route = mdata.route.name;
 
-        this.resolve(track, mdata.route.data || track.route, function () {
+        mdata = mdata.route.data || track.route;
 
-            var done = +(1 < arguments.length);
+        this.resolve(track, mdata, function (err, res) {
 
-            track.send([500, 200][done], arguments[done]);
+            if ( 2 > arguments.length ) {
+                track.send(500, err);
+
+                return;
+            }
+
+            track.send(200, res);
         });
     }
 

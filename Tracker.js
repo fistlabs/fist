@@ -124,9 +124,9 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     _bundle: function (track, deps, done) {
 
         var bundle = this._createBundle();
-        var count = deps.length;
+        var length = deps.length;
 
-        if ( 0 === count ) {
+        if ( 0 === length ) {
             done.call(this, bundle);
 
             return;
@@ -135,9 +135,9 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         deps.forEach(function (path) {
             this.resolve(track, path, function () {
                 bundle.bundlify(path, arguments);
-                count -= 1;
+                length -= 1;
 
-                if ( 0 === count ) {
+                if ( 0 === length ) {
                     done.call(this, bundle);
                 }
             });
