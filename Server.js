@@ -64,24 +64,13 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      * */
     resolve: function (track, path, done) {
 
-        var date = new Date();
-
         function resolve () {
             // jshint validthis: true
-            var stat;
 
             if ( track.sent() ) {
 
                 return;
             }
-
-            stat = +(1 < arguments.length);
-
-            this.emitEvent(['reject', 'accept'][stat], {
-                data: arguments[stat],
-                path: path,
-                time: new Date() - date
-            });
 
             done.apply(this, arguments);
         }

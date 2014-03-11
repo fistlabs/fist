@@ -90,6 +90,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     resolve: function (track, path, done) {
 
+        var date;
         var task;
 
         //  already has task
@@ -109,7 +110,21 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         //  cache task
         track.tasks[path] = task;
 
-        task.done(done, this);
+        date = new Date();
+
+        task.done(function () {
+
+            var stat = +(1 < arguments.length);
+
+            this.emitEvent(['reject', 'accept'][stat], {
+                data: arguments[stat],
+                path: path,
+                time: new Date() - date
+            });
+
+            done.apply(this, arguments);
+
+        }, this);
     },
 
     /**
@@ -118,7 +133,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Array<String>|String} deps
+     * @param {Array<String>} deps
      * @param {Function} done done(bundle)
      * */
     _bundle: function (track, deps, done) {

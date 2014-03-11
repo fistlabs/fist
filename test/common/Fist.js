@@ -592,6 +592,47 @@ module.exports = {
 
     },
 
+    Fist16: function (test) {
+
+        var fist = new Fist();
+        var spy = [];
+
+        fist.decl('a', [], 'a');
+        fist.decl('b', ['a'], 'b');
+
+        fist.decl('index', ['a', 'b'], function (t, e, r, done) {
+            done(null, 'index');
+        });
+
+        fist.route('GET', '/', 'index');
+
+        fist.on('accept', function (ev) {
+            spy.push(ev.path);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true,
+                    isRetryAllowed: false
+                };
+            }
+        }, function (err, res) {
+            test.deepEqual(spy, ['a', 'b', 'index']);
+            test.done();
+        });
+
+    },
+
     'Server-0': function (test) {
 
         var server = new Fist({
