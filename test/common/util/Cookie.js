@@ -5,7 +5,7 @@ var cookie = new Cookie();
 
 module.exports = {
 
-    parseCookie: function (test) {
+    'Cookie.prototype.parse': function (test) {
         test.deepEqual(cookie.parse(' a=5; b=6,c=7=8; d="\\"" ;asd;e="'), {
             a: '5',
             b: '6',
@@ -19,7 +19,7 @@ module.exports = {
         test.done();
     },
 
-    serialCookie: function (test) {
+    'Cookie.prototype.serialize': function (test) {
 
         test.strictEqual(cookie.serialize('NAME', 'VALUE'), 'NAME=VALUE');
 
