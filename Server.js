@@ -49,6 +49,8 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
                 self.emitEvent('response', track);
             });
 
+            self.emitEvent('request', track);
+
             self._handle(track);
         };
     },
@@ -152,8 +154,6 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
         var mdata;
         var rdata;
-
-        this.emitEvent('request', track);
 
         if ( track.sent() ) {
 

@@ -28,9 +28,18 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         /**
          * @public
          * @memberOf {Fist}
-         * @property {Array<Task>}
+         * @property
+         * @type {Array}
          * */
         this.init = [];
+
+        /**
+         * @protected
+         * @memberOf {Fist}
+         * @property
+         * @type {Array}
+         * */
+        this._pends = [];
     },
 
     /**
@@ -41,26 +50,13 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     listen: function () {
 
         var server = Http.createServer(this.getHandler());
-        var self = this;
-        var pends = [];
 
         server.listen.apply(server, arguments);
 
+        //  автоматически добавляю таски на инициализацию роутера и узлов
         this.before(routes, units);
 
-        //  Если запросы начали посылать пока
-        // не выполнились все инит-плагины
-        this._handle = [].push.bind(pends);
-
-        this.once('ready', function () {
-
-            delete self._handle;
-
-            pends.forEach(this._handle, self);
-
-            pends = null;
-        });
-
+        //  автоматически запускаю инициализацию
         this.ready();
     },
 
@@ -90,6 +86,20 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         var isError = false;
         var length = this.init.length;
         var result = [];
+
+        //  сервер приостанавливает работу, откладывает запросы
+        this._handle = [].push.bind(this._pends);
+
+        this.emitEvent('pending');
+
+        //  когда будет готов, надо будет обработать все отложенные запросы
+        this.once('ready', function () {
+            delete this._handle;
+
+            while ( this._pends.length ) {
+                this._handle(this._pends.shift());
+            }
+        });
 
         function done (err) {
             if ( 2 > arguments.length ) {

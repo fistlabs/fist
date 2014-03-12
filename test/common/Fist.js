@@ -184,6 +184,68 @@ module.exports = [
             test.strictEqual(data.data + '', 'OK');
             test.done();
         });
-    }
+    },
+
+    function (test) {
+
+        var fist = new Fist();
+        var spy = [];
+
+        fist.once('ready', function () {
+            //  тут сервер уже проинициализировался в первый раз
+            spy.push(2);
+            test.deepEqual(spy, [1, 2]);
+
+            //  снова подписываюсь на это событие
+            fist.once('ready', function () {
+                spy.push(4);
+                test.deepEqual(spy, [1, 2, 3, 4]);
+                test.done();
+            });
+        });
+
+        //  создаю асинхронный таск
+        fist.before(function (done) {
+            setTimeout(function () {
+                spy.push(1);
+                done(null, 42);
+            }, 10);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        //  отправляю запрос (он должен отложиться потому что сервер
+        // еще не проинициализировался)
+        asker({
+            method: 'GET',
+            path: '/',
+            socketPath: sock
+        }, function () {
+            //  сервер ответил, значит нет отложенных тасков
+            //  и запускаю инициализацию, сервер должен снова отложить запросы
+        });
+
+        //  сработает когда будет вызван ready
+        fist.once('pending', function () {
+
+            //  сервер перестал обрабатывать запросы
+            //  а мы добавляем еще одну задачу
+            fist.before(function (done) {
+                setTimeout(function () {
+                    spy.push(3);
+                    done(null, 42);
+                }, 100);
+            });
+
+            //  и снова запускаем инициализацию
+            fist.ready();
+        });
+
+        //  запускаю сервер (внутри вызывается fist.ready())
+        fist.listen(sock);
+    },
+
 
 ];
