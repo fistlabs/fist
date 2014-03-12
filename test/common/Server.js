@@ -24,7 +24,9 @@ server.decl('error', function () {
 });
 
 server.route('GET', '/', 'index');
-server.route('GET', '/index/', 'index-2', 'index');
+server.route('GET', '/index/', 'index-2', {
+    unit: 'index'
+});
 
 server.route('GET', '/error/', 'error');
 server.route('GET', '/<pageName>/', 'page');

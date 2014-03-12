@@ -151,6 +151,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
     _handle: function (track) {
 
         var mdata;
+        var rdata;
 
         this.emitEvent('request', track);
 
@@ -188,9 +189,13 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         track.match = mdata.match;
         track.route = mdata.route.name;
 
-        mdata = mdata.route.data || track.route;
+        rdata = mdata.route.data;
 
-        this.resolve(track, mdata, function (err, res) {
+        if ( Object(rdata) === rdata ) {
+            rdata = rdata.unit;
+        }
+
+        this.resolve(track, rdata || track.route, function (err, res) {
 
             if ( 2 > arguments.length ) {
                 track.send(500, err);
