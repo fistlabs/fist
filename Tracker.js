@@ -99,7 +99,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
 
             var stat = +(1 < arguments.length);
 
-            this.emitEvent(['reject', 'accept'][stat], {
+            this.emitEvent(['sys:reject', 'sys:accept'][stat], {
                 data: arguments[stat],
                 path: path,
                 time: new Date() - date

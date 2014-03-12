@@ -90,10 +90,10 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         //  сервер приостанавливает работу, откладывает запросы
         this._handle = [].push.bind(this._pends);
 
-        this.emitEvent('pending');
+        this.emitEvent('sys:pending');
 
         //  когда будет готов, надо будет обработать все отложенные запросы
-        this.once('ready', function () {
+        this.once('sys:ready', function () {
             delete this._handle;
 
             while ( this._pends.length ) {
@@ -103,12 +103,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         function done (err) {
             if ( 2 > arguments.length ) {
-                this.emitEvent('error', err);
+                this.emitEvent('sys:error', err);
 
                 return;
             }
 
-            this.emitEvent('ready');
+            this.emitEvent('sys:ready');
         }
 
         function taskReady (i) {

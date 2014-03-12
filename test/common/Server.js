@@ -217,7 +217,7 @@ module.exports = [
 
         Http.createServer(server.getHandler()).listen(sock);
 
-        server.on('response', function (event) {
+        server.on('sys:response', function (event) {
             event.status(500);
             test.strictEqual(typeof event.time, 'number');
             test.ok(isFinite(event.time));
@@ -261,7 +261,7 @@ module.exports = [
             Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        serv.on('request', function (track) {
+        serv.on('sys:request', function (track) {
             track.send(201);
         });
 

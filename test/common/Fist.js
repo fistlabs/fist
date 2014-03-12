@@ -27,23 +27,23 @@ module.exports = [
             mt: []
         };
 
-        fist.on('accept', function (data) {
+        fist.on('sys:accept', function (data) {
             spy.ac.push(data.path);
         });
 
-        fist.on('reject', function (data) {
+        fist.on('sys:reject', function (data) {
             spy.rj.push(data.path);
         });
 
-        fist.on('request', function (data) {
+        fist.on('sys:request', function (data) {
             spy.rq.push(data.url.pathname);
         });
 
-        fist.on('response', function (data) {
+        fist.on('sys:response', function (data) {
             spy.rs.push(data.url.pathname);
         });
 
-        fist.on('match-done', function (data) {
+        fist.on('sys:match-done', function (data) {
             spy.mt.push(data.url.pathname);
         });
 
@@ -125,7 +125,7 @@ module.exports = [
 
         var fist = new Fist();
 
-        fist.on('error', function (err) {
+        fist.on('sys:error', function (err) {
             test.strictEqual(err, 42);
             test.done();
         });
@@ -143,7 +143,7 @@ module.exports = [
 
         var fist = new Fist();
 
-        fist.on('error', function (err) {
+        fist.on('sys:error', function (err) {
             test.strictEqual(err, 42);
             test.done();
         });
@@ -191,13 +191,13 @@ module.exports = [
         var fist = new Fist();
         var spy = [];
 
-        fist.once('ready', function () {
+        fist.once('sys:ready', function () {
             //  тут сервер уже проинициализировался в первый раз
             spy.push(2);
             test.deepEqual(spy, [1, 2]);
 
             //  снова подписываюсь на это событие
-            fist.once('ready', function () {
+            fist.once('sys:ready', function () {
                 spy.push(4);
                 test.deepEqual(spy, [1, 2, 3, 4]);
                 test.done();
@@ -228,7 +228,7 @@ module.exports = [
         });
 
         //  сработает когда будет вызван ready
-        fist.once('pending', function () {
+        fist.once('sys:pending', function () {
 
             //  сервер перестал обрабатывать запросы
             //  а мы добавляем еще одну задачу
