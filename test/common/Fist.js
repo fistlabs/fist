@@ -155,6 +155,35 @@ module.exports = [
         });
 
         fist.ready();
+    },
+
+    function (test) {
+
+        var fist = new Fist({
+            routes: {
+                name: 'index',
+                expr: '/'
+            }
+        });
+
+        fist.decl('index', function (track) {
+            track.send(200);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            socketPath: sock,
+            path: '/'
+        }, function (err, data) {
+            test.strictEqual(data.data + '', 'OK');
+            test.done();
+        });
     }
 
 ];
