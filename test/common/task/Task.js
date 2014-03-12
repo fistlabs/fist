@@ -42,55 +42,6 @@ module.exports = {
                 test.done();
             });
         }, 100);
-    },
-
-    'Task.queue0': function (test) {
-
-        var tasks = [
-            new Task(function (a, b, done) {
-                test.strictEqual(this, 42);
-                test.strictEqual(a, 1);
-                test.strictEqual(b, 2);
-                done(null, 43);
-            }, 42, [1,2]),
-            new Task(function (a, b, done) {
-                test.strictEqual(this, 44);
-                test.strictEqual(a, 3);
-                test.strictEqual(b, 4);
-                done(null, 45);
-            }, 44, [3, 4])
-        ];
-
-        Task.queue(tasks, function (err, res) {
-            test.strictEqual(arguments.length, 2);
-            test.strictEqual(this, 100500);
-            test.deepEqual(res, [43, 45]);
-            test.done();
-        }, 100500);
-    },
-
-    'Task.queue1': function (test) {
-
-        var tasks = [
-            new Task(function (a, b, done) {
-                test.strictEqual(this, 42);
-                test.strictEqual(a, 1);
-                test.strictEqual(b, 2);
-                done(43);
-            }, 42, [1, 2]),
-            new Task(function (a, b, done) {
-                test.strictEqual(this, 44);
-                test.strictEqual(a, 3);
-                test.strictEqual(b, 4);
-                done(null, 45);
-            }, 44, [3, 4])
-        ];
-
-        Task.queue(tasks, function (err, res) {
-            test.strictEqual(arguments.length, 1);
-            test.strictEqual(this, 100500);
-            test.deepEqual(err, 43);
-            test.done();
-        }, 100500);
     }
+
 };

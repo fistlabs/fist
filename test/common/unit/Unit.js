@@ -33,6 +33,20 @@ module.exports = {
         k.delDeps('a', 'c');
         test.deepEqual(k.deps, ['b']);
         test.done();
+    },
+
+    'Unit.prototype.data': function (test) {
+
+        var k = new Knot({
+            a: 42
+        });
+
+        k.data(null, null, null, function (err, res) {
+            test.deepEqual(res, {
+               a: 42
+            });
+            test.done();
+        });
     }
 
 };

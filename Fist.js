@@ -6,11 +6,10 @@ var Nested = /** @type Nested */ require('./bundle/Nested');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 var Task = require('./task/Task');
-var UnitsReady = /** @type UnitsReady */ require('./task/UnitsReady');
 
 var forEach = require('fist.lang.foreach');
-var toArray = require('fist.lang.toarray');
-
+var units = require('./init/units');
+var routes = require('./init/routes');
 /**
  * @class Fist
  * @extends Server
@@ -27,11 +26,6 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
-        //  Роуты из параметров добавляются при инстанцировании
-        forEach(toArray(this.params.routes), function (desc) {
-            this.route(desc.verb, desc.expr, desc.name, desc.data, desc.opts);
-        }, this);
-
         /**
          * @public
          * @memberOf {Fist}
@@ -39,14 +33,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * */
         this.init = [];
 
-        /**
-         * Номер таска на инициализацию узлов
-         *
-         * @protected
-         * @memberOf {Fist}
-         * @property {Number}
-         * */
-        this._unitsN = this.init.push(new UnitsReady(this.params)) - 1;
+        this.before(routes);
+        //  Добавляем таск на инициализирование узлов
+        this.before(units);
 
         //  Если запросы начали посылать пока узлы не проинициализировались
         this._handle = function (track) {
@@ -69,12 +58,19 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         server.listen.apply(server, arguments);
 
-        this.ready(function (err, results) {
-            results = (results || [])[this._unitsN];
-            forEach(results, function (args) {
-                this.decl.apply(this, args);
-            }, this);
-        });
+        this.ready(function () {});
+    },
+
+    /**
+     * @public
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Function} plugin
+     * */
+    before: function (plugin) {
+
+        return this.init.push(new Task(plugin, this, []));
     },
 
     /**
@@ -88,7 +84,43 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     ready: function (done) {
-        Task.queue(this.init, done, this);
+
+        var i;
+        var l;
+        var isError = false;
+        var length = this.init.length;
+        var result = [];
+
+        function taskReady (task, i) {
+
+            task.done(function (err, res) {
+
+                if ( 2 > arguments.length ) {
+                    isError = true;
+                    done.call(this, err);
+
+                    return;
+                }
+
+                length -= 1;
+                result[i] = res;
+
+                if ( 0 === length ) {
+                    done.call(this, null, result);
+                }
+
+            }, this);
+        }
+
+        for ( i = 0, l = length; i < l; i += 1 ) {
+            //  синхронные таски могут сразу сломаться
+            if ( isError ) {
+
+                break;
+            }
+
+            taskReady.call(this, this.init[i], i);
+        }
     },
 
     /**
