@@ -26,21 +26,24 @@ var Task = Base.extend(/** @lends Task.prototype */ {
         /**
          * @public
          * @memberOf {Task}
-         * @property {Array}
+         * @property
+         * @type {Array}
          * */
         this.args = toArray(args);
 
         /**
          * @public
          * @memberOf {Task}
-         * @property {*}
+         * @property
+         * @type {*}
          * */
         this.ctxt = ctxt;
 
         /**
          * @public
          * @memberOf {Task}
-         * @property {Function}
+         * @property
+         * @type {Function}
          * */
         this.func = func;
     },
