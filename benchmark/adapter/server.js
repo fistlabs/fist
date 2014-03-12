@@ -31,6 +31,7 @@ app.decl('b', [], function (bundle, done) {
 
 app.route('GET', '/page/<pageName>/', '_');
 
+/*eslint no-sync: 0*/
 try {
     Fs.unlinkSync(sock);
 } catch (ex) {}

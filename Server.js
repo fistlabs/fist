@@ -1,6 +1,6 @@
 'use strict';
 
-var Classic = /** @type Classic */ require('fist.router/Classic');
+var Classic = /** @type Classic */ require('./router/Classic');
 var Connect = /** @type Connect */ require('./track/Connect');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
@@ -37,19 +37,19 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      * */
     getHandler: function () {
 
-        var agent = this;
+        var self = this;
 
         return function (req, res) {
 
             var date = new Date();
-            var track = agent._createTrack(req, res);
+            var track = self._createTrack(req, res);
 
             res.once('finish', function () {
                 track.time = new Date() - date;
-                agent.emitEvent('response', track);
+                self.emitEvent('response', track);
             });
 
-            agent._handle(track);
+            self._handle(track);
         };
     },
 
@@ -65,7 +65,6 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
     resolve: function (track, path, done) {
 
         function resolve () {
-            // jshint validthis: true
 
             if ( track.sent() ) {
 
@@ -104,7 +103,6 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         var date = new Date();
 
         function resolve (bundle) {
-            // jshint validthis: true
             this.emitEvent('bundle', {
                 time: new Date() - date,
                 deps: deps,

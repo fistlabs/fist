@@ -19,6 +19,7 @@ app.get('/page/:pageName/', function (req, res) {
     res.send();
 });
 
+/*eslint no-sync: 0*/
 try {
     Fs.unlinkSync(sock);
 } catch (ex) {}

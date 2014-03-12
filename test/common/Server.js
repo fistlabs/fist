@@ -298,7 +298,7 @@ module.exports = [
             statusFilter: function () {
                 return {
                     accept: true
-                }
+                };
             }
         }, function (err, res) {
             test.deepEqual(res.statusCode, 500);

@@ -41,7 +41,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     listen: function () {
 
         var server = Http.createServer(this.getHandler());
-        var tracker = this;
+        var self = this;
         var pends = [];
 
         server.listen.apply(server, arguments);
@@ -54,9 +54,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         this.once('ready', function () {
 
-            delete tracker._handle;
+            delete self._handle;
 
-            pends.forEach(this._handle, tracker);
+            pends.forEach(this._handle, self);
 
             pends = null;
         });
@@ -185,7 +185,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     _callGen: function (gen, result, isError, done) {
 
-        var tracker = this;
+        var self = this;
 
         try {
             result = isError ? gen.throw(result) : gen.next(result);
@@ -204,12 +204,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         this._callYield(result.value, function (err, res) {
 
             if ( 2 > arguments.length ) {
-                tracker._callGen(gen, err, true, done);
+                self._callGen(gen, err, true, done);
 
                 return;
             }
 
-            tracker._callGen(gen, res, false, done);
+            self._callGen(gen, res, false, done);
         });
     },
 
@@ -222,7 +222,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @param {Function} done
      * */
     _callYield: function (value, done) {
-
+        /*eslint no-fallthrough: 0*/
         switch ( this._callRet(value, done) ) {
 
             //  вызова не было, примитив

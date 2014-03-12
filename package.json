@@ -17,11 +17,10 @@
         "fist.lang.toarray": "0.0.x",
         "fist.lang.unique": "0.0.x",
         "fist.lang.class": "0.0.x",
+        "fist.lang.regesc": "0.0.x",
 
         "fist.util.namespace": "0.0.x",
         "fist.util.id": "0.0.x",
-
-        "fist.router": "1.1.x",
 
         "dicer": "0.2.x",
         "glob": "3.2.x"
@@ -47,7 +46,7 @@
     },
     "scripts": {
         "jscs": "jscs -c .jscsrc .",
-        "eslint": "eslint -c .eslintrc benchmark bundle init parser task test track unit util *.js",
+        "eslint": "eslint benchmark bundle init parser router task test track unit util *.js",
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",

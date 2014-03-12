@@ -127,7 +127,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @returns {*}
      * */
     header: function (name, value, soft) {
-
+        /*eslint consistent-return: 0*/
         if ( Object(name) === name  ) {
             soft = value;
             value = name;

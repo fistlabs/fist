@@ -108,7 +108,7 @@ exports.toCamel = function (s) {
 };
 
 exports.createDecl = function (filename, params) {
-
+    /*eslint new-cap: 0*/
     var body;
     var decl = require(filename);
 
