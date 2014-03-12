@@ -7,7 +7,6 @@ var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 var Task = require('./task/Task');
 
-var forEach = require('fist.lang.foreach');
 var units = require('./init/units');
 var routes = require('./init/routes');
 /**
@@ -26,30 +25,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
-        var tracker = this;
-        var pends = [];
-
         /**
          * @public
          * @memberOf {Fist}
          * @property {Array<Task>}
          * */
         this.init = [];
-
-        //  Если запросы начали посылать пока
-        // не выполнились все инит-плагины
-        this._handle = [].push.bind(pends);
-
-        this.once('ready', function () {
-
-            delete tracker._handle;
-
-            forEach(pends, function (track) {
-                this._handle(track);
-            }, tracker);
-
-            pends = null;
-        });
     },
 
     /**
@@ -60,10 +41,25 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     listen: function () {
 
         var server = Http.createServer(this.getHandler());
+        var tracker = this;
+        var pends = [];
 
         server.listen.apply(server, arguments);
 
         this.before(routes, units);
+
+        //  Если запросы начали посылать пока
+        // не выполнились все инит-плагины
+        this._handle = [].push.bind(pends);
+
+        this.once('ready', function () {
+
+            delete tracker._handle;
+
+            pends.forEach(this._handle, tracker);
+
+            pends = null;
+        });
 
         this.ready();
     },
@@ -74,7 +70,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @method
      * */
     before: function () {
-        forEach(arguments, function (plugin) {
+        [].forEach.call(arguments, function (plugin) {
             this.init.push(new Task(plugin, this));
         }, this);
     },
@@ -397,7 +393,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         isError = false;
 
-        forEach(keys, function (i) {
+        keys.forEach(function (i) {
 
             function onReturned (err, res) {
 

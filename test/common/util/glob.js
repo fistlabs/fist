@@ -6,16 +6,19 @@ module.exports = [
 
     function (test) {
 
-        glob.call(42, [], function (err, res) {
+        var c = {};
+
+        glob.call(c, [], function (err, res) {
+            test.strictEqual(this, c);
             test.deepEqual(res, []);
         });
 
-        glob.call(42, [
+        glob.call(c, [
             'test/stuff/action/data0/*.js',
             'test/stuff/action/data1/*.js'
         ], function (err, result) {
 
-            test.strictEqual(this, 42);
+            test.strictEqual(this, c);
             test.deepEqual(result, [
                 'test/stuff/action/data0/Knot.js',
                 'test/stuff/action/data0/data.js',
@@ -32,10 +35,11 @@ module.exports = [
     },
 
     function (test) {
-        glob.call(42, [
+        var c = {};
+        glob.call(c, [
             'test/data1'
         ], function (err, res) {
-            test.strictEqual(this, 42);
+            test.strictEqual(this, c);
             test.deepEqual(res, []);
             test.done();
         });

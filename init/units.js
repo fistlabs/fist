@@ -3,7 +3,6 @@
 var R_DASHED = /[-\s]+([^-\s])/g;
 var Path = require('path');
 
-var forEach = require('fist.lang.foreach');
 var glob = require('../util/glob');
 
 /**
@@ -40,7 +39,7 @@ exports = module.exports = function (done) {
             decls[decls.length] = decl;
         }
 
-        forEach(decls, function (args) {
+        decls.forEach(function (args) {
             this.decl.apply(this, args);
         }, this);
 

@@ -1,7 +1,6 @@
 'use strict';
 
 var glob = require('glob');
-var forEach = require('fist.lang.foreach');
 var toArray = require('fist.lang.toarray');
 
 function singleGlob (expr, done) {
@@ -24,7 +23,7 @@ module.exports = function (exprs, done) {
     var reject;
     var result;
 
-    exprs = toArray(exprs);
+    exprs = /** @type {Array}*/ toArray(exprs);
 
     length = exprs.length;
     reject = false;
@@ -67,5 +66,5 @@ module.exports = function (exprs, done) {
         singleGlob.call(this, name, onread);
     }
 
-    forEach(exprs, eachExpr, this);
+    exprs.forEach(eachExpr, this);
 };
