@@ -70,7 +70,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * */
     before: function (plugin) {
 
-        return this.init.push(new Task(plugin, this, []));
+        return this.init.push(new Task(plugin, this));
     },
 
     /**
