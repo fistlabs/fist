@@ -139,7 +139,6 @@ module.exports = [
         fist.ready();
     },
 
-
     function (test) {
 
         var fist = new Fist();

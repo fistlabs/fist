@@ -91,7 +91,7 @@ module.exports = {
 
                 return {
                     accept: true
-                }
+                };
             }
         }, function (err, data) {
             test.strictEqual(data.data + '', er.stack);
@@ -127,7 +127,7 @@ module.exports = {
 
                 return {
                     accept: true
-                }
+                };
             }
         }, function (err, data) {
             test.strictEqual(data.data + '', 'Internal Server Error');
@@ -161,7 +161,7 @@ module.exports = {
 
                 return {
                     accept: true
-                }
+                };
             }
         }, function (err, data) {
             test.strictEqual(data.data + '', '{}');

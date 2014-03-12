@@ -67,11 +67,8 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @public
      * @memberOf {Tracker}
      * @method
-     *
-     * @param {String} name
-     * @param {*} [event]
      * */
-    emitEvent: function (name, event) {
+    emitEvent: function () {
         this.emit.apply(this, arguments);
     },
 
