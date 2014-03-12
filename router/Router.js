@@ -1,7 +1,7 @@
 'use strict';
 
 var Class = /** @type Class */ require('fist.lang.class/Class');
-var Route = /** @type Route */ require('./route/Route');
+var Route = /** @type Route */ require('../route/Route');
 
 var extend = require('fist.lang.extend');
 

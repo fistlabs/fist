@@ -46,7 +46,7 @@
     },
     "scripts": {
         "jscs": "jscs -c .jscsrc .",
-        "eslint": "eslint benchmark bundle init parser router task test track unit util *.js",
+        "eslint": "eslint benchmark bundle init parser route router task test track unit util *.js",
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",

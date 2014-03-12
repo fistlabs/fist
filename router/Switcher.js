@@ -1,7 +1,7 @@
 'use strict';
 
 var Router = /** @type Router */ require('./Router');
-var Pathr = /** @type Pathr */ require('./route/Pathr');
+var Pathr = /** @type Pathr */ require('../route/Pathr');
 
 var unique = require('fist.lang.unique');
 

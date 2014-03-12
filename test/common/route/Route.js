@@ -1,7 +1,7 @@
 'use strict';
 
-var Route = require('../../../../router/route/Route');
-var Expr = require('../../../../util/Expr');
+var Route = require('../../../route/Route');
+var Expr = require('../../../util/Expr');
 
 module.exports = {
 
