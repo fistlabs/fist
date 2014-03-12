@@ -30,9 +30,9 @@ server.route('GET', '/error/', 'error');
 server.route('GET', '/<pageName>/', 'page');
 server.route('POST', '/upload/', 'upload');
 
-module.exports = {
+module.exports = [
 
-    'Server.prototype.resolve': function (test) {
+    function (test) {
 
         var s = new Server();
 
@@ -68,7 +68,7 @@ module.exports = {
 
     },
 
-    'Server-0': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -86,7 +86,7 @@ module.exports = {
         });
     },
 
-    'Server-1': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -104,7 +104,7 @@ module.exports = {
         });
     },
 
-    'Server-2': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -129,7 +129,7 @@ module.exports = {
         });
     },
 
-    'Server-3': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -155,7 +155,7 @@ module.exports = {
         });
     },
 
-    'Server-4': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -180,7 +180,7 @@ module.exports = {
         });
     },
 
-    'Server-5': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -205,7 +205,7 @@ module.exports = {
         });
     },
 
-    'Server-7': function (test) {
+    function (test) {
 
         var spy = [];
 
@@ -233,7 +233,7 @@ module.exports = {
         });
     },
 
-    'Server-8': function (test) {
+    function (test) {
 
         try {
             Fs.unlinkSync(sock);
@@ -251,7 +251,7 @@ module.exports = {
         });
     },
 
-    'Server-9': function (test) {
+    function (test) {
 
         var serv = new Server();
 
@@ -273,6 +273,38 @@ module.exports = {
             test.deepEqual(res.statusCode, 201);
             test.done();
         });
+    },
+
+    function (test) {
+
+        var serv = new Server();
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        serv.decl('some', function (bundle, done) {
+            done(1);
+        });
+
+        serv.route('GET', '/', 'some');
+
+        Http.createServer(serv.getHandler()).listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true
+                }
+            }
+        }, function (err, res) {
+            test.deepEqual(res.statusCode, 500);
+            test.deepEqual(res.data + '', '1');
+            test.done();
+        });
     }
 
-};
+];
