@@ -107,7 +107,7 @@ var Classic = Router.extend(/** @lends Classic.prototype */ {
         }
 
         for ( i = 0, l = this.routes.length; i < l; i += 1 ) {
-            match = this.routes[i].match(message);
+            match = this._match(this.routes[i], message);
 
             if ( null === match ) {
 

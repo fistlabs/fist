@@ -82,7 +82,7 @@ var Router = Class.extend(/** @lends Router.prototype */ {
         var match;
 
         for ( i = 0, l = this.routes.length; i < l; i += 1 ) {
-            match = this.routes[i].match(message);
+            match = this._match(this.routes[i], message);
 
             if ( null === match ) {
 
@@ -96,6 +96,19 @@ var Router = Class.extend(/** @lends Router.prototype */ {
         }
 
         return null;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Router}
+     * @method
+     *
+     * @param {Route} route
+     * @param {String} message
+     * */
+    _match: function (route, message) {
+
+        return route.match(message);
     }
 
 });
