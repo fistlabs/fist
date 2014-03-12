@@ -64,5 +64,110 @@ module.exports = {
             test.strictEqual(data.data + '', '/about/?text=test');
             test.done();
         });
+    },
+
+    writeError0: function (test) {
+
+        var fist = new Fist();
+        var er = new Error();
+
+        fist.route('GET', '/', 'index');
+
+        fist.decl('index', function (track) {
+            track.send(500, er);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            socketPath: sock,
+            path: '/',
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                }
+            }
+        }, function (err, data) {
+            test.strictEqual(data.data + '', er.stack);
+            test.strictEqual(data.statusCode, 500);
+            test.done();
+        });
+    },
+
+    writeError1: function (test) {
+
+        var fist = new Fist({
+            staging: true
+        });
+        var er = new Error();
+
+        fist.route('GET', '/', 'index');
+
+        fist.decl('index', function (track) {
+            track.send(500, er);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            socketPath: sock,
+            path: '/',
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                }
+            }
+        }, function (err, data) {
+            test.strictEqual(data.data + '', 'Internal Server Error');
+            test.strictEqual(data.statusCode, 500);
+            test.done();
+        });
+    },
+
+    writeError2: function (test) {
+
+        var fist = new Fist();
+        var er = new Error();
+
+        fist.route('GET', '/', 'index');
+
+        fist.decl('index', function (track) {
+            track.send(200, er);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            socketPath: sock,
+            path: '/',
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                }
+            }
+        }, function (err, data) {
+            test.strictEqual(data.data + '', '{}');
+            test.strictEqual(data.statusCode, 200);
+            test.done();
+        });
     }
+
 };

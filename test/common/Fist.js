@@ -7,9 +7,9 @@ var Path = require('path');
 var asker = require('asker');
 var routes = require('../stuff/conf/router0');
 
-module.exports = {
+module.exports = [
 
-    Fist0: function (test) {
+    function (test) {
 
         var fist = new Fist({
             action: [
@@ -87,6 +87,75 @@ module.exports = {
 
             test.done();
         });
+    },
+
+    function (test) {
+
+        var fist = new Fist();
+
+        fist.decl('index', function (track) {
+            track.send(200);
+        });
+
+        fist.route('GET', '/', 'index');
+
+        fist.before(function (done) {
+            setTimeout(function () {
+                done(null, 42);
+            }, 200);
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            socketPath: sock,
+            path: '/'
+        }, function (err, data) {
+            test.strictEqual(data.data + '', 'OK');
+            test.done();
+        });
+    },
+
+    function (test) {
+
+        var fist = new Fist();
+
+        fist.on('error', function (err) {
+            test.strictEqual(err, 42);
+            test.done();
+        });
+
+        fist.before(function (done) {
+            setTimeout(function () {
+                done(42);
+            }, 200);
+        });
+
+        fist.ready();
+    },
+
+
+    function (test) {
+
+        var fist = new Fist();
+
+        fist.on('error', function (err) {
+            test.strictEqual(err, 42);
+            test.done();
+        });
+
+        fist.before(function (done) {
+            done(42);
+        }, function (done) {
+            done(null, 43);
+        });
+
+        fist.ready();
     }
 
-};
+];

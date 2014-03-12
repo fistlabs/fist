@@ -26,6 +26,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
 
+        var tracker = this;
+        var pends = [];
+
         /**
          * @public
          * @memberOf {Fist}
@@ -33,18 +36,20 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * */
         this.init = [];
 
-        this.before(routes);
-        //  Добавляем таск на инициализирование узлов
-        this.before(units);
+        //  Если запросы начали посылать пока
+        // не выполнились все инит-плагины
+        this._handle = [].push.bind(pends);
 
-        //  Если запросы начали посылать пока узлы не проинициализировались
-        this._handle = function (track) {
-            this.ready(function () {
+        this.once('ready', function () {
 
-                delete this._handle;
+            delete tracker._handle;
+
+            forEach(pends, function (track) {
                 this._handle(track);
-            });
-        };
+            }, tracker);
+
+            pends = null;
+        });
     },
 
     /**
@@ -58,19 +63,20 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
 
         server.listen.apply(server, arguments);
 
-        this.ready(function () {});
+        this.before(routes, units);
+
+        this.ready();
     },
 
     /**
      * @public
      * @memberOf {Fist}
      * @method
-     *
-     * @param {Function} plugin
      * */
-    before: function (plugin) {
-
-        return this.init.push(new Task(plugin, this));
+    before: function () {
+        forEach(arguments, function (plugin) {
+            this.init.push(new Task(plugin, this));
+        }, this);
     },
 
     /**
@@ -80,10 +86,8 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @public
      * @memberOf {Fist}
      * @method
-     *
-     * @param {Function} done
      * */
-    ready: function (done) {
+    ready: function () {
 
         var i;
         var l;
@@ -91,9 +95,18 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         var length = this.init.length;
         var result = [];
 
-        function taskReady (task, i) {
+        function done (err) {
+            if ( 2 > arguments.length ) {
+                this.emitEvent('error', err);
 
-            task.done(function (err, res) {
+                return;
+            }
+
+            this.emitEvent('ready');
+        }
+
+        function taskReady (i) {
+            this.init[i].done(function (err, res) {
 
                 if ( 2 > arguments.length ) {
                     isError = true;
@@ -119,7 +132,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
                 break;
             }
 
-            taskReady.call(this, this.init[i], i);
+            taskReady.call(this, i);
         }
     },
 

@@ -72,7 +72,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @param {*} [event]
      * */
     emitEvent: function (name, event) {
-        this.emit(name, event);
+        this.emit.apply(this, arguments);
     },
 
     /**
