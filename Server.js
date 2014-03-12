@@ -160,8 +160,9 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
             return;
         }
 
-        mdata = this.router.find(track.method, track.url.pathname);
+        mdata = this._findRoute(track);
 
+        //  однозначно нет такого маршрута
         if ( null === mdata ) {
             this.emitEvent('match-fail', track);
             track.send(404);
@@ -169,16 +170,24 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
             return;
         }
 
+        //  возвращен массив
         if ( Array.isArray(mdata) ) {
+            //  это тоже значит что нет такого роута
             this.emitEvent('match-fail', track);
 
+            //  если массив пустой, то на сервере совсем нет ни одного
+            //  маршрута отвечающего по такому методу запроса
             if ( 0 === mdata.length ) {
+                //  Not Implemented
                 track.send(501);
 
                 return;
             }
 
+            //  Иначе есть такие маршруты, но для них не
+            // поддерживается такой метод
             track.header('Allow', mdata.join(', '));
+            //  Method Not Allowed
             track.send(405);
 
             return;
@@ -205,6 +214,20 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
             track.send(200, res);
         });
+    },
+
+    /**
+     * @protected
+     * @memberOf {Server}
+     * @method
+     *
+     * @param {Connect} track
+     *
+     * @returns {*}
+     * */
+    _findRoute: function (track) {
+
+        return this.router.find(track.method, track.url.pathname);
     }
 
 });
