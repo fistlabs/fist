@@ -32,7 +32,6 @@ module.exports = {
         }
 
         setTimeout(function () {
-            test.deepEqual(task.clbs, []);
 
             for (i = 0, l = 10; i < l; i += 1) {
                 task.done(done, 42);

@@ -1,6 +1,7 @@
 'use strict';
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
+var Next = /** @type Next */ require('./Next');
 
 /**
  * @class Task
@@ -20,7 +21,6 @@ var Task = Base.extend(/** @lends Task.prototype */ {
      * @param {Array} args
      * */
     constructor: function (func, ctxt, args) {
-        args[args.length] = this._done.bind(this);
 
         /**
          * @public
@@ -28,13 +28,6 @@ var Task = Base.extend(/** @lends Task.prototype */ {
          * @property {Array}
          * */
         this.args = args;
-
-        /**
-         * @public
-         * @memberOf {Task}
-         * @property {Array}
-         * */
-        this.clbs = [];
 
         /**
          * @public
@@ -49,20 +42,6 @@ var Task = Base.extend(/** @lends Task.prototype */ {
          * @property {Function}
          * */
         this.func = func;
-
-        /**
-         * @public
-         * @memberOf {Task}
-         * @property {Array|Arguments}
-         * */
-        this.rest = [];
-
-        /**
-         * @public
-         * @memberOf {Task}
-         * @property {Number}
-         * */
-        this.stat = -1;
     },
 
     /**
@@ -75,47 +54,17 @@ var Task = Base.extend(/** @lends Task.prototype */ {
      * */
     done: function (done, ctxt) {
 
-        if ( 1 === this.stat ) {
-            done.apply(ctxt, this.rest);
+        var next = this._next;
 
-            return;
+        if ( !(next instanceof Next )) {
+            next = this._next = new Next();
+
+            this.func.apply(this.ctxt, this.args.concat(function () {
+                next.args(arguments);
+            }));
         }
 
-        this.clbs.push([done, ctxt]);
-
-        if ( 0 === this.stat ) {
-
-            return;
-        }
-
-        this.stat = 0;
-
-        this.func.apply(this.ctxt, this.args);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Task}
-     * @method
-     * */
-    _done: function () {
-
-        var i;
-        var l;
-
-        if ( 1 === this.stat ) {
-
-            return;
-        }
-
-        this.rest = arguments;
-        this.stat = 1;
-
-        for ( i = 0, l = this.clbs.length; i < l; i += 1 ) {
-            this.clbs[i][0].apply(this.clbs[i][1], this.rest);
-        }
-
-        this.clbs = [];
+        next.done(done, ctxt);
     }
 
 }, {
