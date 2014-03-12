@@ -245,7 +245,6 @@ module.exports = [
 
         //  запускаю сервер (внутри вызывается fist.ready())
         fist.listen(sock);
-    },
-
+    }
 
 ];
