@@ -9,6 +9,7 @@ var Task = require('./task/Task');
 
 var units = require('./init/units');
 var routes = require('./init/routes');
+
 /**
  * @class Fist
  * @extends Server

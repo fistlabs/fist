@@ -1,6 +1,6 @@
 'use strict';
 
-var Classic = /** @type Classic */ require('./router/Classic');
+var Switcher = /** @type Switcher */ require('./router/Switcher');
 var Connect = /** @type Connect */ require('./track/Connect');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
@@ -23,7 +23,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         /**
          * @public
          * @memberOf {Server}
-         * @property {Classic}
+         * @property {Switcher}
          * */
         this.router = this._createRouter(this.params.router);
     },
@@ -124,11 +124,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      *
      * @param {*} [params]
      *
-     * @returns {Classic}
+     * @returns {Switcher}
      * */
     _createRouter: function (params) {
 
-        return new Classic(params);
+        return new Switcher(params);
     },
 
     /**
@@ -227,7 +227,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      * */
     _findRoute: function (track) {
 
-        return this.router.find(track.method, track.url.pathname);
+        return this.router.find(track);
     }
 
 });
