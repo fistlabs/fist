@@ -3,13 +3,9 @@
 var Bundle = /** @type Bundle */ require('./bundle/Bundle');
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
-var Task = /** @type Task */ require('./task/Task');
+var Next = /** @type Next */ require('./task/Next');
 
 var toArray = require('fist.lang.toarray');
-
-function ENOUNIT (done) {
-    done.call(this);
-}
 
 /**
  * @abstract
@@ -91,28 +87,18 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     resolve: function (track, path, done) {
 
         var date;
-        var task;
+        var next;
 
-        //  already has task
         if ( path in track.tasks ) {
             track.tasks[path].done(done, this);
 
             return;
         }
 
-        if ( path in this.decls ) {
-            task = new Task(this._pend, this, [track, this.decls[path]]);
-
-        } else {
-            task = new Task(ENOUNIT, this, []);
-        }
-
-        //  cache task
-        track.tasks[path] = task;
-
         date = new Date();
+        next = track.tasks[path] = new Next();
 
-        task.done(function () {
+        next.done(function () {
 
             var stat = +(1 < arguments.length);
 
@@ -123,8 +109,16 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
             });
 
             done.apply(this, arguments);
-
         }, this);
+
+        if ( path in this.decls ) {
+            this._pend(track, this.decls[path], function () {
+                next.args(arguments);
+            });
+
+        } else {
+            next.resolve();
+        }
     },
 
     /**

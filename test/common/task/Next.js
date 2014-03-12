@@ -171,6 +171,38 @@ module.exports = [
             test.strictEqual(this, 9000);
             test.done();
         }, 9000);
+    },
+
+    function (test) {
+
+        var next = new Next();
+        var spy = [];
+
+        next.resolve(null, 42);
+
+        next.done(function (err, res) {
+            test.strictEqual(res, 42);
+            spy.push(1);
+        });
+
+        spy.push(2);
+
+        test.deepEqual(spy, [1,2]);
+
+        next = new Next();
+        spy = [];
+
+        next.done(function (err, res) {
+            test.strictEqual(res, 42);
+            spy.push(1);
+        });
+
+        next.resolve(null, 42);
+        spy.push(2);
+
+        test.deepEqual(spy, [1,2]);
+
+        test.done();
     }
 
 ];
