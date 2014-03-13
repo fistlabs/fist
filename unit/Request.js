@@ -200,10 +200,15 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
     _parse: function (ask) {
         ask.next(function (res, done) {
             try {
-                done(null, JSON.parse(res.data));
+                res = JSON.parse(res.data);
+
             } catch (err) {
                 done(err);
+
+                return;
             }
+
+            done(null, res);
         });
     },
 
