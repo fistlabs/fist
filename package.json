@@ -20,6 +20,7 @@
         "fist.lang.regesc": "0.0.x",
         "fist.util.id": "0.0.x",
 
+        "asker": "0.3.x",
         "dicer": "0.2.x",
         "glob": "3.2.x"
     },
