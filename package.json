@@ -52,5 +52,5 @@
         "cover": "istanbul cover test/runner",
         "benchmark": "node benchmark/runner"
     },
-    "version": "2.0.1"
+    "version": "3.0.0"
 }
