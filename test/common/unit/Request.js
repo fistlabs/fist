@@ -488,6 +488,46 @@ module.exports = [
             test.deepEqual(JSON.parse(res.data), {a: '42'});
             test.done();
         });
+    },
+
+    function (test) {
+
+        var fist = new Fist();
+
+        var R1 = R.extend({
+            _setup: function (ask) {
+                ask.next(function (res, done) {
+                    done({s: 42});
+                });
+            }
+        });
+
+        var r1 = new R1();
+
+        fist.decl('frontend', r1.data.bind(r1));
+        fist.route('GET', '/', 'frontend');
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/?a=42',
+            socketPath: sock,
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.strictEqual(res.statusCode, 500);
+            test.deepEqual(JSON.parse(res.data), {s: '42'});
+            test.done();
+        });
     }
 
 ];

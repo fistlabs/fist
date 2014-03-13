@@ -45,20 +45,23 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
         this._options(ask);
 
         ask.next(function (res, done) {
-
             ask.opts = res;
-
-            track.agent.emitEvent('sys:req:request', ask);
-
             done(null, res);
         }, function (err) {
-
             ask.opts = err;
-
-            //  поджигаем соответствующее событие
             track.agent.emitEvent('sys:req:eoptions', ask);
-
             this._onEOPTIONS(ask);
+        }, this);
+
+        this._setup(ask);
+
+        ask.next(function (res, done) {
+            track.agent.emit('sys:req:request', ask);
+            done(null, res);
+        }, function (err) {
+            ask.opts = err;
+            track.agent.emit('sys:req:esetup', ask);
+            this._onESETUP(ask);
         }, this);
 
         //  там выполнился реквест
@@ -69,7 +72,6 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
             done(null, res);
         }, function (err) {
             ask.data = err;
-            //  ошибка при отправке запроса
             track.agent.emitEvent('sys:req:erequest', ask);
             this._onEREQUEST(ask);
         }, this);
@@ -97,6 +99,17 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
         }, function (err) {
             ask.done(err);
         });
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Ask} ask
+     * */
+    _setup: function (ask) {
+        /*eslint no-unused-vars: 0*/
     },
 
     /**
@@ -138,6 +151,17 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      * */
     _onEREQUEST: function (ask) {
         ask.done(ask.data);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onESETUP: function (ask) {
+        ask.done(ask.opts);
     },
 
     /**
