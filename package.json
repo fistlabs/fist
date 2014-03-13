@@ -18,8 +18,6 @@
         "fist.lang.unique": "0.0.x",
         "fist.lang.class": "0.0.x",
         "fist.lang.regesc": "0.0.x",
-
-        "fist.util.namespace": "0.0.x",
         "fist.util.id": "0.0.x",
 
         "dicer": "0.2.x",
