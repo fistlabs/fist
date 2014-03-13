@@ -162,6 +162,15 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
         mdata = this._findRoute(track);
 
+        //  по сути такой роутер может сделать send
+        //  если он сделал send то он конечно понимает что он сделал
+        //  такой поступок не может быть необдуманным, мы прекращаем
+        //  обработку запроса
+        if ( track.sent() ) {
+
+            return;
+        }
+
         //  однозначно нет такого маршрута
         if ( null === mdata ) {
             this.emitEvent('sys:match-fail', track);

@@ -307,6 +307,41 @@ module.exports = [
             test.deepEqual(res.data + '', '1');
             test.done();
         });
+    },
+
+    function (test) {
+
+        var serv = new (Server.extend({
+            _findRoute: function (track) {
+                track.send(404);
+            }
+        }));
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (ex) {}
+
+        serv.decl('some', function (bundle, done) {
+            done(1);
+        });
+
+        serv.route('GET', '/', 'some');
+
+        Http.createServer(serv.getHandler()).listen(sock);
+
+        asker({
+            method: 'GET',
+            path: '/',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }, function (err, res) {
+            test.deepEqual(res.statusCode, 404);
+            test.done();
+        });
     }
 
 ];
