@@ -62,10 +62,7 @@ var Switcher = Router.extend(/** @lends Switcher.prototype */ {
 
         route.data = data;
         route.name = name;
-
-        verb = verb.toUpperCase();
-
-        route.verb = verb;
+        route.verb = verb = verb.toUpperCase();
 
         if ( verb in this.verbs ) {
             this.verbs[verb] += 1;
