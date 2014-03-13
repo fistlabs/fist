@@ -311,11 +311,13 @@ module.exports = [
 
     function (test) {
 
-        var serv = new (Server.extend({
+        var S = Server.extend({
             _findRoute: function (track) {
                 track.send(404);
             }
-        }));
+        });
+
+        var serv = new S();
 
         try {
             Fs.unlinkSync(sock);
