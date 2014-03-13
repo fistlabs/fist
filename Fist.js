@@ -41,6 +41,14 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @type {Array}
          * */
         this._pends = [];
+
+        /**
+         * @protected
+         * @memberOf {Fist}
+         * @property
+         * @type {Number}
+         * */
+        this._pending = 0;
     },
 
     /**
@@ -87,28 +95,39 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         var length = this._tasks.length;
         var result = [];
 
-        //  сервер приостанавливает работу, откладывает запросы
-        this._handle = [].push.bind(this._pends);
+        this._pending += 1;
 
-        this.emitEvent('sys:pending');
+        //  поджигаем pending только если это первая инициализация
+        if ( 1 === this._pending ) {
+            //  сервер приостанавливает работу, откладывает запросы
+            this._handle = [].push.bind(this._pends);
 
-        //  когда будет готов, надо будет обработать все отложенные запросы
-        this.once('sys:ready', function () {
-            delete this._handle;
+            //  говорим что приостановлено
+            this.emitEvent('sys:pending');
 
-            while ( this._pends.length ) {
-                this._handle(this._pends.shift());
-            }
-        });
+            //  когда будет готов, надо будет обработать все отложенные запросы
+            this.once('sys:ready', function () {
+                delete this._handle;
+
+                while ( this._pends.length ) {
+                    this._handle(this._pends.shift());
+                }
+            });
+        }
 
         function done (err) {
+            this._pending -= 1;
+
             if ( 2 > arguments.length ) {
                 this.emitEvent('sys:error', err);
 
                 return;
             }
 
-            this.emitEvent('sys:ready');
+            //  надо поджечь событие только тогда когда все ready доделались
+            if ( 0 === this._pending ) {
+                this.emitEvent('sys:ready');
+            }
         }
 
         function taskReady (i) {

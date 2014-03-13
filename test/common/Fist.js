@@ -191,20 +191,6 @@ module.exports = [
         var fist = new Fist();
         var spy = [];
 
-        fist.once('sys:ready', function () {
-            //  тут сервер уже проинициализировался в первый раз
-            spy.push(2);
-            test.deepEqual(spy, [1, 2]);
-
-            //  снова подписываюсь на это событие
-            fist.once('sys:ready', function () {
-                spy.push(4);
-                test.deepEqual(spy, [1, 2, 3, 4]);
-                test.done();
-            });
-        });
-
-        //  создаю асинхронный таск
         fist.schedule(function (done) {
             setTimeout(function () {
                 spy.push(1);
@@ -212,39 +198,24 @@ module.exports = [
             }, 10);
         });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (ex) {}
+        fist.ready();
 
-        //  отправляю запрос (он должен отложиться потому что сервер
-        // еще не проинициализировался)
-        asker({
-            method: 'GET',
-            path: '/',
-            socketPath: sock
-        }, function () {
-            //  сервер ответил, значит нет отложенных тасков
-            //  и запускаю инициализацию, сервер должен снова отложить запросы
+        fist.schedule(function (done) {
+            setTimeout(function () {
+                spy.push(2);
+                done(null, 42);
+            }, 20);
         });
 
-        //  сработает когда будет вызван ready
-        fist.once('sys:pending', function () {
+        fist.ready();
 
-            //  сервер перестал обрабатывать запросы
-            //  а мы добавляем еще одну задачу
-            fist.schedule(function (done) {
-                setTimeout(function () {
-                    spy.push(3);
-                    done(null, 42);
-                }, 100);
-            });
-
-            //  и снова запускаем инициализацию
-            fist.ready();
+        fist.on('sys:ready', function () {
+            spy.push(3);
+            test.deepEqual(spy, [1, 2, 3]);
+            setTimeout(function () {
+                test.done();
+            }, 100);
         });
-
-        //  запускаю сервер (внутри вызывается fist.ready())
-        fist.listen(sock);
     }
 
 ];
