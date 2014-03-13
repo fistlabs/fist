@@ -46,6 +46,7 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
 
         ask.next(function (res, done) {
             ask.opts = res;
+            track.agent.emitEvent('sys:req:options', ask);
             done(null, res);
         }, function (err) {
             ask.opts = err;
@@ -56,7 +57,7 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
         this._setup(ask);
 
         ask.next(function (res, done) {
-            track.agent.emit('sys:req:request', ask);
+            track.agent.emit('sys:req:setup', ask);
             done(null, res);
         }, function (err) {
             ask.opts = err;
@@ -64,11 +65,11 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
             this._onESETUP(ask);
         }, this);
 
-        //  там выполнился реквест
         this._request(ask);
 
         ask.next(function (res, done) {
             ask.data = res;
+            track.agent.emitEvent('sys:req:response', ask);
             done(null, res);
         }, function (err) {
             ask.data = err;
@@ -80,16 +81,12 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
 
         ask.next(function (res, done) {
             ask.data.data = res;
+            track.agent.emitEvent('sys:req:parse', ask);
             done(null, ask.data);
         }, function (err) {
             ask.data = err;
-            track.agent.emitEvent('sys:req:erequest', ask);
-            this._onEREQUEST(ask);
-        }, this);
-
-        ask.next(function (res, done) {
-            track.agent.emitEvent('sys:req:success', ask);
-            done(null, res);
+            track.agent.emitEvent('sys:req:eparse', ask);
+            this._onEPARSE(ask);
         }, this);
 
         this._template(ask);
@@ -162,6 +159,17 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      * */
     _onESETUP: function (ask) {
         ask.done(ask.opts);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onEPARSE: function (ask) {
+        ask.done(ask.data);
     },
 
     /**
