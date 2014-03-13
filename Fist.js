@@ -27,12 +27,12 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         Fist.Parent.apply(this, arguments);
 
         /**
-         * @public
+         * @protected
          * @memberOf {Fist}
          * @property
          * @type {Array}
          * */
-        this.init = [];
+        this._tasks = [];
 
         /**
          * @protected
@@ -55,7 +55,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         server.listen.apply(server, arguments);
 
         //  автоматически добавляю таски на инициализацию роутера и узлов
-        this.before(routes, units);
+        this.schedule(routes, units);
 
         //  автоматически запускаю инициализацию
         this.ready();
@@ -66,9 +66,9 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
      * @memberOf {Fist}
      * @method
      * */
-    before: function () {
+    schedule: function () {
         [].forEach.call(arguments, function (plugin) {
-            this.init.push(new Task(plugin, this));
+            this._tasks.push(new Task(plugin, this));
         }, this);
     },
 
@@ -85,7 +85,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         var i;
         var l;
         var isError = false;
-        var length = this.init.length;
+        var length = this._tasks.length;
         var result = [];
 
         //  сервер приостанавливает работу, откладывает запросы
@@ -113,7 +113,7 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         }
 
         function taskReady (i) {
-            this.init[i].done(function (err, res) {
+            this._tasks[i].done(function (err, res) {
 
                 if ( 2 > arguments.length ) {
                     isError = true;

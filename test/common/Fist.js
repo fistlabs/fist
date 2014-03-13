@@ -99,7 +99,7 @@ module.exports = [
 
         fist.route('GET', '/', 'index');
 
-        fist.before(function (done) {
+        fist.schedule(function (done) {
             setTimeout(function () {
                 done(null, 42);
             }, 200);
@@ -130,7 +130,7 @@ module.exports = [
             test.done();
         });
 
-        fist.before(function (done) {
+        fist.schedule(function (done) {
             setTimeout(function () {
                 done(42);
             }, 200);
@@ -148,7 +148,7 @@ module.exports = [
             test.done();
         });
 
-        fist.before(function (done) {
+        fist.schedule(function (done) {
             done(42);
         }, function (done) {
             done(null, 43);
@@ -205,7 +205,7 @@ module.exports = [
         });
 
         //  создаю асинхронный таск
-        fist.before(function (done) {
+        fist.schedule(function (done) {
             setTimeout(function () {
                 spy.push(1);
                 done(null, 42);
@@ -232,7 +232,7 @@ module.exports = [
 
             //  сервер перестал обрабатывать запросы
             //  а мы добавляем еще одну задачу
-            fist.before(function (done) {
+            fist.schedule(function (done) {
                 setTimeout(function () {
                     spy.push(3);
                     done(null, 42);
