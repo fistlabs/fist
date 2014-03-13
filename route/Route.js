@@ -103,7 +103,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * */
     match: function (s) {
 
-        if ( hasProperty.call(this.matches, s) ) {
+        if ( s in this.matches ) {
 
             return this.matches[s];
         }

@@ -1,7 +1,6 @@
 'use strict';
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
-var hasProperty = Object.prototype.hasOwnProperty;
 var push = Array.prototype.push;
 
 /**
@@ -66,7 +65,7 @@ var Expr = Base.extend(/** @lends Expr.prototype */ {
      * */
     parse: function (ps) {
 
-        if ( hasProperty.call(this.parsed, ps) ) {
+        if ( ps in this.parsed ) {
 
             return this.parsed[ps];
         }
@@ -302,16 +301,11 @@ var Expr = Base.extend(/** @lends Expr.prototype */ {
      * */
     stringify: function (ast) {
 
-        var buf;
-        var len;
-        var pos;
-        var stk;
+        var buf = [];
+        var len = ast.length;
+        var pos = 0;
+        var stk = [];
         var tok;
-
-        buf = [];
-        len = ast.length;
-        pos = 0;
-        stk = [];
 
         while ( true ) {
 
@@ -371,6 +365,15 @@ var Expr = Base.extend(/** @lends Expr.prototype */ {
         return buf.join('');
     },
 
+    /**
+     * @protected
+     * @memberOf {Expr}
+     * @method
+     *
+     * @param {Object} tok
+     *
+     * @returns {String}
+     * */
     _escBody: function (tok) {
 
         return this.escape(tok.body);
