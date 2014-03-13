@@ -89,12 +89,34 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
             this._onEPARSE(ask);
         }, this);
 
-        this._template(ask);
+        this._resolve(ask);
 
         ask.next(function (res) {
+            ask.data = res;
+            track.agent.emit('sys:req:resolve', ask);
             ask.done(null, res);
         }, function (err) {
-            ask.done(err);
+            ask.data = err;
+            track.agent.emit('sys:req:eresolve', ask);
+            this._onERESOLVE(ask);
+        }, this);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Ask} ask
+     * */
+    _options: function (ask) {
+        ask.next(function (res, done) {
+            done(null, {
+                port: 80,
+                path: '/',
+                method: 'GET',
+                protocol: 'http:'
+            });
         });
     },
 
@@ -135,68 +157,6 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      *
      * @param {Object} ask
      * */
-    _onEOPTIONS: function (ask) {
-        ask.done(ask.opts);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Request}
-     * @method
-     *
-     * @param {Object} ask
-     * */
-    _onEREQUEST: function (ask) {
-        ask.done(ask.data);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Request}
-     * @method
-     *
-     * @param {Object} ask
-     * */
-    _onESETUP: function (ask) {
-        ask.done(ask.opts);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Request}
-     * @method
-     *
-     * @param {Object} ask
-     * */
-    _onEPARSE: function (ask) {
-        ask.done(ask.data);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Request}
-     * @method
-     *
-     * @param {Ask} ask
-     * */
-    _options: function (ask) {
-        ask.next(function (res, done) {
-            done(null, {
-                port: 80,
-                path: '/',
-                method: 'GET',
-                protocol: 'http:'
-            });
-        });
-    },
-
-    /**
-     * @protected
-     * @memberOf {Request}
-     * @method
-     *
-     * @param {Object} ask
-     * */
     _parse: function (ask) {
         ask.next(function (res, done) {
             try {
@@ -219,10 +179,65 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      *
      * @param {Object} ask
      * */
-    _template: function (ask) {
+    _resolve: function (ask) {
         ask.next(function (res, done) {
             done(null, res);
         });
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onEOPTIONS: function (ask) {
+        ask.done(ask.opts);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onESETUP: function (ask) {
+        ask.done(ask.opts);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onEREQUEST: function (ask) {
+        ask.done(ask.data);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onEPARSE: function (ask) {
+        ask.done(ask.data);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Request}
+     * @method
+     *
+     * @param {Object} ask
+     * */
+    _onERESOLVE: function (ask) {
+        ask.done(ask.data);
     }
 
 });

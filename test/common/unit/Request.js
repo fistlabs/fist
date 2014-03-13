@@ -25,7 +25,7 @@ var R0 = Request.extend({
 
 var R = R0.extend({
 
-    _template: function (ask) {
+    _resolve: function (ask) {
         ask.next(function (res, done) {
             done(null, res.data);
         });
@@ -449,8 +449,8 @@ module.exports = [
         var fist = new Fist();
 
         var R1 = R.extend({
-            _template: function (ask) {
-                R1.parent._template.call(this, ask);
+            _resolve: function (ask) {
+                R1.parent._resolve.call(this, ask);
                 ask.next(function (res, done) {
                     done(res);
                 });
