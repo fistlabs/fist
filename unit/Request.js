@@ -20,6 +20,8 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      * @param {Object} errors
      * @param {Object} result
      * @param {Function} done
+     *
+     * @returns {Ask}
      * */
     _createAsk: function (track, errors, result, done) {
 
