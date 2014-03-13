@@ -7,8 +7,8 @@ var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 var Task = require('./task/Task');
 
-var units = require('./init/units');
 var routes = require('./init/routes');
+var units = require('./init/units');
 
 /**
  * @class Fist
@@ -70,12 +70,11 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
         [].forEach.call(arguments, function (plugin) {
             this._tasks.push(new Task(plugin, this));
         }, this);
+
+        //  need we call `ready` automatically?
     },
 
     /**
-     * Вызовет коллбэк когда выполнятся
-     * последовательно все таски
-     *
      * @public
      * @memberOf {Fist}
      * @method
