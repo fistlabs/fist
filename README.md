@@ -1,4 +1,4 @@
-fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v3.0.x)](https://travis-ci.org/fistlabs/fist.app)
+fist.app [![Build Status](https://travis-ci.org/fistlabs/fist.app.png?branch=v3.1.x)](https://travis-ci.org/fistlabs/fist.app)
 =========
 
 ```js
