@@ -18,6 +18,8 @@ var Toobusy = Class.extend({
     constructor: function () {
         Toobusy.Parent.apply(this, arguments);
 
+        var intervalObj;
+
         /**
          * @public
          * @memberOf {Toobusy}
@@ -39,8 +41,12 @@ var Toobusy = Class.extend({
         }
 
     //  процесс не будет ждать этого таймера, а нормально закроется
-        setInterval(this._check.bind(this),
-            Toobusy.CHECK_INTERVAL).unref();
+        intervalObj = setInterval(this._check.bind(this),
+            Toobusy.CHECK_INTERVAL);
+
+        if ( 'function' === typeof intervalObj.unref ) {
+            intervalObj.unref();
+        }
     },
 
     /**
