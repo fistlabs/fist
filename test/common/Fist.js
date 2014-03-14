@@ -6,6 +6,7 @@ var Fs = require('fs');
 var Path = require('path');
 var asker = require('asker');
 var routes = require('../stuff/conf/router0');
+var block = require('../util/block');
 
 module.exports = [
 
@@ -216,6 +217,37 @@ module.exports = [
                 test.done();
             }, 100);
         });
+    },
+
+    function (test) {
+
+        var fist = new Fist({
+            busyHWM: 1
+        });
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        block();
+
+        setTimeout(function () {
+            asker({
+                method: 'get',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, res) {
+                test.strictEqual(res.statusCode, 503);
+                test.done();
+            });
+        }, 510);
     }
 
 ];

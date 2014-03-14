@@ -9,6 +9,8 @@ var Task = /** @type Task */require('./task/Task');
 
 var routes = require('./init/routes');
 var units = require('./init/units');
+var Toobusy = /** @type Toobusy */ require('./util/Toobusy');
+
 
 /**
  * @class Fist
@@ -49,6 +51,17 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
          * @type {Number}
          * */
         this._pending = 0;
+
+        /**
+         * @protected
+         * @memberOf {Fist}
+         * @property
+         * @type {Toobusy}
+         * */
+        this._toobusy = new Toobusy({
+            maxLag: this.params.busyHWM
+        });
+
     },
 
     /**
@@ -489,6 +502,24 @@ var Fist = Server.extend(/** @lends Fist.prototype */ {
     _createTrack: function (req, res) {
 
         return new Runtime(this, req, res);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Fist}
+     * @method
+     *
+     * @param {Runtime} track
+     * */
+    _handle: function (track) {
+
+        if ( this._toobusy.busy() ) {
+            track.send(503);
+
+            return;
+        }
+
+        Fist.parent._handle.apply(this, arguments);
     }
 
 });
