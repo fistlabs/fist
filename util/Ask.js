@@ -27,7 +27,7 @@ var Ask = Base.extend(/** @lends Ask.prototype */ {
 
         var next = new Next();
 
-        next.args([null, null]);
+        next.args([null, {}]);
 
         /**
          * @protected

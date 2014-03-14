@@ -111,12 +111,11 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      * */
     _options: function (ask) {
         ask.next(function (res, done) {
-            done(null, {
-                port: 80,
-                path: '/',
-                method: 'GET',
-                protocol: 'http:'
-            });
+            res.port = 80;
+            res.path = '/';
+            res.method = 'GET';
+            res.protocol = 'http:';
+            done(null, res);
         });
     },
 
