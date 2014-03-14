@@ -110,13 +110,7 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      * @param {Ask} ask
      * */
     _options: function (ask) {
-        ask.next(function (res, done) {
-            res.port = 80;
-            res.path = '/';
-            res.method = 'GET';
-            res.protocol = 'http:';
-            done(null, res);
-        });
+        /*eslint no-unused-vars: 0*/
     },
 
     /**
