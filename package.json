@@ -7,10 +7,7 @@
         "url": "https://github.com/fistlabs/fist.app/issues"
     },
     "contributors": [
-        {
-            "name": "Golyshev Dmitrii",
-            "email": "golyshev.dmitry@yandex.ru"
-        }
+        "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
         "fist.lang.extend": "0.0.x",
