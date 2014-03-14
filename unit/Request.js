@@ -172,7 +172,9 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      *
      * @param {Object} ask
      * */
-    _resolve: function (ask) {},
+    _resolve: function (ask) {
+        /*eslint no-unused-vars: 0*/
+    },
 
     /**
      * @protected
