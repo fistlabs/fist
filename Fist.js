@@ -11,7 +11,6 @@ var routes = require('./init/routes');
 var units = require('./init/units');
 var Toobusy = /** @type Toobusy */ require('./util/Toobusy');
 
-
 /**
  * @class Fist
  * @extends Server

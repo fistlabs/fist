@@ -53,7 +53,7 @@ var Toobusy = Class.extend({
     busy: function () {
 
         return Math.random() <
-            ((this.lag - this.params.maxLag) / this.params.maxLag);
+            (this.lag - this.params.maxLag) / this.params.maxLag;
     },
 
     /**

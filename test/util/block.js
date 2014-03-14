@@ -4,7 +4,9 @@ function block (fn) {
     var i = 250;
     while ( i ) {
         i -= 1;
-        fn && fn();
+        if ( fn ) {
+            fn();
+        }
     }
 }
 
