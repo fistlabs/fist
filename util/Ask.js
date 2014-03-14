@@ -121,6 +121,7 @@ var Ask = Base.extend(/** @lends Ask.prototype */ {
         this._next = this._next.next(function (res, ok) {
 
             if ( this._solved() ) {
+
                 return;
             }
 

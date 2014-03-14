@@ -172,11 +172,7 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
      *
      * @param {Object} ask
      * */
-    _resolve: function (ask) {
-        ask.next(function (res, done) {
-            done(null, res);
-        });
-    },
+    _resolve: function (ask) {},
 
     /**
      * @protected
