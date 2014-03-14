@@ -114,40 +114,25 @@ var Ask = Base.extend(/** @lends Ask.prototype */ {
             return this;
         }
 
-        if ( 'function' !== typeof fail ) {
-            ctxt = fail;
-        }
+        this._next = this._next.
+            next(function (res, done) {
 
-        this._next = this._next.next(function (res, ok) {
+                if ( this._solved() ) {
 
-            if ( this._solved() ) {
+                    return;
+                }
 
-                return;
-            }
+                done(null, res);
+            }, function (err, done) {
 
-            if ( 'function' === typeof done ) {
-                done.apply(ctxt, arguments);
+                if ( this._solved() ) {
 
-                return;
-            }
+                    return;
+                }
 
-            ok.call(ctxt, null, res);
-
-        }, function (err, ok) {
-
-            if ( this._solved() ) {
-
-                return;
-            }
-
-            if ( 'function' === typeof fail ) {
-                fail.apply(ctxt, arguments);
-
-                return;
-            }
-
-            ok.call(ctxt, err);
-        }, this);
+                done(err);
+            }, this).
+            next(done, fail, ctxt);
 
         return this;
     }
