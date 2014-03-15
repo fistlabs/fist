@@ -6,7 +6,7 @@ var Expr = /** @type Expr */ require('../util/Expr');
 var _assign = require('lodash.assign');
 var hasProperty = Object.prototype.hasOwnProperty;
 var push = Array.prototype.push;
-var regesc = require('../lang/regesc');
+var regesc = require('fist.lang.regesc');
 
 /**
  * @class Route

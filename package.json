@@ -10,9 +10,10 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
-        "fist.lang.toarray": "0.0.x",
         "fist.lang.class": "0.0.x",
         "fist.lang.id": "0.0.x",
+        "fist.lang.toarray": "0.0.x",
+        "fist.lang.regesc": "0.0.x",
 
         "lodash.assign": "2.4.x",
         "lodash.union": "2.4.x",
@@ -41,8 +42,8 @@
         "url": "git://github.com/fistlabs/fist.git"
     },
     "scripts": {
-        "jscs": "jscs -c .jscsrc .",
-        "eslint": "eslint benchmark bundle init lang parser route router task test track unit util *.js",
+        "jscs": "jscs .",
+        "eslint": "eslint benchmark bundle init parser route router task test track unit util *.js",
         "lint": "npm run jscs && npm run eslint",
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
