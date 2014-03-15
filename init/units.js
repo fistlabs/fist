@@ -3,7 +3,7 @@
 var R_DASHED = /[-\s]+([^-\s])/g;
 var Path = require('path');
 
-var glob = require('../util/glob');
+var glob = require('fist.util.glob');
 
 /**
  * @param {Function} done
