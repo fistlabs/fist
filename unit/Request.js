@@ -46,11 +46,11 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
 
         ask.next(function (res, done) {
             ask.opts = res;
-            track.agent.emitEvent('sys:req:options', ask);
+            track.agent.emit('sys:req:options', ask);
             done(null, res);
         }, function (err) {
             ask.opts = err;
-            track.agent.emitEvent('sys:req:eoptions', ask);
+            track.agent.emit('sys:req:eoptions', ask);
             this._onEOPTIONS(ask);
         }, this);
 
@@ -69,11 +69,11 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
 
         ask.next(function (res, done) {
             ask.data = res;
-            track.agent.emitEvent('sys:req:response', ask);
+            track.agent.emit('sys:req:response', ask);
             done(null, res);
         }, function (err) {
             ask.data = err;
-            track.agent.emitEvent('sys:req:erequest', ask);
+            track.agent.emit('sys:req:erequest', ask);
             this._onEREQUEST(ask);
         }, this);
 
@@ -81,11 +81,11 @@ var Request = Unit.extend(/** @lends Request.prototype */ {
 
         ask.next(function (res, done) {
             ask.data.data = res;
-            track.agent.emitEvent('sys:req:parse', ask);
+            track.agent.emit('sys:req:parse', ask);
             done(null, ask.data);
         }, function (err) {
             ask.data = err;
-            track.agent.emitEvent('sys:req:eparse', ask);
+            track.agent.emit('sys:req:eparse', ask);
             this._onEPARSE(ask);
         }, this);
 

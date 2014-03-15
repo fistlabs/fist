@@ -108,7 +108,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             this._handle = /** @type {_handle}*/ [].push.bind(this._pends);
 
             //  говорим что приостановлено
-            this.emitEvent('sys:pending');
+            this.emit('sys:pending');
 
             //  когда будет готов, надо будет обработать все отложенные запросы
             this.once('sys:ready', function () {
@@ -124,14 +124,14 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             this._pending -= 1;
 
             if ( 2 > arguments.length ) {
-                this.emitEvent('sys:error', err);
+                this.emit('sys:error', err);
 
                 return;
             }
 
             //  надо поджечь событие только тогда когда все ready доделались
             if ( 0 === this._pending ) {
-                this.emitEvent('sys:ready');
+                this.emit('sys:ready');
             }
         }
 

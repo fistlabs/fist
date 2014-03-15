@@ -67,15 +67,6 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @public
      * @memberOf {Tracker}
      * @method
-     * */
-    emitEvent: function () {
-        this.emit.apply(this, arguments);
-    },
-
-    /**
-     * @public
-     * @memberOf {Tracker}
-     * @method
      *
      * @param {Track} track
      * @param {String} path
@@ -99,7 +90,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
 
             var stat = +(1 < arguments.length);
 
-            this.emitEvent(['sys:reject', 'sys:accept'][stat], {
+            this.emit(['sys:reject', 'sys:accept'][stat], {
                 data: arguments[stat],
                 path: path,
                 time: new Date() - date

@@ -9,7 +9,7 @@ var Fs = require('fs');
 var MyServer = /** @type Server */ require('../../Server').extend({
     //  Не триггерить события во время бенчмарка
     // для чистоты эксперимета
-    emitEvent: function () {}
+    emit: function () {}
 });
 
 var app = new MyServer();

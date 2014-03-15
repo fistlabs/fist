@@ -46,10 +46,10 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
             res.once('finish', function () {
                 track.time = new Date() - date;
-                self.emitEvent('sys:response', track);
+                self.emit('sys:response', track);
             });
 
-            self.emitEvent('sys:request', track);
+            self.emit('sys:request', track);
 
             self._handle(track);
         };
@@ -105,7 +105,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         var date = new Date();
 
         function resolve (bundle) {
-            this.emitEvent('sys:bundle', {
+            this.emit('sys:bundle', {
                 time: new Date() - date,
                 deps: deps,
                 data: bundle
@@ -173,7 +173,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
         //  однозначно нет такого маршрута
         if ( null === mdata ) {
-            this.emitEvent('sys:match-fail', track);
+            this.emit('sys:match-fail', track);
             track.send(404);
 
             return;
@@ -182,7 +182,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         //  возвращен массив
         if ( Array.isArray(mdata) ) {
             //  это тоже значит что нет такого роута
-            this.emitEvent('sys:match-fail', track);
+            this.emit('sys:match-fail', track);
 
             //  если массив пустой, то на сервере совсем нет ни одного
             //  маршрута отвечающего по такому методу запроса
@@ -202,7 +202,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
             return;
         }
 
-        this.emitEvent('sys:match-done', track);
+        this.emit('sys:match-done', track);
 
         track.match = mdata.match;
         track.route = mdata.route.name;
