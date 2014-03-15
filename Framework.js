@@ -89,22 +89,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
 
         this._pending += 1;
 
-        //  поджигаем pending только если это первая инициализация
         if ( 1 === this._pending ) {
-            //  сервер приостанавливает работу, откладывает запросы
-            this._handle = /** @type {_handle}*/ [].push.bind(this._pends);
-
-            //  говорим что приостановлено
             this.emit('sys:pending');
-
-            //  когда будет готов, надо будет обработать все отложенные запросы
-            this.once('sys:ready', function () {
-                delete this._handle;
-
-                while ( this._pends.length ) {
-                    this._handle(this._pends.shift());
-                }
-            });
         }
 
         function done (err) {
@@ -116,9 +102,12 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 return;
             }
 
-            //  надо поджечь событие только тогда когда все ready доделались
             if ( 0 === this._pending ) {
                 this.emit('sys:ready');
+
+                while ( this._pends.length ) {
+                    this._handle(this._pends.shift());
+                }
             }
         }
 
@@ -143,7 +132,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         }
 
         for ( i = 0, l = length; i < l; i += 1 ) {
-            //  синхронные таски могут сразу сломаться
+
             if ( isError ) {
 
                 break;
@@ -231,7 +220,13 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        Framework.parent._handle.apply(this, arguments);
+        if ( 0 === this._pending ) {
+            Framework.parent._handle.apply(this, arguments);
+
+            return;
+        }
+
+        this._pends.push(track);
     }
 
 });
