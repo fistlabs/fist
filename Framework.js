@@ -81,10 +81,9 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * */
     schedule: function () {
         [].forEach.call(arguments, function (plugin) {
-            this._tasks.push(new Task(plugin, this));
+            plugin = new Task(plugin, this);
+            this._tasks.push(plugin);
         }, this);
-
-        //  need we call `ready` automatically?
     },
 
     /**

@@ -59,7 +59,7 @@ exports.callRet = function (val, done) {
     return 0;
 };
 
-exports.callGenFn = function(func, args, done) {
+exports.callGenFn = function (func, args, done) {
     func = func.apply(this, args);
     exports.callGen(func, void 0, false, done);
 };
