@@ -79,18 +79,6 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      * */
-    schedule: function () {
-        [].forEach.call(arguments, function (plugin) {
-            plugin = new Task(plugin, this);
-            this._tasks.push(plugin);
-        }, this);
-    },
-
-    /**
-     * @public
-     * @memberOf {Framework}
-     * @method
-     * */
     ready: function () {
 
         var i;
@@ -134,7 +122,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             }
         }
 
-        function taskReady (i) {
+        function ready (i) {
             this._tasks[i].done(function (err, res) {
 
                 if ( 2 > arguments.length ) {
@@ -161,8 +149,20 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            taskReady.call(this, i);
+            ready.call(this, i);
         }
+    },
+
+    /**
+     * @public
+     * @memberOf {Framework}
+     * @method
+     * */
+    schedule: function () {
+        [].forEach.call(arguments, function (plugin) {
+            plugin = new Task(plugin, this);
+            this._tasks.push(plugin);
+        }, this);
     },
 
     /**
