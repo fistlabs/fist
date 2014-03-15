@@ -159,22 +159,15 @@ var Route = Base.extend(/** @lends Route.prototype */ {
     _build: function (ast, params) {
         /*eslint max-depth: [2,6], complexity: [2,30]*/
         var body;
-        var buf;
-        var len;
-        var opt;
-        var pos;
-        var stk;
+        var buf = '';
+        var len = ast.length;
+        var opt = false;
+        var pos = 0;
+        var stk = [];
         var tok;
-        var use;
+        var use = Object.create(null);
 
         var i;
-
-        buf = '';
-        len = ast.length;
-        opt = false;
-        pos = 0;
-        stk = [];
-        use = Object.create(null);
 
         out:
         while ( true ) {
@@ -312,11 +305,9 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
         var i;
         var l;
-        var m;
+        var m = regex.exec(s);
         var name;
         var params;
-
-        m = regex.exec(s);
 
         if ( null === m ) {
 
@@ -359,16 +350,11 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * */
     _buildRegex: function (ast) {
 
-        var buf;
-        var len;
-        var pos;
-        var stk;
+        var buf = [];
+        var len = ast.length;
+        var pos = 0;
+        var stk = [];
         var tok;
-
-        pos = 0;
-        len = ast.length;
-        buf = [];
-        stk = [];
 
         while ( true ) {
 
