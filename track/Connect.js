@@ -15,7 +15,7 @@ var Url = require('url');
 
 var _assign = require('lodash.assign');
 var hasProperty = Object.prototype.hasOwnProperty;
-var uniqueId = require('fist.util.id');
+var uniqueId = require('fist.lang.id');
 
 /**
  * @class Connect

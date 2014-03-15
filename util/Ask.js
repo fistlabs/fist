@@ -1,9 +1,9 @@
 'use strict';
 
-var Base = require('fist.lang.class/Base');
+var Base = /** @type Base */ require('fist.lang.class/Base');
 var Next = /** @type Next */ require('../task/Next');
 
-var uniqueId = require('fist.util.id');
+var uniqueId = require('fist.lang.id');
 
 /**
  * @class Ask
