@@ -2,18 +2,30 @@
 
 var Loader = /** @type Loader */ require('../parser/Loader');
 
-exports.callPromise = function (promise, done) {
+exports.callYield = function (value, done) {
+    /*eslint no-fallthrough: 0*/
+    switch ( exports.callRet(value, done) ) {
 
-    try {
+        //  вызова не было, примитив
+        case 0: {
+            done(null, value);
 
-        promise.then(function (res) {
-            done(null, res);
-        }, done);
+            break;
+        }
 
-    } catch (err) {
-        done(err);
+        //  вызова не было, объект
+        case 1: {
+            exports.callObj(value, done);
+
+            break;
+        }
+
+        default: {
+
+            //  был вызов
+            break;
+        }
     }
-
 };
 
 exports.callRet = function (val, done) {
@@ -59,39 +71,6 @@ exports.callRet = function (val, done) {
     return 0;
 };
 
-exports.callGenFn = function (func, args, done) {
-    func = func.apply(this, args);
-    exports.callGen(func, void 0, false, done);
-};
-
-exports.callGen = function (gen, result, isError, done) {
-
-    try {
-        result = isError ? gen.throw(result) : gen.next(result);
-    } catch (err) {
-        done(err);
-
-        return;
-    }
-
-    if ( result.done ) {
-        exports.callYield(result.value, done);
-
-        return;
-    }
-
-    exports.callYield(result.value, function (err, res) {
-
-        if ( 2 > arguments.length ) {
-            exports.callGen(gen, err, true, done);
-
-            return;
-        }
-
-        exports.callGen(gen, res, false, done);
-    });
-};
-
 exports.callFunc = function (func, args, done) {
 
     var called = false;
@@ -130,30 +109,37 @@ exports.callFunc = function (func, args, done) {
     done(null, func);
 };
 
-exports.callYield = function (value, done) {
-    /*eslint no-fallthrough: 0*/
-    switch ( exports.callRet(value, done) ) {
+exports.callGenFn = function (func, args, done) {
+    func = func.apply(this, args);
+    exports.callGen(func, void 0, false, done);
+};
 
-        //  вызова не было, примитив
-        case 0: {
-            done(null, value);
+exports.callGen = function (gen, result, isError, done) {
 
-            break;
-        }
+    try {
+        result = isError ? gen.throw(result) : gen.next(result);
+    } catch (err) {
+        done(err);
 
-        //  вызова не было, объект
-        case 1: {
-            exports.callObj(value, done);
-
-            break;
-        }
-
-        default: {
-
-            //  был вызов
-            break;
-        }
+        return;
     }
+
+    if ( result.done ) {
+        exports.callYield(result.value, done);
+
+        return;
+    }
+
+    exports.callYield(result.value, function (err, res) {
+
+        if ( 2 > arguments.length ) {
+            exports.callGen(gen, err, true, done);
+
+            return;
+        }
+
+        exports.callGen(gen, res, false, done);
+    });
 };
 
 exports.callObj = function (obj, done) {
@@ -202,6 +188,19 @@ exports.callObj = function (obj, done) {
 
         onReturned.call(this, null, obj[i]);
     }, this);
+};
+
+exports.callPromise = function (promise, done) {
+
+    try {
+        promise.then(function (res) {
+            done(null, res);
+        }, done);
+
+    } catch (err) {
+        done(err);
+    }
+
 };
 
 exports.callStream = function (readable, done) {
