@@ -3,7 +3,7 @@
 var Router = /** @type Router */ require('./Router');
 var Pathr = /** @type Pathr */ require('../route/Pathr');
 
-var union = require('lodash.union');
+var _union = require('lodash.union');
 
 /**
  * @class Switcher
@@ -146,7 +146,7 @@ var Switcher = Router.extend(/** @lends Switcher.prototype */ {
         }
 
         //  405
-        return union(verbs);
+        return _union(verbs);
     },
 
     /**

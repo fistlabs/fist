@@ -1,7 +1,7 @@
 'use strict';
 
 var Class = /** @type Class */ require('fist.lang.class/Class');
-var union = require('lodash.union');
+var _union = require('lodash.union');
 
 /**
  * @class Unit
@@ -19,7 +19,7 @@ var Unit = Class.extend(/** @lends Unit.prototype */ {
     constructor: function () {
         Unit.Parent.apply(this, arguments);
 
-        this.deps = union(this.deps);
+        this.deps = _union(this.deps);
     },
 
     /**
@@ -30,7 +30,7 @@ var Unit = Class.extend(/** @lends Unit.prototype */ {
      * @method
      * */
     addDeps: function () {
-        this.deps = union([].concat.apply(this.deps, arguments));
+        this.deps = _union([].concat.apply(this.deps, arguments));
     },
 
     /**
