@@ -10,11 +10,12 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
-        "lodash.assign": "2.4.x",
         "fist.lang.toarray": "0.0.x",
-        "lodash.union": "2.4.x",
         "fist.lang.class": "0.0.x",
         "fist.util.id": "0.0.x",
+
+        "lodash.assign": "2.4.x",
+        "lodash.union": "2.4.x",
 
         "asker": "0.3.x",
         "dicer": "0.2.x",
