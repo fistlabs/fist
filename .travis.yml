@@ -5,4 +5,5 @@ node_js:
   - "0.11"
 branches:
   only:
-    - v3.1.x
+    - master
+    - rc-dev

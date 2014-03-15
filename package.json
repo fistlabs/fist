@@ -4,7 +4,7 @@
         "email": "golyshev.dmitry@yandex.ru"
     },
     "bugs": {
-        "url": "https://github.com/fistlabs/fist.app/issues"
+        "url": "https://github.com/fistlabs/fist/issues"
     },
     "contributors": [
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
@@ -35,10 +35,10 @@
     },
     "license": "MIT",
     "main": "Fist",
-    "name": "fist.app",
+    "name": "fist",
     "repository": {
         "type": "git",
-        "url": "git://github.com/fistlabs/fist.app.git"
+        "url": "git://github.com/fistlabs/fist.git"
     },
     "scripts": {
         "jscs": "jscs -c .jscsrc .",
@@ -49,5 +49,5 @@
         "cover": "istanbul cover test/runner",
         "benchmark": "node benchmark/runner"
     },
-    "version": "3.1.0"
+    "version": "0.0.1-pre"
 }
