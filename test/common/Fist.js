@@ -7,6 +7,7 @@ var Path = require('path');
 var asker = require('asker');
 var routes = require('../stuff/conf/router0');
 var block = require('../util/block');
+var Vow = require('vow');
 
 module.exports = [
 
@@ -248,6 +249,33 @@ module.exports = [
                 test.done();
             });
         }, 510);
+    },
+
+    function (test) {
+
+        var fist = new Fist({
+            routes: {
+                name: 'index',
+                expr: '/'
+            }
+        });
+
+        fist.decl('index', Vow.resolve('OK!'));
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        fist.listen(sock);
+
+        asker({
+            method: 'GET',
+            socketPath: sock,
+            path: '/'
+        }, function (err, data) {
+            test.strictEqual(data.data + '', 'OK!');
+            test.done();
+        });
     }
 
 ];
