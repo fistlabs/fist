@@ -6,7 +6,7 @@ var Expr = /** @type Expr */ require('../util/Expr');
 var extend = require('fist.lang.extend');
 var hasProperty = Object.prototype.hasOwnProperty;
 var push = Array.prototype.push;
-var regesc = require('fist.lang.regesc');
+var regesc = require('../lang/regesc');
 
 /**
  * @class Route
