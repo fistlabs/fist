@@ -19,6 +19,8 @@
 
         "fist.util.glob": "0.0.x",
 
+        "fist.unit": "0.0.x",
+
         "asker": "0.3.x",
         "dicer": "0.2.x"
     },

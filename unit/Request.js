@@ -1,7 +1,7 @@
 'use strict';
 
 var Ask = /** @type Ask */ require('../util/Ask');
-var Unit = /** @type Unit */ require('./Unit');
+var Unit = /** @type Unit */ require('fist.unit/Unit');
 
 var asker = require('asker');
 

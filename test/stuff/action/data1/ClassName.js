@@ -1,6 +1,6 @@
 'use strict';
 
-var Unit = /** @type Unit */ require('../../../../unit/Unit');
+var Unit = /** @type Unit */ require('fist.unit/Unit');
 
 /**
  * @class ClassName
