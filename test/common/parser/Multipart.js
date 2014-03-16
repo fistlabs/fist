@@ -195,12 +195,7 @@ module.exports = {
                 method: 'post',
                 body: {
                     first: 'vasya',
-                    last: 'petrov',
-                    file: {
-                        mime: 'application/octet-stream',
-                        file: 'buf',
-                        data: new Buffer('asd')
-                    }
+                    last: 'petrov'
                 },
                 bodyEncoding: 'multipart'
             }, function (req, res) {
@@ -211,14 +206,48 @@ module.exports = {
                 });
 
                 req.on('error', function () {});
-                req.on('data', function () {
+                req.once('data', function () {
                     req.emit('error', 'ERR');
-                    req.emit('error', 'ERR2');
                 });
 
                 parser.parse(function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
+                });
+
+            }, function (err) {
+                test.ok(!err);
+                test.done();
+            });
+        },
+        function (test) {
+
+            http({
+                method: 'post',
+                body: {
+                    first: 'vasya',
+                    last: 'petrov'
+                },
+                bodyEncoding: 'multipart'
+            }, function (req, res) {
+
+                var boundary = Multipart.isMultipart(req);
+                var parser = new Multipart(req, {
+                    boundary: boundary
+                });
+
+                req.on('error', function () {});
+                req.once('error', function (err) {
+                    req.emit('error', err);
+                });
+
+                parser.parse(function (err) {
+                    test.strictEqual(err, 'ERR');
+                    res.end();
+                });
+
+                req.once('data', function () {
+                    req.emit('error', 'ERR');
                 });
 
             }, function (err) {

@@ -121,21 +121,17 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
             }
 
             function partCleanup () {
+                part.removeListener('header', partHeader);
                 part.removeListener('data', partData);
+                part.removeListener('end', partEnd);
             }
 
+            part.on('header', partHeader);
             part.on('data', partData);
-
-            part.once('header', partHeader);
-            part.once('end', partEnd);
+            part.on('end', partEnd);
         }
 
         function parserFinish () {
-
-            if ( cleanup.done ) {
-
-                return;
-            }
 
             if ( Infinity !== opts.length && received !== opts.length ) {
                 parser.emit('error', Parser.ELENGTH({
@@ -187,9 +183,13 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         }
 
         function cleanup () {
-            cleanup.done = true;
             parser.removeListener('part', parserPart);
             stream.removeListener('data', streamData);
+
+            stream.removeListener('error', parserError);
+            parser.removeListener('error', parserError);
+            parser.removeListener('finish', parserFinish);
+            cleanup.done = true;
         }
 
         parser.on('part', parserPart);
@@ -198,9 +198,9 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         //  никогда не рушиться!
         parser.on('error', function () {});
 
-        parser.once('error', parserError);
-        parser.once('finish', parserFinish);
-        stream.once('error', parserError);
+        parser.on('error', parserError);
+        stream.on('error', parserError);
+        parser.on('finish', parserFinish);
 
         stream.pipe(parser);
     },
