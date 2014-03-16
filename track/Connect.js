@@ -13,7 +13,7 @@ var Loader = /** @type Loader */ require('../parser/Loader');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var _assign = require('lodash.assign');
+var extend = require('fist.lang.extend');
 var hasProperty = Object.prototype.hasOwnProperty;
 var uniqueId = require('fist.lang.id');
 
@@ -105,7 +105,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         var opts;
 
         if ( !(this._body instanceof Body) ) {
-            opts = _assign(Object.create(null), this.agent.params.body, {
+            opts = extend(Object.create(null), this.agent.params.body, {
                 length: this._req.headers['content-length']
             });
 

@@ -4,7 +4,7 @@ var RE_WHITESPACE = /^\s+$/;
 
 var Bundle = /** @type Bundle */ require('./Bundle');
 
-var _assign = require('lodash.assign');
+var extend = require('fist.lang.extend');
 var cache = Object.create(null);
 var hasProperty = Object.prototype.hasOwnProperty;
 
@@ -28,7 +28,7 @@ var Nested = Bundle.extend(/** @lends Nested.prototype */ {
         var nmsp = Nested.use(root, path);
 
         if ( Object(nmsp) === nmsp ) {
-            _assign(nmsp, data);
+            extend(nmsp, data);
 
             return;
         }

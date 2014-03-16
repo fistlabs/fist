@@ -1,7 +1,7 @@
 'use strict';
 
 var Task = /** @type Task */ require('../task/Task');
-var _assign = require('lodash.assign');
+var extend = require('fist.lang.extend');
 
 /**
  * @class Parser
@@ -22,7 +22,7 @@ var Parser = Task.extend(/** @lends Parser.prototype */ {
     constructor: function (readable, opts) {
 
         //  clone options
-        opts = _assign(Object.create(null), opts);
+        opts = extend(Object.create(null), opts);
 
         opts.limit = +opts.limit;
 
@@ -71,7 +71,7 @@ var Parser = Task.extend(/** @lends Parser.prototype */ {
      * */
     ELIMIT: function (opts) {
 
-        return _assign(new Error(), {
+        return extend(new Error(), {
             code: 'ELIMIT'
         }, opts);
     },
@@ -87,7 +87,7 @@ var Parser = Task.extend(/** @lends Parser.prototype */ {
      * */
     ELENGTH: function (opts) {
 
-        return _assign(new Error(), {
+        return extend(new Error(), {
             code: 'ELENGTH'
         }, opts);
     }
