@@ -205,7 +205,9 @@ module.exports = {
         },
         function (test) {
 
-            var fist = new Framework();
+            var fist = new Framework({
+                busyHWM: 1
+            });
 
             try {
                 Fs.unlinkSync(sock);
