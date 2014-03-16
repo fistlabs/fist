@@ -1,7 +1,7 @@
 'use strict';
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
-var Next = /** @type Next */ require('./Next');
+var Next = /** @type Next */ require('fist.util.next/Next');
 var toArray = require('fist.lang.toarray');
 
 /**

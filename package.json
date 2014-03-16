@@ -17,6 +17,7 @@
         "fist.lang.toarray": "0.0.x",
         "fist.lang.unique": "0.0.x",
 
+        "fist.util.next": "0.0.x",
         "fist.util.glob": "0.0.x",
 
         "fist.unit": "0.0.x",
