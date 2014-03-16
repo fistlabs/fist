@@ -190,14 +190,15 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
             cleanup.done = true;
             parser.removeListener('part', parserPart);
             stream.removeListener('data', streamData);
-
-//            parser.removeListener('error', parserError);
         }
 
         parser.on('part', parserPart);
         stream.on('data', streamData);
 
-        parser.on('error', parserError);
+        //  никогда не рушиться!
+        parser.on('error', function () {});
+
+        parser.once('error', parserError);
         parser.once('finish', parserFinish);
         stream.once('error', parserError);
 
