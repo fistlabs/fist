@@ -121,17 +121,21 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
             }
 
             function partCleanup () {
-                part.removeListener('header', partHeader);
                 part.removeListener('data', partData);
-                part.removeListener('end', partEnd);
             }
 
-            part.on('header', partHeader);
             part.on('data', partData);
-            part.on('end', partEnd);
+
+            part.once('header', partHeader);
+            part.once('end', partEnd);
         }
 
         function parserFinish () {
+
+            if ( cleanup.done ) {
+
+                return;
+            }
 
             if ( Infinity !== opts.length && received !== opts.length ) {
                 parser.emit('error', Parser.ELENGTH({
@@ -148,16 +152,25 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
         function parserError (err) {
 
+            if ( cleanup.done ) {
+
+                return;
+            }
+
             if ( 'function' === typeof stream.pause ) {
                 stream.pause();
             }
 
             cleanup();
-
             done(err);
         }
 
         function streamData (chunk) {
+
+            if ( cleanup.done ) {
+
+                return;
+            }
 
             if ( !Buffer.isBuffer(chunk) ) {
                 chunk = new Buffer(String(chunk));
@@ -174,18 +187,19 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         }
 
         function cleanup () {
+            cleanup.done = true;
             parser.removeListener('part', parserPart);
-            parser.removeListener('error', parserError);
-            parser.removeListener('finish', parserFinish);
             stream.removeListener('data', streamData);
-            stream.removeListener('error', parserError);
+
+//            parser.removeListener('error', parserError);
         }
 
         parser.on('part', parserPart);
-        parser.on('error', parserError);
-        parser.on('finish', parserFinish);
         stream.on('data', streamData);
-        stream.on('error', parserError);
+
+        parser.on('error', parserError);
+        parser.once('finish', parserFinish);
+        stream.once('error', parserError);
 
         stream.pipe(parser);
     },

@@ -213,6 +213,7 @@ module.exports = {
                 req.on('error', function () {});
                 req.on('data', function () {
                     req.emit('error', 'ERR');
+                    req.emit('error', 'ERR2');
                 });
 
                 parser.parse(function (err) {
@@ -235,6 +236,7 @@ module.exports = {
             }, function (req, res) {
 
                 var boundary = Multipart.isMultipart(req);
+
                 var parser = new Multipart(req, {
                     boundary: boundary,
                     length: 4
