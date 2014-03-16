@@ -13,11 +13,10 @@ var Loader = Parser.extend(/** @lends Loader.prototype */ {
      * @memberOf {Loader}
      * @method
      *
-     * @param {*} opts
      * @param {Function} done
      * */
-    _parse: function (opts, done) {
-        Loader._download(this._readable, opts, done);
+    _parse: function (done) {
+        Loader._download(this._readable, this.params, done);
     }
 
 }, {

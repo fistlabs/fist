@@ -15,13 +15,10 @@ var Json = Loader.extend(/** @lends JSON.prototype*/ {
      * @memberOf {JSON}
      * @method
      *
-     * @param {*} opts
      * @param {Function} done
      * */
-    _parse: function (opts, done) {
-        Json.parent._parse.call(this, opts, function (err, res) {
-
-            var result;
+    _parse: function (done) {
+        Json.parent._parse.call(this, function (err, res) {
 
             if ( 2 > arguments.length ) {
 
@@ -30,17 +27,13 @@ var Json = Loader.extend(/** @lends JSON.prototype*/ {
 
             try {
 
-                result = {
-                    input: JSON.parse(res),
-                    files: Object.create(null),
-                    type: 'json'
-                };
-            } catch (ex) {
+                res = JSON.parse(res);
+            } catch (err) {
 
-                return done(ex);
+                return done(err);
             }
 
-            return done(null, result);
+            return done(null, res);
         });
     }
 }, {

@@ -1,103 +1,77 @@
 'use strict';
 
 var Json = require('../../../parser/Json');
-var http = require('../../util/http');
+var Parted = require('../../util/Parted');
 
 module.exports = {
 
-    done: function (test) {
-        http({
-            method: 'post',
-            body: '{"a":42}'
-        }, function (req, res) {
-
-            var parser = new Json(req);
-
-            parser.done(function (err, data) {
-                test.deepEqual(data.input, {
-                    a: '42'
-                });
-                test.deepEqual(data.files, Object.create(null));
-                res.end();
+    'Json.prototype.parse': [
+        function (test) {
+            var parser = new Json(new Parted(['{"a":42}']));
+            parser.parse(function (err, res) {
+                test.deepEqual(res, {a: 42});
+                test.done();
             });
-        }, function () {
-            test.done();
-        });
-    },
-
-    fail0: function (test) {
-        http({
-            method: 'post',
-            body: 'ПРИФФЕТ!'
-        }, function (req, res) {
-
+        },
+        function (test) {
+            var req = new Parted(['{"a":42}']);
             var parser = new Json(req);
-
-            req.on('data', function () {
-                req.emit('error', 'ERR');
+            parser.parse(function (err, res) {
+                test.strictEqual(err, '42');
+                test.done();
             });
 
-            parser.done(function (err) {
-                test.strictEqual(err, 'ERR');
-                res.end();
+            req.once('data', function () {
+                req.emit('error', '42');
             });
-        }, function () {
-            test.done();
-        });
-    },
-
-    fail1: function (test) {
-        http({
-            method: 'post',
-            body: 'ПРИФФЕТ!'
-        }, function (req, res) {
-
+        },
+        function (test) {
+            var req = new Parted(['{"a":42']);
             var parser = new Json(req);
-
-            parser.done(function (err) {
+            parser.parse(function (err) {
                 test.ok(err instanceof SyntaxError);
-                res.end();
+                test.done();
+            });
+        }
+
+    ],
+
+    'Json.isJSON': [
+        function (test) {
+
+            var equal = [
+                'json+schema',
+                'schema+json',
+                'bunker-schema+json',
+                'bunker.schema+JSON; charset=utf-8',
+                'json',
+                'json+bunker.schema'
+            ];
+
+            var nequal = [
+                'octet-stream',
+                '+json',
+                'json+',
+                'schema+json+schema'
+            ];
+
+            equal.forEach(function (type) {
+                test.ok(Json.isJSON({
+                    headers: {
+                        'content-type': 'application/' + type
+                    }
+                }));
             });
 
-        }, function () {
+            nequal.forEach(function (type) {
+                test.ok(!Json.isJSON({
+                    headers: {
+                        'content-type': 'application/' + type
+                    }
+                }));
+            });
+
             test.done();
-        });
-    },
-
-    isJSON: function (test) {
-
-        var equal = [
-            'json+schema',
-            'schema+json',
-            'bunker-schema+json',
-            'bunker.schema+JSON; charset=utf-8',
-            'json',
-            'json+bunker.schema'
-        ];
-
-        var nequal = [
-            'octet-stream',
-            '+json',
-            'json+',
-            'schema+json+schema'
-        ];
-
-        equal.forEach(function (type) {
-            test.ok(Json.isJSON({
-                headers: {
-                    'content-type': 'application/' + type
-                }
-            }));
-        });
-
-        nequal.forEach(function (type) {
-            test.ok(!Json.isJSON({
-                headers: {
-                    'content-type': 'application/' + type
-                }
-            }));
-        });
-
-        test.done();
-    }
+        }
+    ]
 };

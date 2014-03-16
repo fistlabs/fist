@@ -1,84 +1,68 @@
 'use strict';
 
 var Urlencoded = require('../../../parser/Urlencoded');
-var http = require('../../util/http');
+var Parted = require('../../util/Parted');
 
 module.exports = {
 
-    done: function (test) {
-        http({
-            method: 'post',
-            body: 'a=5&b=6'
-        }, function (req, res) {
-
+    'Urlencoded.prototype.parse': [
+        function (test) {
+            var req = new Parted(['a=5&b=6']);
             var parser = new Urlencoded(req);
-
-            parser.done(function (err, data) {
-                test.deepEqual(data.input, {
+            parser.parse(function (err, res) {
+                test.deepEqual(res, {
                     a: '5',
                     b: '6'
                 });
-                test.deepEqual(data.files, Object.create(null));
-                res.end();
+                test.done();
             });
-
-        }, function () {
-            test.done();
-        });
-    },
-
-    fail: function (test) {
-        http({
-            method: 'post',
-            body: 'ПРИФФЕТ!'
-        }, function (req, res) {
-
+        },
+        function (test) {
+            var req = new Parted(['a=5&b=6']);
             var parser = new Urlencoded(req);
+            parser.parse(function (err) {
+                test.strictEqual(err, 42);
+                test.done();
+            });
+            req.once('data', function () {
+                req.emit('error', 42);
+            });
+        }
+    ],
 
-            req.on('data', function () {
-                req.emit('error', 'ERR');
+    isUrlencoded: [
+        function (test) {
+
+            var equal = [
+                'x-www-form-urlencoded',
+                'x-www-form-urlencoded; charset=UTF8',
+                'x-www-form-URLENCODED'
+            ];
+
+            var nequal = [
+                'octet-stream',
+                '+json',
+                'json+',
+                'schema+json+schema'
+            ];
+
+            equal.forEach(function (type) {
+                test.ok(Urlencoded.isUrlencoded({
+                    headers: {
+                        'content-type': 'application/' + type
+                    }
+                }));
             });
 
-            parser.done(function (err) {
-                test.strictEqual(err, 'ERR');
-                res.end();
+            nequal.forEach(function (type) {
+                test.ok(!Urlencoded.isUrlencoded({
+                    headers: {
+                        'content-type': 'application/' + type
+                    }
+                }));
             });
-        }, function () {
+
             test.done();
-        });
-    },
-
-    isUrlencoded: function (test) {
-
-        var equal = [
-            'x-www-form-urlencoded',
-            'x-www-form-urlencoded; charset=UTF8',
-            'x-www-form-URLENCODED'
-        ];
-
-        var nequal = [
-            'octet-stream',
-            '+json',
-            'json+',
-            'schema+json+schema'
-        ];
-
-        equal.forEach(function (type) {
-            test.ok(Urlencoded.isUrlencoded({
-                headers: {
-                    'content-type': 'application/' + type
-                }
-            }));
-        });
-
-        nequal.forEach(function (type) {
-            test.ok(!Urlencoded.isUrlencoded({
-                headers: {
-                    'content-type': 'application/' + type
-                }
-            }));
-        });
-
-        test.done();
-    }
+        }
+    ]
 };

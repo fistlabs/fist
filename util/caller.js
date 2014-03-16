@@ -4,28 +4,12 @@ var Loader = /** @type Loader */ require('../parser/Loader');
 
 exports.callYield = function (value, done) {
     /*eslint no-fallthrough: 0*/
-    switch ( exports.callRet(value, done) ) {
+    if ( exports.callRet(value, done) ) {
 
-        //  вызова не было, примитив
-        case 0: {
-            done(null, value);
-
-            break;
-        }
-
-        //  вызова не было, объект
-        case 1: {
-            exports.callObj(value, done);
-
-            break;
-        }
-
-        default: {
-
-            //  был вызов
-            break;
-        }
+        return;
     }
+
+    exports.callObj(value, done);
 };
 
 exports.callRet = function (val, done) {
@@ -35,20 +19,20 @@ exports.callRet = function (val, done) {
         if ( 'function' === typeof val ) {
             exports.callFunc(val, [], done);
 
-            return 2;
+            return true;
         }
 
         if ( 'function' === typeof val.next &&
              'function' === typeof val.throw ) {
             exports.callGen(val, void 0, false, done);
 
-            return 2;
+            return true;
         }
 
         if ( 'function' === typeof val.pipe ) {
             exports.callStream(val, done);
 
-            return 2;
+            return true;
         }
 
         try {
@@ -56,19 +40,21 @@ exports.callRet = function (val, done) {
             if ( 'function' === typeof val.then ) {
                 exports.callPromise(val, done);
 
-                return 2;
+                return true;
             }
 
         } catch (err) {
             done(err);
 
-            return 2;
+            return true;
         }
 
-        return 1;
+        return false;
     }
 
-    return 0;
+    done.call(this, null, val);
+
+    return true;
 };
 
 exports.callFunc = function (func, args, done) {
@@ -101,12 +87,7 @@ exports.callFunc = function (func, args, done) {
 
     called = true;
 
-    if ( 2 === exports.callRet(func, done) ) {
-
-        return;
-    }
-
-    done(null, func);
+    exports.callRet(func, done)
 };
 
 exports.callGenFn = function (func, args, done) {
@@ -181,12 +162,7 @@ exports.callObj = function (obj, done) {
             }
         }
 
-        if ( 2 === exports.callRet(obj[i], onReturned) ) {
-
-            return;
-        }
-
-        onReturned.call(this, null, obj[i]);
+        exports.callRet(obj[i], onReturned);
     }, this);
 };
 
@@ -204,5 +180,5 @@ exports.callPromise = function (promise, done) {
 };
 
 exports.callStream = function (readable, done) {
-    new Loader(readable, null).done(done, this);
+    new Loader(readable, null).parse(done, this);
 };

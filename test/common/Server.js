@@ -261,8 +261,8 @@ module.exports = [
             Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        serv.on('sys:request', function (track) {
-            track.send(201);
+        serv.on('sys:request', function (connect) {
+            connect.send(201);
         });
 
         Http.createServer(serv.getHandler()).listen(sock);
@@ -312,8 +312,8 @@ module.exports = [
     function (test) {
 
         var S = Server.extend({
-            _findRoute: function (track) {
-                track.send(404);
+            _findRoute: function (connect) {
+                connect.send(404);
             }
         });
 

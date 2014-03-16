@@ -112,7 +112,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             this._body = new Body(this._req, opts);
         }
 
-        this._body.done(done, this);
+        this._body.parse(done, this);
     },
 
     /**
@@ -447,7 +447,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _writeReadable: function (body) {
 
         if ( 'HEAD' === this.method ) {
-            new Loader(body, null).done(function (err, body) {
+            new Loader(body, null).parse(function (err, body) {
 
                 if ( 2 > arguments.length ) {
                     this._respond(500, err);
@@ -473,7 +473,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        new Loader(body, null).done(function (err, body) {
+        new Loader(body, null).parse(function (err, body) {
 
             if ( 2 > arguments.length ) {
                 this._respond(500, err);

@@ -2,8 +2,8 @@
 
 var QueryString = /** @type QueryString */ require('querystring');
 
+var Loader = /** @type Loader */ require('./Loader');
 var Parser = /** @type Parser */ require('./Parser');
-var Raw = /** @type Raw */ require('./Raw');
 var Urlencoded = /** @type Urlencoded */ require('./Urlencoded');
 var Json = /** @type Json */ require('./Json');
 var Multipart = /** @type Multipart */ require('./Multipart');
@@ -19,40 +19,65 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * @memberOf {Body}
      * @method
      *
-     * @param {*} [opts]
      * @param {Function} done
      * */
-    _parse: function (opts, done) {
+    _parse: function (done) {
 
         var boundary;
+        var type;
 
-        if ( !Body.hasBody(this._readable) ) {
+        function resolve (err, res) {
 
-            return done(null, {
-                input: Object.create(null),
-                files: Object.create(null)
+            if ( 2 > arguments.length ) {
+                done(err);
+
+                return;
+            }
+
+            if ( 'multipart' === type ) {
+                done(null, {
+                    input: res[0],
+                    files: res[1],
+                    type: type
+                });
+
+                return;
+            }
+
+            done(null, {
+                input: res,
+                type: type
             });
         }
 
-        if ( Urlencoded.isUrlencoded(this._readable) ) {
+        if ( !Body.hasBody(this._readable) ) {
+            type = void 0;
 
-            return Urlencoded.prototype._parse.call(this, opts, done);
+            return resolve(null, Object.create(null));
+        }
+
+        if ( Urlencoded.isUrlencoded(this._readable) ) {
+            type = 'urlencoded';
+            return Urlencoded.prototype._parse.call(this, resolve);
         }
 
         if ( Json.isJSON(this._readable) ) {
-
-            return Json.prototype._parse.call(this, opts, done);
+            type = 'json';
+            return Json.prototype._parse.call(this, resolve);
         }
 
         boundary = Multipart.isMultipart(this._readable);
 
         if ( boundary ) {
-            opts.boundary = boundary;
+            type = 'multipart';
+            this.params.boundary = boundary;
 
-            return Multipart.prototype._parse.call(this, opts, done);
+            return Multipart.prototype._parse.call(this, resolve);
         }
 
-        return Raw.prototype._parse.call(this, opts, done);
+        type = 'raw';
+
+        return Loader.prototype._parse.call(this, resolve);
     }
 
 }, /** @lends Body */ {

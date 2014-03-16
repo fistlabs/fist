@@ -15,26 +15,20 @@ var Urlencoded = Loader.extend(/** @lends Urlencoded.prototype*/ {
      * @memberOf {Urlencoded}
      * @method
      *
-     * @param {*} opts
      * @param {Function} done
      * */
-    _parse: function (opts, done) {
-
-        function entireDone (err, res) {
+    _parse: function (done) {
+        Urlencoded.parent._parse.call(this, function (err, res) {
 
             if ( 2 > arguments.length ) {
 
                 return done(err);
             }
 
-            return done(null, {
-                input: QueryString.parse(String(res)),
-                files: Object.create(null),
-                type: 'urlencoded'
-            });
-        }
+            res = QueryString.parse(String(res));
 
-        Urlencoded.parent._parse.call(this, opts, entireDone);
+            return done(null, res);
+        });
     }
 }, {
 

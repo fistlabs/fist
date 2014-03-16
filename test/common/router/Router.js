@@ -4,46 +4,42 @@ Object.prototype.bug = 42;
 
 var Router = require('../../../router/Router');
 
-var router = new Router();
-var contestStandings = router.addRoute('/contest/<contestId>/standings/');
-var contestSubmits = router.addRoute('/contest/<contestId>/submits/');
-
 module.exports = {
 
-    find: function (test) {
+    'Router.prototype.find': [
+        function (test) {
 
-        test.deepEqual(router.find('/contest/60/standings/'), {
-            route: contestStandings,
-            match: {
-                contestId: '60'
-            }
-        });
+            var router = new Router();
+            var contestStandings = router.addRoute('/contest/<contestId>/standings/');
+            var contestSubmits = router.addRoute('/contest/<contestId>/submits/');
 
-        test.deepEqual(router.find('/contest/192/submits/'), {
-            route: contestSubmits,
-            match: {
-                contestId: '192'
-            }
-        });
+            test.deepEqual(router.find('/contest/60/standings/'), {
+                route: contestStandings,
+                match: {
+                    contestId: '60'
+                }
+            });
 
-        test.strictEqual(router.find('/CONTEST/20/submits/'), null);
+            test.deepEqual(router.find('/contest/192/submits/'), {
+                route: contestSubmits,
+                match: {
+                    contestId: '192'
+                }
+            });
 
-        test.done();
-    },
+            test.strictEqual(router.find('/CONTEST/20/submits/'), null);
 
-    options: function (test) {
+            router = new Router({
+                nocase: true
+            });
 
-        var r = new Router({
-            nocase: true
-        });
+            router.addRoute('/static/', {
+                noend: true
+            });
 
-        r.addRoute('/static/', {
-            noend: true
-        });
+            test.deepEqual(router.find('/STATIC/js/index.js').match, {});
 
-        test.deepEqual(r.find('/STATIC/js/index.js').match, {});
-
-        test.done();
-    }
-
+            test.done();
+        }
+    ]
 };

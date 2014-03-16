@@ -5,239 +5,243 @@ var expr = new Expr();
 
 module.exports = {
 
-    escape: function (test) {
-        test.strictEqual(expr.escape('\\<>()'), '\\\\\\<\\>\\(\\)');
-        test.done();
-    },
+    'Expr.prototype.escape': [
+        function (test) {
+            test.strictEqual(expr.escape('\\<>()'), '\\\\\\<\\>\\(\\)');
+            test.done();
+        }
+    ],
 
-    unescape: function (test) {
-        test.strictEqual(expr.unescape('\\\\\\<\\>\\(\\)'), '\\<>()');
-        test.done();
-    },
+    'Expr.prototype.unescape': [
+        function (test) {
+            test.strictEqual(expr.unescape('\\\\\\<\\>\\(\\)'), '\\<>()');
+            test.done();
+        }
+    ],
 
-    parse: function (test) {
+    'Expr.prototype.parse': [
+        function (test) {
 
-        var errors;
-        var sample;
-        var expected;
+            var errors;
+            var sample;
+            var expected;
 
-        errors = [
-            '<(',
-            '<a(',
-            ')',
-            '()',
-            '<<',
-            '<a<',
-            '>',
-            '<>',
-            '(',
-            '<',
-            '\\',
-            '',
-            ',',
-            '<param=>',
-            '<param=,>',
-            '<param=a,>',
-            '=',
-            '(=)',
-            '<param=a=>'
-        ];
+            errors = [
+                '<(',
+                '<a(',
+                ')',
+                '()',
+                '<<',
+                '<a<',
+                '>',
+                '<>',
+                '(',
+                '<',
+                '\\',
+                '',
+                ',',
+                '<param=>',
+                '<param=,>',
+                '<param=a,>',
+                '=',
+                '(=)',
+                '<param=a=>'
+            ];
 
-        errors.forEach(function (ps) {
+            errors.forEach(function (ps) {
 
-            try {
-                expr.parse(ps);
+                try {
+                    expr.parse(ps);
 
-                throw 42;
+                    throw 42;
 
-            } catch (ex) {
-                test.ok(ex instanceof SyntaxError);
-            }
-        });
+                } catch (ex) {
+                    test.ok(ex instanceof SyntaxError);
+                }
+            });
 
-        sample = '\\\\\\(\\<text\\>\\)(text)text<text>text';
-        expected = [
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: '\\(<text>)'
-            },
-            {
-                type: Expr.PART_TYPE_OPT,
-                body: [
-                    {
-                        type: Expr.PART_TYPE_DFT,
-                        body: 'text'
-                    }
-                ]
-            },
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: 'text'
-            },
-            {
-                type: Expr.PART_TYPE_PRM,
-                body: 'text',
-                only: []
-            },
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: 'text'
-            }
-        ];
-
-        expected.map = [
-            {
-                type: Expr.PART_TYPE_PRM,
-                body: 'text',
-                only: []
-            }
-        ];
-
-        test.deepEqual(expr.parse(sample), expected);
-        test.strictEqual(expr.parse(sample), expr.parsed[sample]);
-
-        sample = '/(<id=a,b>/)tail/';
-
-        expected = [
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: '/'
-            },
-            {
-                type: Expr.PART_TYPE_OPT,
-                body: [
-                    {
-                        type: Expr.PART_TYPE_PRM,
-                        body: 'id',
-                        only: [
-                            {
-                                type: Expr.PART_TYPE_VAL,
-                                body: 'a'
-                            },
-                            {
-                                type: Expr.PART_TYPE_VAL,
-                                body: 'b'
-                            }
-                        ]
-                    },
-                    {
-                        type: Expr.PART_TYPE_DFT,
-                        body: '/'
-                    }
-                ]
-            },
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: 'tail/'
-            }
-        ];
-
-        expected.map = [{
-            type: Expr.PART_TYPE_PRM,
-            body: 'id',
-            only: [
+            sample = '\\\\\\(\\<text\\>\\)(text)text<text>text';
+            expected = [
                 {
-                    type: Expr.PART_TYPE_VAL,
-                    body: 'a'
+                    type: Expr.PART_TYPE_DFT,
+                    body: '\\(<text>)'
                 },
                 {
-                    type: Expr.PART_TYPE_VAL,
-                    body: 'b'
+                    type: Expr.PART_TYPE_OPT,
+                    body: [
+                        {
+                            type: Expr.PART_TYPE_DFT,
+                            body: 'text'
+                        }
+                    ]
+                },
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: 'text'
+                },
+                {
+                    type: Expr.PART_TYPE_PRM,
+                    body: 'text',
+                    only: []
+                },
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: 'text'
                 }
-            ]
-        }];
+            ];
 
-        test.deepEqual(expr.parse(sample), expected);
+            expected.map = [
+                {
+                    type: Expr.PART_TYPE_PRM,
+                    body: 'text',
+                    only: []
+                }
+            ];
 
-        test.done();
-    },
+            test.deepEqual(expr.parse(sample), expected);
+            test.strictEqual(expr.parse(sample), expr.parsed[sample]);
 
-    stringify: function (test) {
+            sample = '/(<id=a,b>/)tail/';
 
-        test.strictEqual( expr.stringify([
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: '\\(<text>)'
-            },
-            {
-                type: Expr.PART_TYPE_OPT,
-                body: [
-                    {
-                        type: Expr.PART_TYPE_DFT,
-                        body: 'text'
-                    },
-                    {
-                        type: Expr.PART_TYPE_OPT,
-                        body: [
-                            {
-                                type: Expr.PART_TYPE_DFT,
-                                body: 'text'
-                            }
-                        ]
-                    },
-                    {
-                        type: Expr.PART_TYPE_DFT,
-                        body: 'text'
-                    }
-                ]
-            },
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: 'text'
-            },
-            {
-                type: Expr.PART_TYPE_PRM,
-                body: 'text',
-                only: []
-            },
-            {
-                type: Expr.PART_TYPE_PRM,
-                body: 'text',
-                only: [
-                    {
-                        type: Expr.PART_TYPE_VAL,
-                        body: 'a'
-                    },
-                    {
-                        type: Expr.PART_TYPE_VAL,
-                        body: 'b'
-                    }
-                ]
-            },
-            {
-                type: Expr.PART_TYPE_DFT,
-                body: 'text'
-            }
-        ]), '\\\\\\(\\<text\\>\\)(text(text)text)text<text><text=a,b>text');
+            expected = [
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: '/'
+                },
+                {
+                    type: Expr.PART_TYPE_OPT,
+                    body: [
+                        {
+                            type: Expr.PART_TYPE_PRM,
+                            body: 'id',
+                            only: [
+                                {
+                                    type: Expr.PART_TYPE_VAL,
+                                    body: 'a'
+                                },
+                                {
+                                    type: Expr.PART_TYPE_VAL,
+                                    body: 'b'
+                                }
+                            ]
+                        },
+                        {
+                            type: Expr.PART_TYPE_DFT,
+                            body: '/'
+                        }
+                    ]
+                },
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: 'tail/'
+                }
+            ];
 
-        test.done();
-    },
+            expected.map = [
+                {
+                    type: Expr.PART_TYPE_PRM,
+                    body: 'id',
+                    only: [
+                        {
+                            type: Expr.PART_TYPE_VAL,
+                            body: 'a'
+                        },
+                        {
+                            type: Expr.PART_TYPE_VAL,
+                            body: 'b'
+                        }
+                    ]
+                }
+            ];
 
-    only: function (test) {
+            test.deepEqual(expr.parse(sample), expected);
 
-        var expected = [
-            {
-                type: Expr.PART_TYPE_PRM,
-                body: 'a',
-                only: [
-                    {
-                        type: Expr.PART_TYPE_VAL,
-                        body: '\\b,()'
-                    },
-                    {
-                        type: Expr.PART_TYPE_VAL,
-                        body: 'c=<=>='
-                    }
-                ]
-            }
-        ];
+            expected = [
+                {
+                    type: Expr.PART_TYPE_PRM,
+                    body: 'a',
+                    only: [
+                        {
+                            type: Expr.PART_TYPE_VAL,
+                            body: '\\b,()'
+                        },
+                        {
+                            type: Expr.PART_TYPE_VAL,
+                            body: 'c=<=>='
+                        }
+                    ]
+                }
+            ];
 
-        expected.map = [expected[0]];
+            expected.map = [expected[0]];
 
-        test.deepEqual(expr.parse('<a=\\\\b\\,\\(\\),c\\=\\<\\=\\>\\=>'),
-            expected);
+            test.deepEqual(expr.parse('<a=\\\\b\\,\\(\\),c\\=\\<\\=\\>\\=>'),
+                expected);
 
-        test.done();
-    }
+            test.done();
+        }
+    ],
 
+    'Expr.prototype.stringify': [
+        function (test) {
+
+            test.strictEqual(expr.stringify([
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: '\\(<text>)'
+                },
+                {
+                    type: Expr.PART_TYPE_OPT,
+                    body: [
+                        {
+                            type: Expr.PART_TYPE_DFT,
+                            body: 'text'
+                        },
+                        {
+                            type: Expr.PART_TYPE_OPT,
+                            body: [
+                                {
+                                    type: Expr.PART_TYPE_DFT,
+                                    body: 'text'
+                                }
+                            ]
+                        },
+                        {
+                            type: Expr.PART_TYPE_DFT,
+                            body: 'text'
+                        }
+                    ]
+                },
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: 'text'
+                },
+                {
+                    type: Expr.PART_TYPE_PRM,
+                    body: 'text',
+                    only: []
+                },
+                {
+                    type: Expr.PART_TYPE_PRM,
+                    body: 'text',
+                    only: [
+                        {
+                            type: Expr.PART_TYPE_VAL,
+                            body: 'a'
+                        },
+                        {
+                            type: Expr.PART_TYPE_VAL,
+                            body: 'b'
+                        }
+                    ]
+                },
+                {
+                    type: Expr.PART_TYPE_DFT,
+                    body: 'text'
+                }
+            ]), '\\\\\\(\\<text\\>\\)(text(text)text)text<text><text=a,b>text');
+
+            test.done();
+        }
+    ]
 };

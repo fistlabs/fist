@@ -94,13 +94,14 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         }
 
         function done (err) {
-            this._pending -= 1;
 
             if ( 2 > arguments.length ) {
                 this.emit('sys:error', err);
 
                 return;
             }
+
+            this._pending -= 1;
 
             if ( 0 === this._pending ) {
                 this.emit('sys:ready');
@@ -129,6 +130,12 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 }
 
             }, this);
+        }
+
+        if ( 0 === length ) {
+            done.call(this, null, null);
+
+            return;
         }
 
         for ( i = 0, l = length; i < l; i += 1 ) {
@@ -172,13 +179,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        if ( 2 === caller.callRet(func, done) ) {
-
-            return;
-        }
-
-        //  примитивы сразу резолвим
-        done(null, func);
+        caller.callRet(func, done);
     },
 
     /**

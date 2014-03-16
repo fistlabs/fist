@@ -1,45 +1,76 @@
 'use strict';
 
 var Parser = require('../../../parser/Parser');
-var http = require('../../util/http');
+var Parted = require('../../util/Parted');
 
 module.exports = {
 
-    done: function (test) {
-        http({method: 'post', body: 'hi'}, function (req, res) {
-            var parser = new Parser(req);
+    Parser: [
+        function (test) {
+            var parser;
 
-            parser.done(function (err, buf) {
-                test.ok(Buffer.isBuffer(buf));
-                test.deepEqual(buf, new Buffer(0));
-                res.end();
+            parser = new Parser(null, {});
+
+            test.deepEqual(parser.params, {
+                length: Infinity,
+                limit: Infinity
             });
 
-        }, function () {
+            parser = new Parser(null, {
+                length: '5',
+                limit: 42
+            });
+
+            test.deepEqual(parser.params, {
+                length: 5,
+                limit: 42
+            });
+
             test.done();
-        });
-    },
+        }
+    ],
 
-    errors: function (test) {
+    'Parser.prototype.parse': [
+        function (test) {
+            var req = new Parted(['h1']);
+            var parser = new Parser(req, {});
 
-        var error = Parser.ELIMIT({
-            message: 'x'
-        });
+            parser.parse(function (err, buf) {
+                test.ok(Buffer.isBuffer(buf));
+                test.deepEqual(buf, new Buffer(0));
+                test.done();
+            });
+        }
+    ],
 
-        test.deepEqual(error, {
-            code: 'ELIMIT',
-            message: 'x'
-        });
+    'Parser.ELIMIT': [
+        function (test) {
 
-        error = Parser.ELENGTH({
-            message: 'xxx'
-        });
+            var error = Parser.ELIMIT({
+                message: 'x'
+            });
 
-        test.deepEqual(error, {
-            code: 'ELENGTH',
-            message: 'xxx'
-        });
+            test.deepEqual(error, {
+                code: 'ELIMIT',
+                message: 'x'
+            });
 
-        test.done();
-    }
+            test.done();
+        }
+    ],
+    'Parser.ELENGTH': [
+        function (test) {
+
+            var error = Parser.ELENGTH({
+                message: 'xxx'
+            });
+
+            test.deepEqual(error, {
+                code: 'ELENGTH',
+                message: 'xxx'
+            });
+
+            test.done();
+        }
+    ]
 };

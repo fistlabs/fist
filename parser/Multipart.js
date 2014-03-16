@@ -19,11 +19,10 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @memberOf {Multipart}
      * @method
      *
-     * @param {Object} opts
      * @param {Function} done
      * */
-    _parse: function (opts, done) {
-        Multipart.parse(this._readable, opts, done);
+    _parse: function (done) {
+        Multipart.parseMultipart(this._readable, this.params, done);
     }
 
 }, /** @lends Multipart */ {
@@ -37,15 +36,11 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @param {Object} opts
      * @param {Function} done
      * */
-    parse: function (stream, opts, done) {
+    parseMultipart: function (stream, opts, done) {
 
         var parser = new Dicer(opts);
         var received = 0;
-        var result = {
-            input: Object.create(null),
-            files: Object.create(null),
-            type: 'multipart'
-        };
+        var result = [Object.create(null), Object.create(null)];
 
         function parserPart (part) {
 
@@ -86,7 +81,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
             function partEnd () {
 
-                var sect = 'input';
+                var sect = 0;
 
                 if ( partError ) {
                     partCleanup();
@@ -97,7 +92,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
                 buf = Buffer.concat(buf);
 
                 if ( 'string' === typeof file ) {
-                    sect = 'files';
+                    sect = 1;
 
                     //  это был файл
                     buf = {

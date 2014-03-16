@@ -1,13 +1,14 @@
 'use strict';
 
+var Class = /** @type Class */ require('fist.lang.class/Class');
 var Task = /** @type Task */ require('../util/Task');
 var extend = require('fist.lang.extend');
 
 /**
  * @class Parser
- * @extends Task
+ * @extends Class
  * */
-var Parser = Task.extend(/** @lends Parser.prototype */ {
+var Parser = Class.extend(/** @lends Parser.prototype */ {
 
     /**
      * @protected
@@ -20,9 +21,9 @@ var Parser = Task.extend(/** @lends Parser.prototype */ {
      * @param {*} [opts]
      * */
     constructor: function (readable, opts) {
+        Parser.Parent.call(this, opts);
 
-        //  clone options
-        opts = extend(Object.create(null), opts);
+        opts = this.params;
 
         opts.limit = +opts.limit;
 
@@ -36,7 +37,7 @@ var Parser = Task.extend(/** @lends Parser.prototype */ {
             opts.length = Infinity;
         }
 
-        Parser.Parent.call(this, this._parse, this, [opts]);
+        this._task = new Task(this._parse, this);
 
         /**
          * @protected
@@ -51,11 +52,22 @@ var Parser = Task.extend(/** @lends Parser.prototype */ {
      * @memberOf {Parser}
      * @method
      *
-     * @param {*} opts
      * @param {Function} done
      * */
-    _parse: function (opts, done) {
+    _parse: function (done) {
         done(null, new Buffer(0));
+    },
+
+    /**
+     * @public
+     * @memberOf {Parser}
+     * @method
+     *
+     * @param {Function} done
+     * @param {*} [ctxt]
+     * */
+    parse: function (done, ctxt) {
+        this._task.done(done, ctxt);
     }
 
 }, {

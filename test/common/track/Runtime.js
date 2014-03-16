@@ -66,108 +66,108 @@ module.exports = {
         });
     },
 
-    writeError0: function (test) {
+    writeError: [
+        function (test) {
 
-        var fist = new Fist();
-        var er = new Error();
+            var fist = new Fist();
+            var er = new Error();
 
-        fist.route('GET', '/', 'index');
+            fist.route('GET', '/', 'index');
 
-        fist.decl('index', function (track) {
-            track.send(500, er);
-        });
+            fist.decl('index', function (track) {
+                track.send(500, er);
+            });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (ex) {}
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
 
-        fist.listen(sock);
+            fist.listen(sock);
 
-        asker({
-            method: 'GET',
-            socketPath: sock,
-            path: '/',
-            statusFilter: function () {
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
 
-                return {
-                    accept: true
-                };
-            }
-        }, function (err, data) {
-            test.strictEqual(data.data + '', er.stack);
-            test.strictEqual(data.statusCode, 500);
-            test.done();
-        });
-    },
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.strictEqual(data.data + '', er.stack);
+                test.strictEqual(data.statusCode, 500);
+                test.done();
+            });
+        },
+        function (test) {
 
-    writeError1: function (test) {
+            var fist = new Fist({
+                staging: true
+            });
+            var er = new Error();
 
-        var fist = new Fist({
-            staging: true
-        });
-        var er = new Error();
+            fist.route('GET', '/', 'index');
 
-        fist.route('GET', '/', 'index');
+            fist.decl('index', function (track) {
+                track.send(500, er);
+            });
 
-        fist.decl('index', function (track) {
-            track.send(500, er);
-        });
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (ex) {}
+            fist.listen(sock);
 
-        fist.listen(sock);
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
 
-        asker({
-            method: 'GET',
-            socketPath: sock,
-            path: '/',
-            statusFilter: function () {
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.strictEqual(data.data + '', 'Internal Server Error');
+                test.strictEqual(data.statusCode, 500);
+                test.done();
+            });
+        },
+        function (test) {
 
-                return {
-                    accept: true
-                };
-            }
-        }, function (err, data) {
-            test.strictEqual(data.data + '', 'Internal Server Error');
-            test.strictEqual(data.statusCode, 500);
-            test.done();
-        });
-    },
+            var fist = new Fist();
+            var er = new Error();
 
-    writeError2: function (test) {
+            fist.route('GET', '/', 'index');
 
-        var fist = new Fist();
-        var er = new Error();
+            fist.decl('index', function (track) {
+                track.send(200, er);
+            });
 
-        fist.route('GET', '/', 'index');
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
 
-        fist.decl('index', function (track) {
-            track.send(200, er);
-        });
+            fist.listen(sock);
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (ex) {}
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
 
-        fist.listen(sock);
-
-        asker({
-            method: 'GET',
-            socketPath: sock,
-            path: '/',
-            statusFilter: function () {
-
-                return {
-                    accept: true
-                };
-            }
-        }, function (err, data) {
-            test.strictEqual(data.data + '', '{}');
-            test.strictEqual(data.statusCode, 200);
-            test.done();
-        });
-    }
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.strictEqual(data.data + '', '{}');
+                test.strictEqual(data.statusCode, 200);
+                test.done();
+            });
+        }
+    ]
 
 };

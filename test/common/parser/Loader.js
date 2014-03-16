@@ -7,114 +7,69 @@ var http = require('../../util/http');
 
 module.exports = {
 
-    done: function (test) {
+    'Loader.prototype.parse': [
+        function (test) {
 
-        http({
-            method: 'post',
-            body: 'Hello, World!'
-        }, function (req, res) {
-
+            var req = new Parted(['П', new Buffer('рив'), 'ет']);
             var parser = new Loader(req);
 
-            parser.done(function (err, buf) {
+            parser.parse(function (err, buf) {
                 test.ok(Buffer.isBuffer(buf));
-                test.strictEqual(String(buf), 'Hello, World!');
-                res.end();
+                test.deepEqual(buf, new Buffer('Привет'));
+                test.done();
             });
+        },
+        function (test) {
 
-        }, function () {
-            test.done();
-        });
-    },
-
-    fail: function (test) {
-
-        http({
-            method: 'post',
-            body: 'Hello, World!'
-        }, function (req, res) {
-
+            var req = new Parted(['П', new Buffer('рив'), 'ет']);
             var parser = new Loader(req);
 
-            req.on('data', function () {
-                req.emit('error', 'ERR');
+            parser.parse(function (err) {
+                test.strictEqual(err, '42');
+                test.done();
             });
 
-            parser.done(function (err) {
-                test.strictEqual(err, 'ERR');
-                res.end();
+            req.once('data', function () {
+                req.emit('error', '42');
             });
+        },
 
-        }, function () {
-            test.done();
-        });
-    },
+        function (test) {
 
-    options_elimit: function (test) {
-        http({
-            method: 'post',
-            body: 'Hello, World!'
-        }, function (req, res) {
+            var req = new Parted('Hello'.split(''));
+            req.pause = function () {};
 
             var parser = new Loader(req, {
-                limit: 4
+                limit: 3
             });
 
-            parser.done(function (err, body) {
+            parser.parse(function (err) {
                 test.deepEqual(err, {
-                    code: 'ELIMIT',
-                    actual: 13,
-                    expected: 4
+                    actual: 4,
+                    expected: 3,
+                    code: 'ELIMIT'
                 });
-                res.end();
+                test.done();
             });
+        },
 
-        }, function () {
-            test.done();
-        });
-    },
+        function (test) {
 
-    options_elength: function (test) {
-        http({
-            method: 'post',
-            body: 'Hello, World!'
-        }, function (req, res) {
+            var req = new Parted('Hello'.split(''));
+            req.pause = function () {};
 
             var parser = new Loader(req, {
-                length: req.headers['content-length'] - 1
+                length: 3
             });
 
-            parser.done(function (err, body) {
+            parser.parse(function (err) {
                 test.deepEqual(err, {
-                    code: 'ELENGTH',
-                    actual: 13,
-                    expected: 12
+                    actual: 5,
+                    expected: 3,
+                    code: 'ELENGTH'
                 });
-                res.end();
+                test.done();
             });
-
-        }, function () {
-            test.done();
-        });
-    },
-
-    custom: function (test) {
-
-        var stream = new Parted('Привет'.split(''));
-
-        var parser = new Loader(stream, {
-            limit: 4
-        });
-
-        parser.done(function (err) {
-            test.deepEqual(err, {
-                actual: 6,
-                expected: 4,
-                code: 'ELIMIT'
-            });
-
-            test.done();
-        });
-
-    }
+        }
+    ]
 };
