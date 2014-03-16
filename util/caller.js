@@ -87,7 +87,7 @@ exports.callFunc = function (func, args, done) {
 
     called = true;
 
-    exports.callRet(func, done)
+    exports.callRet(func, done);
 };
 
 exports.callGenFn = function (func, args, done) {

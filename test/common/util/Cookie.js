@@ -24,9 +24,11 @@ module.exports = {
     'Cookie.prototype.serialize': [
         function (test) {
 
-            test.strictEqual(cookie.serialize('NAME', 'VALUE'), 'NAME=VALUE');
+            test.strictEqual(cookie.
+                serialize('NAME', 'VALUE'), 'NAME=VALUE');
 
-            test.strictEqual(cookie.serialize('NAME', 'VALUE', {}), 'NAME=VALUE');
+            test.strictEqual(cookie.
+                serialize('NAME', 'VALUE', {}), 'NAME=VALUE');
 
             test.strictEqual(cookie.serialize('NAME', 'VALUE', {
                 domain: 'yandex.ru',

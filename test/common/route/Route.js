@@ -49,7 +49,8 @@ module.exports = {
 
             route = new Route('/page/<name>/<name>/<name>-!/');
 
-            test.deepEqual(route.match('/page/golyshev/dmitrii/sergeievich-!/'), {
+            test.deepEqual(route.
+                match('/page/golyshev/dmitrii/sergeievich-!/'), {
                 name: ['golyshev', 'dmitrii', 'sergeievich']
             });
 

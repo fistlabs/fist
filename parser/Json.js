@@ -28,9 +28,9 @@ var Json = Loader.extend(/** @lends JSON.prototype*/ {
             try {
 
                 res = JSON.parse(res);
-            } catch (err) {
+            } catch (exc) {
 
-                return done(err);
+                return done(exc);
             }
 
             return done(null, res);

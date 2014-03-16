@@ -10,8 +10,10 @@ module.exports = {
         function (test) {
 
             var router = new Router();
-            var contestStandings = router.addRoute('/contest/<contestId>/standings/');
-            var contestSubmits = router.addRoute('/contest/<contestId>/submits/');
+            var contestStandings = router.
+                addRoute('/contest/<contestId>/standings/');
+            var contestSubmits = router.
+                addRoute('/contest/<contestId>/submits/');
 
             test.deepEqual(router.find('/contest/60/standings/'), {
                 route: contestStandings,

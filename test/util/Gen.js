@@ -50,5 +50,4 @@ var Gen = Base.extend({
 
 });
 
-
 module.exports = Gen;

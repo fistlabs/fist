@@ -16,7 +16,7 @@ module.exports = {
         },
         function (test) {
             caller.callPromise({
-                get then () {
+                get then() {
                     throw 42
                 }
             }, function (err, res) {
@@ -101,7 +101,7 @@ module.exports = {
         },
         function (test) {
             caller.callRet({
-                get then () {
+                get then() {
                     throw 42;
                 }
             }, function (err) {
@@ -146,7 +146,7 @@ module.exports = {
                 setTimeout(function () {
                     test.done();
                 }, 0);
-            })
+            });
         },
         function (test) {
             caller.callFunc(function () {
