@@ -155,6 +155,19 @@ module.exports = {
                 test.strictEqual(res, 42);
                 test.done();
             });
+        },
+        function (test) {
+            caller.callFunc({
+                constructor: {
+                    name: 'GeneratorFunction'
+                },
+                apply: function () {
+                    return new Iter([42]);
+                }
+            }, [], function (err, res) {
+                test.strictEqual(res, 42);
+                test.done();
+            });
         }
     ],
     callGenFn: [

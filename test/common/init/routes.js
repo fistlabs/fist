@@ -12,6 +12,10 @@ module.exports = [
                     verb: 'GET',
                     expr: '/',
                     name: 'index'
+                },
+                {
+                    expr: '/',
+                    name: 'index2'
                 }
             ]
         });
@@ -19,7 +23,8 @@ module.exports = [
         fist.schedule(routes);
 
         fist.on('sys:ready', function () {
-            test.strictEqual(fist.router.routes.length, 1);
+            test.strictEqual(fist.router.routes.length, 2);
+            test.strictEqual(fist.router.routes[1].verb, 'GET');
             test.done();
         });
 
