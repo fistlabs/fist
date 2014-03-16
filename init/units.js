@@ -14,7 +14,7 @@ exports = module.exports = function (done) {
 
     var decls = [];
 
-    function onread (err, files) {
+    glob.call(this, this.params.action, function (err, files) {
 
         var decl;
         var i;
@@ -44,9 +44,7 @@ exports = module.exports = function (done) {
         }, this);
 
         done.call(this, null, decls);
-    }
-
-    glob.call(this, this.params.action, onread);
+    });
 };
 
 exports.isCap = function (s) {
