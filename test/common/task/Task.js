@@ -1,6 +1,6 @@
 'use strict';
 
-var Task = require('../../../task/Task');
+var Task = require('../../../util/Task');
 
 module.exports = {
 

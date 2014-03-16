@@ -4,7 +4,7 @@ var Http = require('http');
 var Nested = /** @type Nested */ require('./bundle/Nested');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
-var Task = /** @type Task */ require('./task/Task');
+var Task = /** @type Task */ require('./util/Task');
 var Toobusy = /** @type Toobusy */ require('./util/Toobusy');
 var caller = require('./util/caller');
 
