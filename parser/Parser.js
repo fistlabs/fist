@@ -38,6 +38,12 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
             opts.length = Infinity;
         }
 
+        /**
+         * @protected
+         * @memberOf {Parser}
+         * @property
+         * @type {Function}
+         * */
         this._task = once(this._parse.bind(this));
 
         /**
