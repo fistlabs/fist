@@ -2,8 +2,8 @@
 
 var Class = /** @type Class */ require('fist.lang.class/Class');
 
-var task = require('../util/once');
 var extend = require('fist.lang.extend');
+var once = require('../util/once');
 
 /**
  * @class Parser
@@ -38,7 +38,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
             opts.length = Infinity;
         }
 
-        this._task = task(this._parse.bind(this));
+        this._task = once(this._parse.bind(this));
 
         /**
          * @protected
