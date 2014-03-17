@@ -1,7 +1,8 @@
 'use strict';
 
 var Class = /** @type Class */ require('fist.lang.class/Class');
-var Task = /** @type Task */ require('../util/Task');
+
+var task = require('../util/once');
 var extend = require('fist.lang.extend');
 
 /**
@@ -37,7 +38,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
             opts.length = Infinity;
         }
 
-        this._task = new Task(this._parse, this);
+        this._task = task(this._parse.bind(this));
 
         /**
          * @protected
@@ -67,7 +68,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @param {*} [ctxt]
      * */
     parse: function (done, ctxt) {
-        this._task.done(done, ctxt);
+        this._task(done, ctxt);
     }
 
 }, {
