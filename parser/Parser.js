@@ -6,6 +6,7 @@ var extend = require('fist.lang.extend');
 var once = require('../util/once');
 
 /**
+ * @abstract
  * @class Parser
  * @extends Class
  * */
@@ -18,24 +19,24 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      *
      * @constructs
      *
-     * @param {Object} readable
-     * @param {*} [opts]
+     * @param {Object} stream
+     * @param {*} [params]
      * */
-    constructor: function (readable, opts) {
-        Parser.Parent.call(this, opts);
+    constructor: function (stream, params) {
+        Parser.Parent.call(this, params);
 
-        opts = this.params;
+        params = this.params;
 
-        opts.limit = +opts.limit;
+        params.limit = +params.limit;
 
-        if ( isNaN(opts.limit) ) {
-            opts.limit = Infinity;
+        if ( isNaN(params.limit) ) {
+            params.limit = Infinity;
         }
 
-        opts.length = +opts.length;
+        params.length = +params.length;
 
-        if ( isNaN(opts.length) ) {
-            opts.length = Infinity;
+        if ( isNaN(params.length) ) {
+            params.length = Infinity;
         }
 
         /**
@@ -44,14 +45,27 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
          * @property
          * @type {Function}
          * */
-        this._task = once(this._parse.bind(this));
+        this._done = once(function (done) {
+
+            var self = this;
+
+            this._parse(function (err, res) {
+                if ( 2 > arguments.length ) {
+                    done(err);
+                    return;
+                }
+
+                done(null, self._template(res));
+            });
+
+        }.bind(this));
 
         /**
          * @protected
          * @memberOf {Parser}
          * @property {Object}
          * */
-        this._readable = readable;
+        this._stream = stream;
     },
 
     /**
@@ -62,7 +76,31 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @param {Function} done
      * */
     _parse: function (done) {
-        done(null, new Buffer(0));
+        done(null, Object.create(null));
+    },
+
+    /**
+     * @public
+     * @memberOf {Loader}
+     * @property
+     * */
+    type: void 0,
+
+    /**
+     * @protected
+     * @memberOf {Parser}
+     * @method
+     *
+     * @param {*} res
+     *
+     * @returns {Object}
+     * */
+    _template: function (res) {
+
+        return {
+            input: res,
+            type: this.type
+        };
     },
 
     /**
@@ -74,7 +112,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @param {*} [ctxt]
      * */
     parse: function (done, ctxt) {
-        this._task(done, ctxt);
+        this._done(done, ctxt);
     }
 
 }, {

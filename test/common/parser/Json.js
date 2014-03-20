@@ -9,14 +9,17 @@ module.exports = {
         function (test) {
             var parser = new Json(new Parted(['{"a":42}']));
             parser.parse(function (err, res) {
-                test.deepEqual(res, {a: 42});
+                test.deepEqual(res, {
+                    input: {a: 42},
+                    type: 'json'
+                });
                 test.done();
             });
         },
         function (test) {
             var req = new Parted(['{"a":42}']);
             var parser = new Json(req);
-            parser.parse(function (err, res) {
+            parser.parse(function (err) {
                 test.strictEqual(err, '42');
                 test.done();
             });
@@ -34,44 +37,6 @@ module.exports = {
             });
         }
 
-    ],
-
-    'Json.isJSON': [
-        function (test) {
-
-            var equal = [
-                'json+schema',
-                'schema+json',
-                'bunker-schema+json',
-                'bunker.schema+JSON; charset=utf-8',
-                'json',
-                'json+bunker.schema'
-            ];
-
-            var nequal = [
-                'octet-stream',
-                '+json',
-                'json+',
-                'schema+json+schema'
-            ];
-
-            equal.forEach(function (type) {
-                test.ok(Json.isJSON({
-                    headers: {
-                        'content-type': 'application/' + type
-                    }
-                }));
-            });
-
-            nequal.forEach(function (type) {
-                test.ok(!Json.isJSON({
-                    headers: {
-                        'content-type': 'application/' + type
-                    }
-                }));
-            });
-
-            test.done();
-        }
     ]
+
 };

@@ -1,6 +1,6 @@
 'use strict';
 
-var Loader = /** @type Loader */ require('../parser/Loader');
+var Raw = /** @type Raw */ require('../parser/Raw');
 
 exports.callYield = function (value, done) {
     /*eslint no-fallthrough: 0*/
@@ -179,6 +179,9 @@ exports.callPromise = function (promise, done) {
 
 };
 
-exports.callStream = function (readable, done) {
-    new Loader(readable, null).parse(done, this);
+exports.callStream = function (stream, done) {
+    Raw.download(stream, {
+        limit: Infinity,
+        length: Infinity
+    }, done.bind(this));
 };

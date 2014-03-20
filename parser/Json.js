@@ -1,18 +1,25 @@
 'use strict';
 
-var R_JSON = /^application\/(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)(?:;|$)/i;
-var Loader = /** @type Loader */ require('./Loader');
+var Raw = /** @type Raw */ require('./Raw');
 var QueryString = /** @type QueryString */ require('querystring');
 
 /**
- * @class JSON
- * @extends Loader
+ * @class Json
+ * @extends Raw
  * */
-var Json = Loader.extend(/** @lends JSON.prototype*/ {
+var Json = Raw.extend(/** @lends JSON.prototype*/ {
+
+    /**
+     * @public
+     * @memberOf {Json}
+     * @property
+     * @type {String}
+     * */
+    type: 'json',
 
     /**
      * @protected
-     * @memberOf {JSON}
+     * @memberOf {Json}
      * @method
      *
      * @param {Function} done
@@ -36,21 +43,7 @@ var Json = Loader.extend(/** @lends JSON.prototype*/ {
             return done(null, res);
         });
     }
-}, {
 
-    /**
-     * @public
-     * @static
-     * @memberOf JSON
-     * @method
-     *
-     * @param {Object} req
-     *
-     * @returns {Boolean}*/
-    isJSON: function (req) {
-
-        return R_JSON.test(req.headers['content-type']);
-    }
 });
 
 module.exports = Json;

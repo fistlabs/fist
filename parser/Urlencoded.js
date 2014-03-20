@@ -1,14 +1,21 @@
 'use strict';
 
-var Loader = /** @type Loader */ require('./Loader');
+var Raw = /** @type Raw */ require('./Raw');
 var QueryString = /** @type QueryString */ require('querystring');
-var R_URLENCODED = /^application\/x-www-form-urlencoded(?:;|$)/i;
 
 /**
  * @class Urlencoded
- * @extends Loader
+ * @extends Raw
  * */
-var Urlencoded = Loader.extend(/** @lends Urlencoded.prototype*/ {
+var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
+
+    /**
+     * @public
+     * @memberOf {Urlencoded}
+     * @property
+     * @type {String}
+     * */
+    type: 'urlencoded',
 
     /**
      * @protected
@@ -30,21 +37,7 @@ var Urlencoded = Loader.extend(/** @lends Urlencoded.prototype*/ {
             return done(null, res);
         });
     }
-}, {
 
-    /**
-     * @public
-     * @static
-     * @memberOf Urlencoded
-     *
-     * @param {Object} req
-     *
-     * @returns {Boolean}
-     * */
-    isUrlencoded: function (req) {
-
-        return R_URLENCODED.test(req.headers['content-type']);
-    }
 });
 
 module.exports = Urlencoded;

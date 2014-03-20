@@ -3,6 +3,7 @@
 var Multipart = require('../../../parser/Multipart');
 var Parted = require('../../util/Parted');
 var http = require('../../util/http');
+var isMultipart = require('../../../parser/Body').isMultipart;
 
 var BOUNDARY = 'AskerBoundary-7691254443489015';
 var FIXTURE0 = [
@@ -61,7 +62,7 @@ var FIXTURE2 = [
 
 module.exports = {
 
-    parse: [
+    'Multipart.prototype.parse': [
         function (test) {
 
             http({
@@ -77,25 +78,26 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = Multipart.isMultipart(req);
+                var boundary = isMultipart(req);
                 var parser = new Multipart(req, {
                     boundary: boundary
                 });
 
                 parser.parse(function (err, data) {
-                    test.deepEqual(data, [
-                        {
+                    test.deepEqual(data, {
+                        input: {
                             first: 'vasya',
                             last: 'petrov'
                         },
-                        {
+                        files: {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
-                        }
-                    ]);
+                        },
+                        type: 'multipart'
+                    });
                     res.end();
                 });
 
@@ -116,19 +118,20 @@ module.exports = {
                 });
 
                 parser.parse(function (err, data) {
-                    test.deepEqual(data, [
-                        {
+                    test.deepEqual(data, {
+                        input: {
                             first: ['vasya', 'vasya', 'vasya'],
                             last: 'petrov'
                         },
-                        {
+                        files: {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
-                        }
-                    ]);
+                        },
+                        type: 'multipart'
+                    });
                     res.end();
                 });
 
@@ -149,18 +152,19 @@ module.exports = {
                 });
 
                 parser.parse(function (err, data) {
-                    test.deepEqual(data, [
-                        {
+                    test.deepEqual(data, {
+                        input: {
                             last: 'petrov'
                         },
-                        {
+                        files: {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
-                        }
-                    ]);
+                        },
+                        type: 'multipart'
+                });
                     res.end();
                 });
 
@@ -200,7 +204,7 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = Multipart.isMultipart(req);
+                var boundary = isMultipart(req);
                 var parser = new Multipart(req, {
                     boundary: boundary
                 });
@@ -231,7 +235,7 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = Multipart.isMultipart(req);
+                var boundary = isMultipart(req);
                 var parser = new Multipart(req, {
                     boundary: boundary
                 });
@@ -264,7 +268,7 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = Multipart.isMultipart(req);
+                var boundary = isMultipart(req);
 
                 var parser = new Multipart(req, {
                     boundary: boundary,
@@ -298,39 +302,6 @@ module.exports = {
                 });
                 test.done();
             });
-        }
-    ],
-
-    isMultipart: [
-        function (test) {
-
-            var equal = [
-                'multipart/form-data; BOUNDARY=BOUNDARY',
-                'multipart/mixed; boundary=BOUNDARY'
-            ];
-
-            var nequal = [
-                'multipart/form-data; boundary',
-                'text/plain'
-            ];
-
-            equal.forEach(function (type) {
-                test.ok(Multipart.isMultipart({
-                    headers: {
-                        'content-type': type
-                    }
-                }));
-            });
-
-            nequal.forEach(function (type) {
-                test.ok(!Multipart.isMultipart({
-                    headers: {
-                        'content-type': type
-                    }
-                }));
-            });
-
-            test.done();
         }
     ]
 

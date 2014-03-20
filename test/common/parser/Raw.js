@@ -1,28 +1,30 @@
 'use strict';
 
-var Loader = require('../../../parser/Loader');
+var Raw = require('../../../parser/Raw');
 var Parted = require('../../util/Parted');
 var Parser = require('../../../parser/Parser');
 var http = require('../../util/http');
 
 module.exports = {
 
-    'Loader.prototype.parse': [
+    'Raw.prototype.parse': [
         function (test) {
 
             var req = new Parted(['П', new Buffer('рив'), 'ет']);
-            var parser = new Loader(req);
+            var parser = new Raw(req);
 
             parser.parse(function (err, buf) {
-                test.ok(Buffer.isBuffer(buf));
-                test.deepEqual(buf, new Buffer('Привет'));
+                test.deepEqual(buf, {
+                    type: 'raw',
+                    input: new Buffer('Привет')
+                });
                 test.done();
             });
         },
         function (test) {
 
             var req = new Parted(['П', new Buffer('рив'), 'ет']);
-            var parser = new Loader(req);
+            var parser = new Raw(req);
 
             parser.parse(function (err) {
                 test.strictEqual(err, '42');
@@ -39,7 +41,7 @@ module.exports = {
             var req = new Parted('Hello'.split(''));
             req.pause = function () {};
 
-            var parser = new Loader(req, {
+            var parser = new Raw(req, {
                 limit: 3
             });
 
@@ -58,7 +60,7 @@ module.exports = {
             var req = new Parted('Hello'.split(''));
             req.pause = function () {};
 
-            var parser = new Loader(req, {
+            var parser = new Raw(req, {
                 length: 3
             });
 

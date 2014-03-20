@@ -2,8 +2,6 @@
 
 var R_FIELDNAME = /;\s*name=(?:"([^"]*)"|([^"]*))/;
 var R_FILENAME = /;\s*filename=(?:"([^"]*)"|([^\s]*))/;
-var R_MULTIPART =
-    /^multipart\/[^\s]+?;[\s\r\n]+boundary=(?:"([^"]+)"|([^\s]+))$/i;
 
 var Dicer = /** @type Dicer */ require('dicer');
 var Parser = /** @type Parser */ require('./Parser');
@@ -22,7 +20,33 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @param {Function} done
      * */
     _parse: function (done) {
-        Multipart.parseMultipart(this._readable, this.params, done);
+        Multipart.parseMultipart(this._stream, this.params, done);
+    },
+
+    /**
+     * @public
+     * @memberOf {Multipart}
+     * @property
+     * @type {String}
+     * */
+    type: 'multipart',
+
+    /**
+     * @protected
+     * @memberOf {Multipart}
+     * @method
+     *
+     * @param {Array} res
+     *
+     * @returns {*}
+     * */
+    _template: function (res) {
+
+        var body = Multipart.parent._template.call(this, res[0]);
+
+        body.files = res[1];
+
+        return body;
     }
 
 }, /** @lends Multipart */ {
@@ -33,28 +57,28 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @memberOf Multipart
      *
      * @param {Object} stream
-     * @param {Object} opts
+     * @param {Object} params
      * @param {Function} done
      * */
-    parseMultipart: function (stream, opts, done) {
+    parseMultipart: function (stream, params, done) {
 
-        var parser = new Dicer(opts);
+        var parser = new Dicer(params);
         var received = 0;
         var result = [Object.create(null), Object.create(null)];
 
         function parserPart (part) {
 
+            var buf = [];
             var file;
             var field;
-            var partError = false;
-            var buf = [];
             var mime;
+            var partError = false;
 
             function partHeader (header) {
 
                 var disposition = (header['content-disposition'] || [])[0];
-                mime = (header['content-type'] || [])[0];
 
+                mime = (header['content-type'] || [])[0];
                 field = R_FIELDNAME.exec(disposition);
 
                 if ( null === field ) {
@@ -133,10 +157,10 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
         function parserFinish () {
 
-            if ( Infinity !== opts.length && received !== opts.length ) {
+            if ( Infinity !== params.length && received !== params.length ) {
                 parser.emit('error', Parser.ELENGTH({
                     actual: received,
-                    expected: opts.length
+                    expected: params.length
                 }));
 
                 return;
@@ -174,10 +198,10 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
             received += chunk.length;
 
-            if ( received > opts.limit ) {
+            if ( received > params.limit ) {
                 stream.emit('error', Parser.ELIMIT({
                     actual: received,
-                    expected: opts.limit
+                    expected: params.limit
                 }));
             }
         }
@@ -203,29 +227,8 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         parser.on('finish', parserFinish);
 
         stream.pipe(parser);
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Multipart
-     * @method
-     *
-     * @param {Object} req
-     *
-     * @returns {*}
-     * */
-    isMultipart: function (req) {
-
-        var m = R_MULTIPART.exec(req.headers['content-type']);
-
-        if ( null === m ) {
-
-            return m;
-        }
-
-        return m[1] || m[2];
     }
+
 });
 
 module.exports = Multipart;

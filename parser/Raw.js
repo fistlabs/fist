@@ -3,35 +3,43 @@
 var Parser = /** @type Parser */ require('./Parser');
 
 /**
- * @class Loader
+ * @class Raw
  * @extends Parser
  * */
-var Loader = Parser.extend(/** @lends Loader.prototype */ {
+var Raw = Parser.extend(/** @lends Raw.prototype */ {
+
+    /**
+     * @public
+     * @memberOf {Raw}
+     * @property
+     * @type {String}
+     * */
+    type: 'raw',
 
     /**
      * @protected
-     * @memberOf {Loader}
+     * @memberOf {Raw}
      * @method
      *
      * @param {Function} done
      * */
     _parse: function (done) {
-        Loader._download(this._readable, this.params, done);
+        Raw.download(this._stream, this.params, done);
     }
 
 }, {
 
     /**
-     * @protected
+     * @public
      * @static
-     * @memberOf Loader
+     * @memberOf Raw
      * @method
      *
      * @param {Object} stream
-     * @param {Object} opts
+     * @param {Object} params
      * @param {Function} done
      * */
-    _download: function (stream, opts, done) {
+    download: function (stream, params, done) {
 
         var buf = [];
         var received = 0;
@@ -51,9 +59,9 @@ var Loader = Parser.extend(/** @lends Loader.prototype */ {
 
             received += chunk.length;
 
-            if ( received > opts.limit ) {
+            if ( received > params.limit ) {
                 stream.emit('error', Parser.ELIMIT({
-                    expected: opts.limit,
+                    expected: params.limit,
                     actual: received
                 }));
 
@@ -75,9 +83,9 @@ var Loader = Parser.extend(/** @lends Loader.prototype */ {
 
         function end () {
 
-            if ( Infinity !== opts.length && received !== opts.length ) {
+            if ( Infinity !== params.length && received !== params.length ) {
                 stream.emit('error', Parser.ELENGTH({
-                    expected: opts.length,
+                    expected: params.length,
                     actual: received
                 }));
 
@@ -95,4 +103,4 @@ var Loader = Parser.extend(/** @lends Loader.prototype */ {
     }
 });
 
-module.exports = Loader;
+module.exports = Raw;

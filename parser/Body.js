@@ -1,9 +1,13 @@
 'use strict';
 
-var QueryString = /** @type QueryString */ require('querystring');
+var R_MULTIPART =
+    /^multipart\/[^\s]+?;[\s\r\n]+boundary=(?:"([^"]+)"|([^\s]+))$/i;
+var R_JSON = /^application\/(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)(?:;|$)/i;
+var R_URLENCODED = /^application\/x-www-form-urlencoded(?:;|$)/i;
 
-var Loader = /** @type Loader */ require('./Loader');
+var QueryString = /** @type QueryString */ require('querystring');
 var Parser = /** @type Parser */ require('./Parser');
+var Raw = /** @type Raw */ require('./Raw');
 var Urlencoded = /** @type Urlencoded */ require('./Urlencoded');
 var Json = /** @type Json */ require('./Json');
 var Multipart = /** @type Multipart */ require('./Multipart');
@@ -19,65 +23,64 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * @memberOf {Body}
      * @method
      *
-     * @param {Function} done
+     * @constructs
      * */
-    _parse: function (done) {
+    constructor: function (req, params) {
+        this._parser = this._getParser(req, params);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Body}
+     * @method
+     *
+     * @param {Object} stream
+     * @param {Object} params
+     *
+     * @returns {Parser}
+     * */
+    _getParser: function (stream, params) {
 
         var boundary;
-        var type;
+        var parser;
 
-        function resolve (err, res) {
+        if ( Body.hasBody(stream) ) {
 
-            if ( 2 > arguments.length ) {
-                done(err);
+            if ( Body.isUrlencoded(stream) ) {
 
-                return;
+                return new Urlencoded(stream, params);
             }
 
-            if ( 'multipart' === type ) {
-                done(null, {
-                    input: res[0],
-                    files: res[1],
-                    type: type
-                });
+            if ( Body.isJSON(stream) ) {
 
-                return;
+                return new Json(stream, params);
             }
 
-            done(null, {
-                input: res,
-                type: type
-            });
+            boundary = Body.isMultipart(stream);
+
+            if ( boundary ) {
+                parser =  new Multipart(stream, params);
+                parser.params.boundary = boundary;
+
+                return parser;
+            }
+
+            return new Raw(stream, params);
         }
 
-        if ( !Body.hasBody(this._readable) ) {
-            type = void 0;
+        return new Parser(stream, params);
+    },
 
-            return resolve(null, Object.create(null));
-        }
-
-        if ( Urlencoded.isUrlencoded(this._readable) ) {
-            type = 'urlencoded';
-            return Urlencoded.prototype._parse.call(this, resolve);
-        }
-
-        if ( Json.isJSON(this._readable) ) {
-            type = 'json';
-            return Json.prototype._parse.call(this, resolve);
-        }
-
-        boundary = Multipart.isMultipart(this._readable);
-
-        if ( boundary ) {
-            type = 'multipart';
-            this.params.boundary = boundary;
-
-            return Multipart.prototype._parse.call(this, resolve);
-        }
-
-        type = 'raw';
-
-        return Loader.prototype._parse.call(this, resolve);
+    /**
+     * @public
+     * @memberOf {Body}
+     * @method
+     *
+     * @param {Function} done
+     * @param {*} [ctxt]
+     * */
+    parse: function (done, ctxt) {
+        this._parser.parse(done, ctxt);
     }
 
 }, /** @lends Body */ {
@@ -98,7 +101,59 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
 
         return 'string' === typeof req.headers['transfer-encoding'] ||
             'string' === typeof length && '0' !== length;
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Body
+     *
+     * @param {Object} req
+     *
+     * @returns {Boolean}
+     * */
+    isUrlencoded: function (req) {
+
+        return R_URLENCODED.test(req.headers['content-type']);
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Body
+     * @method
+     *
+     * @param {Object} req
+     *
+     * @returns {Boolean}
+     * */
+    isJSON: function (req) {
+
+        return R_JSON.test(req.headers['content-type']);
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Body
+     * @method
+     *
+     * @param {Object} req
+     *
+     * @returns {*}
+     * */
+    isMultipart: function (req) {
+
+        var m = R_MULTIPART.exec(req.headers['content-type']);
+
+        if ( null === m ) {
+
+            return m;
+        }
+
+        return m[1] || m[2];
     }
+
 });
 
 module.exports = Body;

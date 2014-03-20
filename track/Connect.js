@@ -9,7 +9,7 @@ var STATUS_CODES = require('http').STATUS_CODES;
 
 var Body = /** @type Body */ require('../parser/Body');
 var Cookie = /** @type Cookie */ require('../util/Cookie');
-var Loader = /** @type Loader */ require('../parser/Loader');
+var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
@@ -447,7 +447,10 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _writeReadable: function (body) {
 
         if ( 'HEAD' === this.method ) {
-            new Loader(body, null).parse(function (err, body) {
+            Raw.download(body, {
+                limit: Infinity,
+                length: Infinity
+            }, function (err, body) {
 
                 if ( 2 > arguments.length ) {
                     this._respond(500, err);
@@ -459,7 +462,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
                 this._setHead('Content-Length', body.length, true);
 
                 this._res.end();
-            }, this);
+            }.bind(this));
 
             return;
         }
@@ -473,7 +476,10 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        new Loader(body, null).parse(function (err, body) {
+        Raw.download(body, {
+            limit: Infinity,
+            length: Infinity
+        }, function (err, body) {
 
             if ( 2 > arguments.length ) {
                 this._respond(500, err);
@@ -486,7 +492,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
             this._res.end(body);
 
-        }, this);
+        }.bind(this));
     }
 
 }, {

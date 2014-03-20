@@ -36,8 +36,10 @@ module.exports = {
             var parser = new Parser(req, {});
 
             parser.parse(function (err, buf) {
-                test.ok(Buffer.isBuffer(buf));
-                test.deepEqual(buf, new Buffer(0));
+                test.deepEqual(buf, {
+                    type: void 0,
+                    input: {}
+                });
                 test.done();
             });
         }

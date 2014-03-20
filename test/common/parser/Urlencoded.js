@@ -11,8 +11,11 @@ module.exports = {
             var parser = new Urlencoded(req);
             parser.parse(function (err, res) {
                 test.deepEqual(res, {
-                    a: '5',
-                    b: '6'
+                    input: {
+                        a: '5',
+                        b: '6'
+                    },
+                    type: 'urlencoded'
                 });
                 test.done();
             });
@@ -28,41 +31,6 @@ module.exports = {
                 req.emit('error', 42);
             });
         }
-    ],
-
-    isUrlencoded: [
-        function (test) {
-
-            var equal = [
-                'x-www-form-urlencoded',
-                'x-www-form-urlencoded; charset=UTF8',
-                'x-www-form-URLENCODED'
-            ];
-
-            var nequal = [
-                'octet-stream',
-                '+json',
-                'json+',
-                'schema+json+schema'
-            ];
-
-            equal.forEach(function (type) {
-                test.ok(Urlencoded.isUrlencoded({
-                    headers: {
-                        'content-type': 'application/' + type
-                    }
-                }));
-            });
-
-            nequal.forEach(function (type) {
-                test.ok(!Urlencoded.isUrlencoded({
-                    headers: {
-                        'content-type': 'application/' + type
-                    }
-                }));
-            });
-
-            test.done();
-        }
     ]
+
 };
