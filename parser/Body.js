@@ -55,7 +55,7 @@ var Body = Base.extend(/** @lends Body.prototype */ {
                             done(null, {
                                 input: res,
                                 type: 'urlencoded'
-                            })
+                            });
                         });
                 };
             }
@@ -70,7 +70,7 @@ var Body = Base.extend(/** @lends Body.prototype */ {
                                 input: res,
                                 type: 'json'
                             });
-                        })
+                        });
                 };
             }
 
@@ -90,7 +90,7 @@ var Body = Base.extend(/** @lends Body.prototype */ {
                             type: 'multipart'
                         });
                     });
-                }
+                };
             }
 
             return function (params) {
