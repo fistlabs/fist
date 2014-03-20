@@ -14,7 +14,7 @@ var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var extend = require('fist.lang.extend');
+var _extend = require('lodash.assign');
 var hasProperty = Object.prototype.hasOwnProperty;
 var uniqueId = require('fist.lang.id');
 
@@ -112,7 +112,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         }
 
         if ( !(this._body instanceof Next) ) {
-            opts = extend({
+            opts = _extend({
                 length: this._req.headers['content-length']
             }, params);
 

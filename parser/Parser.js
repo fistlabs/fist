@@ -3,7 +3,7 @@
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Next = /** @type Next */ require('fist.util.next/Next');
 
-var extend = require('fist.lang.extend');
+var _extend = require('lodash.assign');
 
 /**
  * @abstract
@@ -105,7 +105,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * */
     ELIMIT: function (opts) {
 
-        return extend(new Error(), {
+        return _extend(new Error(), {
             code: 'ELIMIT'
         }, opts);
     },
@@ -121,7 +121,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * */
     ELENGTH: function (opts) {
 
-        return extend(new Error(), {
+        return _extend(new Error(), {
             code: 'ELENGTH'
         }, opts);
     }
