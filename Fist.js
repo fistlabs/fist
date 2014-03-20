@@ -12,14 +12,16 @@ var units = require('./init/units');
 var Fist = Framework.extend(/** @lends Fist.prototype */ {
 
     /**
-     * @public
+     * @protected
      * @memberOf {Fist}
      * @method
+     *
+     * @constructs
      * */
-    listen: function () {
+    constructor: function () {
+        Fist.Parent.apply(this, arguments);
         //  автоматически добавляю таски на инициализацию роутера и узлов
         this.schedule(routes, units);
-        Fist.parent.listen.apply(this, arguments);
     }
 
 });
