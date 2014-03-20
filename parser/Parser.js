@@ -43,10 +43,9 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @protected
      * @memberOf {Parser}
      * @method
-     *
      * */
     _parse: function (stream) {
-
+        /*eslint no-unused-vars: 0 */
         var next = new Next();
 
         next.args([null, Object.create(null)]);
