@@ -14,9 +14,9 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
      * @memberOf {Urlencoded}
      * @method
      * */
-    _parse: function (stream) {
+    parse: function (stream) {
 
-        return Urlencoded.parent._parse.call(this, stream).
+        return Urlencoded.parent.parse.call(this, stream).
             next(function (res, done) {
 
                 return done(null, QueryString.parse(String(res)));

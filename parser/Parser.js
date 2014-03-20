@@ -44,25 +44,13 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @memberOf {Parser}
      * @method
      * */
-    _parse: function (stream) {
+    parse: function (stream) {
         /*eslint no-unused-vars: 0 */
         var next = new Next();
 
         next.args([null, Object.create(null)]);
 
         return next;
-    },
-
-    /**
-     * @public
-     * @memberOf {Parser}
-     * @method
-     *
-     * @param {Object} stream
-     * */
-    parse: function (stream) {
-
-        return this._parse(stream);
     }
 
 }, {

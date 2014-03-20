@@ -18,7 +18,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @memberOf {Multipart}
      * @method
      * */
-    _parse: function (stream) {
+    parse: function (stream) {
         var next = new Next();
 
         Multipart.parseMultipart(stream, this.params, function () {
@@ -26,24 +26,6 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         });
 
         return next;
-    },
-
-    /**
-     * @protected
-     * @memberOf {Multipart}
-     * @method
-     *
-     * @param {Array} res
-     *
-     * @returns {*}
-     * */
-    _template: function (res) {
-
-        var body = Multipart.parent._template.call(this, res[0]);
-
-        body.files = res[1];
-
-        return body;
     }
 
 }, /** @lends Multipart */ {

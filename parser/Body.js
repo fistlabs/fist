@@ -6,6 +6,8 @@ var R_JSON = /^application\/(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)(?:;|$)/i;
 var R_URLENCODED = /^application\/x-www-form-urlencoded(?:;|$)/i;
 
 var QueryString = /** @type QueryString */ require('querystring');
+
+var Base = /** @type Base */ require('fist.lang.class/Base');
 var Parser = /** @type Parser */ require('./Parser');
 var Raw = /** @type Raw */ require('./Raw');
 var Urlencoded = /** @type Urlencoded */ require('./Urlencoded');
@@ -14,9 +16,20 @@ var Multipart = /** @type Multipart */ require('./Multipart');
 
 /**
  * @class Body
- * @extends Parser
+ * @extends Base
  * */
-var Body = Parser.extend(/** @lends Body.prototype */ {
+var Body = Base.extend(/** @lends Body.prototype */ {
+
+    /**
+     * @protected
+     * @memberOf {Base}
+     * @method
+     *
+     * @constructs
+     * */
+    constructor: function (params) {
+        this.params = params;
+    },
 
     /**
      * @protected
@@ -24,85 +37,84 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * @method
      *
      * @param {Object} stream
-     * @param {Object} params
      *
-     * @returns {Object}
+     * @returns {Function}
      * */
-    _getParser: function (stream, params) {
+    _createParser: function (stream) {
 
         var boundary;
-        var parser;
 
         if ( Body.hasBody(stream) ) {
 
             if ( Body.isUrlencoded(stream) ) {
 
-                return {
-                    parser: new Urlencoded(params),
-                    template: function (res) {
+                return function (params) {
 
-                        return {
-                            input: res,
-                            type: 'urlencoded'
-                        };
-                    }
+                    return new Urlencoded(params).parse(stream).
+                        next(function (res, done) {
+                            done(null, {
+                                input: res,
+                                type: 'urlencoded'
+                            })
+                        });
                 };
             }
 
             if ( Body.isJSON(stream) ) {
 
-                return {
-                    parser: new Json(params),
-                    template: function (res) {
+                return function (params) {
 
-                        return {
-                            input: res,
-                            type: 'json'
-                        };
-                    }
+                    return new Json(params).parse(stream).
+                        next(function (res, done) {
+                            done(null, {
+                                input: res,
+                                type: 'json'
+                            });
+                        })
                 };
             }
 
             boundary = Body.isMultipart(stream);
 
             if ( boundary ) {
-                parser =  new Multipart(params);
-                parser.params.boundary = boundary;
 
-                return {
-                    parser: parser,
-                    template: function (res) {
+                return function (params) {
 
-                        return {
+                    var parser = new Multipart(params);
+                    parser.params.boundary = boundary;
+
+                    return parser.parse(stream).next(function (res, done) {
+                        done(null, {
                             input: res[0],
                             files: res[1],
                             type: 'multipart'
-                        };
-                    }
-                };
+                        });
+                    });
+                }
             }
 
-            return {
-                parser: new Raw(params),
-                template: function (res) {
+            return function (params) {
 
-                    return {
-                        input: res,
-                        type: 'raw'
-                    };
-                }
+                return new Raw(params).parse(stream).
+                    next(function (res, done) {
+
+                        done(null, {
+                            input: res,
+                            type: 'raw'
+                        });
+                    });
             };
         }
 
-        return {
-            parser: new Parser(params),
-            template: function (res) {
+        return function (params) {
 
-                return {
-                    input: res,
-                    type: void 0
-                };
-            }
+            return new Parser(params).parse(stream).
+                next(function (res, done) {
+                    done(null, {
+                        input: res,
+                        type: void 0
+                    });
+                });
         };
     },
 
@@ -115,12 +127,7 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * */
     parse: function (stream) {
 
-        var tools = this._getParser(stream, this.params);
-
-        return tools.
-            parser.parse(stream).next(function (res, done) {
-                done(null, tools.template(res));
-            }, this);
+        return this._createParser(stream)(this.params);
     }
 
 }, /** @lends Body */ {

@@ -14,9 +14,9 @@ var Json = Raw.extend(/** @lends JSON.prototype*/ {
      * @memberOf {Json}
      * @method
      * */
-    _parse: function (stream) {
+    parse: function (stream) {
 
-        return Json.parent._parse.call(this, stream).
+        return Json.parent.parse.call(this, stream).
             next(function (res, done) {
 
                 try {

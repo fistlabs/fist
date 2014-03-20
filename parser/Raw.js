@@ -15,7 +15,7 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      * @method
      *
      * */
-    _parse: function (stream) {
+    parse: function (stream) {
         var next = new Next();
 
         Raw.download(stream, this.params, function () {
