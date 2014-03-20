@@ -9,10 +9,7 @@ module.exports = {
         function (test) {
             var parser = new Json();
             parser.parse(new Parted(['{"a":42}'])).next(function (res) {
-                test.deepEqual(res, {
-                    input: {a: 42},
-                    type: 'json'
-                });
+                test.deepEqual(res, {a: 42});
                 test.done();
             });
         },

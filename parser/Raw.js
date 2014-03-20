@@ -10,14 +10,6 @@ var Next = /** @type Next */ require('fist.util.next/Next');
 var Raw = Parser.extend(/** @lends Raw.prototype */ {
 
     /**
-     * @public
-     * @memberOf {Raw}
-     * @property
-     * @type {String}
-     * */
-    type: 'raw',
-
-    /**
      * @protected
      * @memberOf {Raw}
      * @method

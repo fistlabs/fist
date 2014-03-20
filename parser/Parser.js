@@ -56,39 +56,13 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
     /**
      * @public
      * @memberOf {Parser}
-     * @property
-     * */
-    type: void 0,
-
-    /**
-     * @protected
-     * @memberOf {Parser}
-     * @method
-     *
-     * @param {*} res
-     *
-     * @returns {Object}
-     * */
-    _template: function (res) {
-
-        return {
-            input: res,
-            type: this.type
-        };
-    },
-
-    /**
-     * @public
-     * @memberOf {Parser}
      * @method
      *
      * @param {Object} stream
      * */
     parse: function (stream) {
 
-        return this._parse(stream).next(function (res, done) {
-            done(null, this._template(res));
-        }, this);
+        return this._parse(stream);
     }
 
 }, {

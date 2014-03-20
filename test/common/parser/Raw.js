@@ -14,10 +14,7 @@ module.exports = {
             var parser = new Raw();
 
             parser.parse(req).next(function (buf) {
-                test.deepEqual(buf, {
-                    type: 'raw',
-                    input: new Buffer('Привет')
-                });
+                test.deepEqual(buf, new Buffer('Привет'));
                 test.done();
             });
         },

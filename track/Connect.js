@@ -454,10 +454,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _writeReadable: function (body) {
 
         if ( 'HEAD' === this.method ) {
-            Raw.download(body, {
-                limit: Infinity,
-                length: Infinity
-            }, function (err, body) {
+            new Raw().parse(body).done(function (err, body) {
 
                 if ( 2 > arguments.length ) {
                     this._respond(500, err);
@@ -469,7 +466,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
                 this._setHead('Content-Length', body.length, true);
 
                 this._res.end();
-            }.bind(this));
+            }, this);
 
             return;
         }
@@ -483,10 +480,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        Raw.download(body, {
-            limit: Infinity,
-            length: Infinity
-        }, function (err, body) {
+        new Raw().parse(body).done(function (err, body) {
 
             if ( 2 > arguments.length ) {
                 this._respond(500, err);
@@ -499,7 +493,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
             this._res.end(body);
 
-        }.bind(this));
+        }, this);
     }
 
 }, {

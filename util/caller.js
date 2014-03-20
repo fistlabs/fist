@@ -180,8 +180,5 @@ exports.callPromise = function (promise, done) {
 };
 
 exports.callStream = function (stream, done) {
-    Raw.download(stream, {
-        limit: Infinity,
-        length: Infinity
-    }, done);
+    new Raw().parse(stream).done(done);
 };

@@ -10,14 +10,6 @@ var QueryString = /** @type QueryString */ require('querystring');
 var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
 
     /**
-     * @public
-     * @memberOf {Urlencoded}
-     * @property
-     * @type {String}
-     * */
-    type: 'urlencoded',
-
-    /**
      * @protected
      * @memberOf {Urlencoded}
      * @method

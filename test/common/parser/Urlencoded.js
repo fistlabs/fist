@@ -11,11 +11,8 @@ module.exports = {
             var parser = new Urlencoded();
             parser.parse(req).next(function (res) {
                 test.deepEqual(res, {
-                    input: {
-                        a: '5',
-                        b: '6'
-                    },
-                    type: 'urlencoded'
+                    a: '5',
+                    b: '6'
                 });
                 test.done();
             });

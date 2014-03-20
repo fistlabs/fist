@@ -29,14 +29,6 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
     },
 
     /**
-     * @public
-     * @memberOf {Multipart}
-     * @property
-     * @type {String}
-     * */
-    type: 'multipart',
-
-    /**
      * @protected
      * @memberOf {Multipart}
      * @method

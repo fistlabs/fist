@@ -10,14 +10,6 @@ var QueryString = /** @type QueryString */ require('querystring');
 var Json = Raw.extend(/** @lends JSON.prototype*/ {
 
     /**
-     * @public
-     * @memberOf {Json}
-     * @property
-     * @type {String}
-     * */
-    type: 'json',
-
-    /**
      * @protected
      * @memberOf {Json}
      * @method

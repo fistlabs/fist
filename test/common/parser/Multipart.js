@@ -84,20 +84,18 @@ module.exports = {
                 });
 
                 parser.parse(req).next(function (data) {
-                    test.deepEqual(data, {
-                        input: {
+                    test.deepEqual(data, [
+                        {
                             first: 'vasya',
                             last: 'petrov'
-                        },
-                        files: {
+                        }, {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
-                        },
-                        type: 'multipart'
-                    });
+                        }
+                    ]);
                     res.end();
                 });
 
@@ -118,20 +116,19 @@ module.exports = {
                 });
 
                 parser.parse(req).next(function (data) {
-                    test.deepEqual(data, {
-                        input: {
+                    test.deepEqual(data, [
+                        {
                             first: ['vasya', 'vasya', 'vasya'],
                             last: 'petrov'
                         },
-                        files: {
+                        {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
-                        },
-                        type: 'multipart'
-                    });
+                        }
+                    ]);
                     res.end();
                 });
 
@@ -152,19 +149,18 @@ module.exports = {
                 });
 
                 parser.parse(req).next(function (data) {
-                    test.deepEqual(data, {
-                        input: {
+                    test.deepEqual(data, [
+                        {
                             last: 'petrov'
                         },
-                        files: {
+                        {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
-                        },
-                        type: 'multipart'
-                    });
+                        }
+                    ]);
                     res.end();
                 });
 
@@ -183,7 +179,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req).next(null, function (err) {
+                parser.parse(req).next(null, function () {
                     res.end();
                 });
 
