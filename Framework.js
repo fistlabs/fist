@@ -2,12 +2,12 @@
 
 var Http = require('http');
 var Nested = /** @type Nested */ require('./bundle/Nested');
+var Next = /** @type Next */ require('fist.util.next/Next');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 var Toobusy = /** @type Toobusy */ require('./util/Toobusy');
 
 var caller = require('./util/caller');
-var once = require('./util/once');
 
 /**
  * @class Framework
@@ -114,7 +114,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         }
 
         function ready (i) {
-            this._tasks[i]().done(function (err, res) {
+            this._tasks[i](function (err, res) {
 
                 if ( 2 > arguments.length ) {
                     isError = true;
@@ -157,7 +157,21 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * */
     schedule: function () {
         [].forEach.call(arguments, function (plugin) {
-            this._tasks.push(once(plugin.bind(this)));
+            var next = null;
+            var self = this;
+
+            this._tasks.push(function (done, ctxt) {
+
+                if ( null === next ) {
+                    next = new Next();
+                    plugin.call(self, function () {
+                        next.args(arguments);
+                    });
+                }
+
+                next.done(done, ctxt);
+            });
+
         }, this);
     },
 
