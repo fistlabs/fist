@@ -1,9 +1,9 @@
 'use strict';
 
 var Class = /** @type Class */ require('fist.lang.class/Class');
+var Next = /** @type Next */ require('fist.util.next/Next');
 
 var extend = require('fist.lang.extend');
-var once = require('../util/once');
 
 /**
  * @abstract
@@ -19,11 +19,10 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      *
      * @constructs
      *
-     * @param {Object} stream
      * @param {*} [params]
      * */
-    constructor: function (stream, params) {
-        Parser.Parent.call(this, params);
+    constructor: function (params) {
+        Parser.Parent.apply(this, arguments);
 
         params = this.params;
 
@@ -38,34 +37,6 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
         if ( isNaN(params.length) ) {
             params.length = Infinity;
         }
-
-        /**
-         * @protected
-         * @memberOf {Parser}
-         * @property
-         * @type {Function}
-         * */
-        this._done = once(function (done) {
-
-            var self = this;
-
-            this._parse(function (err, res) {
-                if ( 2 > arguments.length ) {
-                    done(err);
-                    return;
-                }
-
-                done(null, self._template(res));
-            });
-
-        }.bind(this));
-
-        /**
-         * @protected
-         * @memberOf {Parser}
-         * @property {Object}
-         * */
-        this._stream = stream;
     },
 
     /**
@@ -73,15 +44,19 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @memberOf {Parser}
      * @method
      *
-     * @param {Function} done
      * */
-    _parse: function (done) {
-        done(null, Object.create(null));
+    _parse: function (stream) {
+
+        var next = new Next();
+
+        next.args([null, Object.create(null)]);
+
+        return next;
     },
 
     /**
      * @public
-     * @memberOf {Loader}
+     * @memberOf {Parser}
      * @property
      * */
     type: void 0,
@@ -108,11 +83,13 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @memberOf {Parser}
      * @method
      *
-     * @param {Function} done
-     * @param {*} [ctxt]
+     * @param {Object} stream
      * */
-    parse: function (done, ctxt) {
-        this._done(done, ctxt);
+    parse: function (stream) {
+
+        return this._parse(stream).next(function (res, done) {
+            done(null, this._template(res));
+        }, this);
     }
 
 }, {

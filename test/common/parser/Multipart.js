@@ -79,11 +79,11 @@ module.exports = {
             }, function (req, res) {
 
                 var boundary = isMultipart(req);
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: boundary
                 });
 
-                parser.parse(function (err, data) {
+                parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
                         input: {
                             first: 'vasya',
@@ -113,11 +113,11 @@ module.exports = {
                 body: FIXTURE0
             }, function (req, res) {
 
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: BOUNDARY
                 });
 
-                parser.parse(function (err, data) {
+                parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
                         input: {
                             first: ['vasya', 'vasya', 'vasya'],
@@ -147,11 +147,11 @@ module.exports = {
                 body: FIXTURE1
             }, function (req, res) {
 
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: BOUNDARY
                 });
 
-                parser.parse(function (err, data) {
+                parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
                         input: {
                             last: 'petrov'
@@ -164,7 +164,7 @@ module.exports = {
                             }
                         },
                         type: 'multipart'
-                });
+                    });
                     res.end();
                 });
 
@@ -179,12 +179,11 @@ module.exports = {
                 body: 'ASDAS'
             }, function (req, res) {
 
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: BOUNDARY
                 });
 
-                parser.parse(function (err) {
-                    test.ok(2 > arguments.length);
+                parser.parse(req).next(null, function (err) {
                     res.end();
                 });
 
@@ -205,7 +204,7 @@ module.exports = {
             }, function (req, res) {
 
                 var boundary = isMultipart(req);
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: boundary
                 });
 
@@ -214,7 +213,7 @@ module.exports = {
                     req.emit('error', 'ERR');
                 });
 
-                parser.parse(function (err) {
+                parser.parse(req).next(null, function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
                 });
@@ -236,7 +235,7 @@ module.exports = {
             }, function (req, res) {
 
                 var boundary = isMultipart(req);
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: boundary
                 });
 
@@ -245,7 +244,7 @@ module.exports = {
                     req.emit('error', err);
                 });
 
-                parser.parse(function (err) {
+                parser.parse(req).next(null, function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
                 });
@@ -270,12 +269,12 @@ module.exports = {
 
                 var boundary = isMultipart(req);
 
-                var parser = new Multipart(req, {
+                var parser = new Multipart({
                     boundary: boundary,
                     length: 4
                 });
 
-                parser.parse(function (err) {
+                parser.parse(req).next(null, function (err) {
                     test.strictEqual(err.code, 'ELENGTH');
                     res.end();
                 });
@@ -289,12 +288,12 @@ module.exports = {
 
             var stream = new Parted(FIXTURE2.split(''));
 
-            var parser = new Multipart(stream, {
+            var parser = new Multipart({
                 boundary: BOUNDARY,
                 limit: 4
             });
 
-            parser.parse(function (err) {
+            parser.parse(stream).next(null, function (err) {
                 test.deepEqual(err, {
                     code: 'ELIMIT',
                     actual: 5,

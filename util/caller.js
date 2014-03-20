@@ -183,5 +183,5 @@ exports.callStream = function (stream, done) {
     Raw.download(stream, {
         limit: Infinity,
         length: Infinity
-    }, done.bind(this));
+    }, done);
 };

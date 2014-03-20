@@ -21,27 +21,22 @@ var Json = Raw.extend(/** @lends JSON.prototype*/ {
      * @protected
      * @memberOf {Json}
      * @method
-     *
-     * @param {Function} done
      * */
-    _parse: function (done) {
-        Json.parent._parse.call(this, function (err, res) {
+    _parse: function (stream) {
 
-            if ( 2 > arguments.length ) {
+        return Json.parent._parse.call(this, stream).
+            next(function (res, done) {
 
-                return done(err);
-            }
+                try {
 
-            try {
+                    res = JSON.parse(res);
+                } catch (err) {
 
-                res = JSON.parse(res);
-            } catch (exc) {
+                    return done(err);
+                }
 
-                return done(exc);
-            }
-
-            return done(null, res);
-        });
+                return done(null, res);
+            });
     }
 
 });

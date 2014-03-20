@@ -9,14 +9,14 @@ module.exports = {
         function (test) {
             var parser;
 
-            parser = new Parser(null, {});
+            parser = new Parser(null);
 
             test.deepEqual(parser.params, {
                 length: Infinity,
                 limit: Infinity
             });
 
-            parser = new Parser(null, {
+            parser = new Parser({
                 length: '5',
                 limit: 42
             });
@@ -33,9 +33,9 @@ module.exports = {
     'Parser.prototype.parse': [
         function (test) {
             var req = new Parted(['h1']);
-            var parser = new Parser(req, {});
+            var parser = new Parser();
 
-            parser.parse(function (err, buf) {
+            parser.parse(req).next(function (buf) {
                 test.deepEqual(buf, {
                     type: void 0,
                     input: {}

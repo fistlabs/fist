@@ -114,7 +114,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         }
 
         function ready (i) {
-            this._tasks[i](function (err, res) {
+            this._tasks[i]().done(function (err, res) {
 
                 if ( 2 > arguments.length ) {
                     isError = true;

@@ -4,6 +4,7 @@ var R_FIELDNAME = /;\s*name=(?:"([^"]*)"|([^"]*))/;
 var R_FILENAME = /;\s*filename=(?:"([^"]*)"|([^\s]*))/;
 
 var Dicer = /** @type Dicer */ require('dicer');
+var Next = /** @type Next */ require('fist.util.next/Next');
 var Parser = /** @type Parser */ require('./Parser');
 
 /**
@@ -16,11 +17,15 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @protected
      * @memberOf {Multipart}
      * @method
-     *
-     * @param {Function} done
      * */
-    _parse: function (done) {
-        Multipart.parseMultipart(this._stream, this.params, done);
+    _parse: function (stream) {
+        var next = new Next();
+
+        Multipart.parseMultipart(stream, this.params, function () {
+            next.args(arguments);
+        });
+
+        return next;
     },
 
     /**

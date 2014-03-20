@@ -7,8 +7,8 @@ module.exports = {
 
     'Json.prototype.parse': [
         function (test) {
-            var parser = new Json(new Parted(['{"a":42}']));
-            parser.parse(function (err, res) {
+            var parser = new Json();
+            parser.parse(new Parted(['{"a":42}'])).next(function (res) {
                 test.deepEqual(res, {
                     input: {a: 42},
                     type: 'json'
@@ -18,8 +18,8 @@ module.exports = {
         },
         function (test) {
             var req = new Parted(['{"a":42}']);
-            var parser = new Json(req);
-            parser.parse(function (err) {
+            var parser = new Json();
+            parser.parse(req).next(null, function (err) {
                 test.strictEqual(err, '42');
                 test.done();
             });
@@ -30,13 +30,12 @@ module.exports = {
         },
         function (test) {
             var req = new Parted(['{"a":42']);
-            var parser = new Json(req);
-            parser.parse(function (err) {
+            var parser = new Json();
+            parser.parse(req).next(null, function (err) {
                 test.ok(err instanceof SyntaxError);
                 test.done();
             });
         }
-
     ]
 
 };

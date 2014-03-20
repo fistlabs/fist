@@ -23,17 +23,6 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * @memberOf {Body}
      * @method
      *
-     * @constructs
-     * */
-    constructor: function (req, params) {
-        this._parser = this._getParser(req, params);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Body}
-     * @method
-     *
      * @param {Object} stream
      * @param {Object} params
      *
@@ -48,27 +37,27 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
 
             if ( Body.isUrlencoded(stream) ) {
 
-                return new Urlencoded(stream, params);
+                return new Urlencoded(params);
             }
 
             if ( Body.isJSON(stream) ) {
 
-                return new Json(stream, params);
+                return new Json(params);
             }
 
             boundary = Body.isMultipart(stream);
 
             if ( boundary ) {
-                parser =  new Multipart(stream, params);
+                parser =  new Multipart(params);
                 parser.params.boundary = boundary;
 
                 return parser;
             }
 
-            return new Raw(stream, params);
+            return new Raw(params);
         }
 
-        return new Parser(stream, params);
+        return new Parser(params);
     },
 
     /**
@@ -76,11 +65,11 @@ var Body = Parser.extend(/** @lends Body.prototype */ {
      * @memberOf {Body}
      * @method
      *
-     * @param {Function} done
-     * @param {*} [ctxt]
+     * @param {Object} stream
      * */
-    parse: function (done, ctxt) {
-        this._parser.parse(done, ctxt);
+    parse: function (stream) {
+
+        return this._getParser(stream, this.params).parse(stream);
     }
 
 }, /** @lends Body */ {

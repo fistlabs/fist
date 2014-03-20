@@ -1,6 +1,7 @@
 'use strict';
 
 var Parser = /** @type Parser */ require('./Parser');
+var Next = /** @type Next */ require('fist.util.next/Next');
 
 /**
  * @class Raw
@@ -21,10 +22,15 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      * @memberOf {Raw}
      * @method
      *
-     * @param {Function} done
      * */
-    _parse: function (done) {
-        Raw.download(this._stream, this.params, done);
+    _parse: function (stream) {
+        var next = new Next();
+
+        Raw.download(stream, this.params, function () {
+            next.args(arguments);
+        });
+
+        return next;
     }
 
 }, {

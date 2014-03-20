@@ -8,6 +8,7 @@ var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Body = /** @type Body */ require('../parser/Body');
+var Next = /** @type Next */ require('fist.util.next/Next');
 var Cookie = /** @type Cookie */ require('../util/Cookie');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
@@ -98,21 +99,27 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
+     * @param {*} [params]
      * @param {Function} done
      * */
-    body: function (done) {
+    body: function (params, done) {
 
         var opts;
 
-        if ( !(this._body instanceof Body) ) {
-            opts = extend(Object.create(null), this.agent.params.body, {
-                length: this._req.headers['content-length']
-            });
-
-            this._body = new Body(this._req, opts);
+        if ( 'function' === typeof params ) {
+            done = params;
+            params = null;
         }
 
-        this._body.parse(done, this);
+        if ( !(this._body instanceof Next) ) {
+            opts = extend({
+                length: this._req.headers['content-length']
+            }, params);
+
+            this._body = new Body(opts).parse(this._req);
+        }
+
+        this._body.done(done, this);
     },
 
     /**

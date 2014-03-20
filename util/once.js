@@ -6,7 +6,7 @@ module.exports = function (fn) {
 
     var next = null;
 
-    return function (done, ctxt) {
+    return function () {
 
         if ( null === next ) {
             next = new Next();
@@ -16,6 +16,6 @@ module.exports = function (fn) {
             });
         }
 
-        next.done(done, ctxt);
+        return next;
     };
 };
