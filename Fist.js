@@ -3,7 +3,7 @@
 var Framework = /** @type Framework */ require('./Framework');
 
 var routes = require('fist.plug.routes');
-var units = require('./plug/units');
+var units = require('fist.plug.units');
 
 /**
  * @class Fist
