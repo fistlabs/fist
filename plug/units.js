@@ -21,7 +21,7 @@ exports = module.exports = function (done) {
         var l;
 
         if ( 2 > arguments.length ) {
-            done.call(this, err);
+            done(err);
 
             return;
         }
@@ -30,8 +30,8 @@ exports = module.exports = function (done) {
 
             try {
                 decl = exports.createDecl(files[i], this.params);
-            } catch (ex) {
-                done.call(this, ex);
+            } catch (exc) {
+                done(exc);
 
                 return;
             }
@@ -43,7 +43,7 @@ exports = module.exports = function (done) {
             this.decl.apply(this, args);
         }, this);
 
-        done.call(this, null, decls);
+        done(null, null);
     });
 };
 

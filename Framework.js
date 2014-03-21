@@ -86,7 +86,6 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         var l;
         var isError = false;
         var length = this._tasks.length;
-        var result = [];
 
         this._pending += 1;
 
@@ -113,24 +112,20 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             }
         }
 
-        function ready (i) {
-            this._tasks[i](function (err, res) {
+        function ready (err) {
 
-                if ( 2 > arguments.length ) {
-                    isError = true;
-                    done.call(this, err);
+            if ( 2 > arguments.length ) {
+                isError = true;
+                done.call(this, err);
 
-                    return;
-                }
+                return;
+            }
 
-                length -= 1;
-                result[i] = res;
+            length -= 1;
 
-                if ( 0 === length ) {
-                    done.call(this, null, result);
-                }
-
-            }, this);
+            if ( 0 === length ) {
+                done.call(this, null, null);
+            }
         }
 
         if ( 0 === length ) {
@@ -146,7 +141,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            ready.call(this, i);
+            this._tasks[i](ready, this);
         }
     },
 

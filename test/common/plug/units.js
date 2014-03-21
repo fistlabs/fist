@@ -2,50 +2,57 @@
 
 var units = require('../../../plug/units');
 var Path = require('path');
-var Fist = require('../../../Fist');
+var Framework = require('../../../Framework');
 
 module.exports = [
 
     function (test) {
-        var fist = new Fist({
+        var fist = new Framework({
             action: [
                 null,
                 Path.resolve('test/stuff/action/data0/*.js')
             ]
         });
 
-        units.call(fist, function (err) {
+        fist.plug(units);
+
+        fist.on('sys:error', function (err) {
             test.ok(err);
             test.done();
         });
+
+        fist.ready();
     },
 
     function (test) {
-        var fist = new Fist({
+        var fist = new Framework({
             action: Path.resolve('test/stuff/action/data0/error/*.js')
         });
-        units.call(fist, function (err) {
+
+        fist.plug(units);
+
+        fist.on('sys:error', function (err) {
             test.strictEqual(err, 0);
             test.done();
         });
+
+        fist.ready();
     },
 
     function (test) {
-        var fist = new Fist({
+        var fist = new Framework({
             action: Path.resolve('test/stuff/action/data0/*.js')
         });
-        units.call(fist, function (err, res) {
 
-            test.deepEqual(res.map(function (args) {
-                test.strictEqual(args.length, 3);
-                test.ok(Array.isArray(args));
-                test.ok('string' === typeof args[0]);
+        fist.plug(units);
 
-                return args[0];
-            }), ['knot', 'data', 'error', 'index']);
-
+        fist.on('sys:ready', function () {
+            test.deepEqual(Object.keys(this.decls).sort(),
+                ['knot', 'data', 'error', 'index'].sort());
             test.done();
         });
+
+        fist.ready();
     },
 
     function (test) {
