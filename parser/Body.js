@@ -144,10 +144,8 @@ var Body = Base.extend(/** @lends Body.prototype */ {
      * */
     hasBody: function (req) {
 
-        var length = req.headers['content-length'];
-
         return 'string' === typeof req.headers['transfer-encoding'] ||
-            'string' === typeof length && '0' !== length;
+            'string' === typeof req.headers['content-length'];
     },
 
     /**
