@@ -2,8 +2,8 @@
 
 var Framework = /** @type Framework */ require('./Framework');
 
-var routes = require('./init/routes');
-var units = require('./init/units');
+var routes = require('./plug/routes');
+var units = require('./plug/units');
 
 /**
  * @class Fist
@@ -21,7 +21,7 @@ var Fist = Framework.extend(/** @lends Fist.prototype */ {
     constructor: function () {
         Fist.Parent.apply(this, arguments);
         //  автоматически добавляю таски на инициализацию роутера и узлов
-        this.schedule(routes, units);
+        this.plug(routes, units);
     }
 
 });

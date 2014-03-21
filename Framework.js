@@ -155,7 +155,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      * */
-    schedule: function () {
+    plug: function () {
         [].forEach.call(arguments, function (plugin) {
             var next = null;
             var self = this;

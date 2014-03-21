@@ -1,6 +1,6 @@
 'use strict';
 
-var units = require('../../../init/units');
+var units = require('../../../plug/units');
 var Path = require('path');
 var Fist = require('../../../Fist');
 

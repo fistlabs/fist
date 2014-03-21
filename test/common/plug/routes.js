@@ -1,7 +1,7 @@
 'use strict';
 
 var Framework = require('../../../Framework');
-var routes = require('../../../init/routes');
+var routes = require('../../../plug/routes');
 
 module.exports = [
     function (test) {
@@ -20,7 +20,7 @@ module.exports = [
             ]
         });
 
-        fist.schedule(routes);
+        fist.plug(routes);
 
         fist.on('sys:ready', function () {
             test.strictEqual(fist.router.routes.length, 2);

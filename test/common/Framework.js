@@ -34,7 +34,7 @@ module.exports = {
             var fist = new Framework();
             var spy = [];
 
-            fist.schedule(function (done) {
+            fist.plug(function (done) {
                 setTimeout(function () {
                     done(null, null);
                 }, 10);
@@ -58,7 +58,7 @@ module.exports = {
             var fist = new Framework();
             var spy = [];
 
-            fist.schedule(function (done) {
+            fist.plug(function (done) {
                 setTimeout(function () {
                     spy.push(1);
                     done(null, null);
@@ -77,7 +77,7 @@ module.exports = {
 
             fist.ready();
 
-            fist.schedule(function (done) {
+            fist.plug(function (done) {
                 setTimeout(function () {
                     spy.push(2);
                     done(null, null);
@@ -92,11 +92,11 @@ module.exports = {
             var fist = new Framework();
             var spy = [];
 
-            fist.schedule(function (done) {
+            fist.plug(function (done) {
                 done(42);
             });
 
-            fist.schedule(function (done) {
+            fist.plug(function (done) {
                 done(43);
             });
 
@@ -173,7 +173,7 @@ module.exports = {
 
             var d = new Date();
 
-            fist.schedule(function (done) {
+            fist.plug(function (done) {
                 setTimeout(function () {
                     done(null, null);
                 }, 100);

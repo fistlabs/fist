@@ -3,7 +3,7 @@
 var Raw = /** @type Raw */ require('../parser/Raw');
 
 exports.callYield = function (value, done) {
-    /*eslint no-fallthrough: 0*/
+
     if ( exports.callRet(value, done) ) {
 
         return;
