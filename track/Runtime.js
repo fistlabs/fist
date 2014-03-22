@@ -47,6 +47,33 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
     },
 
     /**
+     * @public
+     * @memberOf {Runtime}
+     * @method
+     *
+     * @param {*} [code]
+     * @param {String} id
+     * @param {*} [arg...]
+     * */
+    render: function (code, id, arg) {
+
+        var args;
+        var i;
+
+        if ( 'number' === typeof code ) {
+            i = 2;
+
+        } else {
+            id = code;
+            code = 200;
+            i = 1;
+        }
+
+        args = Array.prototype.slice.call(arguments, i);
+        this.send(code, this.agent.renderers[id].apply(this, args));
+    },
+
+    /**
      * @protected
      * @memberOf {Runtime}
      * @method

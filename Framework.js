@@ -59,6 +59,12 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             maxLag: this.params.busyHWM
         });
 
+        /**
+         * @public
+         * @memberOf {Framework}
+         * @property {Object<Function>}
+         * */
+        this.renderers = Object.create(null);
     },
 
     /**

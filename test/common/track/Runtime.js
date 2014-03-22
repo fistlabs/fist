@@ -172,6 +172,95 @@ module.exports = {
                 test.done();
             });
         }
+    ],
+
+    'Runtime.prototype.render': [
+        function (test) {
+
+            var fist = new Fist();
+
+            fist.plug(function (done) {
+                this.renderers.index = function () {
+                    return [].slice.call(arguments, 0).map(function (v) {
+
+                        return v * 2;
+                    });
+                };
+
+                done(null, null);
+            });
+
+            fist.decl('index', function (track) {
+                track.render('index', 1, 2, 3);
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('[2,4,6]'));
+                test.strictEqual(data.statusCode, 200);
+                test.done();
+            });
+        },
+        function (test) {
+
+            var fist = new Fist();
+
+            fist.plug(function (done) {
+                this.renderers.index = function () {
+                    return [].slice.call(arguments, 0).map(function (v) {
+
+                        return v * 2;
+                    });
+                };
+
+                done(null, null);
+            });
+
+            fist.decl('index', function (track) {
+                track.render(201, 'index', 1, 2, 3);
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('[2,4,6]'));
+                test.strictEqual(data.statusCode, 201);
+                test.done();
+            });
+        }
     ]
 
 };
