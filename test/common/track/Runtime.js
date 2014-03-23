@@ -261,6 +261,104 @@ module.exports = {
                 test.done();
             });
         }
+    ],
+    'Runtime.prototype.redirect': [
+        function (test) {
+            var fist = new Fist();
+
+            fist.decl('index', function (track) {
+                track.redirect('/about/');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/about/'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/about/');
+                test.done();
+            });
+        },
+        function (test) {
+            var fist = new Fist();
+
+            fist.decl('index', function (track) {
+                track.redirect(301, '/about/');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/about/'));
+                test.strictEqual(data.statusCode, 301);
+                test.strictEqual(data.headers.location, '/about/');
+                test.done();
+            });
+        },
+        function (test) {
+            var fist = new Fist();
+
+            fist.decl('index', function (track) {
+                track.redirect(333, '/about/');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/about/'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/about/');
+                test.done();
+            });
+        }
     ]
 
 };

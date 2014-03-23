@@ -1,7 +1,17 @@
 'use strict';
 
 var STATUS_CODES = require('http').STATUS_CODES;
+
+var REDIRECT_STATUS = [300, 301, 302,
+    303, 305, 307].reduce(function (REDIRECT_STATUS, statusCode) {
+        REDIRECT_STATUS[statusCode] = true;
+
+        return REDIRECT_STATUS;
+    }, Object.create(null));
+
 var Connect = /** @type Connect */ require('./Connect');
+
+var htmlEscape = require('../util/html/escape');
 
 /**
  * @class Runtime
@@ -71,6 +81,30 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
 
         args = Array.prototype.slice.call(arguments, i);
         this.send(code, this.agent.renderers[id].apply(this, args));
+    },
+
+    /**
+     * @public
+     * @memberOf {Runtime}
+     * @method
+     *
+     * @param {*} [code]
+     * @param {String} url
+     * */
+    redirect: function (code, url) {
+
+        if ( 2 > arguments.length ) {
+            url = code;
+            code = 302;
+        } else {
+
+            if ( !REDIRECT_STATUS[code] ) {
+                code = 302;
+            }
+        }
+
+        this.header('Location', url);
+        this.send(code, htmlEscape(url));
     },
 
     /**
