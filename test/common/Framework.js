@@ -159,7 +159,6 @@ module.exports = {
             }, 100);
         },
 
-
         function (test) {
 
             var fist = new Framework();
