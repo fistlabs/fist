@@ -3,8 +3,8 @@
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var REDIRECT_STATUS = [300, 301, 302,
-    303, 305, 307].reduce(function (REDIRECT_STATUS, statusCode) {
-        REDIRECT_STATUS[statusCode] = true;
+    303, 305, 307].reduce(function (REDIRECT_STATUS, code) {
+        REDIRECT_STATUS[code] = true;
 
         return REDIRECT_STATUS;
     }, Object.create(null));
