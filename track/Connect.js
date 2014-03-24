@@ -243,6 +243,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
             return this._res.statusCode;
         }
+
         this._res.statusCode = statusCode;
 
         return statusCode;
