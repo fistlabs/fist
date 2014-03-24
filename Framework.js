@@ -90,6 +90,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
 
         var isError = false;
         var length = this._tasks.length;
+        var self = this;
 
         this._pending += 1;
 
@@ -100,18 +101,18 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         function done (err) {
 
             if ( 2 > arguments.length ) {
-                this.emit('sys:error', err);
+                self.emit('sys:error', err);
 
                 return;
             }
 
-            this._pending -= 1;
+            self._pending -= 1;
 
-            if ( 0 === this._pending ) {
-                this.emit('sys:ready');
+            if ( 0 === self._pending ) {
+                self.emit('sys:ready');
 
-                while ( this._pends.length ) {
-                    this._handle(this._pends.shift());
+                while ( self._pends.length ) {
+                    self._handle(self._pends.shift());
                 }
             }
         }
@@ -120,7 +121,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
 
             if ( 2 > arguments.length ) {
                 isError = true;
-                done.call(this, err);
+                done(err);
 
                 return;
             }
@@ -128,12 +129,12 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             length -= 1;
 
             if ( 0 === length ) {
-                done.call(this, null, null);
+                done(null, null);
             }
         }
 
         if ( 0 === length ) {
-            done.call(this, null, null);
+            done(null, null);
 
             return;
         }
@@ -145,7 +146,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            this._tasks.shift()(ready, this);
+            this._tasks.shift().call(this, ready);
         }
     },
 
@@ -155,21 +156,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * @method
      * */
     plug: function () {
-        Array.prototype.forEach.call(arguments, function (plugin) {
-            var self = this;
-
-            this._tasks.push(function (done, ctxt) {
-
-                var next = new Next();
-
-                plugin.call(self, function () {
-                    next.args(arguments);
-                });
-
-                next.done(done, ctxt);
-            });
-
-        }, this);
+        Array.prototype.push.apply(this._tasks, arguments);
     },
 
     /**

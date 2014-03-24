@@ -67,6 +67,7 @@ var Switcher = Router.extend(/** @lends Switcher.prototype */ {
         if ( verb in this.verbs ) {
             this.verbs[verb] += 1;
         } else {
+
             this.verbs[verb] = 1;
         }
 
