@@ -249,37 +249,41 @@ module.exports = {
                 test.done();
             });
 
+        },
+
+        function (test) {
+
+            var fist = new Framework({
+                busyHWM: 1
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            fist.on('sys:toobusy', function (track) {
+                 track.send(503);
+            });
+
+            setTimeout(function () {
+                asker({
+                    method: 'GET',
+                    path: '/',
+                    socketPath: sock,
+                    statusFilter: function () {
+                        return {
+                            accept: true
+                        };
+                    }
+                }, function (err, res) {
+                    test.strictEqual(res.statusCode, 503);
+                    test.done();
+                });
+            }, 550);
+
+            block();
         }
-//        ,
-//        function (test) {
-//
-//            var fist = new Framework({
-//                busyHWM: 1
-//            });
-//
-//            try {
-//                Fs.unlinkSync(sock);
-//            } catch (ex) {}
-//
-//            fist.listen(sock);
-//
-//            setTimeout(function () {
-//                asker({
-//                    method: 'GET',
-//                    path: '/',
-//                    socketPath: sock,
-//                    statusFilter: function () {
-//                        return {
-//                            accept: true
-//                        };
-//                    }
-//                }, function (err, res) {
-//                    test.strictEqual(res.statusCode, 503);
-//                    test.done();
-//                });
-//            }, 550);
-//
-//            block();
-//        }
     ]
 };

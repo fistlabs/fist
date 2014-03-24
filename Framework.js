@@ -229,9 +229,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     _handle: function (track) {
 
         if ( this._toobusy.busy() ) {
-            track.send(503);
-
-            return;
+            this.emit('sys:toobusy', track);
         }
 
         if ( 0 === this._pending ) {
