@@ -2,7 +2,6 @@
 
 var Http = require('http');
 var Nested = /** @type Nested */ require('./bundle/Nested');
-var Next = /** @type Next */ require('fist.util.next/Next');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 var Toobusy = /** @type Toobusy */ require('./util/Toobusy');
