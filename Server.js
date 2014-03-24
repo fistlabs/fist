@@ -173,7 +173,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
 
         //  однозначно нет такого маршрута
         if ( null === mdata ) {
-            this.emit('sys:match-fail', track);
+            this.emit('sys:ematch', track);
             track.send(404);
 
             return;
@@ -182,7 +182,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         //  возвращен массив
         if ( Array.isArray(mdata) ) {
             //  это тоже значит что нет такого роута
-            this.emit('sys:match-fail', track);
+            this.emit('sys:ematch', track);
 
             //  если массив пустой, то на сервере совсем нет ни одного
             //  маршрута отвечающего по такому методу запроса
@@ -202,7 +202,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
             return;
         }
 
-        this.emit('sys:match-done', track);
+        this.emit('sys:match', track);
 
         track.match = mdata.match;
         track.route = mdata.route.name;
