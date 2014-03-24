@@ -52,6 +52,14 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @protected
          * @memberOf {Framework}
          * @property
+         * @type {Number}
+         * */
+        this._state = -1;
+
+        /**
+         * @protected
+         * @memberOf {Framework}
+         * @property
          * @type {Toobusy}
          * */
         this._toobusy = new Toobusy({
@@ -87,60 +95,68 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * */
     ready: function () {
 
-        var isError = false;
         var length = this._tasks.length;
         var self = this;
 
+        //  приложение в состоянии ошибки
+        if ( 1 === this._state ) {
+
+            return;
+        }
+
+        //  нет задач
+        if ( 0 === length ) {
+
+            return;
+        }
+
+        //  увеличиваю количество запросов на инициализацию
         this._pending += 1;
 
         if ( 1 === this._pending ) {
             this.emit('sys:pending');
         }
 
-        function done (err) {
+        function ready (err) {
 
+            //  разрешение плагина не требуется,
+            // потому что уже произошла ошибка
+            if ( 1 === self._state ) {
+
+                return;
+            }
+
+            //  плагин разрешен с ошибкой
             if ( 2 > arguments.length ) {
+                self._state = 1;
                 self.emit('sys:error', err);
 
                 return;
             }
 
-            self._pending -= 1;
+            //  уменьшаем количество разрешенных задач
+            length -= 1;
 
-            if ( 0 === self._pending ) {
-                self.emit('sys:ready');
+            //  все задачи разрешены
+            if ( 0 === length ) {
+                //  уменьшаем количество запросов на инициализацию
+                self._pending -= 1;
 
-                while ( self._pends.length ) {
-                    self._handle(self._pends.shift());
+                //  все запросы на инициализацию завершены
+                if ( 0 === self._pending ) {
+                    self._state = 0;
+                    self.emit('sys:ready');
+
+                    while ( self._pends.length ) {
+                        self._handle(self._pends.shift());
+                    }
                 }
             }
         }
 
-        function ready (err) {
-
-            if ( 2 > arguments.length ) {
-                isError = true;
-                done(err);
-
-                return;
-            }
-
-            length -= 1;
-
-            if ( 0 === length ) {
-                done(null, null);
-            }
-        }
-
-        if ( 0 === length ) {
-            done(null, null);
-
-            return;
-        }
-
         while ( this._tasks.length ) {
 
-            if ( isError ) {
+            if ( 1 === self._state ) {
 
                 break;
             }

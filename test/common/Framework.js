@@ -25,7 +25,7 @@ module.exports = {
 
             fist.ready();
 
-            test.deepEqual(spy, [0, 1]);
+            test.deepEqual(spy, []);
 
             test.done();
         },
@@ -100,6 +100,10 @@ module.exports = {
                 done(43);
             });
 
+            fist.on('sys:ready', function () {
+                spy.push(100500);
+            });
+
             fist.on('sys:pending', function () {
                 spy.push(0);
             });
@@ -108,10 +112,53 @@ module.exports = {
                 spy.push(1);
                 test.strictEqual(err, 42);
                 test.deepEqual(spy, [0, 1]);
-                test.done();
             });
 
             fist.ready();
+            fist.ready();
+
+            setTimeout(function () {
+                test.done();
+            }, 0);
+        },
+
+        function (test) {
+
+            var fist = new Framework();
+            var spy = [];
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(42);
+                }, 0)
+            });
+
+            fist.plug(function (done) {
+
+                setTimeout(function () {
+                    done(43);
+                }, 50);
+            });
+
+            fist.on('sys:ready', function () {
+                spy.push(100500);
+            });
+
+            fist.on('sys:pending', function () {
+                spy.push(0);
+            });
+
+            fist.on('sys:error', function (err) {
+                spy.push(1);
+                test.strictEqual(err, 42);
+                test.deepEqual(spy, [0, 1]);
+            });
+
+            fist.ready();
+
+            setTimeout(function () {
+                test.done();
+            }, 100);
         }
     ],
 
