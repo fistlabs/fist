@@ -130,7 +130,7 @@ module.exports = {
             fist.plug(function (done) {
                 setTimeout(function () {
                     done(42);
-                }, 0)
+                }, 0);
             });
 
             fist.plug(function (done) {
