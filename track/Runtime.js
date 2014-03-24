@@ -66,7 +66,7 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
      * @param {*} [arg...]
      * */
     render: function (code, id, arg) {
-
+        /*eslint no-unused-vars: 0*/
         var args;
         var i;
 
@@ -93,14 +93,15 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
      * */
     redirect: function (code, url) {
 
-        if ( 2 > arguments.length ) {
-            url = code;
-            code = 302;
-        } else {
+        if ( 'number' === typeof code ) {
 
             if ( !REDIRECT_STATUS[code] ) {
                 code = 302;
             }
+
+        } else {
+            url = code;
+            code = 302;
         }
 
         this.header('Location', url);
