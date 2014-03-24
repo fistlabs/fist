@@ -137,39 +137,61 @@ module.exports = {
         }
     ],
 
-    'Connect.prototype.body': function (test) {
-        connect({
-            method: 'post',
-            headers: {
-                'content-type': 'application/x-www-form-urlencoded'
-            },
-            body: 'a=5'
-        }, function (t, req, res) {
-            t.body(function (err, body) {
-                test.ok(!err);
-                test.deepEqual(body, {
-                    input: {
-                        a: '5'
-                    },
-                    type: 'urlencoded'
-                });
-            });
+    'Connect.prototype.body': [
 
-            t.body(function (err, body) {
-                test.ok(!err);
-                test.deepEqual(body, {
-                    input: {
-                        a: '5'
-                    },
-                    type: 'urlencoded'
+        function (test) {
+            connect({
+                method: 'post',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                body: 'a=5'
+            }, function (t, req, res) {
+                t.body(function (err, body) {
+                    test.ok(!err);
+                    test.deepEqual(body, {
+                        input: {
+                            a: '5'
+                        },
+                        type: 'urlencoded'
+                    });
                 });
-                res.end();
-            });
 
-        }, function () {
-            test.done();
-        });
-    },
+                t.body(function (err, body) {
+                    test.ok(!err);
+                    test.deepEqual(body, {
+                        input: {
+                            a: '5'
+                        },
+                        type: 'urlencoded'
+                    });
+                    res.end();
+                });
+
+            }, function () {
+                test.done();
+            });
+        },
+
+        function (test) {
+            connect({
+                method: 'post',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                body: 'a=5'
+            }, function (t, req, res) {
+                t.body({length: 2}, function (err) {
+                    test.ok(err);
+                    test.strictEqual(err.code, 'ELENGTH');
+                    res.end();
+                });
+
+            }, function () {
+                test.done();
+            });
+        }
+    ],
 
     'Connect.prototype.send': [
         function (test) {

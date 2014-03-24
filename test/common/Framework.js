@@ -133,7 +133,6 @@ module.exports = {
             });
 
             fist.plug(function (done) {
-
                 setTimeout(function () {
                     done(43);
                 }, 50);
@@ -151,6 +150,42 @@ module.exports = {
                 spy.push(1);
                 test.strictEqual(err, 42);
                 test.deepEqual(spy, [0, 1]);
+            });
+
+            fist.ready();
+
+            setTimeout(function () {
+                test.done();
+            }, 100);
+        },
+
+
+        function (test) {
+
+            var fist = new Framework();
+            var spy = [];
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    spy.push(1);
+                    done(null, 42);
+                }, 0);
+            });
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    spy.push(2);
+                    done(null, 43);
+                }, 50);
+            });
+
+            fist.on('sys:ready', function () {
+                spy.push(100500);
+                test.deepEqual(spy, [0, 1, 2, 100500]);
+            });
+
+            fist.on('sys:pending', function () {
+                spy.push(0);
             });
 
             fist.ready();
