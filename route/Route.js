@@ -1,7 +1,7 @@
 'use strict';
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
-var Expr = /** @type Expr */ require('../util/Expr');
+var Expr = /** @type Expr */ require('./expr/Expr');
 
 var _extend = require('lodash.assign');
 var hasProperty = Object.prototype.hasOwnProperty;
