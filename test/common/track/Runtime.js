@@ -1,6 +1,6 @@
 'use strict';
 
-var Fist = require('../../../Fist');
+var Fist = require('../../../Framework');
 var asker = require('asker');
 
 var Fs = require('fs');

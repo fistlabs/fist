@@ -17,13 +17,9 @@
 
         "fist.util.next": "0.0.x",
 
-        "fist.plug.routes": "0.0.x",
-        "fist.plug.units": "0.0.x",
-
         "lodash.assign": "2.4.x",
         "lodash.uniq": "2.4.x",
 
-        "asker": "0.3.x",
         "dicer": "0.2.x"
     },
     "description": "fist application",
