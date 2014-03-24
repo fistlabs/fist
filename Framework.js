@@ -4,7 +4,6 @@ var Http = require('http');
 var Nested = /** @type Nested */ require('./bundle/Nested');
 var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
-var Toobusy = /** @type Toobusy */ require('./util/Toobusy');
 
 var caller = require('./util/caller');
 
@@ -55,16 +54,6 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @type {Number}
          * */
         this._state = -1;
-
-        /**
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Toobusy}
-         * */
-        this._toobusy = new Toobusy({
-            maxLag: this.params.busyHWM
-        });
 
         /**
          * @public
@@ -227,10 +216,6 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * @param {Runtime} track
      * */
     _handle: function (track) {
-
-        if ( this._toobusy.busy() ) {
-            this.emit('sys:toobusy', track);
-        }
 
         if ( 0 === this._pending ) {
             Framework.parent._handle.apply(this, arguments);
