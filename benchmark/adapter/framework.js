@@ -6,26 +6,26 @@ var Fs = require('fs');
  * @class MyServer
  * @extends Server
  * */
-var MyServer = /** @type Server */ require('../../Server').extend({
+var MyServer = /** @type Server */ require('../../Framework').extend({
     //  Не триггерить события во время бенчмарка
     // для чистоты эксперимета
     emit: function () {}
 });
 
 var app = new MyServer();
-var sock = 'benchmark/fist.sock';
+var sock = 'benchmark/framework.sock';
 var Http = require('http');
 var path = require('../lib/path');
 
-app.decl('_', ['a'], function () {
-    this.send();
+app.decl('_', ['a'], function (track) {
+    track.send();
 });
 
-app.decl('a', ['b'], function (bundle, done) {
+app.decl('a', ['b'], function (track, errors, result, done) {
     done(null, 'a');
 });
 
-app.decl('b', [], function (bundle, done) {
+app.decl('b', [], function (track, errors, result, done) {
     done(null, 'b');
 });
 

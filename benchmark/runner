@@ -8,7 +8,7 @@ var suite = new Suite();
 
 var samples = {
     express: require('./adapter/express'),
-    server: require('./adapter/server')
+    framework: require('./adapter/framework')
 };
 
 //  Для более точной статистики (ОЧЕНЬ ДОЛГО ДЕЛАЕТ 1000)
@@ -46,7 +46,7 @@ Object.keys(samples).forEach(function (name) {
 
 suite.on('complete', function () {
     console.log();
-    console.log( '%d%', diff(results.server, results.express).toFixed(2) );
+    console.log( '%d%', diff(results.framework, results.express).toFixed(2) );
     console.log();
     process.exit(0);
 });
