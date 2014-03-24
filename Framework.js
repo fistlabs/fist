@@ -88,8 +88,6 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * */
     ready: function () {
 
-        var i;
-        var l;
         var isError = false;
         var length = this._tasks.length;
 
@@ -140,14 +138,14 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        for ( i = 0, l = length; i < l; i += 1 ) {
+        while ( this._tasks.length ) {
 
             if ( isError ) {
 
                 break;
             }
 
-            this._tasks[i](ready, this);
+            this._tasks.shift()(ready, this);
         }
     },
 
@@ -157,18 +155,16 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * @method
      * */
     plug: function () {
-        [].forEach.call(arguments, function (plugin) {
-            var next = null;
+        Array.prototype.forEach.call(arguments, function (plugin) {
             var self = this;
 
             this._tasks.push(function (done, ctxt) {
 
-                if ( null === next ) {
-                    next = new Next();
-                    plugin.call(self, function () {
-                        next.args(arguments);
-                    });
-                }
+                var next = new Next();
+
+                plugin.call(self, function () {
+                    next.args(arguments);
+                });
 
                 next.done(done, ctxt);
             });
