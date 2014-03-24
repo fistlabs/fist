@@ -96,32 +96,6 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      * @memberOf {Server}
      * @method
      *
-     * @param {Track} track
-     * @param {Array<String>|String} deps
-     * @param {Function} done done(bundle)
-     * */
-    _bundle: function (track, deps, done) {
-
-        var date = new Date();
-
-        function resolve (bundle) {
-            this.emit('sys:bundle', {
-                time: new Date() - date,
-                deps: deps,
-                data: bundle
-            });
-
-            done.apply(this, arguments);
-        }
-
-        Server.parent._bundle.call(this, track, deps, resolve);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Server}
-     * @method
-     *
      * @param {*} [params]
      *
      * @returns {Switcher}
