@@ -88,6 +88,10 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
 
         next.done(function () {
 
+            //  думаю в будущем позволять разрешать без аргументов
+            //   done() - чтобы интерпретировалось как аксепт а не реджект
+            //  это на случай когда не нужен результат,
+            // потому что done(null, null) - как то странно
             var stat = +(1 < arguments.length);
 
             this.emit(['sys:reject', 'sys:accept'][stat], {
@@ -104,9 +108,10 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
                 next.args(arguments);
             });
 
-        } else {
-            next.resolve();
+            return;
         }
+
+        next.resolve(void 0);
     },
 
     /**
