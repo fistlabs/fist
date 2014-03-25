@@ -259,10 +259,7 @@ module.exports = {
                 }, 100);
             });
 
-            fist.decl('index', function () {
-
-                return 42;
-            });
+            fist.decl('index', {});
 
             fist.route('GET', '/', 'index');
 
@@ -278,7 +275,7 @@ module.exports = {
                 socketPath: sock
             }, function (err, res) {
                 test.ok(d.getTime() <= Date.now());
-                test.deepEqual(res.data, new Buffer('42'));
+                test.deepEqual(res.data, new Buffer('{}'));
                 test.done();
             });
 
