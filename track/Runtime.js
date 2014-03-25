@@ -115,7 +115,14 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
         }
 
         this.header('Location', url);
-        this.send(code, htmlEscape(url));
+
+        url = htmlEscape(url);
+
+        if ( /text\/html/.test( this._res.getHeader('Content-Type') ) ) {
+            url = '<a href="' + url + '">' + url + '</a>';
+        }
+
+        this.send(code, url);
     },
 
     /**

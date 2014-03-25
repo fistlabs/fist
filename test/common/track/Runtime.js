@@ -299,6 +299,40 @@ module.exports = {
             var fist = new Fist();
 
             fist.decl('index', function (track) {
+                track.header('Content-Type', 'text/html');
+                track.redirect('/test/?a=5&b=6');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('<a href="' +
+                    '/test/?a=5&#38;b=6">/test/?a=5&#38;b=6</a>'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/test/?a=5&b=6');
+                test.done();
+            });
+        },
+        function (test) {
+            var fist = new Fist();
+
+            fist.decl('index', function (track) {
                 track.redirect(301, '/about/');
             });
 
