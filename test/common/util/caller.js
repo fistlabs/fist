@@ -42,6 +42,12 @@ module.exports = {
             });
         },
         function (test) {
+            caller.callObj({a: {}}, function (err, res) {
+                test.deepEqual(res, {a: {}});
+                test.done();
+            });
+        },
+        function (test) {
             caller.callObj([], function (err, res) {
                 test.deepEqual(res, []);
                 test.done();
@@ -134,6 +140,15 @@ module.exports = {
                 done(null, 42);
             }, [], function (err, res) {
                 test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callFunc(function () {
+
+                return {a: 42};
+            }, [], function (err, res) {
+                test.deepEqual(res, {a: 42});
                 test.done();
             });
         },

@@ -12,7 +12,7 @@ exports.callYield = function (value, done) {
     exports.callObj(value, done);
 };
 
-exports.callRet = function (val, done) {
+exports.callRet = function (val, done, asis) {
 
     if ( Object(val) === val ) {
 
@@ -45,6 +45,12 @@ exports.callRet = function (val, done) {
 
         } catch (err) {
             done(err);
+
+            return true;
+        }
+
+        if ( asis ) {
+            done.call(this, null, val);
 
             return true;
         }
@@ -87,7 +93,7 @@ exports.callFunc = function (func, args, done) {
 
     called = true;
 
-    exports.callRet(func, done);
+    exports.callRet(func, done, true);
 };
 
 exports.callGenFn = function (func, args, done) {
@@ -162,7 +168,7 @@ exports.callObj = function (obj, done) {
             }
         }
 
-        exports.callRet(obj[i], onReturned);
+        exports.callRet(obj[i], onReturned, true);
     }, this);
 };
 

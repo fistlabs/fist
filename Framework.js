@@ -181,12 +181,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        if ( caller.callRet(func, done) ) {
-
-            return;
-        }
-
-        done(null, func);
+        caller.callRet(func, done, true)
     },
 
     /**
