@@ -30,7 +30,7 @@
         "vow": "",
         "glob": "",
         "benchmark": "",
-        "express": ""
+        "express": "3.5.x"
     },
     "license": "MIT",
     "main": "Framework",

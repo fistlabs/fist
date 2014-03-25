@@ -51,7 +51,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @property
          * @type {Number}
          * */
-        this._state = -1;
+        this._state = 0;
 
         /**
          * Плагины, задачи на инициализацию
