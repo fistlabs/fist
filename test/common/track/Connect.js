@@ -353,7 +353,7 @@ module.exports = {
         function (test) {
             var err = new Error();
             err.msg = 'ERR';
-            connect({method: 'GET'}, function (t, req) {
+            connect({method: 'GET'}, function (t) {
                 t.send(err);
             }, function (err, data) {
                 test.strictEqual(data.data, '{"msg":"ERR"}');
