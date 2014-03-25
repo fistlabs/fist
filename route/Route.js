@@ -3,7 +3,7 @@
 var Base = /** @type Base */ require('fist.lang.class/Base');
 var Expr = /** @type Expr */ require('./expr/Expr');
 
-var _extend = require('lodash.assign');
+var _extend = require('lodash').extend;
 var hasProperty = Object.prototype.hasOwnProperty;
 var push = Array.prototype.push;
 var regesc = require('fist.lang.regesc');

@@ -3,7 +3,7 @@
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Route = /** @type Route */ require('../route/Route');
 
-var _extend = require('lodash.assign');
+var _extend = require('lodash').extend;
 
 /**
  * @class Router

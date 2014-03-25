@@ -17,9 +17,7 @@
 
         "fist.util.next": "0.0.x",
 
-        "lodash.assign": "2.4.x",
-        "lodash.uniq": "2.4.x",
-
+        "lodash": "2.4.x",
         "dicer": "0.2.x"
     },
     "description": "fist application",

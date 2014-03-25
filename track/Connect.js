@@ -14,7 +14,7 @@ var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var _extend = require('lodash.assign');
+var _extend = require('lodash').extend;
 var hasProperty = Object.prototype.hasOwnProperty;
 var uniqueId = require('fist.lang.id');
 

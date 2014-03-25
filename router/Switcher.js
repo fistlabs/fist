@@ -3,7 +3,7 @@
 var Router = /** @type Router */ require('./Router');
 var Pathr = /** @type Pathr */ require('../route/Pathr');
 
-var _uniq = require('lodash.uniq');
+var _uniq = require('lodash').uniq;
 
 /**
  * @class Switcher
