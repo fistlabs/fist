@@ -71,7 +71,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         /**
          * Это нужно ради автоматического контроля
-         * присутствия content-* заголовоков в ответах, не поддерживающих тело
+         * присутствия content-* заголовоков в 204, 205, 304 ответах
          *
          * @protected
          * @memberOf {Connect}
