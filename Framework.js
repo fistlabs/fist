@@ -24,14 +24,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         Framework.Parent.apply(this, arguments);
 
         /**
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Array}
-         * */
-        this._tasks = [];
-
-        /**
+         * Тут откладываются запросы поступившие во время инициализации
+         *
          * @protected
          * @memberOf {Framework}
          * @property
@@ -40,6 +34,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         this._pends = [];
 
         /**
+         * Количество запущенных инициализаций
+         *
          * @protected
          * @memberOf {Framework}
          * @property
@@ -48,6 +44,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         this._pending = 0;
 
         /**
+         * Состояние приложения
+         *
          * @protected
          * @memberOf {Framework}
          * @property
@@ -56,6 +54,18 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         this._state = -1;
 
         /**
+         * Плагины, задачи на инициализацию
+         *
+         * @protected
+         * @memberOf {Framework}
+         * @property
+         * @type {Array}
+         * */
+        this._tasks = [];
+
+        /**
+         * Шаблоны для track.render()
+         *
          * @public
          * @memberOf {Framework}
          * @property {Object<Function>}
@@ -64,6 +74,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     },
 
     /**
+     * Запускает сервер и инициализацию приложения
+     *
      * @public
      * @memberOf {Framework}
      * @method
@@ -78,6 +90,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     },
 
     /**
+     * Запускает инициализацию приложения
+     *
      * @public
      * @memberOf {Framework}
      * @method
@@ -116,7 +130,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             }
 
             //  плагин разрешен с ошибкой
-            if ( 2 > arguments.length ) {
+            if ( 1 === arguments.length ) {
                 self._state = 1;
                 self.emit('sys:error', err);
 
@@ -155,6 +169,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     },
 
     /**
+     * Добавляет плагин
+     *
      * @public
      * @memberOf {Framework}
      * @method

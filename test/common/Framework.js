@@ -53,6 +53,29 @@ module.exports = {
         },
 
         function (test) {
+            var fist = new Framework();
+            var spy = [];
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done();
+                }, 10);
+            });
+
+            fist.on('sys:pending', function () {
+                spy.push(0);
+            });
+
+            fist.on('sys:ready', function () {
+                spy.push(1);
+                test.deepEqual(spy, [0, 1]);
+                test.done();
+            });
+
+            fist.ready();
+        },
+
+        function (test) {
 
             var fist = new Framework();
             var spy = [];
