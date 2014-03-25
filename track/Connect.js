@@ -95,6 +95,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     match: null,
 
     /**
+     * Возвращает body в разобранном виде
+     *
      * @public
      * @memberOf {Connect}
      * @method
@@ -123,6 +125,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Читает заголовок запроса или ставит заголовок ответа
+     *
      * @public
      * @memberOf {Connect}
      * @method
@@ -163,6 +167,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Читает куку или ставит ее
+     *
      * @public
      * @memberOf {Connect}
      * @method
@@ -207,6 +213,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Выполняет ответ приложения
+     *
      * @public
      * @memberOf {Connect}
      * @method
@@ -217,6 +225,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Проверяет, был ли выполнен ответ приложением
+     *
      * @public
      * @memberOf {Connect}
      * @method
@@ -229,6 +239,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Ставит статус ответа или возыращает его
+     *
      * @public
      * @memberOf {Connect}
      * @method

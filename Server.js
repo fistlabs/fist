@@ -29,6 +29,8 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
     },
 
     /**
+     * Возвращает коллбэк для запросов на сервер
+     *
      * @public
      * @memberOf {Server}
      * @method
@@ -56,6 +58,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
     },
 
     /**
+     * Запускает операцию разрешения узла.
+     * Если один из узлов, участвующих в операции
+     * разрешения выполнил ответ приложения самостоятельно,
+     * то коллбэк вызван не будет
+     *
      * @public
      * @memberOf {Tracker}
      * @method
@@ -80,10 +87,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
     },
 
     /**
+     * Определяет маршрут встроенного роутера
+     *
      * @public
      * @memberOf {Server}
      * @method
-     *
      * */
     route: function () {
         this.router.addRoute.apply(this.router, arguments);

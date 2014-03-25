@@ -35,6 +35,8 @@ var Track = Base.extend(/** @lends Track.prototype */{
     },
 
     /**
+     * Запускает операцию разрешения узла
+     *
      * @public
      * @memberOf {Track}
      * @method

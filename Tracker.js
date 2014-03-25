@@ -35,6 +35,8 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     },
 
     /**
+     * Декларирует узел
+     *
      * @public
      * @memberOf {Tracker}
      * @method
@@ -64,6 +66,8 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     },
 
     /**
+     * Запускает операцию разрешения узла
+     *
      * @public
      * @memberOf {Tracker}
      * @method

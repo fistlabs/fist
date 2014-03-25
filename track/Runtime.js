@@ -20,6 +20,8 @@ var htmlEscape = require('../util/html/escape');
 var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
 
     /**
+     * Возвращает аргумент запроса из pathname или query
+     *
      * @public
      * @memberOf {Runtime}
      * @method
@@ -42,6 +44,8 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
     },
 
     /**
+     * Создает path по одному из маршрутов
+     *
      * @public
      * @memberOf {Runtime}
      * @method
@@ -57,6 +61,9 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
     },
 
     /**
+     * Выполняет шаблонизацию переданных данных и
+     * выполняет ответ приложения
+     *
      * @public
      * @memberOf {Runtime}
      * @method
@@ -85,6 +92,8 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
     },
 
     /**
+     * Шортхэнд для редиректов
+     *
      * @public
      * @memberOf {Runtime}
      * @method
