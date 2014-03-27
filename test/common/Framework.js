@@ -24,9 +24,36 @@ module.exports = {
 
             fist.ready();
 
-            test.deepEqual(spy, []);
+            test.deepEqual(spy, [0, 1]);
 
             test.done();
+        },
+
+        function (test) {
+            var fist = new Framework();
+            var spy = [];
+
+            fist.on('sys:pending', function () {
+                spy.push(0);
+            });
+
+            fist.on('sys:ready', function () {
+                spy.push(1);
+                test.deepEqual(spy, [0, 1]);
+            });
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(null, 42);
+                }, 0);
+            });
+
+            fist.ready();
+            fist.ready();
+
+            setTimeout(function () {
+                test.done();
+            }, 100);
         },
 
         function (test) {
@@ -302,6 +329,36 @@ module.exports = {
                 test.done();
             });
 
+        },
+
+        function (test) {
+
+            var fist = new Framework();
+
+            fist.decl('index', 42);
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(42);
+                }, 0);
+            });
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/',
+                socketPath: sock
+            }, function () {});
+
+            setTimeout(function () {
+                test.done();
+            }, 50);
         }
     ]
 };

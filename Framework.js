@@ -51,7 +51,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @property
          * @type {Number}
          * */
-        this._state = 0;
+        this._state = -1;
 
         /**
          * Плагины, задачи на инициализацию
@@ -107,17 +107,23 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        //  нет задач
-        if ( 0 === length ) {
-
-            return;
-        }
-
         //  увеличиваю количество запросов на инициализацию
         this._pending += 1;
 
         if ( 1 === this._pending ) {
             this.emit('sys:pending');
+        }
+
+        //  нет задач
+        if ( 0 === length ) {
+            this._pending -= 1;
+
+            if ( 0 === this._pending ) {
+                this._state = 0;
+                this.emit('sys:ready');
+            }
+
+            return;
         }
 
         function ready (err) {
@@ -233,7 +239,12 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * */
     _handle: function (track) {
 
-        if ( 0 === this._pending ) {
+        if ( 1 === this._state ) {
+
+            return;
+        }
+
+        if ( 0 === this._state && 0 === this._pending ) {
             Framework.parent._handle.apply(this, arguments);
 
             return;
