@@ -89,6 +89,7 @@ module.exports = {
                 test.done();
             });
         },
+
         function (test) {
 
             var T = Tracker.extend({
@@ -112,6 +113,51 @@ module.exports = {
             tracker.resolve(track, 'assert', function () {
                 test.done();
             });
+        },
+
+        function (test) {
+
+            var tracker = new Tracker();
+
+            tracker.decl('a', ['c'], function (bundle, done) {
+                done(null, null);
+            });
+
+            tracker.decl('b', ['a'], function (bundle, done) {
+                done(null, null);
+            });
+
+            try {
+                tracker.decl('c', ['a', 'b'], function (bundle, done) {
+                    done(null, null);
+                });
+            } catch (err) {
+                test.ok(err instanceof ReferenceError);
+                test.done();
+            }
+        },
+
+
+        function (test) {
+
+            var tracker = new Tracker();
+
+            tracker.decl('a', ['c'], function (bundle, done) {
+                done(null, null);
+            });
+
+            tracker.decl('b', ['a'], function (bundle, done) {
+                done(null, null);
+            });
+
+            try {
+                tracker.decl('c', ['x', 'b'], function (bundle, done) {
+                    done(null, null);
+                });
+            } catch (err) {
+                test.ok(err instanceof ReferenceError);
+                test.done();
+            }
         }
     ]
 

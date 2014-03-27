@@ -57,12 +57,17 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
             deps = toArray(deps);
         }
 
-        this.decls[path] = {
-            deps: deps,
-            body: body
-        };
+        //  детектить рекурсивные зависимости надо прямо при декларации!
+        if ( this._checkDeps(path, deps) ) {
+            this.decls[path] = {
+                deps: deps,
+                body: body
+            };
 
-        return this;
+            return this;
+        }
+
+        throw new ReferenceError(path);
     },
 
     /**
@@ -162,6 +167,43 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     _call: function (body, track, bundle, done) {
         body.call(track, bundle, done);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {String} path
+     * @param {Array} deps
+     *
+     * @returns {Boolean}
+     * */
+    _checkDeps: function (path, deps) {
+
+        var l;
+        var decl;
+
+        if ( -1 < deps.indexOf(path) ) {
+
+            return false;
+        }
+
+        l = deps.length;
+
+        while ( l ) {
+            l -= 1;
+            decl = this.decls[deps[l]];
+
+            if ( void 0 === decl || this._checkDeps(path, decl.deps) ) {
+
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
     },
 
     /**
