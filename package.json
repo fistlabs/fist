@@ -20,7 +20,7 @@
         "lodash": "2.4.x",
         "dicer": "0.2.x"
     },
-    "description": "fist application",
+    "description": "nodejs application framework",
     "devDependencies": {
         "jscs": "",
         "eslint": "",
