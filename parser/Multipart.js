@@ -19,6 +19,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @method
      * */
     parse: function (stream) {
+
         var next = new Next();
 
         Multipart.parseMultipart(stream, this.params, function () {
@@ -198,7 +199,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         parser.on('part', parserPart);
         stream.on('data', streamData);
 
-        //  никогда не рушиться!
+        //  никогда не рушиться! (то есть не бросать исключений)
         parser.on('error', function () {});
 
         parser.on('error', parserError);

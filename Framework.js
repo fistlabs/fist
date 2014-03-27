@@ -29,7 +29,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @protected
          * @memberOf {Framework}
          * @property
-         * @type {Array}
+         * @type {Array<Track>}
          * */
         this._pends = [];
 
@@ -59,7 +59,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @protected
          * @memberOf {Framework}
          * @property
-         * @type {Array}
+         * @type {Array<Function>}
          * */
         this._tasks = [];
 
@@ -141,8 +141,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 //  Если произошла критическая ошибка то вы можете
                 // поджечь сами sys:ready если можете ее разрешить
                 self.once('sys:ready', function () {
-                    this._pending -= 1;
-                    this._state = 0;
+                    self._pending -= 1;
+                    self._state = 0;
                     ready();
                 });
 
