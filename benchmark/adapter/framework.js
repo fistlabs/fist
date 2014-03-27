@@ -36,6 +36,7 @@ try {
     Fs.unlinkSync(sock);
 } catch (ex) {}
 
+app.ready();
 Http.createServer(app.getHandler()).listen(sock);
 
 module.exports = function (done) {
