@@ -183,6 +183,10 @@ module.exports = {
             });
 
             fist.plug(function (done) {
+                done(42);
+            });
+
+            fist.plug(function (done) {
                 done(null, 42);
             });
 
