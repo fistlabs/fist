@@ -237,11 +237,22 @@ module.exports = {
                 }, 0);
             });
 
-            fist.ready();
+            try {
+                Fs.unlinkSync(sock);
+            } catch (err) {}
 
-            setTimeout(function () {
+            fist.decl('index', 42);
+            fist.route('GET', '/', 'index');
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/'
+            }, function (err, res) {
+                test.deepEqual(res.data, new Buffer('42'));
                 test.done();
-            }, 100);
+            });
         },
 
         function (test) {
