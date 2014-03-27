@@ -1,6 +1,7 @@
 'use strict';
 
 var Tracker = require('../../Tracker');
+var Nested = require('../../bundle/Nested');
 var Track = require('../../track/Track');
 
 module.exports = {
@@ -85,6 +86,30 @@ module.exports = {
                 test.strictEqual(this, tracker);
                 test.strictEqual(err, null);
                 test.strictEqual(res, 'd');
+                test.done();
+            });
+        },
+        function (test) {
+
+            var T = Tracker.extend({
+                _createBundle: function () {
+                    return new Nested();
+                }
+            });
+
+            var tracker = new T();
+            var track = new Track(tracker);
+
+            tracker.decl('meta\\.version', function (bundle, done) {
+                done(null, 42);
+            });
+
+            tracker.decl('assert', ['meta\\.version'], function (bundle, done) {
+                test.strictEqual(bundle.result['meta.version'], 42);
+                done(null, 'OK');
+            });
+
+            tracker.resolve(track, 'assert', function () {
                 test.done();
             });
         }
