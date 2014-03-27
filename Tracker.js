@@ -181,18 +181,17 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     _checkDeps: function (path, deps) {
 
-        var l;
+        var l = deps.length;
         var decl;
-
-        if ( -1 < deps.indexOf(path) ) {
-
-            return false;
-        }
-
-        l = deps.length;
 
         while ( l ) {
             l -= 1;
+
+            if ( path === deps[l] ) {
+
+                return false;
+            }
+
             decl = this.decls[deps[l]];
 
             if ( void 0 === decl || this._checkDeps(path, decl.deps) ) {
