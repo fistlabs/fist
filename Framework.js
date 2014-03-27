@@ -138,6 +138,14 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
 
             //  плагин разрешен с ошибкой
             if ( 1 === arguments.length ) {
+                //  Если произошла критическая ошибка то вы можете
+                // поджечь сами sys:ready если можете ее разрешить
+                self.once('sys:ready', function () {
+                    this._pending -= 1;
+                    this._state = 0;
+                    ready();
+                });
+
                 self._state = 1;
                 self.emit('sys:error', err);
 

@@ -178,6 +178,79 @@ module.exports = {
 
             fist.plug(function (done) {
                 setTimeout(function () {
+                    done(null, 42);
+                }, 0);
+            });
+
+            fist.plug(function (done) {
+                done(null, 42);
+            });
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(null, 42);
+                }, 0);
+            });
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(42);
+                }, 0);
+            });
+
+            fist.plug(function (done) {
+                done(null, 42);
+            });
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(42);
+                }, 0);
+            });
+
+            fist.plug(function (done) {
+                setTimeout(function () {
+                    done(null, 42);
+                }, 0);
+            });
+
+            fist.on('sys:pending', function () {
+                spy.push(0);
+            });
+
+            fist.on('sys:error', function (err) {
+                spy.push(1);
+                test.strictEqual(err, 42);
+                test.deepEqual(spy, [0, 1]);
+                //  разрешаю ошибку и делаю sys:ready
+
+                fist.on('sys:ready', function () {
+                    spy.push(100500);
+                    test.deepEqual(spy, [0, 1, 100500]);
+
+//                    test.strictEqual(fist._state, 0);
+//                    test.strictEqual(fist._pending, 0);
+                });
+
+                setTimeout(function () {
+                    fist.emit('sys:ready');
+                }, 0);
+            });
+
+            fist.ready();
+
+            setTimeout(function () {
+                test.done();
+            }, 100);
+        },
+
+        function (test) {
+
+            var fist = new Framework();
+            var spy = [];
+
+            fist.plug(function (done) {
+                setTimeout(function () {
                     done(42);
                 }, 0);
             });
@@ -343,9 +416,7 @@ module.exports = {
             } catch (ex) {}
 
             fist.plug(function (done) {
-                setTimeout(function () {
-                    done(42);
-                }, 0);
+                done(42);
             });
 
             fist.listen(sock);
