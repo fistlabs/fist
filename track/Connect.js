@@ -56,6 +56,20 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         this.url = Connect.url(req);
 
         /**
+         * @public
+         * @memberOf {Connect}
+         * @property {*}
+         * */
+        this.match = null;
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property {String}
+         * */
+        this.route = null;
+
+        /**
          * @protected
          * @memberOf {Connect}
          * @property {Object}
@@ -79,20 +93,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * */
         this._reshead = Object.create(null);
     },
-
-    /**
-     * @public
-     * @memberOf {Connect}
-     * @property {String}
-     * */
-    route: null,
-
-    /**
-     * @public
-     * @memberOf {Connect}
-     * @property {*}
-     * */
-    match: null,
 
     /**
      * Возвращает body в разобранном виде
