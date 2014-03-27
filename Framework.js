@@ -121,6 +121,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
             if ( 0 === this._pending ) {
                 this._state = 0;
                 this.emit('sys:ready');
+                // TODO RESEARCH: могут ли тут быть отложенные запросы?
             }
 
             return;
