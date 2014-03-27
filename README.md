@@ -408,3 +408,4 @@ var app = new CustomFist();
 
 [fist.plug.toobusy](https://github.com/fistlabs/fist.plug.toobusy) - поджигает событие ```sys:toobusy``` когда процесс перегружен
 ##Узлы
+[fist.unit.body](https://github.com/fistlabs/fist.unit.body) - body-parser, оформленный как [узел](#%D0%A3%D0%B7%D0%B5%D0%BB)
