@@ -54,6 +54,10 @@ module.exports = {
                 expires: 'Invalid expires'
             }), 'NAME=VALUE');
 
+            test.strictEqual(cookie.serialize('NAME', 'VALUE', {
+                httpOnly: true
+            }), 'NAME=VALUE; httponly');
+
             test.done();
         }
     ]

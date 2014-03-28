@@ -101,6 +101,10 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
             buf[buf.length] = 'secure';
         }
 
+        if ( opts.httpOnly ) {
+            buf[buf.length] = 'httponly';
+        }
+
         return buf.join('; ');
     }
 
