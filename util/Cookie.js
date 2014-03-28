@@ -72,7 +72,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
      * @returns {String}
      * */
     serialize: function (name, value, opts) {
-
+        /*eslint complexity: [2,9]*/
         var expires;
         var buf = [name + '=' + value];
 
