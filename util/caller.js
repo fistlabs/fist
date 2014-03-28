@@ -119,7 +119,7 @@ exports.callGen = function (gen, result, isError, done) {
 
     exports.callYield(result.value, function (err, res) {
 
-        if ( 2 > arguments.length ) {
+        if ( 1 === arguments.length ) {
             exports.callGen(gen, err, true, done);
 
             return;
@@ -153,7 +153,7 @@ exports.callObj = function (obj, done) {
                 return;
             }
 
-            if ( 2 > arguments.length ) {
+            if ( 1 === arguments.length ) {
                 isError = true;
                 done(err);
 

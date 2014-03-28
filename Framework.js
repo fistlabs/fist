@@ -179,7 +179,7 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            this._tasks.shift().call(this, ready);
+            caller.callFunc(this._tasks.shift().bind(this), [], ready);
         }
     },
 
