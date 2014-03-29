@@ -1,6 +1,5 @@
 {
     "rules": {
-        "no-extend-native": 0,
         "camelcase": 0,
         "no-sync": 0
     }
