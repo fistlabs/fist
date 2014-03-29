@@ -3,7 +3,7 @@
 var Route = /** @type Route */ require('./Route');
 var Url = require('url');
 
-var hasProperty = Object.prototype.hasOwnProperty;
+var _ = /** @type _ */ require('lodash');
 
 /**
  * @class Pathr
@@ -24,51 +24,21 @@ var Pathr = Route.extend(/** @lends Pathr.prototype */ {}, {
      * */
     _build: function (ast, params) {
 
-        var i;
-        var query = {};
+        var query = Object.create(null);
         var result = Pathr.Parent._build(ast, params);
         var url;
 
-        for ( i in params ) {
+        _.forOwn(params, function (val, name) {
 
-            if ( hasProperty.call(params, i) ) {
-
-                if ( -1 === this._indexOfParam(ast, i) ) {
-                    query[i] = params[i];
-                }
+            if ( !_.some(ast.map, {body: name}) ) {
+                query[name] = val;
             }
-        }
+        }, this);
 
         url = Url.parse(result);
         url.query = query;
 
         return Url.format(url);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Pathr}
-     * @method
-     *
-     * @param {Object} ast
-     * @param {String} name
-     *
-     * @returns {Number}
-     * */
-    _indexOfParam: function (ast, name) {
-
-        var l = ast.map.length;
-
-        while ( l ) {
-            l -= 1;
-
-            if ( ast.map[l].body === name ) {
-
-                return l;
-            }
-        }
-
-        return -1;
     }
 
 });
