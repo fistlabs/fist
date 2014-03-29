@@ -7,7 +7,7 @@ var _ = /** @type _*/ require('lodash');
 
 /**
  * @class Router
- * @extends Router
+ * @extends Class
  * */
 var Router = Class.extend(/** @lends Router.prototype */ {
 

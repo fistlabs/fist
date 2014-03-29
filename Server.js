@@ -1,7 +1,7 @@
 'use strict';
 
-var Router = /** @type Router */ require('./router/Router');
 var Connect = /** @type Connect */ require('./track/Connect');
+var Router = /** @type Router */ require('./router/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
 /**
