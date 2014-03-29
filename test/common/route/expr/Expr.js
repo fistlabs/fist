@@ -12,13 +12,6 @@ module.exports = {
         }
     ],
 
-    'Expr.prototype.unescape': [
-        function (test) {
-            test.strictEqual(expr.unescape('\\\\\\<\\>\\(\\)'), '\\<>()');
-            test.done();
-        }
-    ],
-
     'Expr.prototype.parse': [
         function (test) {
 

@@ -45,20 +45,6 @@ var Expr = Base.extend(/** @lends Expr.prototype */ {
      * @memberOf {Expr}
      * @method
      *
-     * @param {String} s
-     *
-     * @returns {String}
-     * */
-    unescape: function (s) {
-
-        return s.replace(/\\([\s\S])/g, '$1');
-    },
-
-    /**
-     * @public
-     * @memberOf {Expr}
-     * @method
-     *
      * @param {String} ps
      *
      * @returns {Object}
