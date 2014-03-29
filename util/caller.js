@@ -1,16 +1,16 @@
 'use strict';
 
 var Raw = /** @type Raw */ require('../parser/Raw');
-var _extend = require('lodash').extend;
+var _ = /** @type _ */ require('lodash');
 
 exports.callYield = function (value, done) {
 
-    if ( exports.callRet(value, done) ) {
+    if ( exports.callRet.call(this, value, done) ) {
 
         return;
     }
 
-    exports.callObj(value, done);
+    exports.callObj.call(this, value, done);
 };
 
 exports.callRet = function (val, done, asis) {
@@ -18,20 +18,20 @@ exports.callRet = function (val, done, asis) {
     if ( Object(val) === val ) {
 
         if ( 'function' === typeof val ) {
-            exports.callFunc(val, [], done);
+            exports.callFunc.call(this, val, [], done);
 
             return true;
         }
 
         if ( 'function' === typeof val.next &&
              'function' === typeof val.throw ) {
-            exports.callGen(val, void 0, false, done);
+            exports.callGen.call(this, val, void 0, false, done);
 
             return true;
         }
 
         if ( 'function' === typeof val.pipe ) {
-            exports.callStream(val, done);
+            exports.callStream.call(this, val, done);
 
             return true;
         }
@@ -39,13 +39,13 @@ exports.callRet = function (val, done, asis) {
         try {
 
             if ( 'function' === typeof val.then ) {
-                exports.callPromise(val, done);
+                exports.callPromise.call(this, val, done);
 
                 return true;
             }
 
         } catch (err) {
-            done(err);
+            done.call(this, err);
 
             return true;
         }
@@ -81,11 +81,11 @@ exports.callFunc = function (func, args, done) {
     }
 
     //  Необходимо скопировать свойства функции, не нравится мне это!
-    _extend(resolve, done);
+    _.extend(resolve, done);
     args = args.concat(resolve);
 
     if ( 'GeneratorFunction' === func.constructor.name ) {
-        exports.callGenFn(func, args, done);
+        exports.callGenFn.call(this, func, args, done);
 
         return;
     }
@@ -99,12 +99,12 @@ exports.callFunc = function (func, args, done) {
 
     called = true;
 
-    exports.callRet(func, done, true);
+    exports.callRet.call(this, func, done, true);
 };
 
 exports.callGenFn = function (func, args, done) {
     func = func.apply(this, args);
-    exports.callGen(func, void 0, false, done);
+    exports.callGen.call(this, func, void 0, false, done);
 };
 
 exports.callGen = function (gen, result, isError, done) {
@@ -112,45 +112,45 @@ exports.callGen = function (gen, result, isError, done) {
     try {
         result = isError ? gen.throw(result) : gen.next(result);
     } catch (err) {
-        done(err);
+        done.call(this, err);
 
         return;
     }
 
     if ( result.done ) {
-        exports.callYield(result.value, done);
+        exports.callYield.call(this, result.value, done);
 
         return;
     }
 
-    exports.callYield(result.value, function (err, res) {
+    exports.callYield.call(this, result.value, function (err, res) {
 
         if ( 1 === arguments.length ) {
-            exports.callGen(gen, err, true, done);
+            exports.callGen.call(this, gen, err, true, done);
 
             return;
         }
 
-        exports.callGen(gen, res, false, done);
+        exports.callGen.call(this, gen, res, false, done);
     });
 };
 
 exports.callObj = function (obj, done) {
 
     var isError;
-    var keys = Object.keys(obj);
+    var keys = _.keys(obj);
     var klen = keys.length;
     var result = Array.isArray(obj) ? [] : {};
 
     if ( 0 === klen ) {
-        done(null, result);
+        done.call(this, null, result);
 
         return;
     }
 
     isError = false;
 
-    keys.forEach(function (i) {
+    _.forOwn(keys, function (i) {
 
         function onReturned (err, res) {
 
@@ -161,7 +161,7 @@ exports.callObj = function (obj, done) {
 
             if ( 1 === arguments.length ) {
                 isError = true;
-                done(err);
+                done.call(this, err);
 
                 return;
             }
@@ -170,27 +170,29 @@ exports.callObj = function (obj, done) {
             klen -= 1;
 
             if ( 0 === klen ) {
-                done(null, result);
+                done.call(this, null, result);
             }
         }
 
-        exports.callRet(obj[i], onReturned, true);
+        exports.callRet.call(this, obj[i], onReturned, true);
     }, this);
 };
 
 exports.callPromise = function (promise, done) {
 
+    var self = this;
+
     try {
         promise.then(function (res) {
-            done(null, res);
-        }, done);
+            done.call(self, null, res);
+        }, done.bind(this));
 
     } catch (err) {
-        done(err);
+        done.call(this, err);
     }
 
 };
 
 exports.callStream = function (stream, done) {
-    new Raw().parse(stream).done(done);
+    new Raw().parse(stream).done(done, this);
 };

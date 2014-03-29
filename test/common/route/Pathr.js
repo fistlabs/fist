@@ -1,7 +1,6 @@
 'use strict';
 
 var Pathr = require('../../../route/Pathr');
-Object.prototype.bug = 42;
 
 module.exports = {
 

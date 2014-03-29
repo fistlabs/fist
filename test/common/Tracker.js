@@ -12,7 +12,7 @@ module.exports = {
             var tracker = new Tracker();
             var track = new Track(tracker);
 
-            tracker.decl('_', function (data, done) {
+            tracker.decl('_', function (track, errors, result, done) {
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
@@ -20,61 +20,47 @@ module.exports = {
                 done(null, 'a');
             });
 
-            tracker.decl('a_Ok', function (data, done) {
+            tracker.decl('a_Ok', function (track, errors, result, done) {
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
                 test.strictEqual('function', typeof done.notify);
-
-                test.ok(this instanceof Track);
-                test.strictEqual(this, track);
-
-                this.invoke('_', done);
+                track.invoke('_', done);
             });
 
-            tracker.decl('b_Ok', ['a_Ok'], function (data, done) {
+            tracker.decl('b_Ok', [
+                'a_Ok'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
                 test.strictEqual('function', typeof done.notify);
 
-                test.ok(this instanceof Track);
-                test.strictEqual(this, track);
-                test.deepEqual(data, {
-                    result: {
-                        a_Ok: 'a'
-                    },
-                    errors: {}
+                test.deepEqual(result, {
+                    a_Ok: 'a'
                 });
+
                 done(null, {
                     value: 'b'
                 });
             });
 
-            tracker.decl('c_Er', ['a_Ok', 'b_Ok'], function (data, done) {
-
+            tracker.decl('c_Er', [
+                'a_Ok', 'b_Ok'], function (track, errors, result, done) {
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
                 test.strictEqual('function', typeof done.notify);
-
-                test.ok(this instanceof Track);
-                test.strictEqual(this, track);
-                test.deepEqual(data, {
-                    result: {
-                        a_Ok: 'a',
-                        b_Ok: {
-                            value: 'b'
-                        }
-                    },
-                    errors: {}
+                test.deepEqual(result, {
+                    a_Ok: 'a',
+                    b_Ok: {
+                        value: 'b'
+                    }
                 });
                 done.reject('c');
             });
 
-            tracker.decl('b_Ok.ns', function (data, done) {
-
+            tracker.decl('b_Ok.ns', function (track, errors, result, done) {
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
@@ -86,31 +72,27 @@ module.exports = {
                 });
             });
 
-            tracker.decl('d_Ok', ['b_Ok.ns',
-                'b_Ok', 'c_Er', 'z_Er'], function (data, done) {
+            tracker.decl('d_Ok', ['b_Ok.ns', 'b_Ok',
+                'c_Er', 'z_Er'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
                 test.strictEqual('function', typeof done.notify);
-
-                test.ok(this instanceof Track);
-                test.strictEqual(this, track);
-                test.deepEqual(data, {
-                    result: {
-                        b_Ok: {
-                            value: 'b'
-                        },
-                        'b_Ok.ns': {
-                            a: 42,
-                            b: 54
-                        }
+                test.deepEqual(result, {
+                    b_Ok: {
+                        value: 'b'
                     },
-                    errors: {
-                        c_Er: 'c',
-                        z_Er: void 0
+                    'b_Ok.ns': {
+                        a: 42,
+                        b: 54
                     }
                 });
+                test.deepEqual(errors, {
+                    c_Er: 'c',
+                    z_Er: void 0
+                });
+
                 done.accept('d');
             });
 
@@ -158,15 +140,16 @@ module.exports = {
                 spy.push(data.path);
             });
 
-            tracker.decl('a', function (bundle, done) {
+            tracker.decl('a', function (track, errors, result, done) {
                 done.accept('a');
             });
 
-            tracker.decl('b', function (bundle, done) {
+            tracker.decl('b', function (track, errors, result, done) {
                 done.reject('b');
             });
 
-            tracker.decl('c', ['a', 'b'], function (bundle, done) {
+            tracker.decl('c', [
+                'a', 'b'], function (track, errors, result, done) {
                 done.notify('some happens!');
                 done.accept('c');
             });
@@ -190,24 +173,25 @@ module.exports = {
             var tracker = new T();
             var track = new Track(tracker);
 
-            tracker.decl('meta\\.version', function (bundle, done) {
+            tracker.decl('meta\\.version',
+                function (track, errors, result, done) {
+                    test.strictEqual('function', typeof done);
+                    test.strictEqual('function', typeof done.accept);
+                    test.strictEqual('function', typeof done.reject);
+                    test.strictEqual('function', typeof done.notify);
+
+                    done(null, 42);
+                });
+
+            tracker.decl('assert', [
+                'meta\\.version'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
                 test.strictEqual('function', typeof done.reject);
                 test.strictEqual('function', typeof done.notify);
 
-                done(null, 42);
-            });
-
-            tracker.decl('assert', ['meta\\.version'], function (bundle, done) {
-
-                test.strictEqual('function', typeof done);
-                test.strictEqual('function', typeof done.accept);
-                test.strictEqual('function', typeof done.reject);
-                test.strictEqual('function', typeof done.notify);
-
-                test.strictEqual(bundle.result['meta.version'], 42);
+                test.strictEqual(result['meta.version'], 42);
                 done(null, 'OK');
             });
 
@@ -220,7 +204,7 @@ module.exports = {
 
             var tracker = new Tracker();
 
-            tracker.decl('a', ['c'], function (bundle, done) {
+            tracker.decl('a', ['c'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -230,7 +214,7 @@ module.exports = {
                 done(null, null);
             });
 
-            tracker.decl('b', ['a'], function (bundle, done) {
+            tracker.decl('b', ['a'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -241,7 +225,8 @@ module.exports = {
             });
 
             try {
-                tracker.decl('c', ['a', 'b'], function (bundle, done) {
+                tracker.decl('c', [
+                    'a', 'b'], function (track, errors, result, done) {
 
                     test.strictEqual('function', typeof done);
                     test.strictEqual('function', typeof done.accept);
@@ -260,7 +245,7 @@ module.exports = {
 
             var tracker = new Tracker();
 
-            tracker.decl('a', ['c'], function (bundle, done) {
+            tracker.decl('a', ['c'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -270,7 +255,7 @@ module.exports = {
                 done(null, null);
             });
 
-            tracker.decl('b', ['a'], function (bundle, done) {
+            tracker.decl('b', ['a'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -281,7 +266,8 @@ module.exports = {
             });
 
             try {
-                tracker.decl('c', ['x', 'b'], function (bundle, done) {
+                tracker.decl('c', [
+                    'x', 'b'], function (track, errors, result, done) {
 
                     test.strictEqual('function', typeof done);
                     test.strictEqual('function', typeof done.accept);
@@ -301,7 +287,7 @@ module.exports = {
             var tracker = new Tracker();
             var track = new Track(tracker);
 
-            tracker.decl('a', function (bundle, done) {
+            tracker.decl('a', function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -311,7 +297,7 @@ module.exports = {
                 done.accept('a');
             });
 
-            tracker.decl('b', function (bundle, done) {
+            tracker.decl('b', function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -321,7 +307,7 @@ module.exports = {
                 done.reject('b');
             });
 
-            tracker.decl('c', ['a'], function (bundle, done) {
+            tracker.decl('c', ['a'], function (track, errors, result, done) {
 
                 test.strictEqual('function', typeof done);
                 test.strictEqual('function', typeof done.accept);
@@ -330,7 +316,7 @@ module.exports = {
 
                 done.notify('some happens!');
 
-                this.invoke('b', function () {
+                track.invoke('b', function () {
                     done.apply(this, arguments);
                 });
             });
