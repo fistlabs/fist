@@ -32,11 +32,12 @@ module.exports = {
     ],
     callStream: [
         function (test) {
-            caller.callStream.call(ctx, new Parted(['a', 'b', 'c']), function (err, res) {
-                test.strictEqual(this, ctx);
-                test.deepEqual(res, new Buffer('abc'));
-                test.done();
-            });
+            caller.callStream.call(ctx, new Parted(['a', 'b', 'c']),
+                function (err, res) {
+                    test.strictEqual(this, ctx);
+                    test.deepEqual(res, new Buffer('abc'));
+                    test.done();
+                });
         }
     ],
     callObj: [
@@ -76,11 +77,12 @@ module.exports = {
             });
         },
         function (test) {
-            caller.callObj.call(ctx, [Vow.reject(42), Vow.reject(43)], function (err) {
-                test.strictEqual(this, ctx);
-                test.deepEqual(err, 42);
-                test.done();
-            });
+            caller.callObj.call(ctx, [Vow.reject(42), Vow.reject(43)],
+                function (err) {
+                    test.strictEqual(this, ctx);
+                    test.deepEqual(err, 42);
+                    test.done();
+                });
         }
     ],
     callRet: [
@@ -230,11 +232,12 @@ module.exports = {
     ],
     callGen: [
         function (test) {
-            caller.callGen.call(ctx, new Iter([1, 42]), null, false, function (err, res) {
-                test.strictEqual(this, ctx);
-                test.strictEqual(res, 42);
-                test.done();
-            });
+            caller.callGen.call(ctx, new Iter([1, 42]), null, false,
+                function (err, res) {
+                    test.strictEqual(this, ctx);
+                    test.strictEqual(res, 42);
+                    test.done();
+                });
         },
         function (test) {
             caller.callGen.call(ctx, new Iter([43]), 42, true, function (err) {
@@ -244,8 +247,8 @@ module.exports = {
             });
         },
         function (test) {
-            caller.callGen.call(ctx, new Iter([Vow.reject(42), 43]), null, false,
-                function (err) {
+            caller.callGen.call(ctx, new Iter([Vow.reject(42), 43]), null,
+                false, function (err) {
                     test.strictEqual(this, ctx);
                     test.strictEqual(err, 42);
                     test.done();
