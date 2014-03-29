@@ -1,7 +1,7 @@
 'use strict';
 
+var QueryString = require('querystring');
 var Route = /** @type Route */ require('./Route');
-var Url = require('url');
 
 var _ = /** @type _ */ require('lodash');
 
@@ -24,8 +24,7 @@ var Pathr = Route.extend(/** @lends Pathr.prototype */ {
     _build: function (ast, params) {
 
         var query = Object.create(null);
-        var result = Pathr.parent._build(ast, params);
-        var url;
+        var pathname = Pathr.parent._build(ast, params);
 
         _.forOwn(params, function (val, name) {
 
@@ -37,10 +36,14 @@ var Pathr = Route.extend(/** @lends Pathr.prototype */ {
             query[name] = val;
         }, this);
 
-        url = Url.parse(result);
-        url.query = query;
+        query = QueryString.stringify(query);
 
-        return Url.format(url);
+        if ( '' === query ) {
+
+            return pathname;
+        }
+
+        return pathname + '?' + query;
     }
 
 });
