@@ -86,6 +86,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         var date;
         var next;
         var resolve;
+        var trigger;
 
         if ( path in track.tasks ) {
             track.tasks[path].done(done, this);
@@ -95,47 +96,48 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
 
         date = new Date();
         next = track.tasks[path] = new Next();
+        next.done(done, this);
 
-        next.done(function () {
+        resolve = function (err, res) {
 
-            var stat = +(1 < arguments.length);
+            if ( 2 > arguments.length ) {
+                resolve.reject(err);
 
-            this.emit(['sys:reject', 'sys:accept'][stat], {
-                data: arguments[stat],
+                return;
+            }
+
+            resolve.accept(res);
+        };
+
+        trigger = function (name, data) {
+            track.agent.emit(name, {
                 path: path,
-                time: new Date() - date
+                time: new Date() - date,
+                data: data
             });
+        };
 
-            done.apply(this, arguments);
-        }, this);
+        resolve.reject = function (data) {
+            trigger('sys:reject', data);
+            next.resolve(data);
+        };
+
+        resolve.accept = function (data) {
+            trigger('sys:accept', data);
+            next.resolve(null, data);
+        };
+
+        resolve.notify = function (data) {
+            trigger('sys:notify', data);
+        };
 
         if ( path in this.decls ) {
-            resolve = function () {
-                next.args(arguments);
-            };
-
-            resolve.accept = function (data) {
-                next.resolve(null, data);
-            };
-
-            resolve.reject = function (data) {
-                next.resolve(data);
-            };
-
-            resolve.notify = function (data) {
-                track.agent.emit('sys:notify', {
-                    path: path,
-                    time: new Date() - date,
-                    data: data
-                });
-            };
-
             this._pend(track, this.decls[path], resolve);
 
             return;
         }
 
-        next.resolve(void 0);
+        resolve.reject();
     },
 
     /**
