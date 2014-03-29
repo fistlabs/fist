@@ -3,7 +3,7 @@
 var Base = /** @type Base */ require('fist.lang.class/Base');
 var Expr = /** @type Expr */ require('./expr/Expr');
 
-var _extend = require('lodash').extend;
+var _ = /** @type _ */ require('lodash');
 var hasProperty = Object.prototype.hasOwnProperty;
 var push = Array.prototype.push;
 var regesc = require('fist.lang.regesc');
@@ -46,7 +46,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
          * @property {RegExp}
          * */
         this.regex = this._createRegExp(this.ast,
-            _extend(Object.create(null), opts));
+            _.extend(Object.create(null), opts));
     },
 
     /**
