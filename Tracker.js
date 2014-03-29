@@ -98,10 +98,6 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
 
         next.done(function () {
 
-            //  думаю в будущем позволять разрешать без аргументов
-            //   done() - чтобы интерпретировалось как аксепт а не реджект
-            //  это на случай когда не нужен результат,
-            // потому что done(null, null) - как то странно
             var stat = +(1 < arguments.length);
 
             this.emit(['sys:reject', 'sys:accept'][stat], {
@@ -162,6 +158,8 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
             return;
         }
 
+        //  Здесь for-each а не просто цикл
+        // потому что нужно замыкание `path`
         deps.forEach(function (path) {
             this.resolve(track, path, function () {
                 bundle.bundlify(path, arguments);
