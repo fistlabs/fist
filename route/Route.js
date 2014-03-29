@@ -96,20 +96,20 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @memberOf {Route}
      * @method
      *
-     * @param {String} s
+     * @param {String} url
      *
      * @returns {Object}
      * */
-    match: function (s) {
+    match: function (url) {
 
-        if ( s in this.matches ) {
+        if ( url in this.matches ) {
 
-            return this.matches[s];
+            return this.matches[url];
         }
 
-        this.matches[s] = Route._match(this.regex, s, this.ast.map);
+        this.matches[url] = Route._match(this.regex, url, this.ast.map);
 
-        return this.matches[s];
+        return this.matches[url];
     }
 
 }, {
@@ -145,28 +145,6 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @property {*}
      * */
     PART_TYPE_VAL: 3,
-
-    /**
-     * @public
-     * @static
-     * @memberOf Route
-     * @method
-     *
-     * @this Route
-     *
-     * @param {String} expr
-     * @param {Object} [params]
-     *
-     * @returns {String}
-     * */
-    build: function (expr, params) {
-
-        if ( Object(params) !== params ) {
-            params = Object.create(null);
-        }
-
-        return this._build(Route.parse(expr), params);
-    },
 
     /**
      * @public
@@ -364,16 +342,16 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @method
      *
      * @param {RegExp} regex
-     * @param {String} s
+     * @param {String} url
      * @param {Array<String>} map
      *
      * @returns {Object}
      * */
-    _match: function (regex, s, map) {
+    _match: function (regex, url, map) {
 
         var i;
         var l;
-        var m = regex.exec(s);
+        var m = regex.exec(url);
         var name;
         var params;
 

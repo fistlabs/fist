@@ -324,20 +324,6 @@ module.exports = {
 
             test.done();
         }
-    ],
-
-    'Route.build': [
-        function (test) {
-
-            var expr = 'http://www.yandex.ru/(<action>/)';
-
-            test.strictEqual(Route.build(expr, {
-                action: 'yandsearch'
-            }), 'http://www.yandex.ru/yandsearch/');
-
-            test.strictEqual(Route.build(expr), 'http://www.yandex.ru/');
-
-            test.done();
-        }
     ]
+
 };
