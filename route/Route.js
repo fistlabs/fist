@@ -88,7 +88,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             params = Object.create(null);
         }
 
-        return this.constructor._build(this.ast, params);
+        return this._build(this.ast, params);
     },
 
     /**
@@ -110,6 +110,151 @@ var Route = Base.extend(/** @lends Route.prototype */ {
         this.matches[url] = Route._match(this.regex, url, this.ast.map);
 
         return this.matches[url];
+    },
+
+    /**
+     * @protected
+     * @memberOf {Route}
+     * @method
+     *
+     * @param {Object} ast
+     * @param {Object} params
+     *
+     * @returns {String}
+     * */
+    _build: function (ast, params) {
+        /*eslint max-depth: [2,6], complexity: [2,30]*/
+        var body;
+        var buf = '';
+        var len = ast.length;
+        var opt = false;
+        var pos = 0;
+        var stk = [];
+        var tok;
+        var use = Object.create(null);
+
+        var i;
+
+        out:
+            while ( true ) {
+
+                if ( pos === len ) {
+                    ast = stk.pop();
+
+                    if ( void 0 === ast ) {
+
+                        break;
+                    }
+
+                    if ( 0 === stk.length ) {
+                        opt = false;
+                    }
+
+                    ast.buf += buf;
+
+                    pos = ast.pos;
+                    buf = ast.buf;
+                    ast = ast.ast;
+                    len = ast.length;
+
+                    continue;
+                }
+
+                tok = ast[pos];
+
+                if ( Route.PART_TYPE_OPT === tok.type ) {
+                    opt = true;
+
+                    stk[stk.length] = {
+                        buf: buf,
+                        ast: ast,
+                        pos: pos + 1
+                    };
+
+                    pos = 0;
+                    ast = tok.body;
+                    len = ast.length;
+                    tok = ast[pos];
+                    buf = '';
+                }
+
+                pos += 1;
+
+                if ( Route.PART_TYPE_DFT === tok.type ) {
+                    buf += Route.escape(tok.body);
+
+                    continue;
+                }
+
+                body = tok.body;
+
+                //  передан параметр, тут жопа кароч!
+                if ( hasProperty.call(params, body) &&
+                     void 0 !== params[body] ) {
+
+                    //  массив паарметров
+                    if ( Array.isArray(params[body]) ) {
+
+                        //  отмечаем что заюзали
+                        if ( 'number' === typeof use[body] ) {
+                            use[body] += 1;
+
+                        } else {
+                            use[body] = 0;
+                        }
+
+                        if ( hasProperty.call(params[body], use[body]) ) {
+
+                            if ( 0 === tok.only.length ) {
+                                buf += params[body][use[body]];
+
+                                continue;
+                            }
+
+                            i = tok.only.length;
+
+                            while ( i ) {
+                                i -= 1;
+                                //  тут специально ==
+                                /*eslint eqeqeq: 0*/
+                                if ( tok.only[i].body ==
+                                     params[body][use[body]] ) {
+                                    buf += params[body][use[body]];
+
+                                    continue out;
+                                }
+                            }
+                        }
+
+                    } else {
+
+                        if ( 0 === tok.only.length ) {
+                            buf += params[body];
+
+                            continue;
+                        }
+
+                        i = tok.only.length;
+
+                        while ( i ) {
+                            i -= 1;
+
+                            if ( tok.only[i].body == params[body] ) {
+                                buf += params[body];
+
+                                continue out;
+                            }
+                        }
+                    }
+                }
+
+                if ( opt ) {
+                    pos = len;
+                    buf = '';
+                }
+            }
+
+        return buf;
     }
 
 }, {
@@ -189,150 +334,6 @@ var Route = Base.extend(/** @lends Route.prototype */ {
         Route.parsed[expr] = Route._parse(expr);
 
         return Route.parsed[expr];
-    },
-
-    /**
-     * @protected
-     * @static
-     * @memberOf Route
-     * @method
-     *
-     * @param {Object} ast
-     * @param {Object} params
-     *
-     * @returns {String}
-     * */
-    _build: function (ast, params) {
-        /*eslint max-depth: [2,6], complexity: [2,30]*/
-        var body;
-        var buf = '';
-        var len = ast.length;
-        var opt = false;
-        var pos = 0;
-        var stk = [];
-        var tok;
-        var use = Object.create(null);
-
-        var i;
-
-        out:
-        while ( true ) {
-
-            if ( pos === len ) {
-                ast = stk.pop();
-
-                if ( void 0 === ast ) {
-
-                    break;
-                }
-
-                if ( 0 === stk.length ) {
-                    opt = false;
-                }
-
-                ast.buf += buf;
-
-                pos = ast.pos;
-                buf = ast.buf;
-                ast = ast.ast;
-                len = ast.length;
-
-                continue;
-            }
-
-            tok = ast[pos];
-
-            if ( Route.PART_TYPE_OPT === tok.type ) {
-                opt = true;
-
-                stk[stk.length] = {
-                    buf: buf,
-                    ast: ast,
-                    pos: pos + 1
-                };
-
-                pos = 0;
-                ast = tok.body;
-                len = ast.length;
-                tok = ast[pos];
-                buf = '';
-            }
-
-            pos += 1;
-
-            if ( Route.PART_TYPE_DFT === tok.type ) {
-                buf += Route.escape(tok.body);
-
-                continue;
-            }
-
-            body = tok.body;
-
-            //  передан параметр, тут жопа кароч!
-            if ( hasProperty.call(params, body) && void 0 !== params[body] ) {
-
-                //  массив паарметров
-                if ( Array.isArray(params[body]) ) {
-
-                    //  отмечаем что заюзали
-                    if ( 'number' === typeof use[body] ) {
-                        use[body] += 1;
-
-                    } else {
-                        use[body] = 0;
-                    }
-
-                    if ( hasProperty.call(params[body], use[body]) ) {
-
-                        if ( 0 === tok.only.length ) {
-                            buf += params[body][use[body]];
-
-                            continue;
-                        }
-
-                        i = tok.only.length;
-
-                        while ( i ) {
-                            i -= 1;
-                            //  тут специально ==
-                            /*eslint eqeqeq: 0*/
-                            if ( tok.only[i].body == params[body][use[body]] ) {
-                                buf += params[body][use[body]];
-
-                                continue out;
-                            }
-                        }
-                    }
-
-                } else {
-
-                    if ( 0 === tok.only.length ) {
-                        buf += params[body];
-
-                        continue;
-                    }
-
-                    i = tok.only.length;
-
-                    while ( i ) {
-                        i -= 1;
-
-                        if ( tok.only[i].body == params[body] ) {
-                            buf += params[body];
-
-                            continue out;
-                        }
-                    }
-                }
-            }
-
-            if ( opt ) {
-                pos = len;
-                buf = '';
-            }
-        }
-
-        return buf;
     },
 
     /**

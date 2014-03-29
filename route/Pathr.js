@@ -9,12 +9,11 @@ var _ = /** @type _ */ require('lodash');
  * @class Pathr
  * @extends Route
  * */
-var Pathr = Route.extend(/** @lends Pathr.prototype */ {}, {
+var Pathr = Route.extend(/** @lends Pathr.prototype */ {
 
     /**
      * @protected
-     * @static
-     * @memberOf Pathr
+     * @memberOf {Pathr}
      * @method
      *
      * @param {Object} ast
@@ -25,7 +24,7 @@ var Pathr = Route.extend(/** @lends Pathr.prototype */ {}, {
     _build: function (ast, params) {
 
         var query = Object.create(null);
-        var result = Pathr.Parent._build(ast, params);
+        var result = Pathr.parent._build(ast, params);
         var url;
 
         _.forOwn(params, function (val, name) {
