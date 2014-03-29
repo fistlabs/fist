@@ -180,10 +180,12 @@ exports.callObj = function (obj, done) {
 
 exports.callPromise = function (promise, done) {
 
+    var self = this;
+
     try {
         promise.then(function (res) {
-            done.call(this, null, res);
-        }, done, this);
+            done.call(self, null, res);
+        }, done.bind(this));
 
     } catch (err) {
         done.call(this, err);
