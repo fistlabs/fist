@@ -180,68 +180,6 @@ module.exports = {
 
             test.done();
         }
-    ],
-
-    'Expr.prototype.stringify': [
-        function (test) {
-
-            test.strictEqual(expr.stringify([
-                {
-                    type: Expr.PART_TYPE_DFT,
-                    body: '\\(<text>)'
-                },
-                {
-                    type: Expr.PART_TYPE_OPT,
-                    body: [
-                        {
-                            type: Expr.PART_TYPE_DFT,
-                            body: 'text'
-                        },
-                        {
-                            type: Expr.PART_TYPE_OPT,
-                            body: [
-                                {
-                                    type: Expr.PART_TYPE_DFT,
-                                    body: 'text'
-                                }
-                            ]
-                        },
-                        {
-                            type: Expr.PART_TYPE_DFT,
-                            body: 'text'
-                        }
-                    ]
-                },
-                {
-                    type: Expr.PART_TYPE_DFT,
-                    body: 'text'
-                },
-                {
-                    type: Expr.PART_TYPE_PRM,
-                    body: 'text',
-                    only: []
-                },
-                {
-                    type: Expr.PART_TYPE_PRM,
-                    body: 'text',
-                    only: [
-                        {
-                            type: Expr.PART_TYPE_VAL,
-                            body: 'a'
-                        },
-                        {
-                            type: Expr.PART_TYPE_VAL,
-                            body: 'b'
-                        }
-                    ]
-                },
-                {
-                    type: Expr.PART_TYPE_DFT,
-                    body: 'text'
-                }
-            ]), '\\\\\\(\\<text\\>\\)(text(text)text)text<text><text=a,b>text');
-
-            test.done();
-        }
     ]
+
 };
