@@ -152,6 +152,28 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @memberOf Route
      * @method
      *
+     * @this Route
+     *
+     * @param {String} expr
+     * @param {Object} [params]
+     *
+     * @returns {String}
+     * */
+    build: function (expr, params) {
+
+        if ( Object(params) !== params ) {
+            params = Object.create(null);
+        }
+
+        return this._build(Route.parse(expr), params);
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Route
+     * @method
+     *
      * @param {String} s
      *
      * @returns {String}
@@ -189,244 +211,6 @@ var Route = Base.extend(/** @lends Route.prototype */ {
         Route.parsed[expr] = Route._parse(expr);
 
         return Route.parsed[expr];
-    },
-
-    /**
-     * @protected
-     * @static
-     * @memberOf Route
-     * @method
-     *
-     * @param {String} expr
-     *
-     * @returns {Object}
-     * */
-    _parse: function (expr) {
-        /*eslint complexity: [2, 29]*/
-        var ast;
-        var buf;
-        var cur;
-        var esc;
-        var prm;
-        var prs;
-        var stk;
-        var body;
-        var val;
-
-        ast = buf = [];
-        esc = prm = prs = val = 0;
-        ast.map = [];
-        stk = [];
-        body = '';
-
-        for ( var i = 0, l = expr.length; i < l; i += 1 ) {
-            cur = expr.charAt(i);
-
-            if ( '\\' === cur && 0 === esc ) {
-                esc = 1;
-
-                continue;
-            }
-
-            if ( 1 === esc ) {
-                body += cur;
-                esc = 0;
-
-                continue;
-            }
-
-            if ( '(' === cur ) {
-
-                if ( 1 === prm ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                prs += 1;
-
-                if ( 0 < body.length ) {
-                    buf[buf.length] = {
-                        type: Route.PART_TYPE_DFT,
-                        body: body
-                    };
-
-                    body = '';
-                }
-
-                stk[stk.length] = buf;
-
-                buf[buf.length] = {
-                    type: Route.PART_TYPE_OPT,
-                    body: buf = []
-                };
-
-                continue;
-            }
-
-            if ( ')' === cur ) {
-
-                if ( 0 === prs ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                prs -= 1;
-
-                if ( 0 < body.length ) {
-                    buf[buf.length] = {
-                        type: Route.PART_TYPE_DFT,
-                        body: body
-                    };
-
-                    body = '';
-                }
-
-                if ( 0 === buf.length ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                buf = stk.pop();
-
-                continue;
-            }
-
-            if ( '<' === cur ) {
-
-                if ( 1 === prm ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                if ( 0 < body.length ) {
-                    buf[buf.length] = {
-                        type: Route.PART_TYPE_DFT,
-                        body: body
-                    };
-
-                    body = '';
-                }
-
-                prm = 1;
-
-                continue;
-            }
-
-            if ( '>' === cur ) {
-
-                if ( 0 === prm || '' === body ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                if ( 1 === val ) {
-                    buf[buf.length] = {
-                        type: Route.PART_TYPE_VAL,
-                        body: body
-                    };
-
-                    buf = stk.pop();
-
-                    //  закрываем список значений
-                    val = 0;
-
-                } else {
-                    ast.map[ast.map.length] = buf[buf.length] = {
-                        type: Route.PART_TYPE_PRM,
-                        body: body,
-                        only: []
-                    };
-                }
-
-                prm = 0;
-                body = '';
-
-                continue;
-            }
-
-            if ( '=' === cur ) {
-
-                if ( '' === body || 0 === prm || 1 === val ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                //  погружаемся в дерево
-                stk[stk.length] = buf;
-
-                ast.map[ast.map.length] = buf[buf.length] = {
-                    type: Route.PART_TYPE_PRM,
-                    body: body,
-                    only: buf = []
-                };
-
-                body = '';
-
-                val = 1;
-
-                continue;
-            }
-
-            if ( ',' === cur ) {
-
-                if ( '' === body || 0 === prm || 0 === val ) {
-
-                    throw new SyntaxError(expr);
-                }
-
-                buf[buf.length] = {
-                    type: Route.PART_TYPE_VAL,
-                    body: body
-                };
-
-                body = '';
-
-                continue;
-            }
-
-            body += cur;
-        }
-
-        if ( 0 < prs + esc + prm ) {
-
-            throw new SyntaxError(expr);
-        }
-
-        if ( 0 < body.length ) {
-            ast[ast.length] = {
-                type: Route.PART_TYPE_DFT,
-                body: body
-            };
-        }
-
-        if ( 0 === ast.length ) {
-
-            throw new SyntaxError(expr);
-        }
-
-        return ast;
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Route
-     * @method
-     *
-     * @this Route
-     *
-     * @param {String} expr
-     * @param {Object} [params]
-     *
-     * @returns {String}
-     * */
-    build: function (expr, params) {
-
-        if ( Object(params) !== params ) {
-            params = Object.create(null);
-        }
-
-        return this._build(Route.parse(expr), params);
     },
 
     /**
@@ -712,6 +496,222 @@ var Route = Base.extend(/** @lends Route.prototype */ {
     _escBody: function (tok) {
 
         return regesc(tok.body);
+    },
+
+    /**
+     * @protected
+     * @static
+     * @memberOf Route
+     * @method
+     *
+     * @param {String} expr
+     *
+     * @returns {Object}
+     * */
+    _parse: function (expr) {
+        /*eslint complexity: [2, 29]*/
+        var ast;
+        var buf;
+        var cur;
+        var esc;
+        var prm;
+        var prs;
+        var stk;
+        var body;
+        var val;
+
+        ast = buf = [];
+        esc = prm = prs = val = 0;
+        ast.map = [];
+        stk = [];
+        body = '';
+
+        for ( var i = 0, l = expr.length; i < l; i += 1 ) {
+            cur = expr.charAt(i);
+
+            if ( '\\' === cur && 0 === esc ) {
+                esc = 1;
+
+                continue;
+            }
+
+            if ( 1 === esc ) {
+                body += cur;
+                esc = 0;
+
+                continue;
+            }
+
+            if ( '(' === cur ) {
+
+                if ( 1 === prm ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                prs += 1;
+
+                if ( 0 < body.length ) {
+                    buf[buf.length] = {
+                        type: Route.PART_TYPE_DFT,
+                        body: body
+                    };
+
+                    body = '';
+                }
+
+                stk[stk.length] = buf;
+
+                buf[buf.length] = {
+                    type: Route.PART_TYPE_OPT,
+                    body: buf = []
+                };
+
+                continue;
+            }
+
+            if ( ')' === cur ) {
+
+                if ( 0 === prs ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                prs -= 1;
+
+                if ( 0 < body.length ) {
+                    buf[buf.length] = {
+                        type: Route.PART_TYPE_DFT,
+                        body: body
+                    };
+
+                    body = '';
+                }
+
+                if ( 0 === buf.length ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                buf = stk.pop();
+
+                continue;
+            }
+
+            if ( '<' === cur ) {
+
+                if ( 1 === prm ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                if ( 0 < body.length ) {
+                    buf[buf.length] = {
+                        type: Route.PART_TYPE_DFT,
+                        body: body
+                    };
+
+                    body = '';
+                }
+
+                prm = 1;
+
+                continue;
+            }
+
+            if ( '>' === cur ) {
+
+                if ( 0 === prm || '' === body ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                if ( 1 === val ) {
+                    buf[buf.length] = {
+                        type: Route.PART_TYPE_VAL,
+                        body: body
+                    };
+
+                    buf = stk.pop();
+
+                    //  закрываем список значений
+                    val = 0;
+
+                } else {
+                    ast.map[ast.map.length] = buf[buf.length] = {
+                        type: Route.PART_TYPE_PRM,
+                        body: body,
+                        only: []
+                    };
+                }
+
+                prm = 0;
+                body = '';
+
+                continue;
+            }
+
+            if ( '=' === cur ) {
+
+                if ( '' === body || 0 === prm || 1 === val ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                //  погружаемся в дерево
+                stk[stk.length] = buf;
+
+                ast.map[ast.map.length] = buf[buf.length] = {
+                    type: Route.PART_TYPE_PRM,
+                    body: body,
+                    only: buf = []
+                };
+
+                body = '';
+
+                val = 1;
+
+                continue;
+            }
+
+            if ( ',' === cur ) {
+
+                if ( '' === body || 0 === prm || 0 === val ) {
+
+                    throw new SyntaxError(expr);
+                }
+
+                buf[buf.length] = {
+                    type: Route.PART_TYPE_VAL,
+                    body: body
+                };
+
+                body = '';
+
+                continue;
+            }
+
+            body += cur;
+        }
+
+        if ( 0 < prs + esc + prm ) {
+
+            throw new SyntaxError(expr);
+        }
+
+        if ( 0 < body.length ) {
+            ast[ast.length] = {
+                type: Route.PART_TYPE_DFT,
+                body: body
+            };
+        }
+
+        if ( 0 === ast.length ) {
+
+            throw new SyntaxError(expr);
+        }
+
+        return ast;
     }
 
 });

@@ -30,9 +30,12 @@ var Pathr = Route.extend(/** @lends Pathr.prototype */ {}, {
 
         _.forOwn(params, function (val, name) {
 
-            if ( !_.some(ast.map, {body: name}) ) {
-                query[name] = val;
+            if ( _.some(ast.map, {body: name}) ) {
+
+                return;
             }
+
+            query[name] = val;
         }, this);
 
         url = Url.parse(result);
