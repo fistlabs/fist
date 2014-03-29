@@ -1,7 +1,5 @@
 'use strict';
 
-Object.prototype.bug = 42;
-
 var Router = require('../../../router/Router');
 
 module.exports = {
