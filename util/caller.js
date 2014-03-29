@@ -1,7 +1,7 @@
 'use strict';
 
 var Raw = /** @type Raw */ require('../parser/Raw');
-var _extend = require('lodash').extend;
+var _ = require('lodash');
 
 exports.callYield = function (value, done) {
 
@@ -81,7 +81,7 @@ exports.callFunc = function (func, args, done) {
     }
 
     //  Необходимо скопировать свойства функции, не нравится мне это!
-    _extend(resolve, done);
+    _.extend(resolve, done);
     args = args.concat(resolve);
 
     if ( 'GeneratorFunction' === func.constructor.name ) {

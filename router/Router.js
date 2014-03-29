@@ -3,7 +3,7 @@
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Route = /** @type Route */ require('../route/Route');
 
-var _extend = require('lodash').extend;
+var _ = require('lodash');
 
 /**
  * @class Router
@@ -58,7 +58,7 @@ var Router = Class.extend(/** @lends Router.prototype */ {
 
         var route;
 
-        opts = _extend(Object.create(null), this.params, opts);
+        opts = _.extend(Object.create(null), this.params, opts);
         route = this._createRoute(expr, opts);
 
         this.routes.push(route);
