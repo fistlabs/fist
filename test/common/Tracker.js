@@ -13,16 +13,32 @@ module.exports = {
             var track = new Track(tracker);
 
             tracker.decl('_', function (data, done) {
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
                 done(null, 'a');
             });
 
             tracker.decl('a_Ok', function (data, done) {
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 test.ok(this instanceof Track);
                 test.strictEqual(this, track);
+
                 this.invoke('_', done);
             });
 
             tracker.decl('b_Ok', ['a_Ok'], function (data, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 test.ok(this instanceof Track);
                 test.strictEqual(this, track);
                 test.deepEqual(data, {
@@ -37,6 +53,12 @@ module.exports = {
             });
 
             tracker.decl('c_Er', ['a_Ok', 'b_Ok'], function (data, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 test.ok(this instanceof Track);
                 test.strictEqual(this, track);
                 test.deepEqual(data, {
@@ -48,10 +70,16 @@ module.exports = {
                     },
                     errors: {}
                 });
-                done('c');
+                done.reject('c');
             });
 
             tracker.decl('b_Ok.ns', function (data, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 done(null, {
                     a: 42,
                     b: 54
@@ -60,6 +88,11 @@ module.exports = {
 
             tracker.decl('d_Ok', ['b_Ok.ns',
                 'b_Ok', 'c_Er', 'z_Er'], function (data, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
 
                 test.ok(this instanceof Track);
                 test.strictEqual(this, track);
@@ -78,7 +111,7 @@ module.exports = {
                         z_Er: void 0
                     }
                 });
-                done(null, 'd');
+                done.accept('d');
             });
 
             tracker.resolve(track, 'd_Ok', function (err, res) {
@@ -88,6 +121,62 @@ module.exports = {
                 test.strictEqual(res, 'd');
                 test.done();
             });
+        },
+
+        function (test) {
+
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+
+            var spy = [];
+
+            tracker.on('sys:accept', function (data) {
+
+                test.strictEqual(typeof data.path, 'string');
+                test.strictEqual(typeof data.data, 'string');
+                test.strictEqual(typeof data.time, 'number');
+
+                spy.push(data.path);
+            });
+
+            tracker.on('sys:reject', function (data) {
+
+                test.strictEqual(typeof data.path, 'string');
+                test.strictEqual(typeof data.data, 'string');
+                test.strictEqual(typeof data.time, 'number');
+
+                spy.push(data.path);
+            });
+
+            tracker.on('sys:notify', function (data) {
+
+                test.strictEqual(typeof data.path, 'string');
+                test.strictEqual(typeof data.data, 'string');
+                test.strictEqual(data.data, 'some happens!');
+                test.strictEqual(typeof data.time, 'number');
+
+                spy.push(data.path);
+            });
+
+            tracker.decl('a', function (bundle, done) {
+                done.accept('a');
+            });
+
+            tracker.decl('b', function (bundle, done) {
+                done.reject('b');
+            });
+
+            tracker.decl('c', ['a', 'b'], function (bundle, done) {
+                done.notify('some happens!');
+                done.accept('c');
+            });
+
+            tracker.resolve(track, 'c', function (err, res) {
+                test.strictEqual(res, 'c');
+                test.deepEqual(spy, ['a', 'b', 'c', 'c']);
+                test.done();
+            });
+
         },
 
         function (test) {
@@ -102,10 +191,22 @@ module.exports = {
             var track = new Track(tracker);
 
             tracker.decl('meta\\.version', function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 done(null, 42);
             });
 
             tracker.decl('assert', ['meta\\.version'], function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 test.strictEqual(bundle.result['meta.version'], 42);
                 done(null, 'OK');
             });
@@ -120,15 +221,33 @@ module.exports = {
             var tracker = new Tracker();
 
             tracker.decl('a', ['c'], function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 done(null, null);
             });
 
             tracker.decl('b', ['a'], function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 done(null, null);
             });
 
             try {
                 tracker.decl('c', ['a', 'b'], function (bundle, done) {
+
+                    test.strictEqual('function', typeof done);
+                    test.strictEqual('function', typeof done.accept);
+                    test.strictEqual('function', typeof done.reject);
+                    test.strictEqual('function', typeof done.notify);
+
                     done(null, null);
                 });
             } catch (err) {
@@ -142,21 +261,84 @@ module.exports = {
             var tracker = new Tracker();
 
             tracker.decl('a', ['c'], function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 done(null, null);
             });
 
             tracker.decl('b', ['a'], function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
                 done(null, null);
             });
 
             try {
                 tracker.decl('c', ['x', 'b'], function (bundle, done) {
+
+                    test.strictEqual('function', typeof done);
+                    test.strictEqual('function', typeof done.accept);
+                    test.strictEqual('function', typeof done.reject);
+                    test.strictEqual('function', typeof done.notify);
+
                     done(null, null);
                 });
             } catch (err) {
                 test.ok(err instanceof ReferenceError);
                 test.done();
             }
+        },
+
+        function (test) {
+
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+
+            tracker.decl('a', function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
+                done.accept('a');
+            });
+
+            tracker.decl('b', function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
+                done.reject('b');
+            });
+
+            tracker.decl('c', ['a'], function (bundle, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
+                done.notify('some happens!');
+
+                this.invoke('b', function () {
+                    done.apply(this, arguments);
+                });
+            });
+
+            tracker.resolve(track, 'c', function (err) {
+                test.strictEqual(err, 'b');
+                test.done();
+            });
         }
     ]
 

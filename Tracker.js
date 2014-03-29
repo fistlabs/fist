@@ -79,12 +79,13 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {String} path
-     * @param {Function} done done(resp)
+     * @param {Function} done done(err, res)
      * */
     resolve: function (track, path, done) {
 
         var date;
         var next;
+        var resolve;
 
         if ( path in track.tasks ) {
             track.tasks[path].done(done, this);
@@ -113,9 +114,27 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         }, this);
 
         if ( path in this.decls ) {
-            this._pend(track, this.decls[path], function () {
+            resolve = function () {
                 next.args(arguments);
-            });
+            };
+
+            resolve.accept = function (data) {
+                next.resolve(null, data);
+            };
+
+            resolve.reject = function (data) {
+                next.resolve(data);
+            };
+
+            resolve.notify = function (data) {
+                track.agent.emit('sys:notify', {
+                    path: path,
+                    time: new Date() - date,
+                    data: data
+                });
+            };
+
+            this._pend(track, this.decls[path], resolve);
 
             return;
         }
