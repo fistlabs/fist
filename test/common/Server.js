@@ -39,15 +39,33 @@ module.exports = [
         var s = new Server();
 
         s.decl('a', function (bundle, done) {
+
+            test.strictEqual('function', typeof done);
+            test.strictEqual('function', typeof done.accept);
+            test.strictEqual('function', typeof done.reject);
+            test.strictEqual('function', typeof done.notify);
+
             done(null, 'a');
         });
 
-        s.decl('b', function () {
+        s.decl('b', function (bundle, done) {
+
+            test.strictEqual('function', typeof done);
+            test.strictEqual('function', typeof done.accept);
+            test.strictEqual('function', typeof done.reject);
+            test.strictEqual('function', typeof done.notify);
+
             this.send(201, 'b');
             test.strictEqual(this.send, Connect.noop);
         });
 
         s.decl('c', function (bundle, done) {
+
+            test.strictEqual('function', typeof done);
+            test.strictEqual('function', typeof done.accept);
+            test.strictEqual('function', typeof done.reject);
+            test.strictEqual('function', typeof done.notify);
+
             setTimeout(function () {
                 done(null, 'c');
             }, 0);
@@ -62,6 +80,7 @@ module.exports = [
             s.resolve(connect, 'x', function () {
                 test.ok(false);
             });
+
         }, function (err, data) {
             test.strictEqual(data.statusCode, 201);
             test.strictEqual(data.data, 'b');

@@ -47,7 +47,7 @@ fist.listen(1337);
 ####```sys:ematch(Track)```
 [Роутер](#%D0%A0%D0%BE%D1%83%D1%82%D0%B5%D1%80) не смог найти подходящего маршрута
 ####```sys:accept(Object)```
-[Узел](#%D0%A3%D0%B7%D0%B5%D0%BB) разрешен без ошибки
+[Узел](#%D0%A3%D0%B7%D0%B5%D0%BB) разрешен без ошибки.
 В обработчик события передается объект c тремя полями:
 
 ```event.path``` - имя узла
@@ -56,7 +56,10 @@ fist.listen(1337);
 
 ```event.data``` - данные с которыми узел был разрешен
 ####```sys:reject(Object)```
-[Узел](#%D0%A3%D0%B7%D0%B5%D0%BB) разрешен с ошибкой
+[Узел](#%D0%A3%D0%B7%D0%B5%D0%BB) разрешен с ошибкой.
+В слушатель события передается такой же объект как и в [```sys:accept```](#sysaccept)
+####```sys:notify(Object)```
+[Узел](#%D0%A3%D0%B7%D0%B5%D0%BB) передал сообщение.
 В слушатель события передается такой же объект как и в [```sys:accept```](#sysaccept)
 ###API
 ####```new Framework([params])```
@@ -71,11 +74,11 @@ var app = new Framework();
 ####```app.decl(name[, deps][, body])```
 Метод, декларирует [узел](#%D0%A3%D0%B7%D0%B5%D0%BB) и его зависимости.
 
-```name``` - есть уникальное имя декларации, если продекларировать еще один [узел](#%D0%A3%D0%B7%D0%B5%D0%BB) с такми же ```name```, то последняя декларация "затрет" предыдущую. 
+```name``` - есть уникальное имя декларации, если продекларировать еще один [узел](#%D0%A3%D0%B7%D0%B5%D0%BB) с такми же ```name```, то последняя декларация "затрет" предыдущую.
 
 ```deps``` - завсисимости [узла](#%D0%A3%D0%B7%D0%B5%D0%BB). Это может быть как массив строк, имен [узлов](##%D0%A3%D0%B7%D0%B5%D0%BB), так и просто строка, если у [узла](#%D0%A3%D0%B7%D0%B5%D0%BB) только одна зависимость. Необязательный аргумент.
 
-```body``` - тело [узла](#%D0%A3%D0%B7%D0%B5%D0%BB), может быть любого типа, а поэтому необязательный аргумент. 
+```body``` - тело [узла](#%D0%A3%D0%B7%D0%B5%D0%BB), может быть любого типа, а поэтому необязательный аргумент.
 ```js
 app.decl('answer', 42);
 ```
@@ -176,7 +179,7 @@ app.decl('how2live', function () {
 Также из узла вы можете вернуть ```ReadableStream```, тогда результатом разрешения узла будет буффер данных, который будет выкачан из потока, или ошибка, которая может произойти во время чтения.
 ```js
 app.decl('package', function () {
-    
+
     return fs.createReadStream('package.json');
 });
 ```
@@ -188,32 +191,32 @@ app.decl('gen', function () {
         _done: false,
         _remains: 5,
         next: function () {
-            
+
             if ( this._done ) {
                 throw new TypeError();
             }
-        
+
             if ( 0 === this._remains ) {
                 throw new TypeError();
             }
-            
+
             this._remains -= 1;
-            
+
             if ( 0 === this._remains ) {
                 this._done = true;
             }
-            
+
             return {
                 done: this._done,
                 value: Math.random()
             };
         },
-        
+
         throw: function (err) {
             this._done = true;
             throw err;
         }
-        
+
     };
 });
 ```
@@ -222,21 +225,21 @@ app.decl('gen', function () {
 Но и это еще не все! Из узла можно вернуть ```GeneratorFuntion```! ```GeneratorFuncion``` вызовется с аргументом, функцией резолвером, и узел будет разрешен тогда, когда получившийся генератор вызовет ```done``` или завершит генерацию. Если генератор вызовет ```done```, то узел будет разрешен, но генератор все равно будет продолжать работу до конца.
 ```js
 app.decl('strange', function () {
-    
+
     return function * (done) {
-    
+
         var i = 0;
-    
+
         while (i < 5) {
             yield i += 1;
         }
-        
+
         done(null, 42);
-        
+
         yield 100500;
-        
+
         console.log('yeahh!');
-        
+
         return 9000;
     };
 });
@@ -253,9 +256,9 @@ app.decl('remoteConfig', vowAsker('http://example.com/config'));
 Думаю, самое интересное - это когда телом узла является ```GeneratorFunction```.
 ```js
 app.decl('generate', function * (track, errors, result, done) {
-    
+
     var user = yield getUser(track.cookie('sessid'));
-    
+
     return yield {
         status: getStatus(user.id),
         deals: getUserDeals(user.id)
@@ -323,7 +326,7 @@ app.decl('assert', ['meta\\.data'], function (track, errors, result, done) {
 
 ```opts.domain``` - домен на который будет поставлена кука
 ####```track.body([params[,done]])```
-Получает тело запроса если оно есть. Метод по заголовку запроса ```Content-Type``` понимает как закодировано тело и парсит его соответствующим образом. Поддерживаются тела ```multipart```, ```urlencoded```, ```json```. В других случаях тело будет возвращено в формате ```raw```. То есть сырой буфер данных. В любом случае, если при парсинге не произошло ошибки, результат выглядит как объект с ключом ```type```, который указывает на тип тела, и ключом ```input``` в которым по ключам содержатся отправленные данные. Если тело было в формате ```multipart```, то в результирующем объекте будет еще ключ ```files``` в объекте которого будут ключи - имена полей через которые были отправлены файлы, а каждый файл - это объект c тремя полями: ```name```, ```mime```, ```data```. 
+Получает тело запроса если оно есть. Метод по заголовку запроса ```Content-Type``` понимает как закодировано тело и парсит его соответствующим образом. Поддерживаются тела ```multipart```, ```urlencoded```, ```json```. В других случаях тело будет возвращено в формате ```raw```. То есть сырой буфер данных. В любом случае, если при парсинге не произошло ошибки, результат выглядит как объект с ключом ```type```, который указывает на тип тела, и ключом ```input``` в которым по ключам содержатся отправленные данные. Если тело было в формате ```multipart```, то в результирующем объекте будет еще ключ ```files``` в объекте которого будут ключи - имена полей через которые были отправлены файлы, а каждый файл - это объект c тремя полями: ```name```, ```mime```, ```data```.
 
 ```name``` - имя файла
 
@@ -380,26 +383,26 @@ var Runtime = /** @type Runtime */ require('fist/track/Runtime');
  * @extends Runtime
  **/
 var CustomTrack = Runtime.extend({
-    
+
     /**
      * @public
      * @memberOf {CustomTrack}
      * @method
-     * 
+     *
      * @param {String} [val]
-     * 
+     *
      * @returns {String|void}
      **/
     type: function (val) {
-    
+
         if ( 0 ==== arguments.length ) {
-        
+
             return this.header('Content-Type');
         }
-        
+
         this.header('Content-Type', val);
     }
-    
+
 });
 
 var Framework = /** @type Framework */ require('fist/Framework');
@@ -409,19 +412,19 @@ var Framework = /** @type Framework */ require('fist/Framework');
  * @extends Framework
  **/
 var CustomFist = Framework.extend({
-    
+
     /**
      * @protected
      * @memberOf {CustomFist}
      * @method
-     * 
+     *
      * @param {http.IncomingMessage} req
      * @param {http.OutgoingMessage} res
-     * 
+     *
      * @returns {CustomTrack}
      **/
     _createTrack: function (req, res) {
-    
+
         return new CustomTrack(this, req, res);
     }
 });

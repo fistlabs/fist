@@ -231,9 +231,6 @@ module.exports = {
                 fist.on('sys:ready', function () {
                     spy.push(100500);
                     test.deepEqual(spy, [0, 1, 100500]);
-
-//                    test.strictEqual(fist._state, 0);
-//                    test.strictEqual(fist._pending, 0);
                 });
 
                 setTimeout(function () {
@@ -397,7 +394,15 @@ module.exports = {
                 }, 100);
             });
 
-            fist.decl('index', {});
+            fist.decl('index', function (track, errors, result, done) {
+                test.strictEqual(typeof done, 'function');
+
+                test.strictEqual(typeof done.accept, 'function');
+                test.strictEqual(typeof done.reject, 'function');
+                test.strictEqual(typeof done.notify, 'function');
+
+                return {};
+            });
 
             fist.route('GET', '/', 'index');
 
