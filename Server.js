@@ -1,7 +1,7 @@
 'use strict';
 
-var Switcher = /** @type Switcher */ require('./router/Switcher');
 var Connect = /** @type Connect */ require('./track/Connect');
+var Router = /** @type Router */ require('./router/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
 /**
@@ -23,7 +23,7 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
         /**
          * @public
          * @memberOf {Server}
-         * @property {Switcher}
+         * @property {Router}
          * */
         this.router = this._createRouter(this.params.router);
     },
@@ -106,11 +106,11 @@ var Server = Tracker.extend(/** @lends Server.prototype */ {
      *
      * @param {*} [params]
      *
-     * @returns {Switcher}
+     * @returns {Router}
      * */
     _createRouter: function (params) {
 
-        return new Switcher(params);
+        return new Router(params);
     },
 
     /**

@@ -183,7 +183,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @param {Function} done
      * */
     _call: function (body, track, bundle, done) {
-        body.call(track, bundle, done);
+        body.call(this, track, bundle.errors, bundle.result, done);
     },
 
     /**

@@ -207,12 +207,13 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     _call: function (func, track, bundle, done) {
 
         if ( 'function' === typeof func ) {
-            caller.callFunc(func, [track, bundle.errors, bundle.result], done);
+            caller.callFunc.call(this, func,
+                [track, bundle.errors, bundle.result], done);
 
             return;
         }
 
-        caller.callRet(func, done, true);
+        caller.callRet.call(this, func, done, true);
     },
 
     /**

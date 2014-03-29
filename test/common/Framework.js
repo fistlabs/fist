@@ -336,6 +336,7 @@ module.exports = {
             var fist = new Framework();
 
             fist.decl('index', function (connect, errors, result, done) {
+                test.strictEqual(this, fist);
                 done(null, 42);
             });
 
@@ -395,6 +396,7 @@ module.exports = {
             });
 
             fist.decl('index', function (track, errors, result, done) {
+                test.strictEqual(this, fist);
                 test.strictEqual(typeof done, 'function');
 
                 test.strictEqual(typeof done.accept, 'function');

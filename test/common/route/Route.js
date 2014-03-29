@@ -1,7 +1,6 @@
 'use strict';
 
 var Route = require('../../../route/Route');
-var Expr = require('../../../route/expr/Expr');
 
 module.exports = {
 
@@ -14,11 +13,181 @@ module.exports = {
                 '^\\/pa\\[a\\-z\\]ge\\/(?:([^\/]+?)\\/)?$');
             test.deepEqual(route.ast.map, [
                 {
-                    type: Expr.PART_TYPE_PRM,
+                    type: Route.PART_TYPE_PRM,
                     body: 'name',
                     only: []
                 }
             ]);
+
+            test.done();
+        }
+    ],
+
+    'Route.escape': [
+        function (test) {
+            test.strictEqual(Route.escape('\\<>()'), '\\\\\\<\\>\\(\\)');
+            test.done();
+        }
+    ],
+
+    'Route.parse': [
+        function (test) {
+
+            var errors;
+            var sample;
+            var expected;
+
+            errors = [
+                '<(',
+                '<a(',
+                ')',
+                '()',
+                '<<',
+                '<a<',
+                '>',
+                '<>',
+                '(',
+                '<',
+                '\\',
+                '',
+                ',',
+                '<param=>',
+                '<param=,>',
+                '<param=a,>',
+                '=',
+                '(=)',
+                '<param=a=>'
+            ];
+
+            errors.forEach(function (ps) {
+
+                try {
+                    Route.parse(ps);
+
+                    throw 42;
+
+                } catch (ex) {
+                    test.ok(ex instanceof SyntaxError);
+                }
+            });
+
+            sample = '\\\\\\(\\<text\\>\\)(text)text<text>text';
+            expected = [
+                {
+                    type: Route.PART_TYPE_DFT,
+                    body: '\\(<text>)'
+                },
+                {
+                    type: Route.PART_TYPE_OPT,
+                    body: [
+                        {
+                            type: Route.PART_TYPE_DFT,
+                            body: 'text'
+                        }
+                    ]
+                },
+                {
+                    type: Route.PART_TYPE_DFT,
+                    body: 'text'
+                },
+                {
+                    type: Route.PART_TYPE_PRM,
+                    body: 'text',
+                    only: []
+                },
+                {
+                    type: Route.PART_TYPE_DFT,
+                    body: 'text'
+                }
+            ];
+
+            expected.map = [
+                {
+                    type: Route.PART_TYPE_PRM,
+                    body: 'text',
+                    only: []
+                }
+            ];
+
+            test.deepEqual(Route.parse(sample), expected);
+            test.strictEqual(Route.parse(sample), Route.parsed[sample]);
+
+            sample = '/(<id=a,b>/)tail/';
+
+            expected = [
+                {
+                    type: Route.PART_TYPE_DFT,
+                    body: '/'
+                },
+                {
+                    type: Route.PART_TYPE_OPT,
+                    body: [
+                        {
+                            type: Route.PART_TYPE_PRM,
+                            body: 'id',
+                            only: [
+                                {
+                                    type: Route.PART_TYPE_VAL,
+                                    body: 'a'
+                                },
+                                {
+                                    type: Route.PART_TYPE_VAL,
+                                    body: 'b'
+                                }
+                            ]
+                        },
+                        {
+                            type: Route.PART_TYPE_DFT,
+                            body: '/'
+                        }
+                    ]
+                },
+                {
+                    type: Route.PART_TYPE_DFT,
+                    body: 'tail/'
+                }
+            ];
+
+            expected.map = [
+                {
+                    type: Route.PART_TYPE_PRM,
+                    body: 'id',
+                    only: [
+                        {
+                            type: Route.PART_TYPE_VAL,
+                            body: 'a'
+                        },
+                        {
+                            type: Route.PART_TYPE_VAL,
+                            body: 'b'
+                        }
+                    ]
+                }
+            ];
+
+            test.deepEqual(Route.parse(sample), expected);
+
+            expected = [
+                {
+                    type: Route.PART_TYPE_PRM,
+                    body: 'a',
+                    only: [
+                        {
+                            type: Route.PART_TYPE_VAL,
+                            body: '\\b,()'
+                        },
+                        {
+                            type: Route.PART_TYPE_VAL,
+                            body: 'c=<=>='
+                        }
+                    ]
+                }
+            ];
+
+            expected.map = [expected[0]];
+
+            test.deepEqual(Route.parse('<a=\\\\b\\,\\(\\),c\\=\\<\\=\\>\\=>'),
+                expected);
 
             test.done();
         }
@@ -155,20 +324,6 @@ module.exports = {
 
             test.done();
         }
-    ],
-
-    'Route.build': [
-        function (test) {
-
-            var expr = 'http://www.yandex.ru/(<action>/)';
-
-            test.strictEqual(Route.build(expr, {
-                action: 'yandsearch'
-            }), 'http://www.yandex.ru/yandsearch/');
-
-            test.strictEqual(Route.build(expr), 'http://www.yandex.ru/');
-
-            test.done();
-        }
     ]
+
 };

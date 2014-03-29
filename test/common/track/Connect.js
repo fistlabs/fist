@@ -8,8 +8,6 @@ var Fs = require('fs');
 var Url = require('url');
 var buf = Fs.readFileSync('test/util/binary.png');
 
-Object.prototype.bug = 42;
-
 module.exports = {
 
     '{Connect}.method': [

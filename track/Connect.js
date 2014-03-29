@@ -14,8 +14,7 @@ var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var _extend = require('lodash').extend;
-var hasProperty = Object.prototype.hasOwnProperty;
+var _ = /** @type _ */ require('lodash');
 var uniqueId = require('fist.lang.id');
 
 /**
@@ -114,7 +113,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         }
 
         if ( !(this._body instanceof Next) ) {
-            opts = _extend({
+            opts = _.extend({
                 length: this._req.headers['content-length']
             }, params);
 
@@ -141,14 +140,10 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         /*eslint consistent-return: 0*/
         if ( Object(name) === name  ) {
             soft = value;
-            value = name;
 
-            for ( name in value ) {
-
-                if ( hasProperty.call(value, name) ) {
-                    this._setHead(name, value[name], soft);
-                }
-            }
+            _.forOwn(name, function (value, name) {
+                this._setHead(name, value, soft);
+            }, this);
 
             return;
         }

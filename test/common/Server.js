@@ -11,16 +11,16 @@ var sock = require('../stuff/conf/sock');
 var asker = require('asker');
 var server = new Server();
 
-server.decl('index', function () {
-    this.send(200, 'INDEX');
+server.decl('index', function (track) {
+    track.send(200, 'INDEX');
 });
 
-server.decl('page', function (bundle, done) {
-    done(null, this.match.pageName);
+server.decl('page', function (track, errors, result, done) {
+    done(null, track.match.pageName);
 });
 
-server.decl('error', function () {
-    this.send(500, new Error('O_O'));
+server.decl('error', function (track) {
+    track.send(500, new Error('O_O'));
 });
 
 server.route('GET', '/', 'index');
@@ -38,7 +38,7 @@ module.exports = [
 
         var s = new Server();
 
-        s.decl('a', function (bundle, done) {
+        s.decl('a', function (track, errors, result, done) {
 
             test.strictEqual('function', typeof done);
             test.strictEqual('function', typeof done.accept);
@@ -48,18 +48,18 @@ module.exports = [
             done(null, 'a');
         });
 
-        s.decl('b', function (bundle, done) {
+        s.decl('b', function (track, errors, result, done) {
 
             test.strictEqual('function', typeof done);
             test.strictEqual('function', typeof done.accept);
             test.strictEqual('function', typeof done.reject);
             test.strictEqual('function', typeof done.notify);
 
-            this.send(201, 'b');
-            test.strictEqual(this.send, Connect.noop);
+            track.send(201, 'b');
+            test.strictEqual(track.send, Connect.noop);
         });
 
-        s.decl('c', function (bundle, done) {
+        s.decl('c', function (track, errors, result, done) {
 
             test.strictEqual('function', typeof done);
             test.strictEqual('function', typeof done.accept);
@@ -304,7 +304,7 @@ module.exports = [
             Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        serv.decl('some', function (bundle, done) {
+        serv.decl('some', function (track, errors, result, done) {
             done(1);
         });
 
@@ -342,7 +342,7 @@ module.exports = [
             Fs.unlinkSync(sock);
         } catch (ex) {}
 
-        serv.decl('some', function (bundle, done) {
+        serv.decl('some', function (track, errors, result, done) {
             done(1);
         });
 
