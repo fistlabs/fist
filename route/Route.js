@@ -49,31 +49,6 @@ var Route = Base.extend(/** @lends Route.prototype */ {
     },
 
     /**
-     * @protected
-     * @memberOf {Route}
-     * @method
-     *
-     * @param {Object} ast
-     * @param {Object} opts
-     *
-     * @returns {RegExp}
-     * */
-    _createRegExp: function (ast, opts) {
-
-        var src = Route._buildRegex(ast);
-
-        if ( !opts.nostart ) {
-            src = '^' + src;
-        }
-
-        if ( !opts.noend ) {
-            src = src + '$';
-        }
-
-        return new RegExp(src, opts.nocase ? 'i' : '');
-    },
-
-    /**
      * @public
      * @memberOf {Route}
      * @method
@@ -107,7 +82,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             return this.matches[url];
         }
 
-        this.matches[url] = Route._match(this.regex, url, this.ast.map);
+        this.matches[url] = this._match(this.regex, url, this.ast.map);
 
         return this.matches[url];
     },
@@ -255,6 +230,80 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             }
 
         return buf;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Route}
+     * @method
+     *
+     * @param {Object} ast
+     * @param {Object} opts
+     *
+     * @returns {RegExp}
+     * */
+    _createRegExp: function (ast, opts) {
+
+        var src = Route._buildRegex(ast);
+
+        if ( !opts.nostart ) {
+            src = '^' + src;
+        }
+
+        if ( !opts.noend ) {
+            src = src + '$';
+        }
+
+        return new RegExp(src, opts.nocase ? 'i' : '');
+    },
+
+    /**
+     * @protected
+     * @static
+     * @memberOf Route
+     * @method
+     *
+     * @param {RegExp} regex
+     * @param {String} url
+     * @param {Array<String>} map
+     *
+     * @returns {Object}
+     * */
+    _match: function (regex, url, map) {
+
+        var i;
+        var l;
+        var m = regex.exec(url);
+        var name;
+        var params;
+
+        if ( null === m ) {
+
+            return m;
+        }
+
+        params = Object.create(null);
+
+        for ( i = 1, l = m.length; i < l; i += 1 ) {
+            name = map[i - 1].body;
+
+            if ( hasProperty.call(params, name) ) {
+
+                if ( Array.isArray(params[name]) ) {
+                    params[name][params[name].length] = m[i];
+
+                    continue;
+                }
+
+                params[name] = [params[name], m[i]];
+
+                continue;
+            }
+
+            params[name] = m[i];
+        }
+
+        return params;
     }
 
 }, {
@@ -334,55 +383,6 @@ var Route = Base.extend(/** @lends Route.prototype */ {
         Route.parsed[expr] = Route._parse(expr);
 
         return Route.parsed[expr];
-    },
-
-    /**
-     * @protected
-     * @static
-     * @memberOf Route
-     * @method
-     *
-     * @param {RegExp} regex
-     * @param {String} url
-     * @param {Array<String>} map
-     *
-     * @returns {Object}
-     * */
-    _match: function (regex, url, map) {
-
-        var i;
-        var l;
-        var m = regex.exec(url);
-        var name;
-        var params;
-
-        if ( null === m ) {
-
-            return m;
-        }
-
-        params = Object.create(null);
-
-        for ( i = 1, l = m.length; i < l; i += 1 ) {
-            name = map[i - 1].body;
-
-            if ( hasProperty.call(params, name) ) {
-
-                if ( Array.isArray(params[name]) ) {
-                    params[name][params[name].length] = m[i];
-
-                    continue;
-                }
-
-                params[name] = [params[name], m[i]];
-
-                continue;
-            }
-
-            params[name] = m[i];
-        }
-
-        return params;
     },
 
     /**
