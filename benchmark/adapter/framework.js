@@ -36,7 +36,10 @@ try {
     Fs.unlinkSync(sock);
 } catch (ex) {}
 
-app.ready();
+if ( 'function' === typeof app.ready ) {
+    app.ready();
+}
+
 Http.createServer(app.getHandler()).listen(sock);
 
 module.exports = function (done) {
