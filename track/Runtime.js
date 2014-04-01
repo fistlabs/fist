@@ -79,15 +79,15 @@ var Runtime = Connect.extend(/** @lends Runtime.prototype */ {
 
         if ( 'number' === typeof code ) {
             i = 2;
+            this.status(code);
 
         } else {
-            id = code;
-            code = 200;
             i = 1;
+            id = code;
         }
 
         args = Array.prototype.slice.call(arguments, i);
-        this.send(code, this.agent.renderers[id].apply(this, args));
+        this.send(this.agent.renderers[id].apply(this, args));
     },
 
     /**
