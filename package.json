@@ -15,7 +15,7 @@
         "fist.lang.regesc": "0.0.x",
         "fist.lang.toarray": "0.0.x",
 
-        "fist.util.next": "0.0.x",
+        "fist.util.next": "0.1.x",
 
         "lodash": "2.4.x",
         "dicer": "0.2.x"
