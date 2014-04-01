@@ -191,6 +191,7 @@ module.exports = {
             });
 
             fist.decl('index', function (track) {
+                track.status(300);
                 track.render('index', 1, 2, 3);
             });
 
@@ -214,7 +215,7 @@ module.exports = {
                 }
             }, function (err, data) {
                 test.deepEqual(data.data, new Buffer('[2,4,6]'));
-                test.strictEqual(data.statusCode, 200);
+                test.strictEqual(data.statusCode, 300);
                 test.done();
             });
         },
