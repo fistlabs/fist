@@ -6,6 +6,7 @@ var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
 var Next = /** @type Next */ require('fist.util.next/Next');
 
 var toArray = require('fist.lang.toarray');
+var _ = /** @type _ */ require('lodash');
 
 /**
  * @abstract
@@ -79,14 +80,11 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {String} path
-     * @param {Function} done done(err, res)
+     * @param {*} done
      * */
     resolve: function (track, path, done) {
 
-        var date;
         var next;
-        var resolve;
-        var trigger;
 
         if ( path in track.tasks ) {
             track.tasks[path].done(done, this);
@@ -94,50 +92,18 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
             return;
         }
 
-        date = new Date();
         next = track.tasks[path] = new Next();
         next.done(done, this);
 
-        resolve = function (err, res) {
-
-            if ( 2 > arguments.length ) {
-                resolve.reject(err);
-
-                return;
-            }
-
-            resolve.accept(res);
-        };
-
-        trigger = function (name, data) {
-            track.agent.emit(name, {
-                path: path,
-                time: new Date() - date,
-                data: data
-            });
-        };
-
-        resolve.reject = function (data) {
-            trigger('sys:reject', data);
-            next.resolve(data);
-        };
-
-        resolve.accept = function (data) {
-            trigger('sys:accept', data);
-            next.resolve(null, data);
-        };
-
-        resolve.notify = function (data) {
-            trigger('sys:notify', data);
-        };
+        done = this._createResolver(path, next);
 
         if ( path in this.decls ) {
-            this._pend(track, this.decls[path], resolve);
+            this._pend(track, this.decls[path], done);
 
             return;
         }
 
-        resolve.reject();
+        done.reject();
     },
 
     /**
@@ -162,7 +128,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
 
         //  Здесь for-each а не просто цикл
         // потому что нужно замыкание `path`
-        deps.forEach(function (path) {
+        _.forEach(deps, function (path) {
             this.resolve(track, path, function () {
                 bundle.bundlify(path, arguments);
                 length -= 1;
@@ -234,6 +200,57 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     _createBundle: function () {
 
         return new Bundle();
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {String} path
+     * @param {Next} next
+     *
+     * @returns {Function}
+     * */
+    _createResolver: function (path, next) {
+
+        var date = new Date();
+        var self = this;
+
+        function trigger (name, data) {
+            self.emit(name, {
+                path: path,
+                time: new Date() - date,
+                data: data
+            });
+        }
+
+        function done (err, res) {
+
+            if ( 2 > arguments.length ) {
+                done.reject(err);
+
+                return;
+            }
+
+            done.accept(res);
+        }
+
+        done.accept = function (data) {
+            trigger('sys:accept', data);
+            next.resolve(null, data);
+        };
+
+        done.notify = function (data) {
+            trigger('sys:notify', data);
+        };
+
+        done.reject = function (data) {
+            trigger('sys:reject', data);
+            next.resolve(data);
+        };
+
+        return done;
     },
 
     /**
