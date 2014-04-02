@@ -9,28 +9,6 @@ var STATUS_CODES = Http.STATUS_CODES;
 var http = require('../util/http');
 var sock = require('../stuff/conf/sock');
 var asker = require('asker');
-var server = new Server();
-
-server.decl('index', function (track) {
-    track.send(200, 'INDEX');
-});
-
-server.decl('page', function (track, errors, result, done) {
-    done(null, track.match.pageName);
-});
-
-server.decl('error', function (track) {
-    track.send(500, new Error('O_O'));
-});
-
-server.route('GET', '/', 'index');
-server.route('GET', '/index/', 'index-2', {
-    unit: 'index'
-});
-
-server.route('GET', '/error/', 'error');
-server.route('GET', '/<pageName>/', 'page');
-server.route('POST', '/upload/', 'upload');
 
 module.exports = [
 
@@ -91,11 +69,19 @@ module.exports = [
 
     function (test) {
 
+        var server = new Server();
+
         try {
             Fs.unlinkSync(sock);
         } catch (ex) {}
 
         Http.createServer(server.getHandler()).listen(sock);
+
+        server.route('GET', '/<pageName>/', 'page');
+
+        server.decl('page', function (track, errors, result, done) {
+            done(null, track.match.pageName);
+        });
 
         asker({
             method: 'GET',
@@ -108,6 +94,13 @@ module.exports = [
     },
 
     function (test) {
+
+        var server = new Server();
+
+        server.route('GET', '/', 'index');
+        server.decl('index', function (track) {
+            track.send(200, 'INDEX');
+        });
 
         try {
             Fs.unlinkSync(sock);
@@ -126,6 +119,10 @@ module.exports = [
     },
 
     function (test) {
+
+        var server = new Server();
+
+        server.route('GET', '/', 'myRoute');
 
         try {
             Fs.unlinkSync(sock);
@@ -151,6 +148,11 @@ module.exports = [
     },
 
     function (test) {
+
+        var server = new Server();
+
+        server.route('GET', '/', 'index');
+        server.route('POST', '/upload/', 'upload');
 
         try {
             Fs.unlinkSync(sock);
@@ -178,6 +180,8 @@ module.exports = [
 
     function (test) {
 
+        var server = new Server();
+
         try {
             Fs.unlinkSync(sock);
         } catch (ex) {}
@@ -202,6 +206,14 @@ module.exports = [
     },
 
     function (test) {
+
+        var server = new Server();
+
+        server.decl('error', function (track) {
+            track.send(500, new Error('O_O'));
+        });
+
+        server.route('GET', '/error/', 'error');
 
         try {
             Fs.unlinkSync(sock);
@@ -228,7 +240,13 @@ module.exports = [
 
     function (test) {
 
+        var server = new Server();
         var spy = [];
+
+        server.route('GET', '/index/', 'index');
+        server.decl('index', function (track) {
+            track.send('INDEX');
+        });
 
         try {
             Fs.unlinkSync(sock);
@@ -248,13 +266,23 @@ module.exports = [
             path: '/index/',
             socketPath: sock
         }, function (err, res) {
-            test.deepEqual(res.data + '', 'INDEX');
+            test.deepEqual(res.data, new Buffer('INDEX'));
             test.deepEqual(spy, [500]);
             test.done();
         });
     },
 
     function (test) {
+
+        var server = new Server();
+
+        server.route('GET', '/', 'index-page', {
+            unit: 'index'
+        });
+
+        server.decl('index', function (track) {
+            track.send('INDEX');
+        });
 
         try {
             Fs.unlinkSync(sock);
@@ -267,7 +295,7 @@ module.exports = [
             path: '/',
             socketPath: sock
         }, function (err, res) {
-            test.deepEqual(res.data + '', 'INDEX');
+            test.deepEqual(res.data, new Buffer('INDEX'));
             test.done();
         });
     },
