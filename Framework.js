@@ -2,7 +2,6 @@
 
 var Http = require('http');
 var Nested = /** @type Nested */ require('./bundle/Nested');
-var Runtime = /** @type Runtime */ require('./track/Runtime');
 var Server = /** @type Server */ require('./Server');
 
 var caller = require('./util/caller');
@@ -228,18 +227,6 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     _createBundle: function () {
 
         return new Nested();
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
-     * @returns {Runtime}
-     * */
-    _createTrack: function (req, res) {
-
-        return new Runtime(this, req, res);
     },
 
     /**
