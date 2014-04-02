@@ -130,7 +130,7 @@ module.exports = {
                 test.deepEqual(data.headers['set-cookie'], [
                     'x=y', 'x=; expires=' + (new Date(d - 1)).toUTCString(),
                     'a=b', 'a=; expires=' + (new Date(d - 1)).toUTCString(),
-                    'last=' + encodeURIComponent('Привет')
+                        'last=' + encodeURIComponent('Привет')
                 ]);
                 test.done();
             });
@@ -763,7 +763,7 @@ module.exports = {
                 test.done();
             });
         },
-        
+
         function (test) {
             var fist = new Tracker();
 
@@ -796,7 +796,7 @@ module.exports = {
                 test.done();
             });
         },
-        
+
         function (test) {
             var fist = new Tracker();
 
@@ -830,6 +830,5 @@ module.exports = {
             });
         }
     ]
-
 
 };

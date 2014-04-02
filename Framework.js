@@ -1,16 +1,19 @@
 'use strict';
 
 var Http = require('http');
+
+var Connect = /** @type Connect */ require('./track/Connect');
 var Nested = /** @type Nested */ require('./bundle/Nested');
-var Server = /** @type Server */ require('./Server');
+var Router = /** @type Router */ require('./router/Router');
+var Tracker = /** @type Tracker */ require('./Tracker');
 
 var caller = require('./util/caller');
 
 /**
  * @class Framework
- * @extends Server
+ * @extends Tracker
  * */
-var Framework = Server.extend(/** @lends Framework.prototype */ {
+var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
     /**
      * @protected
@@ -70,6 +73,42 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
          * @property {Object<Function>}
          * */
         this.renderers = Object.create(null);
+
+        /**
+         * @public
+         * @memberOf {Framework}
+         * @property {Router}
+         * */
+        this.router = this._createRouter(this.params.router);
+    },
+
+    /**
+     * Возвращает коллбэк для запросов на сервер
+     *
+     * @public
+     * @memberOf {Framework}
+     * @method
+     *
+     * @returns {Function}
+     * */
+    getHandler: function () {
+
+        var self = this;
+
+        return function (req, res) {
+
+            var date = new Date();
+            var track = self._createTrack(req, res);
+
+            res.once('finish', function () {
+                track.time = new Date() - date;
+                self.emit('sys:response', track);
+            });
+
+            self.emit('sys:request', track);
+
+            self._handle(track);
+        };
     },
 
     /**
@@ -88,6 +127,17 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         this.ready();
 
         return server;
+    },
+
+    /**
+     * Добавляет плагин
+     *
+     * @public
+     * @memberOf {Framework}
+     * @method
+     * */
+    plug: function () {
+        Array.prototype.push.apply(this._tasks, arguments);
     },
 
     /**
@@ -185,14 +235,45 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
     },
 
     /**
-     * Добавляет плагин
+     * Запускает операцию разрешения узла.
+     * Если один из узлов, участвующих в операции
+     * разрешения выполнил ответ приложения самостоятельно,
+     * то коллбэк вызван не будет
+     *
+     * @public
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Connect} track
+     * @param {String} path
+     * @param {Function} done
+     * */
+    resolve: function (track, path, done) {
+
+        function resolve () {
+
+            if ( track.sent() ) {
+
+                return;
+            }
+
+            done.apply(this, arguments);
+        }
+
+        return Framework.parent.resolve.call(this, track, path, resolve);
+    },
+
+    /**
+     * Определяет маршрут встроенного роутера
      *
      * @public
      * @memberOf {Framework}
      * @method
      * */
-    plug: function () {
-        Array.prototype.push.apply(this._tasks, arguments);
+    route: function () {
+        this.router.addRoute.apply(this.router, arguments);
+
+        return this;
     },
 
     /**
@@ -234,22 +315,132 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      *
-     * @param {Runtime} track
+     * @param {*} [params]
+     *
+     * @returns {Router}
+     * */
+    _createRouter: function (params) {
+
+        return new Router(params);
+    },
+
+    /**
+     * @public
+     * @memberOf {Framework}
+     * @method
+     *
+     * @returns {Connect}
+     * */
+    _createTrack: function (req, res) {
+
+        return new Connect(this, req, res);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Connect} track
+     *
+     * @returns {*}
+     * */
+    _findRoute: function (track) {
+
+        return this.router.find(track);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Connect} track
      * */
     _handle: function (track) {
+        /*eslint complexity: [2, 11]*/
+        var mdata;
+        var rdata;
 
         if ( 1 === this._state ) {
 
             return;
         }
 
-        if ( 0 === this._state && 0 === this._pending ) {
-            Framework.parent._handle.apply(this, arguments);
+        if ( 0 !== this._state || 0 !== this._pending ) {
+            this._pends.push(track);
 
             return;
         }
 
-        this._pends.push(track);
+        if ( track.sent() ) {
+
+            return;
+        }
+
+        mdata = this._findRoute(track);
+
+        //  по сути такой роутер может сделать send
+        //  если он сделал send то он конечно понимает что он сделал
+        //  такой поступок не может быть необдуманным, мы прекращаем
+        //  обработку запроса
+        if ( track.sent() ) {
+
+            return;
+        }
+
+        //  однозначно нет такого маршрута
+        if ( null === mdata ) {
+            this.emit('sys:ematch', track);
+            track.send(404);
+
+            return;
+        }
+
+        //  возвращен массив
+        if ( Array.isArray(mdata) ) {
+            //  это тоже значит что нет такого роута
+            this.emit('sys:ematch', track);
+
+            //  если массив пустой, то на сервере совсем нет ни одного
+            //  маршрута отвечающего по такому методу запроса
+            if ( 0 === mdata.length ) {
+                //  Not Implemented
+                track.send(501);
+
+                return;
+            }
+
+            //  Иначе есть такие маршруты, но для них не
+            // поддерживается такой метод
+            track.header('Allow', mdata.join(', '));
+            //  Method Not Allowed
+            track.send(405);
+
+            return;
+        }
+
+        this.emit('sys:match', track);
+
+        track.match = mdata.match;
+        track.route = mdata.route.name;
+
+        rdata = mdata.route.data;
+
+        if ( Object(rdata) === rdata ) {
+            rdata = rdata.unit;
+        }
+
+        this.resolve(track, rdata || track.route, function (err, res) {
+
+            if ( 2 > arguments.length ) {
+                track.send(500, err);
+
+                return;
+            }
+
+            track.send(200, res);
+        });
     }
 
 });
