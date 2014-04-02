@@ -31,7 +31,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @constructs
      * */
     constructor: function (agent, req, res) {
-        Connect.Parent.apply(this, arguments);
+        Connect.Parent.call(this, agent);
 
         /**
          * @public
