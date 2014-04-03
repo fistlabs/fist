@@ -7,6 +7,7 @@ var Nested = /** @type Nested */ require('./bundle/Nested');
 var Router = /** @type Router */ require('./router/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
+//  TODO заинлайнить методы caller-а как protected-члены
 var caller = require('./util/caller');
 
 /**
