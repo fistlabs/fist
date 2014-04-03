@@ -185,7 +185,9 @@ exports.callPromise = function (promise, done) {
     try {
         promise.then(function (res) {
             done.call(self, null, res);
-        }, done.bind(this));
+        }, function (err) {
+            done.call(self, err);
+        });
 
     } catch (err) {
         done.call(this, err);
