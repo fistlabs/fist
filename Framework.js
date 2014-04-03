@@ -87,6 +87,8 @@ var Framework = Server.extend(/** @lends Framework.prototype */ {
         server.listen.apply(server, arguments);
         //  автоматически запускаю инициализацию
         this.ready();
+
+        return server;
     },
 
     /**
