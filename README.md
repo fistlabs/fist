@@ -1,3 +1,5 @@
+ВНИМАНИЕ: Если вы пользовались абстракциями [```Server```](Server.js) или [```Runtime```](track/Runtime.js), то есть наследовали от них, то учтите что в следующей версии их не будет. [```Server```](Server.js) будет объединен с [```Framework```](Framework.js), [```Runtime```](Runtime.js) будет объединен с [```Connect```](track/Connect.js). Если вы пользовались ```fist``` "из коробки", то можете это проигнорировать.
+
 fist [![Build Status](https://travis-ci.org/fistlabs/fist.png?branch=master)](https://travis-ci.org/fistlabs/fist)
 =========
 
