@@ -230,7 +230,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            caller.callFunc(this._tasks.shift().bind(this), [], ready);
+            caller.callFunc.call(this, this._tasks.shift(), [], ready);
         }
     },
 
