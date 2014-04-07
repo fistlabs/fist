@@ -7,6 +7,10 @@ var Vow = require('vow');
 var asker = require('asker');
 var sock = require('../stuff/conf/sock');
 
+var Connect = require('../../track/Connect');
+var STATUS_CODES = require('http').STATUS_CODES;
+var http = require('../util/http');
+
 module.exports = {
 
     ready: [
@@ -452,6 +456,391 @@ module.exports = {
             setTimeout(function () {
                 test.done();
             }, 50);
+        },
+
+        function (test) {
+
+            var s = new Framework();
+
+            s.decl('a', function (track, errors, result, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
+                done(null, 'a');
+            });
+
+            s.decl('b', function (track, errors, result, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
+                track.send(201, 'b');
+                test.strictEqual(track.send, Connect.noop);
+            });
+
+            s.decl('c', function (track, errors, result, done) {
+
+                test.strictEqual('function', typeof done);
+                test.strictEqual('function', typeof done.accept);
+                test.strictEqual('function', typeof done.reject);
+                test.strictEqual('function', typeof done.notify);
+
+                setTimeout(function () {
+                    done(null, 'c');
+                }, 0);
+            });
+
+            s.decl('x', ['a', 'b', 'c'], function () {});
+
+            http({method: 'GET'}, function (req, res) {
+
+                var connect = new Connect(s, req, res);
+
+                s.resolve(connect, 'x', function () {
+                    test.ok(false);
+                });
+
+            }, function (err, data) {
+                test.strictEqual(data.statusCode, 201);
+                test.strictEqual(data.data, 'b');
+                test.done();
+            });
+
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            server.route('GET', '/<pageName>/', 'page');
+
+            server.decl('page', function (track, errors, result, done) {
+                done(null, track.match.pageName);
+            });
+
+            asker({
+                method: 'GET',
+                path: '/fist.io.server/',
+                socketPath: sock
+            }, function (err, res) {
+                test.deepEqual(res.data, new Buffer('fist.io.server'));
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            server.route('GET', '/', 'index');
+            server.decl('index', function (track) {
+                track.send(200, 'INDEX');
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            asker({
+                method: 'HEAD',
+                path: '/',
+                socketPath: sock
+            }, function (err, res) {
+                test.deepEqual(res.data, null);
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            server.route('GET', '/', 'myRoute');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/asd/asd/',
+                socketPath: sock,
+                statusFilter: function () {
+                    return {
+                        accept: true,
+                        isRetryAllowed: false
+                    };
+                }
+            }, function (err, res) {
+                test.strictEqual(res.statusCode, 404);
+                test.deepEqual(res.data,
+                    new Buffer(STATUS_CODES[res.statusCode]));
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            server.route('GET', '/', 'index');
+            server.route('POST', '/upload/', 'upload');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            asker({
+                method: 'POST',
+                path: '/',
+                socketPath: sock,
+                statusFilter: function () {
+                    return {
+                        accept: true,
+                        isRetryAllowed: false
+                    };
+                }
+            }, function (err, res) {
+                test.strictEqual(res.statusCode, 405);
+                test.strictEqual(res.headers.allow, 'GET');
+                test.deepEqual(res.data,
+                    new Buffer(STATUS_CODES[res.statusCode]));
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            asker({
+                method: 'PUT',
+                path: '/',
+                socketPath: sock,
+                statusFilter: function () {
+                    return {
+                        accept: true,
+                        isRetryAllowed: false
+                    };
+                }
+            }, function (err, res) {
+                test.strictEqual(res.statusCode, 501);
+                test.deepEqual(res.data,
+                    new Buffer(STATUS_CODES[res.statusCode]));
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            server.decl('error', function (track) {
+                track.send(500, new Error('O_O'));
+            });
+
+            server.route('GET', '/error/', 'error');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/error/',
+                socketPath: sock,
+                statusFilter: function () {
+                    return {
+                        accept: true,
+                        isRetryAllowed: false
+                    };
+                }
+            }, function (err, res) {
+                test.strictEqual(res.statusCode, 500);
+                test.ok(res.data + '' !== STATUS_CODES[res.statusCode]);
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+            var spy = [];
+
+            server.route('GET', '/index/', 'index');
+            server.decl('index', function (track) {
+                track.send('INDEX');
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            server.on('sys:response', function (event) {
+                event.status(500);
+                test.strictEqual(typeof event.time, 'number');
+                test.ok(isFinite(event.time));
+                spy.push(event.status());
+            });
+
+            asker({
+                method: 'GET',
+                path: '/index/',
+                socketPath: sock
+            }, function (err, res) {
+                test.deepEqual(res.data, new Buffer('INDEX'));
+                test.deepEqual(spy, [500]);
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            server.route('GET', '/', 'index-page', {
+                unit: 'index'
+            });
+
+            server.decl('index', function (track) {
+                track.send('INDEX');
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/',
+                socketPath: sock
+            }, function (err, res) {
+                test.deepEqual(res.data, new Buffer('INDEX'));
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.on('sys:request', function (connect) {
+                connect.send(201);
+            });
+
+            server.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/',
+                socketPath: sock
+            }, function (err, res) {
+                test.deepEqual(res.statusCode, 201);
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var server = new Framework();
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.decl('some', function (track, errors, result, done) {
+                done(1);
+            });
+
+            server.route('GET', '/', 'some');
+
+            server.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/',
+                socketPath: sock,
+                statusFilter: function () {
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, res) {
+                test.deepEqual(res.statusCode, 500);
+                test.deepEqual(res.data + '', '1');
+                test.done();
+            });
+        },
+
+        function (test) {
+
+            var S = Framework.extend({
+                _findRoute: function (connect) {
+                    connect.send(404);
+                }
+            });
+
+            var server = new S();
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            server.decl('some', function (track, errors, result, done) {
+                done(1);
+            });
+
+            server.route('GET', '/', 'some');
+
+            server.listen(sock);
+
+            asker({
+                method: 'GET',
+                path: '/',
+                socketPath: sock,
+                statusFilter: function () {
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, res) {
+                test.deepEqual(res.statusCode, 404);
+                test.done();
+            });
         }
+
     ]
 };

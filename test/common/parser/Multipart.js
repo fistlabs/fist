@@ -3,7 +3,7 @@
 var Multipart = require('../../../parser/Multipart');
 var Parted = require('../../util/Parted');
 var http = require('../../util/http');
-var isMultipart = require('../../../parser/Body').isMultipart;
+var isMultipart = require('../../../util/BodyParser').isMultipart;
 
 var BOUNDARY = 'AskerBoundary-7691254443489015';
 var FIXTURE0 = [

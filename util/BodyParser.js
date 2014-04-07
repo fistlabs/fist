@@ -8,11 +8,11 @@ var R_URLENCODED = /^application\/x-www-form-urlencoded(?:;|$)/i;
 var QueryString = /** @type QueryString */ require('querystring');
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
-var Parser = /** @type Parser */ require('./Parser');
-var Raw = /** @type Raw */ require('./Raw');
-var Urlencoded = /** @type Urlencoded */ require('./Urlencoded');
-var Json = /** @type Json */ require('./Json');
-var Multipart = /** @type Multipart */ require('./Multipart');
+var Parser = /** @type Parser */ require('./../parser/Parser');
+var Raw = /** @type Raw */ require('./../parser/Raw');
+var Urlencoded = /** @type Urlencoded */ require('./../parser/Urlencoded');
+var Json = /** @type Json */ require('./../parser/Json');
+var Multipart = /** @type Multipart */ require('./../parser/Multipart');
 
 /**
  * @class Body
