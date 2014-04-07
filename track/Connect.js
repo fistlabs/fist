@@ -51,20 +51,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         /**
          * @public
          * @memberOf {Connect}
-         * @property {String}
-         * */
-        this.method = req.method;
-
-        /**
-         * @public
-         * @memberOf {Connect}
-         * @property {Object}
-         * */
-        this.url = Connect.url(req);
-
-        /**
-         * @public
-         * @memberOf {Connect}
          * @property {*}
          * */
         this.match = null;
@@ -74,7 +60,21 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @memberOf {Connect}
          * @property {String}
          * */
+        this.method = req.method;
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property {String}
+         * */
         this.route = null;
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property {Object}
+         * */
+        this.url = Connect.url(req);
 
         /**
          * @protected
