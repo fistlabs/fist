@@ -1,18 +1,18 @@
 'use strict';
 
-var Body = require('../../../parser/Body');
+var BodyParser = require('../../../util/BodyParser');
 var http = require('../../util/http');
 
 module.exports = {
 
-    'Body.prototype.parse': [
+    'BodyParser.prototype.parse': [
         function (test) {
 
             http({
                 method: 'get'
             }, function (req, res) {
 
-                var parser = new Body();
+                var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -33,7 +33,7 @@ module.exports = {
 
                 delete req.headers['content-type'];
 
-                var parser = new Body();
+                var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -55,7 +55,7 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new Body();
+                var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -77,7 +77,7 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new Body();
+                var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -101,7 +101,7 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new Body(req);
+                var parser = new BodyParser(req);
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -125,7 +125,7 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new Body();
+                var parser = new BodyParser();
 
                 parser.parse(req).next(null, function (err) {
                     test.ok(err instanceof SyntaxError);
@@ -144,7 +144,7 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var parser = new Body();
+                var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -162,7 +162,7 @@ module.exports = {
         }
     ],
 
-    'Body.isJSON': [
+    'BodyParser.isJSON': [
         function (test) {
 
             var equal = [
@@ -182,7 +182,7 @@ module.exports = {
             ];
 
             equal.forEach(function (type) {
-                test.ok(Body.isJSON({
+                test.ok(BodyParser.isJSON({
                     headers: {
                         'content-type': 'application/' + type
                     }
@@ -190,7 +190,7 @@ module.exports = {
             });
 
             nequal.forEach(function (type) {
-                test.ok(!Body.isJSON({
+                test.ok(!BodyParser.isJSON({
                     headers: {
                         'content-type': 'application/' + type
                     }
@@ -201,7 +201,7 @@ module.exports = {
         }
     ],
 
-    'Body.isMultipart': [
+    'BodyParser.isMultipart': [
         function (test) {
 
             var equal = [
@@ -215,7 +215,7 @@ module.exports = {
             ];
 
             equal.forEach(function (type) {
-                test.ok(Body.isMultipart({
+                test.ok(BodyParser.isMultipart({
                     headers: {
                         'content-type': type
                     }
@@ -223,7 +223,7 @@ module.exports = {
             });
 
             nequal.forEach(function (type) {
-                test.ok(!Body.isMultipart({
+                test.ok(!BodyParser.isMultipart({
                     headers: {
                         'content-type': type
                     }
@@ -234,7 +234,7 @@ module.exports = {
         }
     ],
 
-    'Body.isUrlencoded': [
+    'BodyParser.isUrlencoded': [
         function (test) {
 
             var equal = [
@@ -251,7 +251,7 @@ module.exports = {
             ];
 
             equal.forEach(function (type) {
-                test.ok(Body.isUrlencoded({
+                test.ok(BodyParser.isUrlencoded({
                     headers: {
                         'content-type': 'application/' + type
                     }
@@ -259,7 +259,7 @@ module.exports = {
             });
 
             nequal.forEach(function (type) {
-                test.ok(!Body.isUrlencoded({
+                test.ok(!BodyParser.isUrlencoded({
                     headers: {
                         'content-type': 'application/' + type
                     }

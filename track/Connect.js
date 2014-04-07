@@ -15,7 +15,7 @@ var REDIRECT_STATUS = [300, 301, 302,
 
 var STATUS_CODES = require('http').STATUS_CODES;
 
-var Body = /** @type Body */ require('../parser/Body');
+var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
 var Cookie = /** @type Cookie */ require('../util/Cookie');
 var Next = /** @type Next */ require('fist.util.next/Next');
 var Raw = /** @type Raw */ require('../parser/Raw');
@@ -150,7 +150,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
                 length: this._req.headers['content-length']
             }, params);
 
-            this._body = new Body(opts).parse(this._req);
+            this._body = new BodyParser(opts).parse(this._req);
         }
 
         this._body.done(done, this);
