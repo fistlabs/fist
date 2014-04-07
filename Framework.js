@@ -4,11 +4,11 @@ var Http = require('http');
 
 var Connect = /** @type Connect */ require('./track/Connect');
 var Nested = /** @type Nested */ require('./bundle/Nested');
+var Raw = /** @type Raw */ require('./parser/Raw');
 var Router = /** @type Router */ require('./router/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
-//  TODO заинлайнить методы caller-а как protected-члены
-var caller = require('./util/caller');
+var _ = /** @type _ */ require('lodash');
 
 /**
  * @class Framework
@@ -231,7 +231,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            caller.callFunc.call(this, this._tasks.shift(), [], ready);
+            this._callFunc(this._tasks.shift(), [], ready);
         }
     },
 
@@ -290,13 +290,279 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
     _call: function (func, track, bundle, done) {
 
         if ( 'function' === typeof func ) {
-            caller.callFunc.call(this, func,
-                [track, bundle.errors, bundle.result], done);
+            this._callFunc(func, [track, bundle.errors, bundle.result], done);
 
             return;
         }
 
-        caller.callRet.call(this, func, done, true);
+        this._callRet(func, done, true);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Function} func
+     * @param {Array|Arguments} args
+     * @param {Function} done
+     * */
+    _callFunc: function (func, args, done) {
+
+        var called = false;
+
+        function resolve () {
+
+            if ( called ) {
+
+                return;
+            }
+
+            called = true;
+
+            done.apply(this, arguments);
+        }
+
+        //  Необходимо скопировать свойства функции, не нравится мне это!
+        _.extend(resolve, done);
+        args = args.concat(resolve);
+
+        if ( 'GeneratorFunction' === func.constructor.name ) {
+            this._callGenFn(func, args, done);
+
+            return;
+        }
+
+        func = func.apply(this, args);
+
+        if ( called || void 0 === func ) {
+
+            return;
+        }
+
+        called = true;
+
+        this._callRet(func, done, true);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Object} gen
+     * @param {*} result
+     * @param {Boolean} isError
+     * @param {Function} done
+     * */
+    _callGen: function (gen, result, isError, done) {
+
+        try {
+            result = isError ? gen.throw(result) : gen.next(result);
+        } catch (err) {
+            done.call(this, err);
+
+            return;
+        }
+
+        if ( result.done ) {
+            this._callYield(result.value, done);
+
+            return;
+        }
+
+        this._callYield(result.value, function (err, res) {
+
+            if ( 1 === arguments.length ) {
+                this._callGen(gen, err, true, done);
+
+                return;
+            }
+
+            this._callGen(gen, res, false, done);
+        });
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Function} func
+     * @param {Array|Arguments} args
+     * @param {Function} done
+     * */
+    _callGenFn: function (func, args, done) {
+        func = func.apply(this, args);
+        this._callGen(func, void 0, false, done);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Object} obj
+     * @param {Function} done
+     * */
+    _callObj: function (obj, done) {
+
+        var isError;
+        var keys = _.keys(obj);
+        var klen = keys.length;
+        var result = Array.isArray(obj) ? [] : {};
+
+        if ( 0 === klen ) {
+            done.call(this, null, result);
+
+            return;
+        }
+
+        isError = false;
+
+        _.forOwn(keys, function (i) {
+
+            function onReturned (err, res) {
+
+                if ( isError ) {
+
+                    return;
+                }
+
+                if ( 1 === arguments.length ) {
+                    isError = true;
+                    done.call(this, err);
+
+                    return;
+                }
+
+                result[i] = res;
+                klen -= 1;
+
+                if ( 0 === klen ) {
+                    done.call(this, null, result);
+                }
+            }
+
+            this._callRet(obj[i], onReturned, true);
+        }, this);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Promise} promise
+     * @param {Function} done
+     * */
+    _callPromise: function (promise, done) {
+
+        var self = this;
+
+        try {
+            promise.then(function (res) {
+                done.call(self, null, res);
+            }, function (err) {
+                done.call(self, err);
+            });
+
+        } catch (err) {
+            done.call(this, err);
+        }
+
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Readable} stream
+     * @param {Function} done
+     * */
+    _callStream: function (stream, done) {
+        new Raw().parse(stream).done(done, this);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {*} val
+     * @param {Function} done
+     * @param {Boolean} [asis]
+     *
+     * @returns {Boolean}
+     * */
+    _callRet: function (val, done, asis) {
+
+        if ( Object(val) === val ) {
+
+            if ( 'function' === typeof val ) {
+                this._callFunc(val, [], done);
+
+                return true;
+            }
+
+            if ( 'function' === typeof val.next &&
+                 'function' === typeof val.throw ) {
+                this._callGen(val, void 0, false, done);
+
+                return true;
+            }
+
+            if ( 'function' === typeof val.pipe ) {
+                this._callStream(val, done);
+
+                return true;
+            }
+
+            try {
+
+                if ( 'function' === typeof val.then ) {
+                    this._callPromise(val, done);
+
+                    return true;
+                }
+
+            } catch (err) {
+                done.call(this, err);
+
+                return true;
+            }
+
+            if ( asis ) {
+                done.call(this, null, val);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        done.call(this, null, val);
+
+        return true;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {*} value
+     * @param {Function} done
+     * */
+    _callYield: function (value, done) {
+
+        if ( this._callRet(value, done) ) {
+
+            return;
+        }
+
+        this._callObj(value, done);
     },
 
     /**
