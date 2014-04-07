@@ -757,7 +757,7 @@ module.exports = {
                 }
             }, function (err, data) {
                 test.deepEqual(data.data, new Buffer('<a href="' +
-                    '/test/?a=5&#38;b=6">/test/?a=5&#38;b=6</a>'));
+                    '/test/?a=5&amp;b=6">/test/?a=5&amp;b=6</a>'));
                 test.strictEqual(data.statusCode, 302);
                 test.strictEqual(data.headers.location, '/test/?a=5&b=6');
                 test.done();

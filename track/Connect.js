@@ -23,7 +23,6 @@ var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
 var _ = /** @type _ */ require('lodash');
-var htmlEscape = require('../util/html/escape');
 var uniqueId = require('fist.lang.id');
 
 /**
@@ -282,7 +281,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         this.header('Location', url);
 
-        url = htmlEscape(url);
+        url = _.escape(url);
 
         if ( /text\/html/.test( this._res.getHeader('Content-Type') ) ) {
             url = '<a href="' + url + '">' + url + '</a>';
