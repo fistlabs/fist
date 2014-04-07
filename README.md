@@ -29,7 +29,7 @@ fist.listen(1337);
 * [Расширение](#%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%B8%D0%B5)
 * [Ссылки](#%D0%A1%D1%81%D1%8B%D0%BB%D0%BA%D0%B8)
   * [Плагины](#%D0%9F%D0%BB%D0%B0%D0%B3%D0%B8%D0%BD%D1%8B)
-  * [Узлы](#%D0%A3%D0%B7%D0%BB%D1%8B)
+* [TODO](#todo-001)
 
 #Базовые понятия
 ##Приложение
@@ -445,5 +445,8 @@ var app = new CustomFist();
 [fist.plug.routes](https://github.com/fistlabs/fist.plug.routes) - автоматически декларирует маршруты по переданной общей декларации
 
 [fist.plug.toobusy](https://github.com/fistlabs/fist.plug.toobusy) - поджигает событие ```sys:toobusy``` когда процесс перегружен
-##Узлы
-[fist.unit.body](https://github.com/fistlabs/fist.unit.body) - body-parser, оформленный как [узел](#%D0%A3%D0%B7%D0%B5%D0%BB)
+
+#TODO (0.0.1)
+ 1. Избавиться от абстракции Server, объединить Runtime + Connect в Connect
+ 2. Рефакторинг BodyParser, сделать возможным добавление кастомных парсеров определяющихся по content-type
+ 3. Подумать о нескольких роутерах на одном сервере, если будет необходимо ясно, то запланировать на 1.0.0
