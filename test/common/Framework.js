@@ -3,6 +3,8 @@
 var Framework = require('../../Framework');
 var Fs = require('fs');
 var Vow = require('vow');
+var Parted = require('../util/Parted');
+var Iter = require('../util/Iter');
 
 var asker = require('asker');
 var sock = require('../stuff/conf/sock');
@@ -10,6 +12,44 @@ var sock = require('../stuff/conf/sock');
 var Connect = require('../../track/Connect');
 var STATUS_CODES = require('http').STATUS_CODES;
 var http = require('../util/http');
+
+var PublicMorozov = Framework.extend({
+
+    callPromise: function () {
+        return this._callPromise.apply(this, arguments);
+    },
+
+    callStream: function () {
+        return this._callStream.apply(this, arguments);
+    },
+
+    callObj: function () {
+        return this._callObj.apply(this, arguments);
+    },
+
+    callRet: function () {
+        return this._callRet.apply(this, arguments);
+    },
+
+    callYield: function () {
+        return this._callYield.apply(this, arguments);
+    },
+
+    callFunc: function () {
+        return this._callFunc.apply(this, arguments);
+    },
+
+    callGenFn: function () {
+        return this._callGenFn.apply(this, arguments);
+    },
+
+    callGen: function () {
+        return this._callGen.apply(this, arguments);
+    }
+
+});
+
+var caller = new PublicMorozov();
 
 module.exports = {
 
@@ -841,6 +881,253 @@ module.exports = {
                 test.done();
             });
         }
+    ],
 
+    callPromise: [
+        function (test) {
+            caller.callPromise(Vow.resolve(42), function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.ok(!err);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callPromise({
+                get then() {
+                    throw 42
+                }
+            }, function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(err, 42);
+                test.ok(!res);
+                test.done();
+            });
+        }
+    ],
+    callStream: [
+        function (test) {
+            caller.callStream(new Parted(['a', 'b', 'c']),
+                function (err, res) {
+                    test.strictEqual(this, caller);
+                    test.deepEqual(res, new Buffer('abc'));
+                    test.done();
+                });
+        }
+    ],
+    callObj: [
+        function (test) {
+            caller.callObj({}, function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, {});
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callObj({a: {}}, function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, {a: {}});
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callObj([], function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, []);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callObj([1], function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, [1]);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callObj([1, Vow.resolve(42)], function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, [1, 42]);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callObj([Vow.reject(42), Vow.reject(43)],
+                function (err) {
+                    test.strictEqual(this, caller);
+                    test.deepEqual(err, 42);
+                    test.done();
+                });
+        }
+    ],
+    callRet: [
+        function (test) {
+            caller.callRet(42, function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callRet(function (done) {
+                test.strictEqual(this, caller);
+                done.call(this, null, 42);
+            }, function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callRet(new Iter([42]), function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callRet(new Parted([42]), function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, new Buffer('42'));
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callRet(Vow.resolve(42), function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callRet({
+                get then() {
+                    throw 42;
+                }
+            }, function (err) {
+                test.strictEqual(this, caller);
+                test.deepEqual(err, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            test.ok(!caller.callRet({}));
+            test.done();
+        }
+    ],
+    callYield: [
+        function (test) {
+            caller.callYield(42, function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callYield({}, function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, {});
+                test.done();
+            });
+        }
+    ],
+    callFunc: [
+        function (test) {
+            caller.callFunc(function (done) {
+                test.strictEqual(this, caller);
+                done.call(this, null, 42);
+            }, [], function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callFunc(function () {
+                test.strictEqual(this, caller);
+                return {a: 42};
+            }, [], function (err, res) {
+                test.strictEqual(this, caller);
+                test.deepEqual(res, {a: 42});
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callFunc(function (done) {
+                test.strictEqual(this, caller);
+                done.call(this, null, 42);
+                done.call(this, null, 43);
+            }, [], function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                setTimeout(function () {
+                    test.done();
+                }, 0);
+            });
+        },
+        function (test) {
+            caller.callFunc(function () {
+                test.strictEqual(this, caller);
+
+                return 42;
+            }, [], function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callFunc({
+                constructor: {
+                    name: 'GeneratorFunction'
+                },
+                apply: function (self) {
+                    test.strictEqual(self, caller);
+
+                    return new Iter([42]);
+                }
+            }, [], function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        }
+    ],
+    callGenFn: [
+        function (test) {
+            caller.callGenFn(function () {
+                test.strictEqual(this, caller);
+                return new Iter([42]);
+            }, [], function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        }
+    ],
+    callGen: [
+        function (test) {
+            caller.callGen(new Iter([1, 42]), null, false,
+                function (err, res) {
+                    test.strictEqual(this, caller);
+                    test.strictEqual(res, 42);
+                    test.done();
+                });
+        },
+        function (test) {
+            caller.callGen(new Iter([43]), 42, true, function (err) {
+                test.strictEqual(this, caller);
+                test.strictEqual(err, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callGen(new Iter([Vow.reject(42), 43]), null,
+                false, function (err) {
+                    test.strictEqual(this, caller);
+                    test.strictEqual(err, 42);
+                    test.done();
+                });
+        }
     ]
 };
