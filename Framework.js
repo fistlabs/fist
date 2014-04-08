@@ -124,6 +124,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
         var server = Http.createServer(this.getHandler());
 
         server.listen.apply(server, arguments);
+
         //  автоматически запускаю инициализацию
         this.ready();
 
@@ -159,12 +160,14 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        //  увеличиваю количество запросов на инициализацию
-        this._pending += 1;
+        this._state = -1;
 
-        if ( 1 === this._pending ) {
+        if ( 0 === this._pending ) {
             this.emit('sys:pending');
         }
+
+        //  увеличиваю количество запросов на инициализацию
+        this._pending += 1;
 
         //  нет задач
         if ( 0 === length ) {
@@ -190,6 +193,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
             //  плагин разрешен с ошибкой
             if ( 1 === arguments.length ) {
+
                 //  Если произошла критическая ошибка то вы можете
                 // поджечь сами sys:ready если можете ее разрешить
                 self.once('sys:ready', function () {
@@ -209,6 +213,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
             //  все задачи разрешены
             if ( 0 === length ) {
+
                 //  уменьшаем количество запросов на инициализацию
                 self._pending -= 1;
 
@@ -271,8 +276,19 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      * */
-    route: function () {
-        this.router.addRoute.apply(this.router, arguments);
+    route: function (verb, expr, name, data, opts) {
+
+        if ( Object(data) !== data ) {
+            data = {
+                unit: data
+            };
+        }
+
+        if ( void 0 === data.unit || null === data.unit ) {
+            data.unit = name;
+        }
+
+        this.router.addRoute(verb, expr, name, data, opts);
 
         return this;
     },
@@ -625,39 +641,42 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @param {Connect} track
      * */
     _handle: function (track) {
+
         /*eslint complexity: [2, 11]*/
-        var mdata;
-        var rdata;
+        var route;
 
-        if ( 1 === this._state ) {
-
-            return;
-        }
-
-        if ( 0 !== this._state || 0 !== this._pending ) {
-            this._pends.push(track);
-
-            return;
-        }
-
+        //  был сделан send() где-то в обработчке события sys:request
         if ( track.sent() ) {
 
             return;
         }
 
-        mdata = this._findRoute(track);
+        //  При инициализации произошла ошибка
+        if ( 1 === this._state ) {
+            track.send(502);
 
-        //  по сути такой роутер может сделать send
-        //  если он сделал send то он конечно понимает что он сделал
-        //  такой поступок не может быть необдуманным, мы прекращаем
-        //  обработку запроса
+            return;
+        }
+
+        //  еще не проинициализирован
+        if ( -1 === this._state ) {
+
+            //  отложить запрос
+            this._pends.push(track);
+
+            return;
+        }
+
+        route = this._findRoute(track);
+
+        //  роутер сделал send()
         if ( track.sent() ) {
 
             return;
         }
 
         //  однозначно нет такого маршрута
-        if ( null === mdata ) {
+        if ( null === route ) {
             this.emit('sys:ematch', track);
             track.send(404);
 
@@ -665,13 +684,15 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
         }
 
         //  возвращен массив
-        if ( Array.isArray(mdata) ) {
+        if ( Array.isArray(route) ) {
+
             //  это тоже значит что нет такого роута
             this.emit('sys:ematch', track);
 
             //  если массив пустой, то на сервере совсем нет ни одного
             //  маршрута отвечающего по такому методу запроса
-            if ( 0 === mdata.length ) {
+            if ( 0 === route.length ) {
+
                 //  Not Implemented
                 track.send(501);
 
@@ -680,7 +701,8 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
             //  Иначе есть такие маршруты, но для них не
             // поддерживается такой метод
-            track.header('Allow', mdata.join(', '));
+            track.header('Allow', route.join(', '));
+
             //  Method Not Allowed
             track.send(405);
 
@@ -689,16 +711,11 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
         this.emit('sys:match', track);
 
-        track.match = mdata.match;
-        track.route = mdata.route.name;
+        track.match = route.match;
+        route = route.route;
+        track.route = route.name;
 
-        rdata = mdata.route.data;
-
-        if ( Object(rdata) === rdata ) {
-            rdata = rdata.unit;
-        }
-
-        this.resolve(track, rdata || track.route, function (err, res) {
+        this.resolve(track, route.data.unit, function (err, res) {
 
             if ( 2 > arguments.length ) {
                 track.send(500, err);
