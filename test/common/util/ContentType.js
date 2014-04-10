@@ -1,17 +1,17 @@
 'use strict';
 
-var Media = require('../../../util/Media');
+var ContentType = require('../../../util/ContentType');
 
 module.exports = {
 
-    Media: [
+    ContentType: [
         function (test) {
 
             var header = 'multipart/form-data;' +
                 'boundary=BOUNDARY;' +
                 'charset="UTF-8"';
 
-            test.deepEqual(new Media(header), {
+            test.deepEqual(new ContentType(header), {
                 type: 'multipart',
                 subtype: 'form-data',
                 params: {
@@ -21,16 +21,13 @@ module.exports = {
             });
 
             test.done();
-        }
-    ],
-
-    parseMedia: [
+        },
         function (test) {
 
             var media;
             var srcParams = 'text/html;a=5;b=6;c=7;a=55;a=555';
 
-            media = Media.parseMedia(srcParams);
+            media = new ContentType(srcParams);
 
             test.deepEqual(media, {
                 type: 'text',
@@ -42,12 +39,10 @@ module.exports = {
                 }
             });
 
-            test.strictEqual(media, Media.parseMedia(srcParams));
-
             test.done();
         },
         function (test) {
-            test.deepEqual(Media.parseMedia('text/plain;' +
+            test.deepEqual(new ContentType('text/plain;' +
                 'a=1; a =2; a = "3";a="\\"" ;'), {
                 type: 'text',
                 subtype: 'plain',
@@ -58,5 +53,4 @@ module.exports = {
             test.done();
         }
     ]
-
 };

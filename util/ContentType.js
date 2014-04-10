@@ -3,108 +3,62 @@
 var R_SPACE = /^\s+$/;
 var Base = /** @type Base */ require('fist.lang.class/Base');
 
-var parseCache = Object.create(null);
 var _ = /** @type _ */ require('lodash');
 
 /**
- * @class Media
+ * @class ContentType
  * @extends Base
  * */
-var Media = Base.extend(/** @lends Media.prototype */ {
+var ContentType = Base.extend(/** @lends ContentType.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Media}
+     * @memberOf {ContentType}
      * @method
      *
      * @constructs
+     *
+     * @param {String} header
      * */
-    constructor: function (contentType) {
-        _.extend(this, Media.parseMedia(contentType));
+    constructor: function (header) {
+
+        var ast = ContentType._createAst(header);
+        var type = ast.shift()[0];
+
+        type = type.split('/');
+
+        /**
+         * @public
+         * @memberOf {ContentType}
+         * @property
+         * @type {String}
+         * */
+        this.type = type[0];
+
+        /**
+         * @public
+         * @memberOf {ContentType}
+         * @property
+         * @type {String}
+         * */
+        this.subtype = type.slice(1).join('/');
+
+        /**
+         * @public
+         * @memberOf {ContentType}
+         * @property
+         * @type {Object}
+         * */
+        this.params = _.reduce(ast,
+            ContentType._astReducer, Object.create(null));
     }
 
 }, {
 
     /**
-     * @public
-     * @static
-     * @memberOf Media
-     * @method
-     *
-     * @param {String} src
-     *
-     * @returns {Object}
-     * */
-    parseMedia: function (src) {
-
-        if ( src in parseCache ) {
-
-            return parseCache[src];
-        }
-
-        parseCache[src] = Media._parseContentTypeHeader(src);
-
-        return parseCache[src];
-    },
-
-    /**
      * @protected
      * @static
-     * @memberOf Media
-     * @method
-     *
-     * @param {String} header
-     *
-     * @returns {Object}
-     * */
-    _parseContentTypeHeader: function (header) {
-
-        var ast = Media._createParamsAst(header);
-
-        return _.extend(Media._parseMimeType(ast.shift()[0]), {
-            params: Media._reduceParamsAst(ast)
-        });
-    },
-
-    /**
-     * @protected
-     * @static
-     * @memberOf Media
-     * @method
-     *
-     * @param {String} type
-     *
-     * @returns {Object}
-     * */
-    _parseMimeType: function (type) {
-
-        var mime = type.split('/');
-
-        return {
-            type: mime[0],
-            subtype: mime.slice(1).join('/')
-        };
-    },
-
-    /**
-     * @protected
-     * @static
-     * @memberOf Media
-     * @method
-     *
-     * @param {Object} ast
-     *
-     * @returns {Object}
-     * */
-    _reduceParamsAst: function (ast) {
-
-        return _.reduce(ast, Media._paramsAstReducer, Object.create(null));
-    },
-
-    /**
-     * @protected
-     * @static
-     * @memberOf Media
+     * @memberOf ContentType
      *
      * @method
      *
@@ -113,7 +67,7 @@ var Media = Base.extend(/** @lends Media.prototype */ {
      *
      * @returns {Object}
      * */
-    _paramsAstReducer: function (params, param) {
+    _astReducer: function (params, param) {
 
         if ( Array.isArray(params[param[0]]) ) {
             params[param[0]].push(param[1]);
@@ -136,14 +90,14 @@ var Media = Base.extend(/** @lends Media.prototype */ {
     /**
      * @protected
      * @static
-     * @memberOf Media
+     * @memberOf ContentType
      * @method
      *
      * @param {String} src
      *
      * @returns {Array}
      * */
-    _createParamsAst: function (src) {
+    _createAst: function (src) {
         /*eslint complexity: [2,15]*/
         var i = 0;
         var l = src.length;
@@ -273,4 +227,4 @@ var Media = Base.extend(/** @lends Media.prototype */ {
 
 });
 
-module.exports = Media;
+module.exports = ContentType;
