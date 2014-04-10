@@ -3,7 +3,7 @@
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Next = /** @type Next */ require('fist.util.next/Next');
 
-var _ = require('lodash');
+var _ = /** @type _ */ require('lodash');
 
 /**
  * @abstract
