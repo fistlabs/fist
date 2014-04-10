@@ -10,9 +10,19 @@ var QueryString = /** @type QueryString */ require('querystring');
 var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
 
     /**
-     * @protected
+     * @public
+     * @memberOf {Urlencoded}
+     * @property
+     * @type {String}
+     * */
+    type: 'urlencoded',
+
+    /**
+     * @public
      * @memberOf {Urlencoded}
      * @method
+     *
+     * @returns {Next}
      * */
     parse: function (stream) {
 
@@ -21,6 +31,21 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
 
                 return done(null, QueryString.parse(String(res)));
             });
+    },
+
+    /**
+     * @public
+     * @memberOf {Urlencoded}
+     * @method
+     *
+     * @param {Object} media
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function (media) {
+
+        return 'application' === media.type &&
+            'x-www-form-urlencoded' === media.subtype;
     }
 
 });

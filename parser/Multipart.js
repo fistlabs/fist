@@ -1,5 +1,6 @@
 'use strict';
 
+//  TODO парсить с помощью {ContentType}
 var R_FIELDNAME = /;\s*name=(?:"([^"]*)"|([^"]*))/;
 var R_FILENAME = /;\s*filename=(?:"([^"]*)"|([^\s]*))/;
 
@@ -14,25 +15,49 @@ var Parser = /** @type Parser */ require('./Parser');
 var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
     /**
-     * @protected
+     * @public
+     * @memberOf {Multipart}
+     * @property
+     * @type {String}
+     * */
+    type: 'multipart',
+
+    /**
+     * @public
      * @memberOf {Multipart}
      * @method
+     *
+     * @returns {Next}
      * */
     parse: function (stream) {
 
         var next = new Next();
 
-        Multipart.parseMultipart(stream, this.params, function () {
+        Multipart._parseMultipart(stream, this.params, function () {
             next.args(arguments);
         });
 
         return next;
+    },
+
+    /**
+     * @public
+     * @memberOf {Multipart}
+     * @method
+     *
+     * @param {Object} media
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function (media) {
+
+        return 'multipart' === media.type;
     }
 
 }, /** @lends Multipart */ {
 
     /**
-     * @public
+     * @protected
      * @static
      * @memberOf Multipart
      *
@@ -40,7 +65,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @param {Object} params
      * @param {Function} done
      * */
-    parseMultipart: function (stream, params, done) {
+    _parseMultipart: function (stream, params, done) {
 
         var parser = new Dicer(params);
         var received = 0;
