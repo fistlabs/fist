@@ -1,9 +1,10 @@
 'use strict';
 
+var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Dicer = /** @type Dicer */ require('dicer');
+var MediaHead = /** @type MediaHead */ require('../util/MediaHead');
 var Next = /** @type Next */ require('fist.util.next/Next');
 var Parser = /** @type Parser */ require('./Parser');
-var ContentType = /** @type ContentType */ require('../util/ContentType');
 
 /**
  * @class Multipart
@@ -82,7 +83,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
                 var disp = (header['content-disposition'] || [])[0];
 
-                disp = new ContentType(disp);
+                disp = new MediaHead(disp);
                 field = disp.params.name;
 
                 if ( field ) {
@@ -90,6 +91,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
                     if ( file ) {
                         mime = (header['content-type'] || [])[0];
+                        //  TODO 1.0.0 не сериализовать mime!
                         mime = new ContentType(mime).getMime();
                     }
 

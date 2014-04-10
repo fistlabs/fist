@@ -14,6 +14,7 @@ module.exports = {
             test.deepEqual(new ContentType(header), {
                 type: 'multipart',
                 subtype: 'form-data',
+                value: 'multipart/form-data',
                 params: {
                     boundary: 'BOUNDARY',
                     charset: 'UTF-8'
@@ -32,6 +33,7 @@ module.exports = {
             test.deepEqual(media, {
                 type: 'text',
                 subtype: 'html',
+                value: 'text/html',
                 params: {
                     a: ['5', '55', '555'],
                     b: '6',
@@ -46,6 +48,7 @@ module.exports = {
                 'a=1; a =2; a = "3";a="\\"" ;'), {
                 type: 'text',
                 subtype: 'plain',
+                value: 'text/plain',
                 params: {
                     a: ['1', '2', '3', '"']
                 }
