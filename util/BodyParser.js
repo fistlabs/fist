@@ -1,7 +1,5 @@
 'use strict';
 
-var QueryString = /** @type QueryString */ require('querystring');
-
 var Base = /** @type Base */ require('fist.lang.class/Base');
 var Parser = /** @type Parser */ require('./../parser/Parser');
 var Raw = /** @type Raw */ require('./../parser/Raw');
@@ -68,14 +66,15 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
 
                     return false;
                 }
-
             });
 
             if ( null === CurrentParser ) {
                 CurrentParser = Raw;
             }
 
-            params = _.extend({}, this.params, contentType.params);
+            params = _.extend({}, this.params, contentType.params, {
+                length: req.headers['content-length']
+            });
 
         } else {
             CurrentParser = Parser;

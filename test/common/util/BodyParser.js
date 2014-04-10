@@ -101,7 +101,7 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser(req);
+                var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {

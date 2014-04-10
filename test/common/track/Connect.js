@@ -171,25 +171,6 @@ module.exports = {
             }, function () {
                 test.done();
             });
-        },
-
-        function (test) {
-            connect({
-                method: 'post',
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
-                },
-                body: 'a=5'
-            }, function (t, req, res) {
-                t.body({length: 2}, function (err) {
-                    test.ok(err);
-                    test.strictEqual(err.code, 'ELENGTH');
-                    res.end();
-                });
-
-            }, function () {
-                test.done();
-            });
         }
     ],
 
