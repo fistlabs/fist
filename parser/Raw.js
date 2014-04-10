@@ -12,14 +12,6 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
     /**
      * @public
      * @memberOf {Raw}
-     * @property
-     * @type {String}
-     * */
-    type: 'raw',
-
-    /**
-     * @public
-     * @memberOf {Raw}
      * @method
      *
      * @returns {Next}
@@ -35,6 +27,27 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
     }
 
 }, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Raw
+     * @property
+     * @type {String}
+     * */
+    type: 'raw',
+
+    /**
+     * @public
+     * @static
+     * @memberOf Raw
+     * @method
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function () {
+        return true;
+    },
 
     /**
      * @protected

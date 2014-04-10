@@ -22,10 +22,17 @@ var ContentType = Base.extend(/** @lends ContentType.prototype */ {
      * */
     constructor: function (header) {
 
-        var ast = ContentType._createAst(header);
-        var type = ast.shift()[0];
+        var ast;
+        var type;
 
-        type = type.split('/');
+        if ( header ) {
+            ast = ContentType._createAst(header);
+            type = ast.shift()[0].split('/');
+        } else {
+
+            ast = [];
+            type = [void 0, void 0];
+        }
 
         /**
          * @public
@@ -41,7 +48,9 @@ var ContentType = Base.extend(/** @lends ContentType.prototype */ {
          * @property
          * @type {String}
          * */
-        this.subtype = type.slice(1).join('/');
+        this.subtype = 2 === type.length ?
+            type[1] :
+            type.slice(1).join('/');
 
         /**
          * @public

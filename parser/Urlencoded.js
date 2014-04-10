@@ -12,14 +12,6 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
     /**
      * @public
      * @memberOf {Urlencoded}
-     * @property
-     * @type {String}
-     * */
-    type: 'urlencoded',
-
-    /**
-     * @public
-     * @memberOf {Urlencoded}
      * @method
      *
      * @returns {Next}
@@ -31,11 +23,23 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
 
                 return done(null, QueryString.parse(String(res)));
             });
-    },
+    }
+
+}, {
 
     /**
      * @public
-     * @memberOf {Urlencoded}
+     * @static
+     * @memberOf Urlencoded
+     * @property
+     * @type {String}
+     * */
+    type: 'urlencoded',
+
+    /**
+     * @public
+     * @static
+     * @memberOf Urlencoded
      * @method
      *
      * @param {Object} media

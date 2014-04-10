@@ -13,14 +13,6 @@ var Json = Raw.extend(/** @lends Json.prototype*/ {
     /**
      * @public
      * @memberOf {Json}
-     * @property
-     * @type {String}
-     * */
-    type: 'json',
-
-    /**
-     * @public
-     * @memberOf {Json}
      * @method
      *
      * @returns {Next}
@@ -40,11 +32,23 @@ var Json = Raw.extend(/** @lends Json.prototype*/ {
 
                 return done(null, res);
             });
-    },
+    }
+
+}, {
 
     /**
      * @public
-     * @memberOf {Json}
+     * @static
+     * @memberOf Json
+     * @property
+     * @type {String}
+     * */
+    type: 'json',
+
+    /**
+     * @public
+     * @static
+     * @memberOf Json
      * @method
      *
      * @param {Object} media

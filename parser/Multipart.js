@@ -17,14 +17,6 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
     /**
      * @public
      * @memberOf {Multipart}
-     * @property
-     * @type {String}
-     * */
-    type: 'multipart',
-
-    /**
-     * @public
-     * @memberOf {Multipart}
      * @method
      *
      * @returns {Next}
@@ -38,11 +30,23 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         });
 
         return next;
-    },
+    }
+
+}, /** @lends Multipart */ {
 
     /**
      * @public
-     * @memberOf {Multipart}
+     * @static
+     * @memberOf Multipart
+     * @property
+     * @type {String}
+     * */
+    type: 'multipart',
+
+    /**
+     * @public
+     * @static
+     * @memberOf Multipart
      * @method
      *
      * @param {Object} media
@@ -52,9 +56,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
     matchMedia: function (media) {
 
         return 'multipart' === media.type;
-    }
-
-}, /** @lends Multipart */ {
+    },
 
     /**
      * @protected

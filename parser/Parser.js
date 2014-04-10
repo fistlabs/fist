@@ -13,27 +13,6 @@ var _ = require('lodash');
 var Parser = Class.extend(/** @lends Parser.prototype */ {
 
     /**
-     * @public
-     * @memberOf {Parser}
-     * @property
-     * */
-    type: void 0,
-
-    /**
-     * @public
-     * @memberOf {Parser}
-     * @method
-     *
-     * @param {Object} media
-     *
-     * @returns {Boolean}
-     * */
-    matchMedia: function (media) {
-        /*eslint no-unused-vars: 0*/
-        return true;
-    },
-
-    /**
      * @protected
      * @memberOf {Parser}
      * @method
@@ -77,6 +56,26 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
     }
 
 }, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Parser
+     * @property
+     * */
+    type: void 0,
+
+    /**
+     * @public
+     * @static
+     * @memberOf Parser
+     * @method
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function () {
+        return true;
+    },
 
     /**
      * @public
