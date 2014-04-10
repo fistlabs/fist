@@ -60,6 +60,22 @@ var ContentType = Base.extend(/** @lends ContentType.prototype */ {
          * */
         this.params = _.reduce(ast,
             ContentType._astReducer, Object.create(null));
+    },
+
+    /**
+     * @public
+     * @memberOf {ContentType}
+     * @method
+     *
+     * @returns {String}
+     * */
+    getMime: function () {
+
+        if ( this.type && this.subtype ) {
+            return this.type + '/' + this.subtype;
+        }
+
+        return void 0;
     }
 
 }, {
