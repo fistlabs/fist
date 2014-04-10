@@ -1,11 +1,11 @@
 'use strict';
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
-var Parser = /** @type Parser */ require('./../parser/Parser');
-var Raw = /** @type Raw */ require('./../parser/Raw');
-var Urlencoded = /** @type Urlencoded */ require('./../parser/Urlencoded');
-var Json = /** @type Json */ require('./../parser/Json');
-var Multipart = /** @type Multipart */ require('./../parser/Multipart');
+var Parser = /** @type Parser */ require('../parser/Parser');
+var Raw = /** @type Raw */ require('../parser/Raw');
+var Urlencoded = /** @type Urlencoded */ require('../parser/Urlencoded');
+var Json = /** @type Json */ require('../parser/Json');
+var Multipart = /** @type Multipart */ require('../parser/Multipart');
 var ContentType = /** @type ContentType */ require('./ContentType');
 
 var _ = /** @type _*/ require('lodash');
@@ -51,37 +51,33 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
      * */
     parse: function (req) {
 
-        var CurrentParser = null;
-        var contentType;
-        var params;
+        var StreamParser = Parser;
 
-        if ( 'string' === typeof req.headers['transfer-encoding'] ||
-            'string' === typeof req.headers['content-length'] ) {
-            contentType = new ContentType(req.headers['content-type']);
+        var contentType;
+        var header = req.headers;
+        var params = this.params;
+
+        if ( 'string' === typeof header['transfer-encoding'] ||
+            'string' === typeof header['content-length'] ) {
+
+            StreamParser = Raw;
+            contentType = new ContentType(header['content-type']);
 
             _.forEach(this._parsers, function (Parser) {
 
                 if ( Parser.matchMedia(contentType) ) {
-                    CurrentParser = Parser;
+                    StreamParser = Parser;
 
                     return false;
                 }
             });
 
-            if ( null === CurrentParser ) {
-                CurrentParser = Raw;
-            }
-
-            params = _.extend({}, this.params, contentType.params, {
-                length: req.headers['content-length']
+            params = _.extend({}, params, contentType.params, {
+                length: header['content-length']
             });
-
-        } else {
-            CurrentParser = Parser;
-            params = this.params;
         }
 
-        return new CurrentParser(params).
+        return new StreamParser(params).
             parse(req).next(function (res, done) {
 
                 if ( Array.isArray(res) ) {
@@ -96,7 +92,7 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
                     };
                 }
 
-                res.type = CurrentParser.type;
+                res.type = StreamParser.type;
 
                 done(null, res);
             });
