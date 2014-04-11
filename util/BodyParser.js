@@ -60,10 +60,9 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
         if ( 'string' === typeof header['transfer-encoding'] ||
             'string' === typeof header['content-length'] ) {
 
-            StreamParser = Raw;
             contentType = new ContentType(header['content-type']);
 
-            _.forEach(this._parsers, function (Parser) {
+            _.forEach(this._parsers.concat(Raw), function (Parser) {
 
                 if ( Parser.matchMedia(contentType) ) {
                     StreamParser = Parser;
