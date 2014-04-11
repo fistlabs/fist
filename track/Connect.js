@@ -132,24 +132,13 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {*} [params]
      * @param {Function} done
      * */
-    body: function (params, done) {
-
-        var opts;
-
-        if ( 'function' === typeof params ) {
-            done = params;
-            params = null;
-        }
+    body: function (done) {
 
         if ( !(this._body instanceof Next) ) {
-            opts = _.extend({
-                length: this._req.headers['content-length']
-            }, params);
-
-            this._body = new BodyParser(opts).parse(this._req);
+            this._body = this.
+                _createBodyParser(this.agent.params.body).parse(this._req);
         }
 
         this._body.done(done, this);
@@ -367,6 +356,20 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         this._res.statusCode = statusCode;
 
         return statusCode;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {*} [params]
+     *
+     * @returns {BodyParser}
+     * */
+    _createBodyParser: function (params) {
+
+        return new BodyParser(params);
     },
 
     /**

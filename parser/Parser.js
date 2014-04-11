@@ -3,7 +3,7 @@
 var Class = /** @type Class */ require('fist.lang.class/Class');
 var Next = /** @type Next */ require('fist.util.next/Next');
 
-var _ = require('lodash');
+var _ = /** @type _ */ require('lodash');
 
 /**
  * @abstract
@@ -43,6 +43,8 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @protected
      * @memberOf {Parser}
      * @method
+     *
+     * @returns {Next}
      * */
     parse: function (stream) {
         /*eslint no-unused-vars: 0 */
@@ -54,6 +56,26 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
     }
 
 }, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Parser
+     * @property
+     * */
+    type: void 0,
+
+    /**
+     * @public
+     * @static
+     * @memberOf Parser
+     * @method
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function () {
+        return true;
+    },
 
     /**
      * @public

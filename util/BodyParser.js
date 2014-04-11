@@ -1,204 +1,87 @@
 'use strict';
 
-var R_MULTIPART =
-    /^multipart\/[^\s]+?;[\s\r\n]+boundary=(?:"([^"]+)"|([^\s]+))$/i;
-var R_JSON = /^application\/(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)(?:;|$)/i;
-var R_URLENCODED = /^application\/x-www-form-urlencoded(?:;|$)/i;
+var Class = /** @type Class */ require('fist.lang.class/Class');
+var ContentType = /** @type ContentType */ require('./ContentType');
+var Json = /** @type Json */ require('../parser/Json');
+var Multipart = /** @type Multipart */ require('../parser/Multipart');
+var Parser = /** @type Parser */ require('../parser/Parser');
+var Raw = /** @type Raw */ require('../parser/Raw');
+var Urlencoded = /** @type Urlencoded */ require('../parser/Urlencoded');
 
-var QueryString = /** @type QueryString */ require('querystring');
-
-var Base = /** @type Base */ require('fist.lang.class/Base');
-var Parser = /** @type Parser */ require('./../parser/Parser');
-var Raw = /** @type Raw */ require('./../parser/Raw');
-var Urlencoded = /** @type Urlencoded */ require('./../parser/Urlencoded');
-var Json = /** @type Json */ require('./../parser/Json');
-var Multipart = /** @type Multipart */ require('./../parser/Multipart');
+var _ = /** @type _*/ require('lodash');
 
 /**
- * @class Body
- * @extends Base
+ * @class BodyParser
+ * @extends Class
  * */
-var Body = Base.extend(/** @lends Body.prototype */ {
+var BodyParser = Class.extend(/** @lends BodyParser.prototype */ {
 
     /**
-     * @protected
-     * @memberOf {Base}
-     * @method
+     * Этих парсеров достаточно более чем с головой,
+     * Но при желании теперь можно добавить дополнительные парсеры
      *
-     * @constructs
+     * @protected
+     * @memberOf {BodyParser}
+     * @property
+     * @type {Array<Function>}
      * */
-    constructor: function (params) {
-        this.params = params;
-    },
+    _parsers: [
+        Urlencoded,
+        Multipart,
+        Json
+    ],
 
     /**
-     * @protected
-     * @memberOf {Body}
+     * @public
+     * @memberOf {BodyParser}
      * @method
      *
-     * @param {Object} stream
-     *
-     * @returns {Function}
+     * @param {Object} req
      * */
-    _createParser: function (stream) {
+    parse: function (req) {
 
-        var boundary;
+        var StreamParser;
 
-        if ( Body.hasBody(stream) ) {
+        var header = req.headers;
+        var contentType = new ContentType(header['content-type']);
+        var params = this.params;
+        var parsers = [Parser];
 
-            if ( Body.isUrlencoded(stream) ) {
-
-                return function (params) {
-
-                    return new Urlencoded(params).parse(stream).
-                        next(function (res, done) {
-                            done(null, {
-                                input: res,
-                                type: 'urlencoded'
-                            });
-                        });
-                };
-            }
-
-            if ( Body.isJSON(stream) ) {
-
-                return function (params) {
-
-                    return new Json(params).parse(stream).
-                        next(function (res, done) {
-                            done(null, {
-                                input: res,
-                                type: 'json'
-                            });
-                        });
-                };
-            }
-
-            boundary = Body.isMultipart(stream);
-
-            if ( boundary ) {
-
-                return function (params) {
-
-                    var parser = new Multipart(params);
-                    parser.params.boundary = boundary;
-
-                    return parser.parse(stream).next(function (res, done) {
-                        done(null, {
-                            input: res[0],
-                            files: res[1],
-                            type: 'multipart'
-                        });
-                    });
-                };
-            }
-
-            return function (params) {
-
-                return new Raw(params).parse(stream).
-                    next(function (res, done) {
-
-                        done(null, {
-                            input: res,
-                            type: 'raw'
-                        });
-                    });
-            };
+        if ( 'string' === typeof header['transfer-encoding'] ||
+            'string' === typeof header['content-length'] ) {
+            parsers = this._parsers.concat(Raw);
         }
 
-        return function (params) {
+        params = _.extend({}, params, contentType.params, {
+            length: header['content-length']
+        });
 
-            return new Parser(params).parse(stream).
-                next(function (res, done) {
-                    done(null, {
-                        input: res,
-                        type: void 0
-                    });
-                });
-        };
-    },
+        StreamParser = _.find(parsers, function (Parser) {
 
-    /**
-     * @public
-     * @memberOf {Body}
-     * @method
-     *
-     * @param {Object} stream
-     * */
-    parse: function (stream) {
+            return Parser.matchMedia(contentType);
+        });
 
-        return this._createParser(stream)(this.params);
-    }
+        return new StreamParser(params).
+            parse(req).next(function (res, done) {
 
-}, /** @lends Body */ {
+                if ( Array.isArray(res) ) {
+                    res = {
+                        input: res[0],
+                        files: res[1]
+                    };
 
-    /**
-     * @public
-     * @static
-     * @memberOf Body
-     * @method
-     *
-     * @param {Object} req
-     *
-     * @returns {Boolean}
-     * */
-    hasBody: function (req) {
+                } else {
+                    res = {
+                        input: res
+                    };
+                }
 
-        return 'string' === typeof req.headers['transfer-encoding'] ||
-            'string' === typeof req.headers['content-length'];
-    },
+                res.type = StreamParser.type;
 
-    /**
-     * @public
-     * @static
-     * @memberOf Body
-     *
-     * @param {Object} req
-     *
-     * @returns {Boolean}
-     * */
-    isUrlencoded: function (req) {
-
-        return R_URLENCODED.test(req.headers['content-type']);
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Body
-     * @method
-     *
-     * @param {Object} req
-     *
-     * @returns {Boolean}
-     * */
-    isJSON: function (req) {
-
-        return R_JSON.test(req.headers['content-type']);
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Body
-     * @method
-     *
-     * @param {Object} req
-     *
-     * @returns {*}
-     * */
-    isMultipart: function (req) {
-
-        var m = R_MULTIPART.exec(req.headers['content-type']);
-
-        if ( null === m ) {
-
-            return m;
-        }
-
-        return m[1] || m[2];
+                done(null, res);
+            });
     }
 
 });
 
-module.exports = Body;
+module.exports = BodyParser;
