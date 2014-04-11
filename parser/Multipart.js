@@ -91,7 +91,6 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
                     if ( file ) {
                         mime = (header['content-type'] || [])[0];
-                        //  TODO 1.0.0 не сериализовать mime!
                         mime = new ContentType(mime).getMime();
                     }
 

@@ -1,31 +1,20 @@
 'use strict';
 
-var Base = /** @type Base */ require('fist.lang.class/Base');
+var Class = /** @type Class */ require('fist.lang.class/Class');
+var ContentType = /** @type ContentType */ require('./ContentType');
+var Json = /** @type Json */ require('../parser/Json');
+var Multipart = /** @type Multipart */ require('../parser/Multipart');
 var Parser = /** @type Parser */ require('../parser/Parser');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Urlencoded = /** @type Urlencoded */ require('../parser/Urlencoded');
-var Json = /** @type Json */ require('../parser/Json');
-var Multipart = /** @type Multipart */ require('../parser/Multipart');
-var ContentType = /** @type ContentType */ require('./ContentType');
 
 var _ = /** @type _*/ require('lodash');
 
 /**
  * @class BodyParser
- * @extends Base
+ * @extends Class
  * */
-var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
-
-    /**
-     * @protected
-     * @memberOf {Base}
-     * @method
-     *
-     * @constructs
-     * */
-    constructor: function (params) {
-        this.params = params;
-    },
+var BodyParser = Class.extend(/** @lends BodyParser.prototype */ {
 
     /**
      * Этих парсеров достаточно более чем с головой,
@@ -51,30 +40,26 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
      * */
     parse: function (req) {
 
-        var StreamParser = Parser;
+        var StreamParser;
 
-        var contentType;
         var header = req.headers;
+        var contentType = new ContentType(header['content-type']);
         var params = this.params;
+        var parsers = [Parser];
 
         if ( 'string' === typeof header['transfer-encoding'] ||
             'string' === typeof header['content-length'] ) {
-
-            contentType = new ContentType(header['content-type']);
-
-            _.forEach(this._parsers.concat(Raw), function (Parser) {
-
-                if ( Parser.matchMedia(contentType) ) {
-                    StreamParser = Parser;
-
-                    return false;
-                }
-            });
-
-            params = _.extend({}, params, contentType.params, {
-                length: header['content-length']
-            });
+            parsers = this._parsers.concat(Raw);
         }
+
+        params = _.extend({}, params, contentType.params, {
+            length: header['content-length']
+        });
+
+        StreamParser = _.find(parsers, function (Parser) {
+
+            return Parser.matchMedia(contentType);
+        });
 
         return new StreamParser(params).
             parse(req).next(function (res, done) {

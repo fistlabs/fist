@@ -33,7 +33,6 @@ var FIXTURE0 = [
 
 var FIXTURE1 = [
     '--' + BOUNDARY,
-//    'content-disposition: form-data; name="first"',
     '',
     'vasya',
     '--' + BOUNDARY,
@@ -42,7 +41,6 @@ var FIXTURE1 = [
     'petrov',
     '--' + BOUNDARY,
     'content-disposition: form-data; name="file"; filename="buf"',
-    'content-type: application/octet-stream',
     '',
     'asd',
     '--' + BOUNDARY + '--'
@@ -157,7 +155,7 @@ module.exports = {
                         },
                         {
                             file: {
-                                mime: 'application/octet-stream',
+                                mime: void 0,
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
