@@ -53,22 +53,12 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         if ( 3 > arguments.length ) {
             body = deps;
             deps = [];
-
-        } else {
-            deps = toArray(deps);
         }
 
-        //  детектить рекурсивные зависимости надо прямо при декларации!
-        if ( this._checkDeps(path, deps) ) {
-            this.decls[path] = {
-                deps: deps,
-                body: body
-            };
-
-            return this;
-        }
-
-        throw new ReferenceError(path);
+        return this.unit(path, {
+            deps: deps,
+            body: body
+        });
     },
 
     /**
@@ -107,6 +97,28 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     },
 
     /**
+     * @public
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {String} path
+     * @param {Object} unit
+     *
+     * @returns {Tracker}
+     * */
+    unit: function (path, unit) {
+        unit = Object(unit);
+
+        if ( this._checkDeps(path, unit) ) {
+            this.decls[path] = unit;
+
+            return this;
+        }
+
+        throw new ReferenceError(path);
+    },
+
+    /**
      * @protected
      * @memberOf {Tracker}
      * @method
@@ -117,8 +129,12 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     _bundle: function (track, deps, done) {
 
-        var bundle = this._createBundle();
-        var length = deps.length;
+        var bundle;
+        var length;
+
+        deps = toArray(deps);
+        bundle = this._createBundle();
+        length = deps.length;
 
         if ( 0 === length ) {
             done.call(this, bundle);
@@ -160,14 +176,14 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @method
      *
      * @param {String} path
-     * @param {Array} deps
+     * @param {Object} unit
      *
      * @returns {Boolean}
      * */
-    _checkDeps: function (path, deps) {
+    _checkDeps: function (path, unit) {
 
+        var deps = /** @type {Array} */ toArray(unit.deps);
         var l = deps.length;
-        var decl;
 
         while ( l ) {
             l -= 1;
@@ -177,9 +193,9 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
                 return false;
             }
 
-            decl = this.decls[deps[l]];
+            unit = this.decls[deps[l]];
 
-            if ( void 0 === decl || this._checkDeps(path, decl.deps) ) {
+            if ( void 0 === unit || this._checkDeps(path, unit) ) {
 
                 continue;
             }
