@@ -6,7 +6,6 @@ var Next = /** @type Next */ require('fist.util.next/Next');
 var _ = /** @type _ */ require('lodash');
 
 /**
- * @abstract
  * @class Parser
  * @extends Class
  * */
@@ -46,11 +45,11 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      *
      * @returns {Next}
      * */
-    parse: function (stream) {
-        /*eslint no-unused-vars: 0 */
+    parse: function () {
+
         var next = new Next();
 
-        next.args([null, Object.create(null)]);
+        next.accept(Object.create(null));
 
         return next;
     }
