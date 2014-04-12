@@ -88,7 +88,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         done = this._createResolver(path, next);
 
         if ( path in this.decls ) {
-            this._pend(track, this.decls[path], done);
+            this._resolveUnit(track, this.decls[path], done);
 
             return;
         }
@@ -123,44 +123,6 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Track} track
-     * @param {Array<String>} deps
-     * @param {Function} done done(bundle)
-     * */
-    _bundle: function (track, deps, done) {
-
-        var bundle;
-        var length;
-
-        deps = toArray(deps);
-        bundle = this._createBundle();
-        length = deps.length;
-
-        if ( 0 === length ) {
-            done.call(this, bundle);
-
-            return;
-        }
-
-        //  Здесь for-each а не просто цикл
-        // потому что нужно замыкание `path`
-        _.forEach(deps, function (path) {
-            this.resolve(track, path, function () {
-                bundle.bundlify(path, arguments);
-                length -= 1;
-
-                if ( 0 === length ) {
-                    done.call(this, bundle);
-                }
-            });
-        }, this);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
      * @param {Function} body
      * @param {Track} track
      * @param {Bundle} bundle
@@ -182,7 +144,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     _checkDeps: function (path, unit) {
 
-        var deps = /** @type {Array} */ toArray(unit.deps);
+        var deps = toArray(unit.deps);
         var l = deps.length;
 
         while ( l ) {
@@ -270,18 +232,40 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     },
 
     /**
-     * @protected
+     * @private
      * @memberOf {Tracker}
      * @method
      *
      * @param {Track} track
-     * @param {Object} decl
+     * @param {Object} unit
      * @param {Function} done
      * */
-    _pend: function (track, decl, done) {
-        this._bundle(track, decl.deps, function (bundle) {
-            this._call(decl.body, track, bundle, done);
-        });
+    _resolveUnit: function (track, unit, done) {
+
+        var bundle;
+        var deps = toArray(unit.deps);
+        var length;
+
+        deps = toArray(deps);
+        bundle = this._createBundle();
+        length = deps.length;
+
+        if ( 0 === length ) {
+            this._call(unit.body, track, bundle, done);
+
+            return;
+        }
+
+        _.forEach(deps, function (path) {
+            this.resolve(track, path, function () {
+                bundle.bundlify(path, arguments);
+                length -= 1;
+
+                if ( 0 === length ) {
+                    this._call(unit.body, track, bundle, done);
+                }
+            });
+        }, this);
     }
 
 });
