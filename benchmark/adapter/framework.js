@@ -12,8 +12,8 @@ var MyServer = /** @type Server */ require('../../Framework').extend({
     emit: function () {},
 
     //  обрабатывать все узлы как функции
-    _call: function (func, track, bundle, done) {
-        func.call(this, track, bundle.errors, bundle.result, done);
+    _call: function (unit, track, bundle, done) {
+        unit.data(track, bundle.errors, bundle.result, done);
     }
 
 });

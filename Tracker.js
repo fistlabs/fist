@@ -44,31 +44,21 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {String} path
      * @param {*} [deps]
-     * @param {Function} [body]
+     * @param {Function} [data]
      *
      * @returns {Tracker}
      * */
-    decl: function (path, deps, body) {
+    decl: function (path, deps, data) {
 
         if ( 3 > arguments.length ) {
-            body = deps;
+            data = deps;
             deps = [];
-
-        } else {
-            deps = toArray(deps);
         }
 
-        //  детектить рекурсивные зависимости надо прямо при декларации!
-        if ( this._checkDeps(path, deps) ) {
-            this.decls[path] = {
-                deps: deps,
-                body: body
-            };
-
-            return this;
-        }
-
-        throw new ReferenceError(path);
+        return this.unit(path, {
+            deps: deps,
+            data: data
+        });
     },
 
     /**
@@ -98,7 +88,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         done = this._createResolver(path, next);
 
         if ( path in this.decls ) {
-            this._pend(track, this.decls[path], done);
+            this._resolveUnit(track, this.decls[path], done);
 
             return;
         }
@@ -107,37 +97,25 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     },
 
     /**
-     * @protected
+     * @public
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Track} track
-     * @param {Array<String>} deps
-     * @param {Function} done done(bundle)
+     * @param {String} path
+     * @param {Object} unit
+     *
+     * @returns {Tracker}
      * */
-    _bundle: function (track, deps, done) {
+    unit: function (path, unit) {
+        unit = Object(unit);
 
-        var bundle = this._createBundle();
-        var length = deps.length;
+        if ( this._checkDeps(path, unit) ) {
+            this.decls[path] = unit;
 
-        if ( 0 === length ) {
-            done.call(this, bundle);
-
-            return;
+            return this;
         }
 
-        //  Здесь for-each а не просто цикл
-        // потому что нужно замыкание `path`
-        _.forEach(deps, function (path) {
-            this.resolve(track, path, function () {
-                bundle.bundlify(path, arguments);
-                length -= 1;
-
-                if ( 0 === length ) {
-                    done.call(this, bundle);
-                }
-            });
-        }, this);
+        throw new ReferenceError(path);
     },
 
     /**
@@ -145,13 +123,13 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Function} body
+     * @param {Object} unit
      * @param {Track} track
      * @param {Bundle} bundle
      * @param {Function} done
      * */
-    _call: function (body, track, bundle, done) {
-        body.call(this, track, bundle.errors, bundle.result, done);
+    _call: function (unit, track, bundle, done) {
+        unit.data(track, bundle.errors, bundle.result, done);
     },
 
     /**
@@ -160,14 +138,14 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @method
      *
      * @param {String} path
-     * @param {Array} deps
+     * @param {Object} unit
      *
      * @returns {Boolean}
      * */
-    _checkDeps: function (path, deps) {
+    _checkDeps: function (path, unit) {
 
+        var deps = toArray(unit.deps);
         var l = deps.length;
-        var decl;
 
         while ( l ) {
             l -= 1;
@@ -177,9 +155,9 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
                 return false;
             }
 
-            decl = this.decls[deps[l]];
+            unit = this.decls[deps[l]];
 
-            if ( void 0 === decl || this._checkDeps(path, decl.deps) ) {
+            if ( void 0 === unit || this._checkDeps(path, unit) ) {
 
                 continue;
             }
@@ -254,18 +232,40 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
     },
 
     /**
-     * @protected
+     * @private
      * @memberOf {Tracker}
      * @method
      *
      * @param {Track} track
-     * @param {Object} decl
+     * @param {Object} unit
      * @param {Function} done
      * */
-    _pend: function (track, decl, done) {
-        this._bundle(track, decl.deps, function (bundle) {
-            this._call(decl.body, track, bundle, done);
-        });
+    _resolveUnit: function (track, unit, done) {
+
+        var bundle;
+        var deps = toArray(unit.deps);
+        var length;
+
+        deps = toArray(deps);
+        bundle = this._createBundle();
+        length = deps.length;
+
+        if ( 0 === length ) {
+            this._call(unit, track, bundle, done);
+
+            return;
+        }
+
+        _.forEach(deps, function (path) {
+            this.resolve(track, path, function () {
+                bundle.bundlify(path, arguments);
+                length -= 1;
+
+                if ( 0 === length ) {
+                    this._call(unit, track, bundle, done);
+                }
+            });
+        }, this);
     }
 
 });

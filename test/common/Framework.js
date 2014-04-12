@@ -379,8 +379,8 @@ module.exports = {
 
             var fist = new Framework();
 
-            fist.decl('index', function (connect, errors, result, done) {
-                test.strictEqual(this, fist);
+            fist.decl('index', function fn (connect, errors, result, done) {
+                test.strictEqual(this.data, fn);
                 done(null, 42);
             });
 
@@ -439,8 +439,8 @@ module.exports = {
                 }, 100);
             });
 
-            fist.decl('index', function (track, errors, result, done) {
-                test.strictEqual(this, fist);
+            fist.decl('index', function fn (track, errors, result, done) {
+                test.strictEqual(this.data, fn);
                 test.strictEqual(typeof done, 'function');
 
                 test.strictEqual(typeof done.accept, 'function');
@@ -917,42 +917,42 @@ module.exports = {
     ],
     callObj: [
         function (test) {
-            caller.callObj({}, function (err, res) {
+            caller.callObj({}, 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, {});
                 test.done();
             });
         },
         function (test) {
-            caller.callObj({a: {}}, function (err, res) {
+            caller.callObj({a: {}}, 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, {a: {}});
                 test.done();
             });
         },
         function (test) {
-            caller.callObj([], function (err, res) {
+            caller.callObj([], 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, []);
                 test.done();
             });
         },
         function (test) {
-            caller.callObj([1], function (err, res) {
+            caller.callObj([1], 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, [1]);
                 test.done();
             });
         },
         function (test) {
-            caller.callObj([1, Vow.resolve(42)], function (err, res) {
+            caller.callObj([1, Vow.resolve(42)], 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, [1, 42]);
                 test.done();
             });
         },
         function (test) {
-            caller.callObj([Vow.reject(42), Vow.reject(43)],
+            caller.callObj([Vow.reject(42), Vow.reject(43)], 42,
                 function (err) {
                     test.strictEqual(this, caller);
                     test.deepEqual(err, 42);
@@ -962,7 +962,7 @@ module.exports = {
     ],
     callRet: [
         function (test) {
-            caller.callRet(42, function (err, res) {
+            caller.callRet(42, 52, function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
@@ -970,30 +970,30 @@ module.exports = {
         },
         function (test) {
             caller.callRet(function (done) {
-                test.strictEqual(this, caller);
-                done.call(this, null, 42);
-            }, function (err, res) {
-                test.strictEqual(this, caller);
-                test.strictEqual(res, 42);
-                test.done();
-            });
-        },
-        function (test) {
-            caller.callRet(new Iter([42]), function (err, res) {
+                test.strictEqual(this, 42);
+                done(null, 42);
+            }, 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
             });
         },
         function (test) {
-            caller.callRet(new Parted([42]), function (err, res) {
+            caller.callRet(new Iter([42]), 42, function (err, res) {
+                test.strictEqual(this, caller);
+                test.strictEqual(res, 42);
+                test.done();
+            });
+        },
+        function (test) {
+            caller.callRet(new Parted([42]), 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, new Buffer('42'));
                 test.done();
             });
         },
         function (test) {
-            caller.callRet(Vow.resolve(42), function (err, res) {
+            caller.callRet(Vow.resolve(42), 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, 42);
                 test.done();
@@ -1004,7 +1004,7 @@ module.exports = {
                 get then() {
                     throw 42;
                 }
-            }, function (err) {
+            }, 42, function (err) {
                 test.strictEqual(this, caller);
                 test.deepEqual(err, 42);
                 test.done();
@@ -1017,14 +1017,14 @@ module.exports = {
     ],
     callYield: [
         function (test) {
-            caller.callYield(42, function (err, res) {
+            caller.callYield(42, 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
             });
         },
         function (test) {
-            caller.callYield({}, function (err, res) {
+            caller.callYield({}, 42, function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, {});
                 test.done();
@@ -1034,9 +1034,9 @@ module.exports = {
     callFunc: [
         function (test) {
             caller.callFunc(function (done) {
-                test.strictEqual(this, caller);
+                test.strictEqual(this, 42);
                 done.call(this, null, 42);
-            }, [], function (err, res) {
+            }, 42, [], function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
@@ -1044,9 +1044,9 @@ module.exports = {
         },
         function (test) {
             caller.callFunc(function () {
-                test.strictEqual(this, caller);
+                test.strictEqual(this, 42);
                 return {a: 42};
-            }, [], function (err, res) {
+            }, 42, [], function (err, res) {
                 test.strictEqual(this, caller);
                 test.deepEqual(res, {a: 42});
                 test.done();
@@ -1054,10 +1054,10 @@ module.exports = {
         },
         function (test) {
             caller.callFunc(function (done) {
-                test.strictEqual(this, caller);
-                done.call(this, null, 42);
-                done.call(this, null, 43);
-            }, [], function (err, res) {
+                test.strictEqual(this, 42);
+                done(null, 42);
+                done(null, 43);
+            }, 42, [], function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 setTimeout(function () {
@@ -1067,10 +1067,10 @@ module.exports = {
         },
         function (test) {
             caller.callFunc(function () {
-                test.strictEqual(this, caller);
+                test.strictEqual(this, 42);
 
                 return 42;
-            }, [], function (err, res) {
+            }, 42, [], function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
@@ -1082,11 +1082,11 @@ module.exports = {
                     name: 'GeneratorFunction'
                 },
                 apply: function (self) {
-                    test.strictEqual(self, caller);
+                    test.strictEqual(self, 42);
 
                     return new Iter([42]);
                 }
-            }, [], function (err, res) {
+            }, 42, [], function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
@@ -1096,9 +1096,9 @@ module.exports = {
     callGenFn: [
         function (test) {
             caller.callGenFn(function () {
-                test.strictEqual(this, caller);
+                test.strictEqual(this, 42);
                 return new Iter([42]);
-            }, [], function (err, res) {
+            }, 42, [], function (err, res) {
                 test.strictEqual(this, caller);
                 test.strictEqual(res, 42);
                 test.done();
@@ -1107,7 +1107,7 @@ module.exports = {
     ],
     callGen: [
         function (test) {
-            caller.callGen(new Iter([1, 42]), null, false,
+            caller.callGen(new Iter([1, 42]), 42, null, false,
                 function (err, res) {
                     test.strictEqual(this, caller);
                     test.strictEqual(res, 42);
@@ -1115,14 +1115,14 @@ module.exports = {
                 });
         },
         function (test) {
-            caller.callGen(new Iter([43]), 42, true, function (err) {
+            caller.callGen(new Iter([43]), 42, 42, true, function (err) {
                 test.strictEqual(this, caller);
                 test.strictEqual(err, 42);
                 test.done();
             });
         },
         function (test) {
-            caller.callGen(new Iter([Vow.reject(42), 43]), null,
+            caller.callGen(new Iter([Vow.reject(42), 43]), 42, null,
                 false, function (err) {
                     test.strictEqual(this, caller);
                     test.strictEqual(err, 42);
