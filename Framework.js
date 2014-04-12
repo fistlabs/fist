@@ -236,7 +236,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
                 break;
             }
 
-            this._callFunc(this._tasks.shift(), [], ready);
+            this._callFunc(this._tasks.shift(), this, [], ready);
         }
     },
 
@@ -306,13 +306,13 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
     _call: function (unit, track, bundle, done) {
 
         if ( 'function' === typeof unit.data ) {
-            this._callFunc(unit.data,
+            this._callFunc(unit.data, unit,
                 [track, bundle.errors, bundle.result], done);
 
             return;
         }
 
-        this._callRet(unit.data, done, true);
+        this._callRet(unit.data, unit, done, true);
     },
 
     /**
@@ -321,12 +321,14 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {Function} func
+     * @param {*} ctxt
      * @param {Array|Arguments} args
      * @param {Function} done
      * */
-    _callFunc: function (func, args, done) {
+    _callFunc: function (func, ctxt, args, done) {
 
         var called = false;
+        var self = this;
 
         function resolve () {
 
@@ -337,7 +339,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
             called = true;
 
-            done.apply(this, arguments);
+            done.apply(self, arguments);
         }
 
         //  Необходимо скопировать свойства функции, не нравится мне это!
@@ -345,12 +347,12 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
         args = args.concat(resolve);
 
         if ( 'GeneratorFunction' === func.constructor.name ) {
-            this._callGenFn(func, args, done);
+            this._callGenFn(func, ctxt, args, done);
 
             return;
         }
 
-        func = func.apply(this, args);
+        func = func.apply(ctxt, args);
 
         if ( called || void 0 === func ) {
 
@@ -359,7 +361,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
         called = true;
 
-        this._callRet(func, done, true);
+        this._callRet(func, ctxt, done, true);
     },
 
     /**
@@ -368,11 +370,12 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {Object} gen
+     * @param {*} ctxt
      * @param {*} result
      * @param {Boolean} isError
      * @param {Function} done
      * */
-    _callGen: function (gen, result, isError, done) {
+    _callGen: function (gen, ctxt, result, isError, done) {
 
         try {
             result = isError ? gen.throw(result) : gen.next(result);
@@ -383,20 +386,20 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
         }
 
         if ( result.done ) {
-            this._callYield(result.value, done);
+            this._callYield(result.value, ctxt, done);
 
             return;
         }
 
-        this._callYield(result.value, function (err, res) {
+        this._callYield(result.value, ctxt, function (err, res) {
 
             if ( 1 === arguments.length ) {
-                this._callGen(gen, err, true, done);
+                this._callGen(gen, ctxt, err, true, done);
 
                 return;
             }
 
-            this._callGen(gen, res, false, done);
+            this._callGen(gen, ctxt, res, false, done);
         });
     },
 
@@ -406,12 +409,13 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {Function} func
+     * @param {*} ctxt
      * @param {Array|Arguments} args
      * @param {Function} done
      * */
-    _callGenFn: function (func, args, done) {
-        func = func.apply(this, args);
-        this._callGen(func, void 0, false, done);
+    _callGenFn: function (func, ctxt, args, done) {
+        func = func.apply(ctxt, args);
+        this._callGen(func, ctxt, void 0, false, done);
     },
 
     /**
@@ -420,9 +424,10 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {Object} obj
+     * @param {*} ctxt
      * @param {Function} done
      * */
-    _callObj: function (obj, done) {
+    _callObj: function (obj, ctxt, done) {
 
         var isError;
         var keys = _.keys(obj);
@@ -461,7 +466,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
                 }
             }
 
-            this._callRet(obj[i], onReturned, true);
+            this._callRet(obj[i], ctxt, onReturned, true);
         }, this);
     },
 
@@ -508,24 +513,25 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {*} val
+     * @param {*} ctxt
      * @param {Function} done
      * @param {Boolean} [asis]
      *
      * @returns {Boolean}
      * */
-    _callRet: function (val, done, asis) {
+    _callRet: function (val, ctxt, done, asis) {
 
         if ( Object(val) === val ) {
 
             if ( 'function' === typeof val ) {
-                this._callFunc(val, [], done);
+                this._callFunc(val, ctxt, [], done);
 
                 return true;
             }
 
             if ( 'function' === typeof val.next &&
                  'function' === typeof val.throw ) {
-                this._callGen(val, void 0, false, done);
+                this._callGen(val, ctxt, void 0, false, done);
 
                 return true;
             }
@@ -570,16 +576,17 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {*} value
+     * @param {*} ctxt
      * @param {Function} done
      * */
-    _callYield: function (value, done) {
+    _callYield: function (value, ctxt, done) {
 
-        if ( this._callRet(value, done) ) {
+        if ( this._callRet(value, ctxt, done) ) {
 
             return;
         }
 
-        this._callObj(value, done);
+        this._callObj(value, ctxt, done);
     },
 
     /**
