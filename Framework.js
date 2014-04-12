@@ -298,20 +298,21 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      *
-     * @param {Function} func
+     * @param {Object} unit
      * @param {Runtime} track
      * @param {Bundle} bundle
      * @param {Function} done
      * */
-    _call: function (func, track, bundle, done) {
+    _call: function (unit, track, bundle, done) {
 
-        if ( 'function' === typeof func ) {
-            this._callFunc(func, [track, bundle.errors, bundle.result], done);
+        if ( 'function' === typeof unit.data ) {
+            this._callFunc(unit.data,
+                [track, bundle.errors, bundle.result], done);
 
             return;
         }
 
-        this._callRet(func, done, true);
+        this._callRet(unit.data, done, true);
     },
 
     /**

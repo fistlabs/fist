@@ -44,20 +44,20 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {String} path
      * @param {*} [deps]
-     * @param {Function} [body]
+     * @param {Function} [data]
      *
      * @returns {Tracker}
      * */
-    decl: function (path, deps, body) {
+    decl: function (path, deps, data) {
 
         if ( 3 > arguments.length ) {
-            body = deps;
+            data = deps;
             deps = [];
         }
 
         return this.unit(path, {
             deps: deps,
-            body: body
+            data: data
         });
     },
 
@@ -123,13 +123,13 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Function} body
+     * @param {Object} unit
      * @param {Track} track
      * @param {Bundle} bundle
      * @param {Function} done
      * */
-    _call: function (body, track, bundle, done) {
-        body.call(this, track, bundle.errors, bundle.result, done);
+    _call: function (unit, track, bundle, done) {
+        unit.data(track, bundle.errors, bundle.result, done);
     },
 
     /**
@@ -251,7 +251,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         length = deps.length;
 
         if ( 0 === length ) {
-            this._call(unit.body, track, bundle, done);
+            this._call(unit, track, bundle, done);
 
             return;
         }
@@ -262,7 +262,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
                 length -= 1;
 
                 if ( 0 === length ) {
-                    this._call(unit.body, track, bundle, done);
+                    this._call(unit, track, bundle, done);
                 }
             });
         }, this);
