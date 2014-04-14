@@ -810,6 +810,43 @@ module.exports = {
                 test.done();
             });
         }
+    ],
+    'Connect.prototype.goToPath': [
+        function (test) {
+            var fist = new Tracker();
+
+            fist.decl('index', function (track) {
+                track.goToPath('post', {
+                    postId: 666
+                });
+            });
+
+            fist.route('GET', '/', 'index');
+            fist.route('GET', '/post/<postId>/', 'post');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/post/666/'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/post/666/');
+                test.done();
+            });
+        }
     ]
 
 };

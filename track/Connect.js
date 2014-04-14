@@ -162,6 +162,19 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} name
+     * @param {Object} [params]
+     * */
+    goToPath: function (name, params) {
+
+        this.redirect(this.buildPath(name, params));
+    },
+
+    /**
      * Читает заголовок запроса или ставит заголовок ответа
      *
      * @public
