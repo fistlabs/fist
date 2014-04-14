@@ -714,7 +714,7 @@ module.exports = {
             var fist = new Tracker();
 
             fist.decl('index', function (track) {
-                track.header('Content-Type', 'text/html');
+                track.header('Content-Type', 'text/html; charset=UTF-8');
                 track.redirect('/test/?a=5&b=6');
             });
 
