@@ -323,6 +323,27 @@ module.exports = {
             }), '/page//tail/');
 
             test.done();
+        },
+        function (test) {
+            var route = new Route('/a/(<page>/c/)');
+
+            test.strictEqual(route.build({
+                page: 5,
+                text: 42
+            }), '/a/5/c/?text=42');
+
+            test.strictEqual(route.build(), '/a/');
+
+            route = new Route('/(<competitionId>/)contest/' +
+                '<contestId>/<contestPage>/');
+
+            test.strictEqual(route.build({
+                competitionId: void 0,
+                contestId: '59',
+                contestPage: 'enter'
+            }), '/contest/59/enter/');
+
+            test.done();
         }
     ]
 
