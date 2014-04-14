@@ -1,7 +1,7 @@
 'use strict';
 
 var Class = /** @type Class */ require('fist.lang.class/Class');
-var Pathr = /** @type Pathr */ require('../route/Pathr');
+var Route = /** @type Route */ require('../route/Route');
 
 var _ = /** @type _*/ require('lodash');
 
@@ -188,17 +188,17 @@ var Router = Class.extend(/** @lends Router.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Pathr}
+     * @memberOf {Route}
      * @method
      *
      * @param {String} expr
      * @param {Object} [opts]
      *
-     * @returns {Pathr}
+     * @returns {Route}
      * */
     _createRoute: function (expr, opts) {
 
-        return new Pathr(expr, opts);
+        return new Route(expr, opts);
     },
 
     /**

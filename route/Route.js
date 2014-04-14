@@ -1,6 +1,7 @@
 'use strict';
 
 var Base = /** @type Base */ require('fist.lang.class/Base');
+var QueryString = require('querystring');
 
 var _ = /** @type _ */ require('lodash');
 var hasProperty = Object.prototype.hasOwnProperty;
@@ -102,8 +103,10 @@ var Route = Base.extend(/** @lends Route.prototype */ {
         var body;
         var buf = '';
         var len = ast.length;
+        var map = ast.map;
         var opt = false;
         var pos = 0;
+        var query;
         var stk = [];
         var tok;
         var use = Object.create(null);
@@ -228,7 +231,19 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             }
         }
 
-        return buf;
+        query = _.omit(params, function (val, name) {
+
+            return _.some(map, {body: name});
+        });
+
+        query = QueryString.stringify(query);
+
+        if ( '' === query ) {
+
+            return buf;
+        }
+
+        return buf + '?' + query;
     },
 
     /**
