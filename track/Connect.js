@@ -16,6 +16,7 @@ var REDIRECT_STATUS = [300, 301, 302,
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
+var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Cookie = /** @type Cookie */ require('../util/Cookie');
 var Next = /** @type Next */ require('fist.util.next/Next');
 var Raw = /** @type Raw */ require('../parser/Raw');
@@ -285,7 +286,9 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         url = _.escape(url);
 
-        if ( /text\/html/.test( this._res.getHeader('Content-Type') ) ) {
+        if ( 'text/html' === new ContentType(this._res.
+            getHeader('Content-Type')).getMime() ) {
+
             url = '<a href="' + url + '">' + url + '</a>';
         }
 
