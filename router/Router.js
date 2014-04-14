@@ -1,6 +1,6 @@
 'use strict';
 
-var Class = require('fist.lang.class/Class');
+var Class = /** @type Class */ require('fist.lang.class/Class');
 var Pathr = /** @type Pathr */ require('../route/Pathr');
 
 var _ = /** @type _*/ require('lodash');

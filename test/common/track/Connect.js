@@ -1,12 +1,14 @@
 'use strict';
 
-var Tracker = require('../../../Server');
+var Tracker = require('../../../Framework');
 var Connect = require('../../../track/Connect');
 var connect = require('../../util/connect');
 
 var Fs = require('fs');
 var Url = require('url');
 var buf = Fs.readFileSync('test/util/binary.png');
+var asker = require('asker');
+var sock = require('../../stuff/conf/sock');
 
 module.exports = {
 
@@ -128,7 +130,7 @@ module.exports = {
                 test.deepEqual(data.headers['set-cookie'], [
                     'x=y', 'x=; expires=' + (new Date(d - 1)).toUTCString(),
                     'a=b', 'a=; expires=' + (new Date(d - 1)).toUTCString(),
-                    'last=' + encodeURIComponent('Привет')
+                        'last=' + encodeURIComponent('Привет')
                 ]);
                 test.done();
             });
@@ -163,25 +165,6 @@ module.exports = {
                         },
                         type: 'urlencoded'
                     });
-                    res.end();
-                });
-
-            }, function () {
-                test.done();
-            });
-        },
-
-        function (test) {
-            connect({
-                method: 'post',
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
-                },
-                body: 'a=5'
-            }, function (t, req, res) {
-                t.body({length: 2}, function (err) {
-                    test.ok(err);
-                    test.strictEqual(err.code, 'ELENGTH');
                     res.end();
                 });
 
@@ -357,6 +340,107 @@ module.exports = {
                 test.strictEqual(data.data, '{"msg":"ERR"}');
                 test.done();
             });
+        },
+        function (test) {
+
+            var fist = new Tracker();
+            var er = new Error();
+
+            fist.route('GET', '/', 'index');
+
+            fist.decl('index', function (track) {
+                track.send(500, er);
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.strictEqual(data.data + '', er.stack);
+                test.strictEqual(data.statusCode, 500);
+                test.done();
+            });
+        },
+        function (test) {
+
+            var fist = new Tracker({
+                staging: true
+            });
+            var er = new Error();
+
+            fist.route('GET', '/', 'index');
+
+            fist.decl('index', function (track) {
+                track.send(500, er);
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.strictEqual(data.data + '', 'Internal Server Error');
+                test.strictEqual(data.statusCode, 500);
+                test.done();
+            });
+        },
+        function (test) {
+
+            var fist = new Tracker();
+            var er = new Error();
+
+            fist.route('GET', '/', 'index');
+
+            fist.decl('index', function (track) {
+                track.send(200, er);
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.strictEqual(data.data + '', '{}');
+                test.strictEqual(data.statusCode, 200);
+                test.done();
+            });
         }
     ],
 
@@ -438,6 +522,330 @@ module.exports = {
             test.deepEqual(Connect.url(req),
                 Url.parse('https://fistlabs.co:80/path/to/page?no=5', true));
             test.done();
+        }
+    ],
+
+    'Connect.prototype.arg': [
+        function (test) {
+
+            var fist = new Tracker();
+
+            fist.route('GET', '/<page=about>/(<sub>)', 'index');
+
+            fist.decl('index', function (track) {
+                test.strictEqual(track.arg('page', true), 'about');
+                test.strictEqual(track.arg('sub'), '80');
+                track.send(200);
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/about/?page=index&sub=80'
+            }, function (err, data) {
+                test.ok(data);
+                test.strictEqual(data.statusCode, 200);
+                test.done();
+            });
+        }
+    ],
+
+    'Connect.prototype.buildPath': [
+        function (test) {
+
+            var fist = new Tracker();
+
+            fist.route('GET', '/(<pageName>/)', 'url');
+
+            fist.decl('url', function (track, errors, result, done) {
+                done(null, track.buildPath('url', {
+                    pageName: 'about',
+                    text: 'test'
+                }));
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/'
+            }, function (err, data) {
+                test.strictEqual(data.data + '', '/about/?text=test');
+                test.done();
+            });
+        }
+    ],
+
+    'Connect.prototype.render': [
+        function (test) {
+
+            var fist = new Tracker();
+
+            fist.plug(function (done) {
+                this.renderers.index = function () {
+                    return [].slice.call(arguments, 0).map(function (v) {
+
+                        return v * 2;
+                    });
+                };
+
+                done(null, null);
+            });
+
+            fist.decl('index', function (track) {
+                track.status(300);
+                track.render('index', 1, 2, 3);
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('[2,4,6]'));
+                test.strictEqual(data.statusCode, 300);
+                test.done();
+            });
+        },
+        function (test) {
+
+            var fist = new Tracker();
+
+            fist.plug(function (done) {
+                this.renderers.index = function () {
+                    return [].slice.call(arguments, 0).map(function (v) {
+
+                        return v * 2;
+                    });
+                };
+
+                done(null, null);
+            });
+
+            fist.decl('index', function (track) {
+                track.render(201, 'index', 1, 2, 3);
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('[2,4,6]'));
+                test.strictEqual(data.statusCode, 201);
+                test.done();
+            });
+        }
+    ],
+
+    'Connect.prototype.redirect': [
+        function (test) {
+            var fist = new Tracker();
+
+            fist.decl('index', function (track) {
+                track.redirect('/about/');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/about/'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/about/');
+                test.done();
+            });
+        },
+        function (test) {
+            var fist = new Tracker();
+
+            fist.decl('index', function (track) {
+                track.header('Content-Type', 'text/html; charset=UTF-8');
+                track.redirect('/test/?a=5&b=6');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('<a href="' +
+                    '/test/?a=5&amp;b=6">/test/?a=5&amp;b=6</a>'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/test/?a=5&b=6');
+                test.done();
+            });
+        },
+
+        function (test) {
+            var fist = new Tracker();
+
+            fist.decl('index', function (track) {
+                track.redirect(301, '/about/');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/about/'));
+                test.strictEqual(data.statusCode, 301);
+                test.strictEqual(data.headers.location, '/about/');
+                test.done();
+            });
+        },
+
+        function (test) {
+            var fist = new Tracker();
+
+            fist.decl('index', function (track) {
+                track.redirect(333, '/about/');
+            });
+
+            fist.route('GET', '/', 'index');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/about/'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/about/');
+                test.done();
+            });
+        }
+    ],
+    'Connect.prototype.goToPath': [
+        function (test) {
+            var fist = new Tracker();
+
+            fist.decl('index', function (track) {
+                track.goToPath('post', {
+                    postId: 666
+                });
+            });
+
+            fist.route('GET', '/', 'index');
+            fist.route('GET', '/post/<postId>/', 'post');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (ex) {}
+
+            fist.listen(sock);
+
+            asker({
+                method: 'GET',
+                socketPath: sock,
+                path: '/',
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, data) {
+                test.deepEqual(data.data, new Buffer('/post/666/'));
+                test.strictEqual(data.statusCode, 302);
+                test.strictEqual(data.headers.location, '/post/666/');
+                test.done();
+            });
         }
     ]
 

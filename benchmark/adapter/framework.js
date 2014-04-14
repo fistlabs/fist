@@ -9,7 +9,13 @@ var Fs = require('fs');
 var MyServer = /** @type Server */ require('../../Framework').extend({
     //  Не триггерить события во время бенчмарка
     // для чистоты эксперимета
-    emit: function () {}
+    emit: function () {},
+
+    //  обрабатывать все узлы как функции
+    _call: function (unit, track, bundle, done) {
+        unit.data(track, bundle.errors, bundle.result, done);
+    }
+
 });
 
 var app = new MyServer();

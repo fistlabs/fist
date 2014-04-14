@@ -10,15 +10,16 @@ var Next = /** @type Next */ require('fist.util.next/Next');
 var Raw = Parser.extend(/** @lends Raw.prototype */ {
 
     /**
-     * @protected
+     * @public
      * @memberOf {Raw}
      * @method
      *
+     * @returns {Next}
      * */
     parse: function (stream) {
         var next = new Next();
 
-        Raw.download(stream, this.params, function () {
+        Raw._download(stream, this.params, function () {
             next.args(arguments);
         });
 
@@ -31,13 +32,35 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      * @public
      * @static
      * @memberOf Raw
+     * @property
+     * @type {String}
+     * */
+    type: 'raw',
+
+    /**
+     * @public
+     * @static
+     * @memberOf Raw
+     * @method
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function () {
+
+        return true;
+    },
+
+    /**
+     * @protected
+     * @static
+     * @memberOf Raw
      * @method
      *
      * @param {Object} stream
      * @param {Object} params
      * @param {Function} done
      * */
-    download: function (stream, params, done) {
+    _download: function (stream, params, done) {
 
         var buf = [];
         var received = 0;

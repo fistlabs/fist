@@ -1,9 +1,8 @@
 'use strict';
 
-var R_FIELDNAME = /;\s*name=(?:"([^"]*)"|([^"]*))/;
-var R_FILENAME = /;\s*filename=(?:"([^"]*)"|([^\s]*))/;
-
+var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Dicer = /** @type Dicer */ require('dicer');
+var MediaHead = /** @type MediaHead */ require('../util/MediaHead');
 var Next = /** @type Next */ require('fist.util.next/Next');
 var Parser = /** @type Parser */ require('./Parser');
 
@@ -14,15 +13,17 @@ var Parser = /** @type Parser */ require('./Parser');
 var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
     /**
-     * @protected
+     * @public
      * @memberOf {Multipart}
      * @method
+     *
+     * @returns {Next}
      * */
     parse: function (stream) {
 
         var next = new Next();
 
-        Multipart.parseMultipart(stream, this.params, function () {
+        Multipart._parseMultipart(stream, this.params, function () {
             next.args(arguments);
         });
 
@@ -35,12 +36,36 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @public
      * @static
      * @memberOf Multipart
+     * @property
+     * @type {String}
+     * */
+    type: 'multipart',
+
+    /**
+     * @public
+     * @static
+     * @memberOf Multipart
+     * @method
+     *
+     * @param {Object} media
+     *
+     * @returns {Boolean}
+     * */
+    matchMedia: function (media) {
+
+        return 'multipart' === media.type;
+    },
+
+    /**
+     * @protected
+     * @static
+     * @memberOf Multipart
      *
      * @param {Object} stream
      * @param {Object} params
      * @param {Function} done
      * */
-    parseMultipart: function (stream, params, done) {
+    _parseMultipart: function (stream, params, done) {
 
         var parser = new Dicer(params);
         var received = 0;
@@ -56,27 +81,23 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
             function partHeader (header) {
 
-                var disposition = (header['content-disposition'] || [])[0];
+                var disp = (header['content-disposition'] || [])[0];
 
-                mime = (header['content-type'] || [])[0];
-                field = R_FIELDNAME.exec(disposition);
+                disp = new MediaHead(disp);
+                field = disp.params.name;
 
-                if ( null === field ) {
-                    partError = true;
+                if ( field ) {
+                    file = disp.params.filename;
 
-                    return;
-                }
-
-                //  заковыченное или простое значение заголовка
-                field = field[1] || field[2];
-                file = R_FILENAME.exec(disposition);
-
-                if ( null === file ) {
+                    if ( file ) {
+                        mime = (header['content-type'] || [])[0];
+                        mime = new ContentType(mime).getMime();
+                    }
 
                     return;
                 }
 
-                file = file[1] || file[2];
+                partError = true;
             }
 
             function partData (chunk) {

@@ -5,11 +5,20 @@ var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
 
     return NO_CONTENT;
 }, Object.create(null));
+
+var REDIRECT_STATUS = [300, 301, 302,
+    303, 305, 307].reduce(function (REDIRECT_STATUS, code) {
+        REDIRECT_STATUS[code] = true;
+
+        return REDIRECT_STATUS;
+    }, Object.create(null));
+
 var STATUS_CODES = require('http').STATUS_CODES;
 
-var Body = /** @type Body */ require('../parser/Body');
-var Next = /** @type Next */ require('fist.util.next/Next');
+var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
+var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Cookie = /** @type Cookie */ require('../util/Cookie');
+var Next = /** @type Next */ require('fist.util.next/Next');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
@@ -31,7 +40,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @constructs
      * */
     constructor: function (agent, req, res) {
-        Connect.Parent.apply(this, arguments);
+        Connect.Parent.call(this, agent);
 
         /**
          * @public
@@ -39,20 +48,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @property {String}
          * */
         this.id = uniqueId();
-
-        /**
-         * @public
-         * @memberOf {Connect}
-         * @property {String}
-         * */
-        this.method = req.method;
-
-        /**
-         * @public
-         * @memberOf {Connect}
-         * @property {Object}
-         * */
-        this.url = Connect.url(req);
 
         /**
          * @public
@@ -66,7 +61,21 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @memberOf {Connect}
          * @property {String}
          * */
+        this.method = req.method;
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property {String}
+         * */
         this.route = null;
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property {Object}
+         * */
+        this.url = Connect.url(req);
 
         /**
          * @protected
@@ -94,33 +103,76 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Возвращает аргумент запроса из pathname или query
+     *
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} name
+     * @param {Boolean} [only]
+     *
+     * @returns {String|void}
+     * */
+    arg: function (name, only) {
+
+        var result = this.match[name];
+
+        if ( only ) {
+
+            return result;
+        }
+
+        return result || this.url.query[name];
+    },
+
+    /**
      * Возвращает body в разобранном виде
      *
      * @public
      * @memberOf {Connect}
      * @method
      *
-     * @param {*} [params]
      * @param {Function} done
      * */
-    body: function (params, done) {
-
-        var opts;
-
-        if ( 'function' === typeof params ) {
-            done = params;
-            params = null;
-        }
+    body: function (done) {
 
         if ( !(this._body instanceof Next) ) {
-            opts = _.extend({
-                length: this._req.headers['content-length']
-            }, params);
-
-            this._body = new Body(opts).parse(this._req);
+            this._body = this.
+                _createBodyParser(this.agent.params.body).parse(this._req);
         }
 
         this._body.done(done, this);
+    },
+
+    /**
+     * Создает path по одному из маршрутов
+     *
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} name
+     * @param {Object} [params]
+     *
+     * @returns {String}
+     * */
+    buildPath: function (name, params) {
+
+        return this.agent.router.getRoute(name).build(params);
+    },
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} name
+     * @param {Object} [params]
+     * */
+    goToPath: function (name, params) {
+
+        this.redirect(this.buildPath(name, params));
     },
 
     /**
@@ -208,6 +260,72 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * Шортхэнд для редиректов
+     *
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {*} [code]
+     * @param {String} url
+     * */
+    redirect: function (code, url) {
+
+        if ( 'number' === typeof code ) {
+
+            if ( !REDIRECT_STATUS[code] ) {
+                code = 302;
+            }
+
+        } else {
+            url = code;
+            code = 302;
+        }
+
+        this.header('Location', url);
+
+        url = _.escape(url);
+
+        if ( 'text/html' === new ContentType(this._res.
+            getHeader('Content-Type')).getMime() ) {
+
+            url = '<a href="' + url + '">' + url + '</a>';
+        }
+
+        this.send(code, url);
+    },
+
+    /**
+     * Выполняет шаблонизацию переданных данных и
+     * выполняет ответ приложения
+     *
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {*} [code]
+     * @param {String} id
+     * @param {*} [arg...]
+     * */
+    render: function (code, id, arg) {
+        /*eslint no-unused-vars: 0*/
+        var args;
+        var i;
+
+        if ( 'number' === typeof code ) {
+            i = 2;
+            this.status(code);
+
+        } else {
+            i = 1;
+            id = code;
+        }
+
+        args = Array.prototype.slice.call(arguments, i);
+        this.send(this.agent.renderers[id].apply(this, args));
+    },
+
+    /**
      * Выполняет ответ приложения
      *
      * @public
@@ -254,6 +372,20 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         this._res.statusCode = statusCode;
 
         return statusCode;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {*} [params]
+     *
+     * @returns {BodyParser}
+     * */
+    _createBodyParser: function (params) {
+
+        return new BodyParser(params);
     },
 
     /**
@@ -387,6 +519,20 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @param {Error} body
      * */
     _writeError: function (body) {
+
+        if ( this._res.statusCode >= 500 ) {
+
+            if ( this.agent.params.staging ) {
+                this._writeString(STATUS_CODES[this._res.statusCode]);
+
+                return;
+            }
+
+            this._writeString(body.stack);
+
+            return;
+        }
+
         this._writeJson(body);
     },
 

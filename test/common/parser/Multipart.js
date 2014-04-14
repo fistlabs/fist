@@ -3,7 +3,7 @@
 var Multipart = require('../../../parser/Multipart');
 var Parted = require('../../util/Parted');
 var http = require('../../util/http');
-var isMultipart = require('../../../parser/Body').isMultipart;
+var ContentType = require('../../../util/ContentType');
 
 var BOUNDARY = 'AskerBoundary-7691254443489015';
 var FIXTURE0 = [
@@ -33,7 +33,6 @@ var FIXTURE0 = [
 
 var FIXTURE1 = [
     '--' + BOUNDARY,
-//    'content-disposition: form-data; name="first"',
     '',
     'vasya',
     '--' + BOUNDARY,
@@ -42,7 +41,6 @@ var FIXTURE1 = [
     'petrov',
     '--' + BOUNDARY,
     'content-disposition: form-data; name="file"; filename="buf"',
-    'content-type: application/octet-stream',
     '',
     'asd',
     '--' + BOUNDARY + '--'
@@ -78,7 +76,9 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = isMultipart(req);
+                var boundary = new ContentType(req.headers['content-type']).
+                    params.boundary;
+
                 var parser = new Multipart({
                     boundary: boundary
                 });
@@ -155,7 +155,7 @@ module.exports = {
                         },
                         {
                             file: {
-                                mime: 'application/octet-stream',
+                                mime: void 0,
                                 name: 'buf',
                                 data: new Buffer('asd')
                             }
@@ -199,7 +199,9 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = isMultipart(req);
+                var boundary = new ContentType(req.headers['content-type']).
+                    params.boundary;
+
                 var parser = new Multipart({
                     boundary: boundary
                 });
@@ -230,7 +232,9 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = isMultipart(req);
+                var boundary = new ContentType(req.headers['content-type']).
+                    params.boundary;
+
                 var parser = new Multipart({
                     boundary: boundary
                 });
@@ -263,7 +267,8 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var boundary = isMultipart(req);
+                var boundary = new ContentType(req.headers['content-type']).
+                    params.boundary;
 
                 var parser = new Multipart({
                     boundary: boundary,
