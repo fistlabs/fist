@@ -73,6 +73,7 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @returns {Boolean}
      * */
     matchMedia: function () {
+
         return true;
     },
 

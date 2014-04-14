@@ -46,6 +46,7 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      * @returns {Boolean}
      * */
     matchMedia: function () {
+
         return true;
     },
 
