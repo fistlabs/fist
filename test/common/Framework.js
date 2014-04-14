@@ -7,7 +7,7 @@ var Parted = require('../util/Parted');
 var Iter = require('../util/Iter');
 
 var asker = require('asker');
-var sock = require('../stuff/conf/sock');
+var sock = require('../stuff/sock');
 
 var Connect = require('../../track/Connect');
 var STATUS_CODES = require('http').STATUS_CODES;

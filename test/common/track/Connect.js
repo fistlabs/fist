@@ -8,7 +8,7 @@ var Fs = require('fs');
 var Url = require('url');
 var buf = Fs.readFileSync('test/util/binary.png');
 var asker = require('asker');
-var sock = require('../../stuff/conf/sock');
+var sock = require('../../stuff/sock');
 
 module.exports = {
 
