@@ -247,63 +247,10 @@ module.exports = {
         },
         function (test) {
             connect({method: 'GET'}, function (t) {
-                t.header('x-content', 'fist.server');
-                t.header('content-ok', 'boo');
-                t.send(304, '123');
-            }, function (err, data) {
-                Object.keys(data.headers).forEach(function (name) {
-                    test.ok(0 !== name.indexOf('content-'));
-                });
-                test.strictEqual(data.headers['x-content'], 'fist.server');
-                test.strictEqual(data.data, '');
-                test.done();
-            });
-        },
-        function (test) {
-            connect({method: 'GET'}, function (t) {
                 t.send(200);
                 t.send(500);
             }, function (err, data) {
                 test.strictEqual(data.statusCode, 200);
-                test.done();
-            });
-        },
-        function (test) {
-            connect({method: 'HEAD'}, function (t) {
-                t.send(new Buffer('FIST-RESPONSE'));
-            }, function (err, data) {
-                test.strictEqual(data.statusCode, 200);
-                test.strictEqual(data.data, '');
-                test.done();
-            });
-        },
-        function (test) {
-            connect({method: 'HEAD'}, function (t) {
-                t.send({OK: ':)'});
-            }, function (err, data) {
-                test.strictEqual(data.statusCode, 200);
-                test.strictEqual(data.data, '');
-                test.done();
-            });
-        },
-        function (test) {
-            connect({method: 'HEAD', body: 'asd'}, function (t, req) {
-                t.send(req);
-            }, function (err, data) {
-                test.strictEqual(data.statusCode, 200);
-                test.strictEqual(data.data + '', '');
-                test.done();
-            });
-        },
-        function (test) {
-            connect({method: 'HEAD', body: 'asd'}, function (t, req) {
-                req.on('data', function () {
-                    req.emit('error', 'ERR');
-                });
-                t.send(req);
-            }, function (err, data) {
-                test.strictEqual(data.statusCode, 500);
-                test.strictEqual(data.data, '');
                 test.done();
             });
         },

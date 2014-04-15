@@ -1,11 +1,5 @@
 'use strict';
 
-var NO_CONTENT = [204, 205, 304].reduce(function (NO_CONTENT, code) {
-    NO_CONTENT[code] = true;
-
-    return NO_CONTENT;
-}, Object.create(null));
-
 var REDIRECT_STATUS = [300, 301, 302,
     303, 305, 307].reduce(function (REDIRECT_STATUS, code) {
         REDIRECT_STATUS[code] = true;
@@ -90,16 +84,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @property {http.IncomingMessage}
          * */
         this._res = res;
-
-        /**
-         * Это нужно ради автоматического контроля
-         * присутствия content-* заголовоков в 204, 205, 304 ответах
-         *
-         * @protected
-         * @memberOf {Connect}
-         * @property {Array}
-         * */
-        this._reshead = Object.create(null);
     },
 
     /**
@@ -400,8 +384,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _setHead: function (name, value, soft) {
         name = String(name).toLowerCase();
 
-        this._reshead[name] = true;
-
         if ( soft && this._res.getHeader(name) ) {
 
             return;
@@ -468,22 +450,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     _writeBody: function (body) {
 
-        var name;
-
-        if ( NO_CONTENT[this._res.statusCode] ) {
-
-            for ( name in this._reshead ) {
-
-                if ( 0 === name.indexOf('content-') ) {
-                    this._res.removeHeader(name);
-                }
-            }
-
-            this._res.end();
-
-            return;
-        }
-
         if ( 'string' === typeof body ) {
             this._writeString(body);
 
@@ -546,13 +512,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _writeString: function (body) {
         this._setHead('Content-Type', 'text/plain', true);
         this._setHead('Content-Length', Buffer.byteLength(body), true);
-
-        if ( 'HEAD' === this.method ) {
-            this._res.end();
-
-            return;
-        }
-
         this._res.end(body);
     },
 
@@ -566,13 +525,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     _writeBuffer: function (body) {
         this._setHead('Content-Type', 'application/octet-stream', true);
         this._setHead('Content-Length', body.length, true);
-
-        if ( 'HEAD' === this.method ) {
-            this._res.end();
-
-            return;
-        }
-
         this._res.end(body);
     },
 
@@ -585,16 +537,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     _writeJson: function (body) {
         body = JSON.stringify(body);
-
         this._setHead('Content-Type', 'application/json', true);
         this._setHead('Content-Length', Buffer.byteLength(body), true);
-
-        if ( 'HEAD' === this.method ) {
-            this._res.end();
-
-            return;
-        }
-
         this._res.end(body);
     },
 
@@ -607,25 +551,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     _writeReadable: function (body) {
 
-        if ( 'HEAD' === this.method ) {
-            new Raw().parse(body).done(function (err, body) {
-
-                if ( 2 > arguments.length ) {
-                    this._respond(500, err);
-
-                    return;
-                }
-
-                this._setHead('Content-Type', 'application/octet-stream', true);
-                this._setHead('Content-Length', body.length, true);
-
-                this._res.end();
-            }, this);
-
-            return;
-        }
-
-        if ( this._res.getHeader('content-length') ) {
+        if ( this._res.getHeader('Content-Length') ) {
             this._setHead('Content-Type', 'application/octet-stream', true);
 
             body.on('error', this._respond.bind(this, 500));
@@ -646,7 +572,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             this._setHead('Content-Length', body.length, true);
 
             this._res.end(body);
-
         }, this);
     }
 
