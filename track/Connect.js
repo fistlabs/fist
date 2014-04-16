@@ -121,9 +121,26 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     body: function (done) {
 
+        var body;
+        var params;
+
         if ( !(this._body instanceof Next) ) {
-            this._body = this.
-                _createBodyParser(this.agent.params.body).parse(this._req);
+            params = _.extend(this.mime().toParams(),
+                //  в глобальных опциях body можно определить настройки,
+                // которые будут ограничивать параметры запроса
+                this.agent.params.body, {
+                    //  кроме этого!
+                    // По наличию этого параметра определяется в принципе
+                    // есть ли body у запроса причем оно
+                    // должно всегда соответствовать реально длине тела
+                    length: this.header('Content-Length')
+                });
+
+            body = this._body = new Next();
+
+            this._createBodyParser(params).parse(this._req, function () {
+                body.args(arguments);
+            });
         }
 
         this._body.done(done, this);
@@ -244,6 +261,32 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
     },
 
     /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} [mime]
+     * @param {Object} [params]
+     *
+     * @returns {ContentType|void}
+     * */
+    mime: function (mime, params) {
+
+        //  getter
+        if ( 0 === arguments.length ) {
+
+            if ( !this._reqMime ) {
+                this._reqMime = new ContentType(this.header('Content-Type'));
+            }
+
+            return this._reqMime;
+        }
+
+        //  setter
+        this.header('Content-Type', ContentType.create(mime, params));
+    },
+
+    /**
      * Шортхэнд для редиректов
      *
      * @public
@@ -270,8 +313,9 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         url = _.escape(url);
 
+        //  TODO смотреть на Accept!
         if ( 'text/html' === new ContentType(this._res.
-            getHeader('Content-Type')).getMime() ) {
+            getHeader('Content-Type')).value ) {
 
             url = '<a href="' + url + '">' + url + '</a>';
         }
@@ -551,6 +595,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     _writeReadable: function (body) {
 
+        var self = this;
+
         if ( this._res.getHeader('Content-Length') ) {
             this._setHead('Content-Type', 'application/octet-stream', true);
 
@@ -560,19 +606,19 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        new Raw().parse(body).done(function (err, body) {
+        new Raw().parse(body, function (err, body) {
 
             if ( 2 > arguments.length ) {
-                this._respond(500, err);
+                self._respond(500, err);
 
                 return;
             }
 
-            this._setHead('Content-Type', 'application/octet-stream', true);
-            this._setHead('Content-Length', body.length, true);
+            self._setHead('Content-Type', 'application/octet-stream', true);
+            self._setHead('Content-Length', body.length, true);
 
-            this._res.end(body);
-        }, this);
+            self._res.end(body);
+        });
     }
 
 }, {

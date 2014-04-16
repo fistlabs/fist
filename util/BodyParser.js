@@ -1,7 +1,6 @@
 'use strict';
 
-var Class = /** @type Class */ require('fist.lang.class/Class');
-var ContentType = /** @type ContentType */ require('./ContentType');
+var Base = /** @type Base */ require('fist.lang.class/Base');
 var Json = /** @type Json */ require('../parser/Json');
 var Multipart = /** @type Multipart */ require('../parser/Multipart');
 var Parser = /** @type Parser */ require('../parser/Parser');
@@ -12,9 +11,62 @@ var _ = /** @type _*/ require('lodash');
 
 /**
  * @class BodyParser
- * @extends Class
+ * @extends Base
  * */
-var BodyParser = Class.extend(/** @lends BodyParser.prototype */ {
+var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
+
+    /**
+     * @protected
+     * @memberOf {BodyParser}
+     * @method
+     *
+     * @constructs
+     * */
+    constructor: function (params) {
+
+        /**
+         * @public
+         * @memberOf {BodyParser}
+         * @property {Parser}
+         * */
+        this.parser = this._createParser(params) ||
+            //  Если парсер не был содан то создастся
+            // дефолтный для прозрачности
+            new Parser(params);
+    },
+
+    /**
+     * @protected
+     * @memberOf {BodyParser}
+     * @method
+     *
+     * @param {Object} params
+     *
+     * @returns {*}
+     * */
+    _createParser: function (params) {
+        /*eslint new-cap: 0, eqeqeq: 0*/
+        var i;
+        var l;
+
+        if ( !params ||
+            'string' !== typeof params.length || params.length == '0' ) {
+
+            return null;
+        }
+
+        for ( i = 0, l = this._parsers.length; i < l; i += 1 ) {
+
+            if ( this._parsers[i].matchMedia(params) ) {
+
+                return new this._parsers[i](params);
+            }
+        }
+
+        //  Если не был обнаружен парсер для конкретного content-type,
+        //  то будет возвращено просто raw-body
+        return new Raw(params);
+    },
 
     /**
      * Этих парсеров достаточно более чем с головой,
@@ -36,50 +88,36 @@ var BodyParser = Class.extend(/** @lends BodyParser.prototype */ {
      * @memberOf {BodyParser}
      * @method
      *
-     * @param {Object} req
+     * @param {Object} stream
+     * @param {Function} done
      * */
-    parse: function (req) {
+    parse: function (stream, done) {
 
-        var StreamParser;
+        var parser = this.parser;
 
-        var header = req.headers;
-        var contentType = new ContentType(header['content-type']);
-        var params = this.params;
-        var parsers = [Parser];
+        parser.parse(stream, function (err, res) {
 
-        if ( 'string' === typeof header['transfer-encoding'] ||
-            'string' === typeof header['content-length'] ) {
-            parsers = this._parsers.concat(Raw);
-        }
+            if ( 2 > arguments.length ) {
+                done(err);
 
-        params = _.extend({}, params, contentType.params, {
-            length: header['content-length']
-        });
+                return;
+            }
 
-        StreamParser = _.find(parsers, function (Parser) {
+            if ( Array.isArray(res) ) {
+                done(null, {
+                    type: parser.type,
+                    input: res[0],
+                    files: res[1]
+                });
 
-            return Parser.matchMedia(contentType);
-        });
+                return;
+            }
 
-        return new StreamParser(params).
-            parse(req).next(function (res, done) {
-
-                if ( Array.isArray(res) ) {
-                    res = {
-                        input: res[0],
-                        files: res[1]
-                    };
-
-                } else {
-                    res = {
-                        input: res
-                    };
-                }
-
-                res.type = StreamParser.type;
-
-                done(null, res);
+            done(null, {
+                type: parser.type,
+                input: res
             });
+        });
     }
 
 });

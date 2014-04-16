@@ -3,6 +3,7 @@
 var Tracker = require('../../../Framework');
 var Connect = require('../../../track/Connect');
 var connect = require('../../util/connect');
+var ContentType = require('../../../util/ContentType');
 
 var Fs = require('fs');
 var Url = require('url');
@@ -171,6 +172,27 @@ module.exports = {
             }, function () {
                 test.done();
             });
+        },
+        function (test) {
+            connect({
+                method: 'post',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                body: 'a=5'
+            }, function (t, req, res) {
+                t.body(function (err) {
+                    test.ok(err);
+                    test.strictEqual(err.code, 'ELIMIT');
+                    res.end();
+                });
+            }, function () {
+                test.done();
+            }, {
+                body: {
+                    limit: 2
+                }
+            });
         }
     ],
 
@@ -275,6 +297,8 @@ module.exports = {
             }, function (err, data) {
                 test.strictEqual(data.statusCode, 500);
                 test.strictEqual(data.data, 'ERR');
+//                TODO
+//                test.strictEqual(data.headers['content-type'], 'text/plain');
                 test.done();
             });
         },
@@ -386,6 +410,29 @@ module.exports = {
             }, function (err, data) {
                 test.strictEqual(data.data + '', '{}');
                 test.strictEqual(data.statusCode, 200);
+                test.done();
+            });
+        }
+    ],
+
+    'Connect.prototype.mime': [
+        function (test) {
+            connect({
+                headers: {
+                    'Content-Type': 'text/plain; param=42;'
+                },
+                method: 'get'
+            }, function (t, req, res) {
+                var mime = t.mime();
+                test.strictEqual(mime, t.mime());
+                test.strictEqual(mime.toString(), 'text/plain;param=42');
+                t.mime('text/html; charset=UTF-8', {
+                    charset: 'UTF-16'
+                });
+                res.end();
+            }, function (err, res) {
+                test.strictEqual(res.headers['content-type'],
+                    'text/html;charset=UTF-16');
                 test.done();
             });
         }

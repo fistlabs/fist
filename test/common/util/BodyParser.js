@@ -1,7 +1,11 @@
 'use strict';
 
 var BodyParser = require('../../../util/BodyParser');
+var ContentType = require('../../../util/ContentType');
+
 var http = require('../../util/http');
+
+var _ = require('lodash');
 
 module.exports = {
 
@@ -14,7 +18,7 @@ module.exports = {
 
                 var parser = new BodyParser();
 
-                parser.parse(req).next(function (data) {
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, {
                         input: {},
                         type: void 0
@@ -30,15 +34,12 @@ module.exports = {
                 method: 'post',
                 body: 'asd'
             }, function (req, res) {
-
-                delete req.headers['content-type'];
-
                 var parser = new BodyParser();
 
-                parser.parse(req).next(function (data) {
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, {
-                        input: new Buffer('asd'),
-                        type: 'raw'
+                        input: {},
+                        type: void 0
                     });
                     res.end();
                 });
@@ -48,16 +49,20 @@ module.exports = {
         },
         function (test) {
             http({
-                method: 'post',
+                method: 'get',
                 body: 'asd',
                 headers: {
                     'content-type': 'text/plain'
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var mime = new ContentType(req.headers['content-type']);
 
-                parser.parse(req).next(function (data) {
+                var parser = new BodyParser(_.extend(mime.toParams(), {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, {
                         input: new Buffer('asd'),
                         type: 'raw'
@@ -77,9 +82,13 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var mime = new ContentType(req.headers['content-type']);
 
-                parser.parse(req).next(function (data) {
+                var parser = new BodyParser(_.extend(mime.toParams(), {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, {
                         input: {
                             a: '42'
@@ -88,6 +97,7 @@ module.exports = {
                     });
                     res.end();
                 });
+
             }, function () {
                 test.done();
             });
@@ -101,9 +111,13 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var mime = new ContentType(req.headers['content-type']);
 
-                parser.parse(req).next(function (data) {
+                var parser = new BodyParser(_.extend(mime.toParams(), {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, {
                         input: {
                             a: '42'
@@ -125,10 +139,39 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var mime = new ContentType(req.headers['content-type']);
 
-                parser.parse(req).next(null, function (err) {
+                var parser = new BodyParser(_.extend(mime.toParams(), {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req, function (err) {
                     test.ok(err instanceof SyntaxError);
+                    res.end();
+                });
+            }, function () {
+                test.done();
+            });
+        },
+        function (test) {
+            http({
+                method: 'get',
+                headers: {
+                    'content-type': 'application/json'
+                }
+            }, function (req, res) {
+
+                var mime = new ContentType(req.headers['content-type']);
+
+                var parser = new BodyParser(_.extend(mime.toParams(), {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req, function (err, body) {
+                    test.deepEqual(body, {
+                        type: void 0,
+                        input: {}
+                    });
                     res.end();
                 });
             }, function () {
@@ -144,9 +187,13 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var mime = new ContentType(req.headers['content-type']);
 
-                parser.parse(req).next(function (data) {
+                var parser = new BodyParser(_.extend(mime.toParams(), {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, {
                         input: {
                             dima: 'ok'

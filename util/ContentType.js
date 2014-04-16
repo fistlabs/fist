@@ -22,37 +22,52 @@ var ContentType = MediaHead.extend(/** @lends ContentType.prototype */ {
 
         var type;
 
+        /**
+         * @public
+         * @memberOf {ContentType}
+         * @property
+         * @type {String}
+         * */
+        this.type = void 0;
+
+        /**
+         * @public
+         * @memberOf {ContentType}
+         * @property
+         * @type {String}
+         * */
+        this.subtype = void 0;
+
         if ( this.value ) {
             type = this.value.split('/');
 
-            /**
-             * @public
-             * @memberOf {ContentType}
-             * @property
-             * @type {String}
-             * */
-            this.type = type[0];
+            this.type = type.shift();
 
-            /**
-             * @public
-             * @memberOf {ContentType}
-             * @property
-             * @type {String}
-             * */
-            this.subtype = type.slice(1).join('/');
+            if ( type.length ) {
+                this.subtype = type.join('/');
+            }
         }
-    },
+    }
+
+}, {
 
     /**
      * @public
      * @memberOf {ContentType}
      * @method
      *
-     * @returns {String}
+     * @param {String} header
+     * @param {Object} [params]
+     *
+     * @returns {ContentType}
      * */
-    getMime: function () {
+    create: function (header, params) {
 
-        return this.value;
+        var mime = new ContentType(header);
+
+        _.extend(mime.params, params);
+
+        return mime;
     }
 
 });
