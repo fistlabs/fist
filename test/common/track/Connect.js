@@ -297,8 +297,7 @@ module.exports = {
             }, function (err, data) {
                 test.strictEqual(data.statusCode, 500);
                 test.strictEqual(data.data, 'ERR');
-//                TODO
-//                test.strictEqual(data.headers['content-type'], 'text/plain');
+                test.strictEqual(data.headers['content-type'], 'text/plain');
                 test.done();
             });
         },

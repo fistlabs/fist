@@ -1,12 +1,7 @@
 'use strict';
 
-var REDIRECT_STATUS = [300, 301, 302,
-    303, 305, 307].reduce(function (REDIRECT_STATUS, code) {
-        REDIRECT_STATUS[code] = true;
-
-        return REDIRECT_STATUS;
-    }, Object.create(null));
-
+var R_COMMA = /\s*,\s*/;
+var REDIRECT_STATUS = [300, 301, 302, 303, 305, 307];
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
@@ -300,7 +295,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         if ( 'number' === typeof code ) {
 
-            if ( !REDIRECT_STATUS[code] ) {
+            if ( -1 === REDIRECT_STATUS.indexOf(code) ) {
                 code = 302;
             }
 
@@ -600,7 +595,11 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         if ( this._res.getHeader('Content-Length') ) {
             this._setHead('Content-Type', 'application/octet-stream', true);
 
-            body.on('error', this._respond.bind(this, 500));
+            body.on('error', function (err) {
+                self._res.removeHeader('Content-Type');
+                self._respond(500, err);
+            });
+
             body.pipe(this._res);
 
             return;
@@ -644,14 +643,6 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @public
      * @static
      * @memberOf Connect
-     * @property {RegExp}
-     * */
-    R_COMMA: /\s*,\s*/,
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
      * @method
      *
      * @returns {String}
@@ -663,7 +654,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         if ( 'string' === typeof host ) {
 
-            return host.split(Connect.R_COMMA)[0];
+            return host.split(R_COMMA)[0];
         }
 
         return host;
@@ -690,7 +681,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         if ( 'string' === typeof proto ) {
 
-            return proto.split(Connect.R_COMMA)[0];
+            return proto.split(R_COMMA)[0];
         }
 
         return 'http';
