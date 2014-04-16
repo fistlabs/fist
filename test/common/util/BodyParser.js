@@ -1,7 +1,11 @@
 'use strict';
 
 var BodyParser = require('../../../util/BodyParser');
+var ContentType = require('../../../util/ContentType');
+
 var http = require('../../util/http');
+
+var _ = require('lodash');
 
 module.exports = {
 
@@ -30,15 +34,12 @@ module.exports = {
                 method: 'post',
                 body: 'asd'
             }, function (req, res) {
-
-                delete req.headers['content-type'];
-
                 var parser = new BodyParser();
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
-                        input: new Buffer('asd'),
-                        type: 'raw'
+                        input: {},
+                        type: void 0
                     });
                     res.end();
                 });
@@ -48,14 +49,15 @@ module.exports = {
         },
         function (test) {
             http({
-                method: 'post',
+                method: 'get',
                 body: 'asd',
                 headers: {
                     'content-type': 'text/plain'
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var parser = new BodyParser(
+                    new ContentType(req.headers['content-type']));
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -77,7 +79,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var parser = new BodyParser(_.extend({
+                    length: req.headers['content-length']
+                }, new ContentType(req.headers['content-type'])));
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -101,7 +105,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var parser = new BodyParser(_.extend({
+                    length: req.headers['content-length']
+                }, new ContentType(req.headers['content-type'])));
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {
@@ -125,7 +131,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var parser = new BodyParser(_.extend({
+                    length: req.headers['content-length']
+                }, new ContentType(req.headers['content-type'])));
 
                 parser.parse(req).next(null, function (err) {
                     test.ok(err instanceof SyntaxError);
@@ -144,7 +152,9 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var parser = new BodyParser();
+                var parser = new BodyParser(_.extend({
+                    length: req.headers['content-length']
+                }, new ContentType(req.headers['content-type'])));
 
                 parser.parse(req).next(function (data) {
                     test.deepEqual(data, {

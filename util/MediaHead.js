@@ -22,20 +22,22 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
      * */
     constructor: function (header) {
 
-        var ast;
+        var ast = [];
 
-        if ( header ) {
+        /**
+         * @public
+         * @memberOf {MediaHead}
+         * @property
+         * @type {String}
+         * */
+        this.value = void 0;
+
+        if ( 'string' === typeof header ) {
             ast = MediaHead._createAst(header);
 
-            /**
-             * @public
-             * @memberOf {MediaHead}
-             * @property
-             * @type {String}
-             * */
-            this.value = ast.shift()[0];
-        } else {
-            ast = [];
+            if ( ast.length ) {
+                this.value = ast.shift()[0];
+            }
         }
 
         /**
@@ -44,8 +46,49 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = _.reduce(ast,
-            MediaHead._astReducer, Object.create(null));
+        this.params = _.reduce(ast, MediaHead._astReducer, Object.create(null));
+
+        /**
+         * @protected
+         * @memberOf {MediaHead}
+         * @property {*}
+         * */
+        this._header = header;
+    },
+
+    /**
+     * @public
+     * @memberOf {MediaHead}
+     * @method
+     *
+     * @returns {String}
+     * */
+    toString: function () {
+
+        if ( void 0 === this.value ) {
+
+            return this._header;
+        }
+
+        return _.reduce(this.params, function (header, v, i) {
+
+            function reducer (header, v) {
+
+                if ( void 0 === v ) {
+
+                    return header + ';' + i;
+                }
+
+                return header + ';' + i + '=' + v;
+            }
+
+            if ( Array.isArray(v) ) {
+
+                return _.reduce(v, reducer, header);
+            }
+
+            return reducer(header, v);
+        }, this.value);
     }
 
 }, {
@@ -79,7 +122,6 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
         params[param[0]] = param[1];
 
         return params;
-
     },
 
     /**
@@ -88,52 +130,56 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
      * @memberOf MediaHead
      * @method
      *
-     * @param {String} src
+     * @param {String} header
      *
      * @returns {Array}
      * */
-    _createAst: function (src) {
+    _createAst: function (header) {
         /*eslint complexity: [2,15]*/
-        var i = 0;
-        var l = src.length;
+
+        var attrib = [];
+        var buffer = '';
         var cursor;
-
-        var param = [];
+        var i = 0;
+        var length = header.length;
         var result = [];
+        var spaces = 0;
 
-        var stAttrib = -1;
+        var stAttrib = 0;
         var stEscape = 0;
         var stQuotes = 0;
 
-        var buf = '';
-        var spaceBuf = 0;
+        function endBuf (endParam) {
 
-        function endBuf () {
-
-            if ( 0 < spaceBuf ) {
-                buf = buf.slice(0, -spaceBuf);
-                spaceBuf = 0;
+            if ( 0 < spaces ) {
+                buffer = buffer.slice(0, -spaces);
+                spaces = 0;
             }
 
-            param[stAttrib] = buf;
-            buf = '';
+            attrib[stAttrib] = buffer;
+            buffer = '';
+
+            if ( endParam ) {
+
+                if ( attrib[0] ) {
+                    result[result.length] = attrib;
+                    attrib = [];
+                }
+
+                stAttrib = 0;
+            }
         }
 
         while ( true ) {
 
-            if ( i === l ) {
+            if ( i === length ) {
 
                 break;
             }
 
-            cursor = src.charAt(i);
+            cursor = header.charAt(i);
 
             i += 1;
-
-            if ( -1 === stAttrib ) {
-                param = [];
-                stAttrib = 0;
-            }
 
             //  находимся в кавычках
             if ( 1 === stQuotes ) {
@@ -146,7 +192,7 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
 
                 //  если символ экранирован то он точно подойдет
                 if ( 1 === stEscape ) {
-                    buf += cursor;
+                    buffer += cursor;
                     stEscape = 0;
 
                     continue;
@@ -154,35 +200,32 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
 
                 //  закрывающая кавычка
                 if ( '"' === cursor ) {
-                    //  добавляем значение параметра
                     stQuotes = 0;
 
                     continue;
                 }
 
-                buf += cursor;
+                buffer += cursor;
 
                 continue;
             }
 
             //  разделитель параметров
             if ( ';' === cursor ) {
-                endBuf();
-                result[result.length] = param;
-                stAttrib = -1;
+                endBuf(true);
 
                 continue;
             }
 
             if ( R_SPACE.test(cursor) ) {
 
-                if ( '' === buf ) {
+                if ( '' === buffer ) {
 
                     continue;
                 }
 
-                buf += cursor;
-                spaceBuf += 1;
+                buffer += cursor;
+                spaces += 1;
 
                 continue;
             }
@@ -197,8 +240,8 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
                     continue;
                 }
 
-                spaceBuf = 0;
-                buf += cursor;
+                spaces = 0;
+                buffer += cursor;
 
                 continue;
             }
@@ -209,13 +252,10 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
                 continue;
             }
 
-            buf += cursor;
+            buffer += cursor;
         }
 
-        if ( buf ) {
-            endBuf();
-            result[result.length] = param;
-        }
+        endBuf(true);
 
         return result;
     }
