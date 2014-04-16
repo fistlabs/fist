@@ -14,27 +14,32 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
      * @memberOf {Urlencoded}
      * @method
      *
-     * @returns {Next}
+     * @param {Object} stream
+     * @param {Function} done
      * */
-    parse: function (stream) {
+    parse: function (stream, done) {
 
-        return Urlencoded.parent.parse.call(this, stream).
-            next(function (res, done) {
+        return Urlencoded.parent.parse.call(this, stream, function (err, res) {
 
-                return done(null, QueryString.parse(String(res)));
-            });
-    }
+            if ( 2 > arguments.length ) {
+                done(err);
 
-}, {
+                return;
+            }
+
+            done(null, QueryString.parse(String(res)));
+        });
+    },
 
     /**
      * @public
-     * @static
-     * @memberOf Urlencoded
+     * @memberOf {Urlencoded}
      * @property
      * @type {String}
      * */
-    type: 'urlencoded',
+    type: 'urlencoded'
+
+}, {
 
     /**
      * @public

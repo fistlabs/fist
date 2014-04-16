@@ -13,7 +13,7 @@ module.exports = {
             var req = new Parted(['П', new Buffer('рив'), 'ет']);
             var parser = new Raw();
 
-            parser.parse(req).next(function (buf) {
+            parser.parse(req, function (err, buf) {
                 test.deepEqual(buf, new Buffer('Привет'));
                 test.done();
             });
@@ -23,7 +23,7 @@ module.exports = {
             var req = new Parted(['П', new Buffer('рив'), 'ет']);
             var parser = new Raw();
 
-            parser.parse(req).next(null, function (err) {
+            parser.parse(req, function (err) {
                 test.strictEqual(err, '42');
                 test.done();
             });
@@ -42,7 +42,7 @@ module.exports = {
                 limit: 3
             });
 
-            parser.parse(req).next(null, function (err) {
+            parser.parse(req, function (err) {
                 test.deepEqual(err, {
                     actual: 4,
                     expected: 3,
@@ -61,7 +61,7 @@ module.exports = {
                 length: 3
             });
 
-            parser.parse(req).next(null, function (err) {
+            parser.parse(req, function (err) {
                 test.deepEqual(err, {
                     actual: 5,
                     expected: 3,

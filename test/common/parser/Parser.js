@@ -35,7 +35,7 @@ module.exports = {
             var req = new Parted(['h1']);
             var parser = new Parser();
 
-            parser.parse(req).next(function (res) {
+            parser.parse(req, function (err, res) {
                 test.deepEqual(res, {});
                 test.done();
             });

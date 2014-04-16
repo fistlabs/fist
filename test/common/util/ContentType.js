@@ -39,5 +39,27 @@ module.exports = {
 
             test.done();
         }
+    ],
+    'ContentType.create': [
+        function (test) {
+
+            var mime = ContentType.create('text/html; a=5', {
+                a: 42,
+                b: 9000
+            });
+
+            test.strictEqual(mime.value, 'text/html');
+            test.strictEqual(mime.type, 'text');
+            test.strictEqual(mime.subtype, 'html');
+
+            test.deepEqual(mime.params, {
+                a: 42,
+                b: 9000
+            });
+
+            test.strictEqual(String(mime), 'text/html;a=42;b=9000');
+
+            test.done();
+        }
     ]
 };

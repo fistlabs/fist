@@ -39,43 +39,19 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
     },
 
     /**
-     * @protected
+     * @public
      * @memberOf {Parser}
      * @method
      *
-     * @returns {Next}
+     * @param {Object} media
+     * @param {Function} done
      * */
-    parse: function () {
+    parse: function (media, done) {
 
-        var next = new Next();
-
-        next.accept(Object.create(null));
-
-        return next;
+        done(null, Object.create(null));
     }
 
 }, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf Parser
-     * @property
-     * */
-    type: void 0,
-
-    /**
-     * @public
-     * @static
-     * @memberOf Parser
-     * @method
-     *
-     * @returns {Boolean}
-     * */
-    matchMedia: function () {
-
-        return true;
-    },
 
     /**
      * @public

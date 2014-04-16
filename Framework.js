@@ -504,7 +504,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @param {Function} done
      * */
     _callStream: function (stream, done) {
-        new Raw().parse(stream).done(done, this);
+        new Raw().parse(stream, done.bind(this));
     },
 
     /**

@@ -89,6 +89,18 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
 
             return reducer(header, v);
         }, this.value);
+    },
+
+    /**
+     * @public
+     * @memberOf {MediaHead}
+     * @method
+     *
+     * @returns {Object}
+     * */
+    toParams: function () {
+
+        return _.extend({}, this.params, _.omit(this, ['params']));
     }
 
 }, {

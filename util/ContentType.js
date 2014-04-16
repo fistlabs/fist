@@ -47,18 +47,27 @@ var ContentType = MediaHead.extend(/** @lends ContentType.prototype */ {
                 this.subtype = type.join('/');
             }
         }
-    },
+    }
+
+}, {
 
     /**
      * @public
      * @memberOf {ContentType}
      * @method
      *
-     * @returns {String}
+     * @param {String} header
+     * @param {Object} [params]
+     *
+     * @returns {ContentType}
      * */
-    getMime: function () {
+    create: function (header, params) {
 
-        return this.value;
+        var mime = new ContentType(header);
+
+        _.extend(mime.params, params);
+
+        return mime;
     }
 
 });

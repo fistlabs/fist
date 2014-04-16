@@ -83,7 +83,7 @@ module.exports = {
                     boundary: boundary
                 });
 
-                parser.parse(req).next(function (data) {
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, [
                         {
                             first: 'vasya',
@@ -115,7 +115,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req).next(function (data) {
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, [
                         {
                             first: ['vasya', 'vasya', 'vasya'],
@@ -148,7 +148,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req).next(function (data) {
+                parser.parse(req, function (err, data) {
                     test.deepEqual(data, [
                         {
                             last: 'petrov'
@@ -179,7 +179,8 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req).next(null, function () {
+                parser.parse(req, function (err) {
+                    test.ok(err);
                     res.end();
                 });
 
@@ -211,7 +212,7 @@ module.exports = {
                     req.emit('error', 'ERR');
                 });
 
-                parser.parse(req).next(null, function (err) {
+                parser.parse(req, function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
                 });
@@ -244,7 +245,7 @@ module.exports = {
                     req.emit('error', err);
                 });
 
-                parser.parse(req).next(null, function (err) {
+                parser.parse(req, function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
                 });
@@ -275,7 +276,7 @@ module.exports = {
                     length: 4
                 });
 
-                parser.parse(req).next(null, function (err) {
+                parser.parse(req, function (err) {
                     test.strictEqual(err.code, 'ELENGTH');
                     res.end();
                 });
@@ -294,7 +295,7 @@ module.exports = {
                 limit: 4
             });
 
-            parser.parse(stream).next(null, function (err) {
+            parser.parse(stream, function (err) {
                 test.deepEqual(err, {
                     code: 'ELIMIT',
                     actual: 5,

@@ -3,7 +3,6 @@
 var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Dicer = /** @type Dicer */ require('dicer');
 var MediaHead = /** @type MediaHead */ require('../util/MediaHead');
-var Next = /** @type Next */ require('fist.util.next/Next');
 var Parser = /** @type Parser */ require('./Parser');
 
 /**
@@ -17,29 +16,22 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @memberOf {Multipart}
      * @method
      *
-     * @returns {Next}
+     * @param {Object} stream
+     * @param {Function} done
      * */
-    parse: function (stream) {
-
-        var next = new Next();
-
-        Multipart._parseMultipart(stream, this.params, function () {
-            next.args(arguments);
-        });
-
-        return next;
-    }
-
-}, /** @lends Multipart */ {
+    parse: function (stream, done) {
+        Multipart._parseMultipart(stream, this.params, done);
+    },
 
     /**
      * @public
-     * @static
-     * @memberOf Multipart
+     * @memberOf {Multipart}
      * @property
      * @type {String}
      * */
-    type: 'multipart',
+    type: 'multipart'
+
+}, /** @lends Multipart */ {
 
     /**
      * @public
@@ -91,7 +83,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
                     if ( file ) {
                         mime = (header['content-type'] || [])[0];
-                        mime = new ContentType(mime).getMime();
+                        mime = new ContentType(mime);
                     }
 
                     return;
@@ -121,7 +113,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
                     //  это был файл
                     buf = {
-                        mime: mime,
+                        mime: mime.value,
                         name: file,
                         data: buf
                     };
