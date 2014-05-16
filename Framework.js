@@ -717,11 +717,11 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        this.emit('sys:match', track);
-
         track.match = route.match;
         route = route.route;
         track.route = route.name;
+
+        this.emit('sys:match', track);
 
         this.resolve(track, route.data.unit, function (err, res) {
 
