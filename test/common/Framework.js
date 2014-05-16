@@ -490,12 +490,17 @@ module.exports = {
             asker({
                 method: 'GET',
                 path: '/',
-                socketPath: sock
-            }, function () {});
+                socketPath: sock,
+                statusFilter: function () {
 
-            setTimeout(function () {
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, res) {
+                test.strictEqual(res.statusCode, 502);
                 test.done();
-            }, 50);
+            });
         },
 
         function (test) {
@@ -564,6 +569,16 @@ module.exports = {
             server.listen(sock);
 
             server.route('GET', '/<pageName>/', 'page');
+
+            server.on('sys:match', function (track) {
+
+                test.strictEqual(track.route, 'page');
+
+                test.deepEqual(track.match, {
+                    pageName: 'fist.io.server'
+                });
+
+            });
 
             server.decl('page', function (track, errors, result, done) {
                 done(null, track.match.pageName);
