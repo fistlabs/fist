@@ -64,7 +64,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             params = Object.create(null);
         }
 
-        return this._build(this.ast, params);
+        return this._build(params);
     },
 
     /**
@@ -78,12 +78,9 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * */
     match: function (url) {
 
-        if ( url in this.matches ) {
-
-            return this.matches[url];
+        if ( false === url in this.matches ) {
+            this.matches[url] = this._match(url);
         }
-
-        this.matches[url] = this._match(this.regex, url, this.ast.map);
 
         return this.matches[url];
     },
@@ -93,13 +90,13 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @memberOf {Route}
      * @method
      *
-     * @param {Object} ast
      * @param {Object} params
      *
      * @returns {String}
      * */
-    _build: function (ast, params) {
+    _build: function (params) {
         /*eslint max-depth: [2,6], complexity: [2,30]*/
+        var ast = this.ast;
         var body;
         var buf = '';
         var len = ast.length;
@@ -277,19 +274,19 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @memberOf Route
      * @method
      *
-     * @param {RegExp} regex
      * @param {String} url
-     * @param {Array<String>} map
      *
      * @returns {Object}
      * */
-    _match: function (regex, url, map) {
+    _match: function (url) {
 
         var i;
         var l;
-        var m = regex.exec(url);
         var name;
         var params;
+        var regex = this.regex;
+        var map = this.ast.map;
+        var m = regex.exec(url);
 
         if ( null === m ) {
 
