@@ -633,20 +633,6 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @method
      *
      * @param {Connect} track
-     *
-     * @returns {*}
-     * */
-    _findRoute: function (track) {
-
-        return this.router.find(track);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
-     * @param {Connect} track
      * */
     _handle: function (track) {
 
@@ -675,7 +661,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
             return;
         }
 
-        route = this._findRoute(track);
+        route = this.router.find(track.method, track.url.pathname, track.route);
 
         //  однозначно нет такого маршрута
         if ( null === route ) {

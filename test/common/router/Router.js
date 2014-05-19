@@ -74,71 +74,32 @@ module.exports = {
             router.addRoute('POST', '/(index/)post/', 2);
             router.addRoute('POST', '/index/upload/', 3);
 
-            test.deepEqual(router.find({
-                method: 'HEAD',
-                url: {
-                    pathname: '/index/'
-                }
-            }), []);
+            test.deepEqual(router.find('HEAD', '/index/'), []);
 
             var GET = router.addRoute('GET', '/index/', 4);
 
-            test.deepEqual(router.find({
-                method: 'GET',
-                url: {
-                    pathname: '/index/'
-                }
-            }), {
+            test.deepEqual(router.find('GET', '/index/'), {
                 match: {},
                 route: GET
             });
 
-            test.deepEqual(router.find({
-                method: 'HEAD',
-                url: {
-                    pathname: '/index/'
-                }
-            }), {
+            test.deepEqual(router.find('HEAD', '/index/'), {
                 match: {},
                 route: GET
             });
 
-            test.deepEqual(router.find({
-                method: 'PUT',
-                url: {
-                    pathname: '/index/'
-                }
-            }), []);
+            test.deepEqual(router.find('PUT', '/index/'), []);
 
-            test.deepEqual(router.find({
-                method: 'POST',
-                url: {
-                    pathname: '/index/'
-                }
-            }), ['GET']);
-            test.strictEqual(router.find({
-                method: 'GET',
-                url: {
-                    pathname: '/'
-                }
-            }), null);
+            test.deepEqual(router.find('POST', '/index/'), ['GET']);
 
-            test.deepEqual(router.find({
-                method: 'HEAD',
-                url: {
-                    pathname: '/index/'
-                }
-            }), {
+            test.strictEqual(router.find('GET', '/'), null);
+
+            test.deepEqual(router.find('HEAD', '/index/'), {
                 match: {},
                 route: GET
             });
 
-            test.deepEqual(router.find({
-                method: 'HEAD',
-                url: {
-                    pathname: '/index/post/'
-                }
-            }), ['POST']);
+            test.deepEqual(router.find('HEAD', '/index/post/'), ['POST']);
 
             test.done();
         },
@@ -149,46 +110,22 @@ module.exports = {
             var r1 = router.addRoute('GET', '/<page1>/', 'page1');
             var r2 = router.addRoute('GET', '/<page2>/', 'page2');
 
-            test.deepEqual(router.find({
-                url: {
-                    pathname: '/index/'
-                },
-                method: 'GET'
-            }), {
+            test.deepEqual(router.find('GET', '/index/'), {
                 match: {
                     page1: 'index'
                 },
                 route: r1
             });
 
-            test.deepEqual(router.find({
-                url: {
-                    pathname: '/index/'
-                },
-                method: 'GET',
-                route: 'page1'
-            }), {
+            test.deepEqual(router.find('GET', '/index/', 'page1'), {
                 match: {
                     page2: 'index'
                 },
                 route: r2
             });
 
-            test.strictEqual(router.find({
-                url: {
-                    pathname: '/index/'
-                },
-                method: 'GET',
-                route: 'page2'
-            }), null);
-
-            test.strictEqual(router.find({
-                url: {
-                    pathname: '/index/'
-                },
-                method: 'GET',
-                route: 'page0'
-            }), null);
+            test.strictEqual(router.find('GET', '/index/', 'page2'), null);
+            test.strictEqual(router.find('GET', '/index/', 'page0'), null);
 
             test.done();
         }

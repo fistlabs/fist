@@ -88,30 +88,20 @@ var Router = Class.extend(/** @lends Router.prototype */ {
      * @memberOf {Router}
      * @method
      *
-     * @param {Connect} track
+     * @param {String} verb
+     * @param {String} pathname
+     * @param {String} [resume]
      *
      * @returns {null|Object|Array<String>}
      * */
-    find: function (track) {
+    find: function (verb, pathname, resume) {
 
         var i;
-        var verb = track.method;
 
         //  Если в трэке есть запись о роуте, значит он уже был сматчен
         //  значит метод точно будет уже сматчен
         //  значит надо продолжить матчить со следующего роута
-        if ( track.route ) {
-            i = this._getRouteIndex(track.route);
-
-            if ( -1 === i || i === this.routes.length ) {
-                //  404
-                return null;
-            }
-
-            i += 1;
-
-        } else {
-
+        if ( void 0 === resume || null === resume ) {
             //  Нет ни одного маршрута такого типа
             if ( false === verb in this.verbs ) {
 
@@ -123,9 +113,19 @@ var Router = Class.extend(/** @lends Router.prototype */ {
             }
 
             i = 0;
+
+        } else {
+            i = this._getRouteIndex(resume);
+
+            if ( -1 === i || i === this.routes.length ) {
+                //  404
+                return null;
+            }
+
+            i += 1;
         }
 
-        return this._find(verb, track.url.pathname, i);
+        return this._find(verb, pathname, i);
     },
 
     /**
