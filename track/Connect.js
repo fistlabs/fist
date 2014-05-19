@@ -50,7 +50,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @memberOf {Connect}
          * @property {String}
          * */
-        this.method = req.method;
+        this.method = req.method.toUpperCase();
 
         /**
          * @public

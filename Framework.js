@@ -677,12 +677,6 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
         route = this._findRoute(track);
 
-        //  роутер сделал send()
-        if ( track.sent() ) {
-
-            return;
-        }
-
         //  однозначно нет такого маршрута
         if ( null === route ) {
             this.emit('sys:ematch', track);

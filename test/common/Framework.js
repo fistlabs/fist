@@ -858,43 +858,6 @@ module.exports = {
                 test.deepEqual(res.data + '', '1');
                 test.done();
             });
-        },
-
-        function (test) {
-
-            var S = Framework.extend({
-                _findRoute: function (connect) {
-                    connect.send(404);
-                }
-            });
-
-            var server = new S();
-
-            try {
-                Fs.unlinkSync(sock);
-            } catch (ex) {}
-
-            server.decl('some', function (track, errors, result, done) {
-                done(1);
-            });
-
-            server.route('GET', '/', 'some');
-
-            server.listen(sock);
-
-            asker({
-                method: 'GET',
-                path: '/',
-                socketPath: sock,
-                statusFilter: function () {
-                    return {
-                        accept: true
-                    };
-                }
-            }, function (err, res) {
-                test.deepEqual(res.statusCode, 404);
-                test.done();
-            });
         }
     ],
 

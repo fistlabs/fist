@@ -42,31 +42,30 @@ var Router = Class.extend(/** @lends Router.prototype */ {
      * @method
      *
      * @param {String} verb     метод запроса
-     * @param {String} expr     шаблон урла запроса
+     * @param {String} tmpl     шаблон урла запроса
      * @param {*} name          id маршрута (должен быть уникальным)
      * @param {*} [data]        любые закрепленные данные
      * @param {*} [opts]        опции для роута
      *
      * @returns {Route}
      * */
-    addRoute: function (verb, expr, name, data, opts) {
+    addRoute: function (verb, tmpl, name, data, opts) {
 
-        var i;
+        var i = this.routes.length;
         var route;
-
-        i = this.routes.length;
 
         while ( i ) {
             i -= 1;
+            route = this.routes[i];
 
-            if ( name === this.routes[i].name ) {
-                this.verbs[this.routes[i].verb] -= 1;
+            if ( name === route.name ) {
+                this.verbs[route.verb] -= 1;
                 this.routes.splice(i, 1);
             }
         }
 
         opts = _.extend(Object.create(null), this.params, opts);
-        route = this._createRoute(expr, opts);
+        route = this._createRoute(tmpl, opts);
 
         route.data = data;
         route.name = name;
@@ -94,70 +93,39 @@ var Router = Class.extend(/** @lends Router.prototype */ {
      * @returns {null|Object|Array<String>}
      * */
     find: function (track) {
-        /*eslint complexity: [2,9]*/
+
         var i;
-        var l;
-        var match;
-        var verb = track.method.toUpperCase();
+        var verb = track.method;
 
-        var verbs = [];
-        var found = [];
+        //  Если в трэке есть запись о роуте, значит он уже был сматчен
+        //  значит метод точно будет уже сматчен
+        //  значит надо продолжить матчить со следующего роута
+        if ( track.route ) {
+            i = this._getRouteIndex(track.route);
 
-        //  Нет ни одного маршрута такого типа
-        if ( !(verb in this.verbs) ) {
-
-            if ( !('HEAD' === verb && 'GET' in this.verbs ) ) {
-
-                //  501
-                return [];
-            }
-        }
-
-        for ( i = 0, l = this.routes.length; i < l; i += 1 ) {
-            match = this._match(this.routes[i], track);
-
-            if ( null === match ) {
-
-                continue;
+            if ( -1 === i || i === this.routes.length ) {
+                //  404
+                return null;
             }
 
-            if ( verb === this.routes[i].verb ) {
+            i += 1;
 
-                //  Строгое соответствие method+pattern
-                return {
-                    match: match,
-                    route: this.routes[i]
-                };
+        } else {
+
+            //  Нет ни одного маршрута такого типа
+            if ( false === verb in this.verbs ) {
+
+                if ( 'HEAD' !== verb || false === 'GET' in this.verbs ) {
+
+                    //  501
+                    return [];
+                }
             }
 
-            //  временно сохраняем маршруты подходящие по матчу,
-            // но не подходящие по методу
-            found[found.length] = {
-                match: match,
-                route: this.routes[i]
-            };
-
-            verbs[verbs.length] = this.routes[i].verb;
+            i = 0;
         }
 
-        //  ни одного совпадения
-        if ( 0 === found.length ) {
-
-            return null;
-        }
-
-        //  для HEAD метода сойдет GET
-        if ( 'HEAD' === verb ) {
-            i = verbs.indexOf('GET');
-
-            if ( -1 !== i ) {
-
-                return found[i];
-            }
-        }
-
-        //  405
-        return _.uniq(verbs);
+        return this._find(verb, track.url.pathname, i);
     },
 
     /**
@@ -171,19 +139,105 @@ var Router = Class.extend(/** @lends Router.prototype */ {
      * */
     getRoute: function (name) {
 
-        var routes = this.routes;
-        var l = routes.length;
+        var i = this._getRouteIndex(name);
 
-        while ( l ) {
-            l -= 1;
+        if ( -1 === i ) {
 
-            if ( routes[l].name === name ) {
+            return null;
+        }
 
-                return routes[l];
+        return this.routes[i];
+    },
+
+    /**
+     * @protected
+     * @memberOf {Router}
+     * @method
+     *
+     * @param {String} verb
+     * @param {String} pathname
+     * @param {Number} i
+     *
+     * @returns {*}
+     * */
+    _find: function (verb, pathname, i) {
+
+        var l;
+        var heads = [];
+        var match;
+        var route;
+        var verbs = [];
+
+        for ( l = this.routes.length; i < l; i += 1 ) {
+            route = this.routes[i];
+            match = route.match(pathname);
+
+            //  не сматчился
+            if ( null === match ) {
+
+                continue;
+            }
+
+            if ( verb === route.verb ) {
+                //  Строгое соответствие method+pattern
+                return {
+                    match: match,
+                    route: route
+                };
+            }
+
+            //  сохраняем методы сматчившихся запросов
+            verbs[verbs.length] = route.verb;
+
+            if ( 'HEAD' === verb && 'GET' === route.verb ) {
+                heads[heads.length] = {
+                    match: match,
+                    route: route
+                };
             }
         }
 
-        return null;
+        if ( 0 === verbs.length ) {
+
+            //  404
+            return null;
+        }
+
+        if ( 0 === heads.length ) {
+
+            //  405
+            return _.uniq(verbs);
+        }
+
+        //  HEAD 200
+        return heads[0];
+
+    },
+
+    /**
+     * @protected
+     * @memberOf {Router}
+     * @method
+     *
+     * @param {String} name
+     *
+     * @returns {Number}
+     * */
+    _getRouteIndex: function (name) {
+
+        var routes = this.routes;
+        var i = routes.length;
+
+        while ( i ) {
+            i -= 1;
+
+            if ( routes[i].name === name ) {
+
+                return i;
+            }
+        }
+
+        return -1;
     },
 
     /**
@@ -199,22 +253,6 @@ var Router = Class.extend(/** @lends Router.prototype */ {
     _createRoute: function (expr, opts) {
 
         return new Route(expr, opts);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Track}
-     * @method
-     *
-     * @param {Route} route
-     * @param {Connect} track
-     *
-     *
-     * @returns {*}
-     * */
-    _match: function (route, track) {
-
-        return route.match(track.url.pathname);
     }
 
 });
