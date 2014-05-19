@@ -69,7 +69,7 @@ var Router = Class.extend(/** @lends Router.prototype */ {
 
         route.data = data;
         route.name = name;
-        route.verb = verb = verb.toUpperCase();
+        route.verb = verb;
 
         if ( verb in this.verbs ) {
             this.verbs[verb] += 1;
