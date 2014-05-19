@@ -98,18 +98,13 @@ var Router = Class.extend(/** @lends Router.prototype */ {
 
         var i;
 
-        //  Если в трэке есть запись о роуте, значит он уже был сматчен
-        //  значит метод точно будет уже сматчен
-        //  значит надо продолжить матчить со следующего роута
         if ( void 0 === resume || null === resume ) {
-            //  Нет ни одного маршрута такого типа
-            if ( false === verb in this.verbs ) {
 
-                if ( 'HEAD' !== verb || false === 'GET' in this.verbs ) {
+            if ( false === verb in this.verbs &&
+                false === ( 'HEAD' === verb && 'GET' in this.verbs ) ) {
 
-                    //  501
-                    return [];
-                }
+//                501
+                return [];
             }
 
             i = 0;
