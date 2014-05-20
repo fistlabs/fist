@@ -242,13 +242,9 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     _resolveUnit: function (track, unit, done) {
 
-        var bundle;
+        var bundle = this._createBundle();
         var deps = toArray(unit.deps);
-        var length;
-
-        deps = toArray(deps);
-        bundle = this._createBundle();
-        length = deps.length;
+        var length = deps.length;
 
         if ( 0 === length ) {
             this._call(unit, track, bundle, done);
