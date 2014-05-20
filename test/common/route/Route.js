@@ -10,7 +10,7 @@ module.exports = {
             var route = new Route('/pa[a-z]ge/(<name>/)');
 
             test.strictEqual(route.regex.source,
-                '^\\/pa\\[a\\-z\\]ge\\/(?:([^\/]+?)\\/)?$');
+                '^\\/pa\\[a\\-z\\]ge\\/(?:([^/]+)\\/)?$');
             test.deepEqual(route.ast.map, [
                 {
                     type: Route.PART_TYPE_PRM,
@@ -56,7 +56,9 @@ module.exports = {
                 '<param=a,>',
                 '=',
                 '(=)',
-                '<param=a=>'
+                '<param=a=>',
+                '<param=*a>',
+                '*'
             ];
 
             errors.forEach(function (ps) {
@@ -110,7 +112,6 @@ module.exports = {
             ];
 
             test.deepEqual(Route.parse(sample), expected);
-            test.strictEqual(Route.parse(sample), Route.parsed[sample]);
 
             sample = '/(<id=a,b>/)tail/';
 
@@ -223,9 +224,11 @@ module.exports = {
                 name: ['golyshev', 'dmitrii', 'sergeievich']
             });
 
-            route = new Route('/page/<name=1,2>/');
+            route = new Route('/page/<name=1,2>/', {
+                nocase: true
+            });
 
-            test.deepEqual(route.match('/page/1/'), {
+            test.deepEqual(route.match('/PAGE/1/'), {
                 name: '1'
             });
 
@@ -235,21 +238,20 @@ module.exports = {
 
             test.strictEqual(route.match('/page/c/'), null);
 
-            route = new Route('/static/', {
-                noend: true,
-                nocase: true
+            route = new Route('/<folder><path=*,a>');
+
+            test.deepEqual(route.match('/images/path/to/image.gif'), {
+                folder: 'images',
+                path: '/path/to/image.gif'
             });
 
-            test.deepEqual(route.match('/static/js/index.js'), {});
-            test.deepEqual(route.match('/STATIC/js/index.js'), {});
+            route = new Route('/a/<a=\\*>');
 
-            route = new Route('/(<fileName>)', {
-                nostart: true
+            test.deepEqual(route.match('/a/*'), {
+                a: '*'
             });
 
-            test.deepEqual(route.match('/static/js/index.js'), {
-                fileName: 'index.js'
-            });
+            test.strictEqual(route.match('/a/x'), null);
 
             test.done();
         }
@@ -321,6 +323,19 @@ module.exports = {
             test.strictEqual(route.build({
                 id: ['z', 3]
             }), '/page//tail/');
+
+            route = new Route('/<folder><path=*,a>');
+
+            test.strictEqual(route.build({
+                folder: 'css',
+                path: '/index/_index.css'
+            }), '/css/index/_index.css');
+
+            route = new Route('/<a=*><a=*>');
+
+            test.strictEqual(route.build({
+                a: ['css', '/index/_index.css']
+            }), '/css/index/_index.css');
 
             test.done();
         },

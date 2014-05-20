@@ -4,7 +4,6 @@ var Base = /** @type Base */ require('fist.lang.class/Base');
 var QueryString = require('querystring');
 
 var _ = /** @type _ */ require('lodash');
-var hasProperty = Object.prototype.hasOwnProperty;
 var push = Array.prototype.push;
 var regesc = require('fist.lang.regesc');
 
@@ -95,22 +94,22 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @returns {String}
      * */
     _build: function (params) {
-        /*eslint max-depth: [2,6], complexity: [2,30]*/
+        /*eslint max-depth: [2,5]*/
         var ast = this.ast;
         var body;
         var buf = '';
         var len = ast.length;
         var map = ast.map;
+        var num;
         var opt = false;
         var pos = 0;
         var query;
         var stk = [];
         var tok;
         var use = Object.create(null);
+        var val;
 
-        var i;
-
-        out: while ( true ) {
+        while ( true ) {
 
             if ( pos === len ) {
                 ast = stk.pop();
@@ -163,61 +162,39 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             body = tok.body;
 
             //  передан параметр, тут жопа кароч!
-            if ( hasProperty.call(params, body) &&
+            if ( _.has(params, body) &&
                  void 0 !== params[body] ) {
+                val = params[body];
 
                 //  массив паарметров
-                if ( Array.isArray(params[body]) ) {
-
+                if ( _.isArray(val) ) {
                     //  отмечаем что заюзали
-                    if ( 'number' === typeof use[body] ) {
-                        use[body] += 1;
+                    if (_.isNumber(use[body]) ) {
+                        num = use[body] += 1;
 
                     } else {
-                        use[body] = 0;
+                        num = use[body] = 0;
                     }
 
-                    if ( hasProperty.call(params[body], use[body]) ) {
+                    if ( _.has(val, num) ) {
 
-                        if ( 0 === tok.only.length ) {
-                            buf += params[body][use[body]];
+                        if ( 0 === tok.only.length ||
+                            _.find(tok.only, {body: void 0}) ||
+                            _.find(tok.only, {body: String(val[num])}) ) {
+                            buf += val[num];
 
                             continue;
-                        }
-
-                        i = tok.only.length;
-
-                        while ( i ) {
-                            i -= 1;
-                            //  тут специально ==
-                            /*eslint eqeqeq: 0*/
-                            if ( tok.only[i].body ==
-                                 params[body][use[body]] ) {
-                                buf += params[body][use[body]];
-
-                                continue out;
-                            }
                         }
                     }
 
                 } else {
 
-                    if ( 0 === tok.only.length ) {
-                        buf += params[body];
+                    if ( 0 === tok.only.length ||
+                        _.find(tok.only, {body: void 0}) ||
+                        _.find(tok.only, {body: String(val)}) ) {
+                        buf += val;
 
                         continue;
-                    }
-
-                    i = tok.only.length;
-
-                    while ( i ) {
-                        i -= 1;
-
-                        if ( tok.only[i].body == params[body] ) {
-                            buf += params[body];
-
-                            continue out;
-                        }
                     }
                 }
             }
@@ -255,15 +232,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * */
     _createRegExp: function (ast, opts) {
 
-        var src = Route._buildRegex(ast);
-
-        if ( !opts.nostart ) {
-            src = '^' + src;
-        }
-
-        if ( !opts.noend ) {
-            src = src + '$';
-        }
+        var src = '^' + Route._buildRegex(ast) + '$';
 
         return new RegExp(src, opts.nocase ? 'i' : '');
     },
@@ -280,38 +249,38 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * */
     _match: function (url) {
 
-        var i;
-        var l;
+        var len;
+        var map = this.ast.map;
+        var pos;
         var name;
         var params;
-        var regex = this.regex;
-        var map = this.ast.map;
-        var m = regex.exec(url);
+        var rex = this.regex;
+        var res = rex.exec(url);
 
-        if ( null === m ) {
+        if ( null === res ) {
 
-            return m;
+            return res;
         }
 
         params = Object.create(null);
 
-        for ( i = 1, l = m.length; i < l; i += 1 ) {
-            name = map[i - 1].body;
+        for ( pos = 1, len = res.length; pos < len; pos += 1 ) {
+            name = map[pos - 1].body;
 
-            if ( hasProperty.call(params, name) ) {
+            if ( _.has(params, name) ) {
 
-                if ( Array.isArray(params[name]) ) {
-                    params[name][params[name].length] = m[i];
+                if ( _.isArray(params[name]) ) {
+                    params[name][params[name].length] = res[pos];
 
                     continue;
                 }
 
-                params[name] = [params[name], m[i]];
+                params[name] = [params[name], res[pos]];
 
                 continue;
             }
 
-            params[name] = m[i];
+            params[name] = res[pos];
         }
 
         return params;
@@ -363,37 +332,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * */
     escape: function (s) {
 
-        return s.replace(/[\\\(\)<>,=]/g, '\\$&');
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Route
-     * @property {Object}
-     * */
-    parsed: Object.create(null),
-
-    /**
-     * @public
-     * @static
-     * @memberOf Route
-     * @method
-     *
-     * @param {String} expr
-     *
-     * @returns {Object}
-     * */
-    parse: function (expr) {
-
-        if ( expr in Route.parsed ) {
-
-            return Route.parsed[expr];
-        }
-
-        Route.parsed[expr] = Route._parse(expr);
-
-        return Route.parsed[expr];
+        return s.replace(/[\\\(\)<>,=*]/g, '\\$&');
     },
 
     /**
@@ -461,12 +400,19 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
             //  param
             if ( 0 === tok.only.length ) {
-                buf[buf.length] = '([^/]+?)';
+                buf[buf.length] = '([^/]+)';
 
-            } else {
-                buf[buf.length] = '(' + tok.only.
-                    map(this._escBody, this).join('|') + ')';
+                continue;
             }
+
+            if ( _.find(tok.only, {body: void 0}) ) {
+                buf[buf.length] = '([\\s\\S]+)';
+
+                continue;
+            }
+
+            buf[buf.length] = '(' + _.map(tok.only,
+                this._escBody, this).join('|') + ')';
 
         }
 
@@ -494,16 +440,18 @@ var Route = Base.extend(/** @lends Route.prototype */ {
      * @memberOf Route
      * @method
      *
-     * @param {String} expr
+     * @param {String} src
      *
      * @returns {Object}
      * */
-    _parse: function (expr) {
-        /*eslint complexity: [2, 29]*/
+    parse: function (src) {
+        /*eslint complexity: [2, 32]*/
         var ast;
         var buf;
         var cur;
         var esc;
+        var len;
+        var pos;
         var prm;
         var prs;
         var stk;
@@ -516,8 +464,8 @@ var Route = Base.extend(/** @lends Route.prototype */ {
         stk = [];
         body = '';
 
-        for ( var i = 0, l = expr.length; i < l; i += 1 ) {
-            cur = expr.charAt(i);
+        for ( pos = 0, len = src.length; pos < len; pos += 1 ) {
+            cur = src.charAt(pos);
 
             if ( '\\' === cur && 0 === esc ) {
                 esc = 1;
@@ -536,7 +484,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
                 if ( 1 === prm ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 prs += 1;
@@ -564,7 +512,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
                 if ( 0 === prs ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 prs -= 1;
@@ -580,7 +528,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
                 if ( 0 === buf.length ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 buf = stk.pop();
@@ -592,7 +540,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
                 if ( 1 === prm ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 if ( 0 < body.length ) {
@@ -613,7 +561,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
                 if ( 0 === prm || '' === body ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 if ( 1 === val ) {
@@ -645,7 +593,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
                 if ( '' === body || 0 === prm || 1 === val ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 //  погружаемся в дерево
@@ -664,11 +612,29 @@ var Route = Base.extend(/** @lends Route.prototype */ {
                 continue;
             }
 
+            if ( '*' === cur ) {
+                cur = src.charAt(pos + 1);
+
+                if ( 1 === val && '' === body &&
+                    ( ',' ===  cur || '>' === cur ) ) {
+
+                    body = '*';
+
+                    buf[buf.length] = {
+                        type: Route.PART_TYPE_VAL
+                    };
+
+                    continue;
+                }
+
+                throw new SyntaxError(src);
+            }
+
             if ( ',' === cur ) {
 
                 if ( '' === body || 0 === prm || 0 === val ) {
 
-                    throw new SyntaxError(expr);
+                    throw new SyntaxError(src);
                 }
 
                 buf[buf.length] = {
@@ -684,12 +650,12 @@ var Route = Base.extend(/** @lends Route.prototype */ {
             body += cur;
         }
 
-        if ( 0 < prs + esc + prm ) {
+        if ( prs + esc + prm ) {
 
-            throw new SyntaxError(expr);
+            throw new SyntaxError(src);
         }
 
-        if ( 0 < body.length ) {
+        if ( body.length ) {
             ast[ast.length] = {
                 type: Route.PART_TYPE_DFT,
                 body: body
@@ -698,7 +664,7 @@ var Route = Base.extend(/** @lends Route.prototype */ {
 
         if ( 0 === ast.length ) {
 
-            throw new SyntaxError(expr);
+            throw new SyntaxError(src);
         }
 
         return ast;
