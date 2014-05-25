@@ -66,7 +66,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         function parserPart (part) {
 
             var buf = [];
-            var file;
+            var filename;
             var field;
             var mime;
             var partError = false;
@@ -79,9 +79,9 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
                 field = disp.params.name;
 
                 if ( field ) {
-                    file = disp.params.filename;
+                    filename = disp.params.filename;
 
-                    if ( file ) {
+                    if ( filename ) {
                         mime = (header['content-type'] || [])[0];
                         mime = new ContentType(mime);
                     }
@@ -108,15 +108,16 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
 
                 buf = Buffer.concat(buf);
 
-                if ( 'string' === typeof file ) {
+                if ( mime ) {
                     sect = 1;
 
                     //  это был файл
                     buf = {
                         mime: mime.value,
-                        name: file,
+                        name: filename,
                         data: buf
                     };
+
                 } else {
                     buf = String(buf);
                 }

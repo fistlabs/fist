@@ -58,6 +58,18 @@ var FIXTURE2 = [
     '--' + BOUNDARY + '--'
 ].join('\r\n');
 
+var FIXTURE3 = [
+    '--' + BOUNDARY,
+    'content-disposition: form-data; name=first; filename=""',
+    '',
+    'vasya',
+    '--' + BOUNDARY,
+    'content-disposition: form-data; name="last"',
+    '',
+    'petrov',
+    '--' + BOUNDARY + '--'
+].join('\r\n');
+
 module.exports = {
 
     'Multipart.prototype.parse': [
@@ -301,6 +313,33 @@ module.exports = {
                     actual: 5,
                     expected: 4
                 });
+                test.done();
+            });
+        },
+        function (test) {
+
+            http({
+                method: 'post',
+                body: FIXTURE3
+            }, function (req, res) {
+
+                var parser = new Multipart({
+                    boundary: BOUNDARY
+                });
+
+                parser.parse(req, function (err, data) {
+                    test.deepEqual(data, [
+                        {
+                            first: 'vasya',
+                            last: 'petrov'
+                        },
+                        {}
+                    ]);
+                    res.end();
+                });
+
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         }
