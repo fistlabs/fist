@@ -8,7 +8,7 @@ var Raw = /** @type Raw */ require('./parser/Raw');
 var Router = /** @type Router */ require('finger/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
-var _ = /** @type _ */ require('lodash');
+var _ = /** @type _ */ require('lodash-node');
 
 /**
  * @class Framework

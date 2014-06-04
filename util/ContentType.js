@@ -2,7 +2,7 @@
 
 var MediaHead = /** @type MediaHead */ require('./MediaHead');
 
-var _ = /** @type _ */ require('lodash');
+var _ = /** @type _ */ require('lodash-node');
 
 /**
  * @class ContentType

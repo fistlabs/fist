@@ -1,9 +1,9 @@
 'use strict';
 
-var Class = /** @type Class */ require('fist.lang.class/Class');
+var Class = /** @type Class */ require('parent/Class');
 var Next = /** @type Next */ require('fist.util.next/Next');
 
-var _ = /** @type _ */ require('lodash');
+var _ = /** @type _ */ require('lodash-node');
 
 /**
  * @class Parser

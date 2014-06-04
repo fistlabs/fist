@@ -1,12 +1,12 @@
 'use strict';
 
 var Bundle = /** @type Bundle */ require('./bundle/Bundle');
-var Class = /** @type Class */ require('fist.lang.class/Class');
+var Class = /** @type Class */ require('parent/Class');
 var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
 var Next = /** @type Next */ require('fist.util.next/Next');
 
 var toArray = require('fist.lang.toarray');
-var _ = /** @type _ */ require('lodash');
+var _ = /** @type _ */ require('lodash-node');
 
 /**
  * @abstract

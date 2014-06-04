@@ -1,13 +1,13 @@
 'use strict';
 
-var Base = /** @type Base */ require('fist.lang.class/Base');
+var Base = /** @type Base */ require('parent/Base');
 var Json = /** @type Json */ require('../parser/Json');
 var Multipart = /** @type Multipart */ require('../parser/Multipart');
 var Parser = /** @type Parser */ require('../parser/Parser');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Urlencoded = /** @type Urlencoded */ require('../parser/Urlencoded');
 
-var _ = /** @type _*/ require('lodash');
+var _ = /** @type _*/ require('lodash-node');
 
 /**
  * @class BodyParser

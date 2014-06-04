@@ -4,7 +4,7 @@ var R_SEPARATOR = /[;,]\s*/;
 var R_QUOTED = /^"(?:\\[\s\S]|[^"])+"$/;
 var R_ESCCHAR = /\\([\s\S])/g;
 
-var Base = /** @type Base */ require('fist.lang.class/Base');
+var Base = /** @type Base */ require('parent/Base');
 
 /**
  * @class Cookie

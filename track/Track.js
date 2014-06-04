@@ -1,6 +1,6 @@
 'use strict';
 
-var Base = /** @type Base */ require('fist.lang.class/Base');
+var Base = /** @type Base */ require('parent/Base');
 
 /**
  * @Base Track

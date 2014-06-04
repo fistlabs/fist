@@ -4,7 +4,7 @@ var RE_WHITESPACE = /^\s+$/;
 
 var Bundle = /** @type Bundle */ require('./Bundle');
 
-var _ = require('lodash');
+var _ = require('lodash-node');
 var cache = Object.create(null);
 var hasProperty = Object.prototype.hasOwnProperty;
 

@@ -12,8 +12,8 @@ var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var _ = /** @type _ */ require('lodash');
-var uniqueId = require('fist.lang.id');
+var _ = /** @type _ */ require('lodash-node');
+var uniqueId = require('unique-id');
 
 /**
  * @class Connect

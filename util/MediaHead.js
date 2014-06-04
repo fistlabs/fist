@@ -1,9 +1,9 @@
 'use strict';
 
 var R_SPACE = /^\s+$/;
-var Base = /** @type Base */ require('fist.lang.class/Base');
+var Base = /** @type Base */ require('parent/Base');
 
-var _ = /** @type _ */ require('lodash');
+var _ = /** @type _ */ require('lodash-node');
 
 /**
  * @class MediaHead

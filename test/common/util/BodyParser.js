@@ -5,7 +5,7 @@ var ContentType = require('../../../util/ContentType');
 
 var http = require('../../util/http');
 
-var _ = require('lodash');
+var _ = require('lodash-node');
 
 module.exports = {
 
