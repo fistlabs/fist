@@ -35,7 +35,7 @@ app.decl('b', [], function (track, errors, result, done) {
     done(null, 'b');
 });
 
-app.route('GET', '/page/<pageName>/', '_');
+app.route('GET /page/<pageName>/', '_');
 
 /*eslint no-sync: 0*/
 try {
