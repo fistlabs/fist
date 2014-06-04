@@ -10,6 +10,7 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "finger": "~0.0.1",
         "fist.lang.class": "0.0.x",
         "fist.lang.id": "0.0.x",
         "fist.lang.regesc": "0.0.x",

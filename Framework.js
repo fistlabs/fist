@@ -5,7 +5,7 @@ var Http = require('http');
 var Connect = /** @type Connect */ require('./track/Connect');
 var Nested = /** @type Nested */ require('./bundle/Nested');
 var Raw = /** @type Raw */ require('./parser/Raw');
-var Router = /** @type Router */ require('./router/Router');
+var Router = /** @type Router */ require('finger/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
 var _ = /** @type _ */ require('lodash');
@@ -275,20 +275,23 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
      * @public
      * @memberOf {Framework}
      * @method
+     *
+     * @param {String} pattern
+     * @param {{unit?:String, name?:String}|String} [data]
      * */
-    route: function (verb, expr, name, data, opts) {
+    route: function (pattern, data) {
+
+        var route;
 
         if ( Object(data) !== data ) {
-            data = {
-                unit: data
-            };
+            data = {name: data};
         }
 
-        if ( void 0 === data.unit || null === data.unit ) {
-            data.unit = name;
-        }
+        route = this.router.addRoute(pattern, data);
 
-        this.router.addRoute(verb, expr, name, data, opts);
+        if ( _.isUndefined(route.data.unit) || _.isNull(route.data.unit) ) {
+            route.data.unit = route.data.name;
+        }
 
         return this;
     },
@@ -699,7 +702,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
         track.match = route.match;
         route = route.route;
-        track.route = route.name;
+        track.route = route.data.name;
 
         this.emit('sys:match', track);
 

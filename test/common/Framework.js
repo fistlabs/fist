@@ -287,7 +287,7 @@ module.exports = {
             } catch (err) {}
 
             fist.decl('index', 42);
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
             fist.listen(sock);
 
             asker({
@@ -384,7 +384,7 @@ module.exports = {
                 done(null, 42);
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -407,7 +407,7 @@ module.exports = {
             var fist = new Framework();
 
             fist.decl('index', Vow.resolve(42));
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -450,7 +450,7 @@ module.exports = {
                 return {};
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -475,7 +475,7 @@ module.exports = {
             var fist = new Framework();
 
             fist.decl('index', 42);
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -568,7 +568,7 @@ module.exports = {
 
             server.listen(sock);
 
-            server.route('GET', '/<pageName>/', 'page');
+            server.route('GET /<pageName>/', 'page');
 
             server.on('sys:match', function (track) {
 
@@ -598,7 +598,7 @@ module.exports = {
 
             var server = new Framework();
 
-            server.route('GET', '/', 'index');
+            server.route('GET /', 'index');
             server.decl('index', function (track) {
                 track.send(200, 'INDEX');
             });
@@ -623,7 +623,7 @@ module.exports = {
 
             var server = new Framework();
 
-            server.route('GET', '/', 'myRoute');
+            server.route('GET /', 'myRoute');
 
             try {
                 Fs.unlinkSync(sock);
@@ -653,8 +653,8 @@ module.exports = {
 
             var server = new Framework();
 
-            server.route('GET', '/', 'index');
-            server.route('POST', '/upload/', 'upload');
+            server.route('GET /', 'index');
+            server.route('POST /upload/', 'upload');
 
             try {
                 Fs.unlinkSync(sock);
@@ -674,7 +674,7 @@ module.exports = {
                 }
             }, function (err, res) {
                 test.strictEqual(res.statusCode, 405);
-                test.strictEqual(res.headers.allow, 'GET');
+                test.strictEqual(res.headers.allow, 'GET, HEAD');
                 test.deepEqual(res.data,
                     new Buffer(STATUS_CODES[res.statusCode]));
                 test.done();
@@ -717,7 +717,7 @@ module.exports = {
                 track.send(500, new Error('O_O'));
             });
 
-            server.route('GET', '/error/', 'error');
+            server.route('GET /error/', 'error');
 
             try {
                 Fs.unlinkSync(sock);
@@ -747,7 +747,7 @@ module.exports = {
             var server = new Framework();
             var spy = [];
 
-            server.route('GET', '/index/', 'index');
+            server.route('GET /index/', 'index');
             server.decl('index', function (track) {
                 track.send('INDEX');
             });
@@ -780,7 +780,8 @@ module.exports = {
 
             var server = new Framework();
 
-            server.route('GET', '/', 'index-page', {
+            server.route('GET /', {
+                name: 'index-page',
                 unit: 'index'
             });
 
@@ -840,7 +841,7 @@ module.exports = {
                 done(1);
             });
 
-            server.route('GET', '/', 'some');
+            server.route('GET /', 'some');
 
             server.listen(sock);
 

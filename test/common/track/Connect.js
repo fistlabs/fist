@@ -316,7 +316,7 @@ module.exports = {
             var fist = new Tracker();
             var er = new Error();
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             fist.decl('index', function (track) {
                 track.send(500, er);
@@ -351,7 +351,7 @@ module.exports = {
             });
             var er = new Error();
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             fist.decl('index', function (track) {
                 track.send(500, er);
@@ -384,7 +384,7 @@ module.exports = {
             var fist = new Tracker();
             var er = new Error();
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             fist.decl('index', function (track) {
                 track.send(200, er);
@@ -523,7 +523,7 @@ module.exports = {
 
             var fist = new Tracker();
 
-            fist.route('GET', '/<page=about>/(<sub>)', 'index');
+            fist.route('GET /<page=about>/(<sub>)', 'index');
 
             fist.decl('index', function (track) {
                 test.strictEqual(track.arg('page', true), 'about');
@@ -554,7 +554,7 @@ module.exports = {
 
             var fist = new Tracker();
 
-            fist.route('GET', '/(<pageName>/)', 'url');
+            fist.route('GET /(<pageName>/)', 'url');
 
             fist.decl('url', function (track, errors, result, done) {
                 done(null, track.buildPath('url', {
@@ -601,7 +601,7 @@ module.exports = {
                 track.render('index', 1, 2, 3);
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -644,7 +644,7 @@ module.exports = {
                 track.render(201, 'index', 1, 2, 3);
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -678,7 +678,7 @@ module.exports = {
                 track.redirect('/about/');
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -711,7 +711,7 @@ module.exports = {
                 track.redirect('/test/?a=5&b=6');
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -745,7 +745,7 @@ module.exports = {
                 track.redirect(301, '/about/');
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -778,7 +778,7 @@ module.exports = {
                 track.redirect(333, '/about/');
             });
 
-            fist.route('GET', '/', 'index');
+            fist.route('GET /', 'index');
 
             try {
                 Fs.unlinkSync(sock);
@@ -814,8 +814,8 @@ module.exports = {
                 });
             });
 
-            fist.route('GET', '/', 'index');
-            fist.route('GET', '/post/<postId>/', 'post');
+            fist.route('GET /', 'index');
+            fist.route('GET /post/<postId>/', 'post');
 
             try {
                 Fs.unlinkSync(sock);
