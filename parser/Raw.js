@@ -2,6 +2,8 @@
 
 var Parser = /** @type Parser */ require('./Parser');
 
+var vow = require('vow');
+
 /**
  * @class Raw
  * @extends Parser
@@ -14,10 +16,12 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
-        Raw._download(stream, this.params, done);
+    parse: function (stream) {
+
+        return Raw._download(stream, this.params);
     },
 
     /**
@@ -38,12 +42,14 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      *
      * @param {Object} stream
      * @param {Object} params
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    _download: function (stream, params, done) {
+    _download: function (stream, params) {
 
         var buf = [];
         var received = 0;
+        var defer = vow.defer();
 
         function cleanup () {
             stream.removeListener('data', data);
@@ -79,7 +85,7 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
             }
 
             cleanup();
-            done(err);
+            defer.reject(err);
         }
 
         function end () {
@@ -94,13 +100,15 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
             }
 
             cleanup();
-            done(null, Buffer.concat(buf));
+            defer.resolve(Buffer.concat(buf));
         }
 
         stream.on('data', data);
         stream.on('error', error);
         stream.on('end', end);
         stream.on('close', cleanup);
+
+        return defer.promise();
     }
 });
 

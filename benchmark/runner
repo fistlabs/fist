@@ -2,7 +2,6 @@
 
 var Benchmark = /** @type Benchmark */ require('benchmark').Benchmark;
 var Suite = /** @type Suite */ Benchmark.Suite;
-var reportFormat = require('./lib/reportFormat');
 var results = {};
 var suite = new Suite();
 
@@ -37,11 +36,6 @@ Object.keys(samples).forEach(function (name) {
 
         defer: true,
 
-        onComplete: function () {
-            results[name] = this.stats.mean;
-            console.log(reportFormat(this));
-        },
-
         onStart: function () {
             console.log();
             console.log('running %s ...', name);
@@ -49,10 +43,11 @@ Object.keys(samples).forEach(function (name) {
     });
 });
 
+suite.on('cycle', function (e) {
+    console.log(String(e.target));
+});
+
 suite.on('complete', function () {
-    console.log();
-    console.log( '%d%', diff(results.framework, results.express).toFixed(2) );
-    console.log();
     process.exit(0);
 });
 

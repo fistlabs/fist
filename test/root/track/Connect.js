@@ -26,7 +26,6 @@ module.exports = {
             });
         }
     ],
-
     'Connect.prototype.header': [
         function (test) {
             connect({
@@ -65,7 +64,6 @@ module.exports = {
             });
         }
     ],
-
     'Connect.prototype.cookie': [
         function (test) {
             connect({
@@ -137,9 +135,7 @@ module.exports = {
             });
         }
     ],
-
     'Connect.prototype.body': [
-
         function (test) {
             connect({
                 method: 'post',
@@ -148,8 +144,7 @@ module.exports = {
                 },
                 body: 'a=5'
             }, function (t, req, res) {
-                t.body(function (err, body) {
-                    test.ok(!err);
+                t.body().done(function (body) {
                     test.deepEqual(body, {
                         input: {
                             a: '5'
@@ -158,8 +153,7 @@ module.exports = {
                     });
                 });
 
-                t.body(function (err, body) {
-                    test.ok(!err);
+                t.body().done(function (body) {
                     test.deepEqual(body, {
                         input: {
                             a: '5'
@@ -181,11 +175,11 @@ module.exports = {
                 },
                 body: 'a=5'
             }, function (t, req, res) {
-                t.body(function (err) {
+                t.body().fail(function (err) {
                     test.ok(err);
                     test.strictEqual(err.code, 'ELIMIT');
                     res.end();
-                });
+                }).done();
             }, function () {
                 test.done();
             }, {
@@ -195,7 +189,6 @@ module.exports = {
             });
         }
     ],
-
     'Connect.prototype.send': [
         function (test) {
             connect({method: 'GET'}, function (t) {
@@ -313,20 +306,23 @@ module.exports = {
         },
         function (test) {
 
-            var fist = new Tracker();
+            var tracker = new Tracker();
             var er = new Error();
 
-            fist.route('GET /', 'index');
+            tracker.route('GET /', 'index');
 
-            fist.decl('index', function (track) {
-                track.send(500, er);
+            tracker.unit({
+                path: 'index',
+                data: function (track) {
+                    track.send(500, er);
+                }
             });
 
             try {
                 Fs.unlinkSync(sock);
             } catch (ex) {}
 
-            fist.listen(sock);
+            tracker.listen(sock);
 
             asker({
                 method: 'GET',
@@ -353,8 +349,11 @@ module.exports = {
 
             fist.route('GET /', 'index');
 
-            fist.decl('index', function (track) {
-                track.send(500, er);
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.send(500, er);
+                }
             });
 
             try {
@@ -386,8 +385,11 @@ module.exports = {
 
             fist.route('GET /', 'index');
 
-            fist.decl('index', function (track) {
-                track.send(200, er);
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.send(200, er);
+                }
             });
 
             try {
@@ -413,7 +415,6 @@ module.exports = {
             });
         }
     ],
-
     'Connect.prototype.mime': [
         function (test) {
             connect({
@@ -436,7 +437,6 @@ module.exports = {
             });
         }
     ],
-
     'Connect.host': [
         function (test) {
             test.strictEqual(Connect.host({
@@ -456,7 +456,6 @@ module.exports = {
             test.done();
         }
     ],
-
     'Connect.proto': [
         function (test) {
             test.strictEqual(Connect.proto({
@@ -481,7 +480,6 @@ module.exports = {
             test.done();
         }
     ],
-
     'Connect.href': [
         function (test) {
             var req = {
@@ -499,7 +497,6 @@ module.exports = {
             test.done();
         }
     ],
-
     'Connect.url': [
         function (test) {
             var req = {
@@ -517,7 +514,6 @@ module.exports = {
             test.done();
         }
     ],
-
     'Connect.prototype.arg': [
         function (test) {
 
@@ -525,10 +521,13 @@ module.exports = {
 
             fist.route('GET /<page=about>/(<sub>)', 'index');
 
-            fist.decl('index', function (track) {
-                test.strictEqual(track.arg('page', true), 'about');
-                test.strictEqual(track.arg('sub'), '80');
-                track.send(200);
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    test.strictEqual(track.arg('page', true), 'about');
+                    test.strictEqual(track.arg('sub'), '80');
+                    track.send(200);
+                }
             });
 
             try {
@@ -548,7 +547,6 @@ module.exports = {
             });
         }
     ],
-
     'Connect.prototype.buildPath': [
         function (test) {
 
@@ -556,11 +554,14 @@ module.exports = {
 
             fist.route('GET /(<pageName>/)', 'url');
 
-            fist.decl('url', function (track, errors, result, done) {
-                done(null, track.buildPath('url', {
-                    pageName: 'about',
-                    text: 'test'
-                }));
+            fist.unit({
+                path: 'url',
+                data: function (track) {
+                    track.send(track.buildPath('url', {
+                        pageName: 'about',
+                        text: 'test'
+                    }));
+                }
             });
 
             try {
@@ -593,12 +594,15 @@ module.exports = {
                     });
                 };
 
-                done(null, null);
+                done();
             });
 
-            fist.decl('index', function (track) {
-                track.status(300);
-                track.render('index', 1, 2, 3);
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.status(300);
+                    track.render('index', 1, 2, 3);
+                }
             });
 
             fist.route('GET /', 'index');
@@ -637,11 +641,14 @@ module.exports = {
                     });
                 };
 
-                done(null, null);
+                done();
             });
 
-            fist.decl('index', function (track) {
-                track.render(201, 'index', 1, 2, 3);
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.render(201, 'index', 1, 2, 3);
+                }
             });
 
             fist.route('GET /', 'index');
@@ -674,8 +681,11 @@ module.exports = {
         function (test) {
             var fist = new Tracker();
 
-            fist.decl('index', function (track) {
-                track.redirect('/about/');
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.redirect('/about/');
+                }
             });
 
             fist.route('GET /', 'index');
@@ -706,9 +716,12 @@ module.exports = {
         function (test) {
             var fist = new Tracker();
 
-            fist.decl('index', function (track) {
-                track.header('Content-Type', 'text/html; charset=UTF-8');
-                track.redirect('/test/?a=5&b=6');
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.header('Content-Type', 'text/html; charset=UTF-8');
+                    track.redirect('/test/?a=5&b=6');
+                }
             });
 
             fist.route('GET /', 'index');
@@ -741,8 +754,11 @@ module.exports = {
         function (test) {
             var fist = new Tracker();
 
-            fist.decl('index', function (track) {
-                track.redirect(301, '/about/');
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.redirect(301, '/about/');
+                }
             });
 
             fist.route('GET /', 'index');
@@ -774,8 +790,11 @@ module.exports = {
         function (test) {
             var fist = new Tracker();
 
-            fist.decl('index', function (track) {
-                track.redirect(333, '/about/');
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.redirect(333, '/about/');
+                }
             });
 
             fist.route('GET /', 'index');
@@ -808,10 +827,13 @@ module.exports = {
         function (test) {
             var fist = new Tracker();
 
-            fist.decl('index', function (track) {
-                track.goToPath('post', {
-                    postId: 666
-                });
+            fist.unit({
+                path: 'index',
+                data: function (track) {
+                    track.goToPath('post', {
+                        postId: 666
+                    });
+                }
             });
 
             fist.route('GET /', 'index');

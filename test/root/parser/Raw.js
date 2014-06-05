@@ -13,7 +13,7 @@ module.exports = {
             var req = new Parted(['П', new Buffer('рив'), 'ет']);
             var parser = new Raw();
 
-            parser.parse(req, function (err, buf) {
+            parser.parse(req).done(function (buf) {
                 test.deepEqual(buf, new Buffer('Привет'));
                 test.done();
             });
@@ -23,10 +23,10 @@ module.exports = {
             var req = new Parted(['П', new Buffer('рив'), 'ет']);
             var parser = new Raw();
 
-            parser.parse(req, function (err) {
+            parser.parse(req).fail(function (err) {
                 test.strictEqual(err, '42');
                 test.done();
-            });
+            }).done();
 
             req.once('data', function () {
                 req.emit('error', '42');
@@ -42,14 +42,14 @@ module.exports = {
                 limit: 3
             });
 
-            parser.parse(req, function (err) {
+            parser.parse(req).fail(function (err) {
                 test.deepEqual(err, {
                     actual: 4,
                     expected: 3,
                     code: 'ELIMIT'
                 });
                 test.done();
-            });
+            }).done();
         },
 
         function (test) {
@@ -61,14 +61,14 @@ module.exports = {
                 length: 3
             });
 
-            parser.parse(req, function (err) {
+            parser.parse(req).fail(function (err) {
                 test.deepEqual(err, {
                     actual: 5,
                     expected: 3,
                     code: 'ELENGTH'
                 });
                 test.done();
-            });
+            }).done();
         }
     ]
 };

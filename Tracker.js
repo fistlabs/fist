@@ -1,12 +1,12 @@
 'use strict';
 
-var Bundle = /** @type Bundle */ require('./bundle/Bundle');
+var Context = /** @type Context */ require('./context/Context');
 var Class = /** @type Class */ require('parent/Class');
 var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
-var Next = /** @type Next */ require('fist.util.next/Next');
 
-var toArray = require('fist.lang.toarray');
 var _ = /** @type _ */ require('lodash-node');
+var toArray = require('fist.lang.toarray');
+var vow = require('vow');
 
 /**
  * @abstract
@@ -30,35 +30,10 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         /**
          * @public
          * @memberOf {Tracker}
-         * @property {Object}
+         * @property
+         * @type {Object}
          * */
-        this.decls = Object.create(null);
-    },
-
-    /**
-     * Декларирует узел
-     *
-     * @public
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {String} path
-     * @param {*} [deps]
-     * @param {Function} [data]
-     *
-     * @returns {Tracker}
-     * */
-    decl: function (path, deps, data) {
-
-        if ( 3 > arguments.length ) {
-            data = deps;
-            deps = [];
-        }
-
-        return this.unit(path, {
-            deps: deps,
-            data: data
-        });
+        this.units = Object.create(null);
     },
 
     /**
@@ -70,30 +45,49 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {String} path
-     * @param {*} done
+     * @param {*} [params]
+     *
+     * @returns {vow.Promise}
      * */
-    resolve: function (track, path, done) {
+    resolve: function (track, path, params) {
 
-        var next;
+        var ctx;
 
-        if ( path in track.tasks ) {
-            track.tasks[path].done(done, this);
+        if ( _.has(track.tasks, path) ) {
 
-            return;
+            return track.tasks[path].promise();
         }
 
-        next = track.tasks[path] = new Next();
-        next.done(done, this);
+        ctx = track.tasks[path] = this._createContext(params);
 
-        done = this._createResolver(path, next);
+        ctx.promise().done(function (data) {
+            this.emit('ctx:accept', {
+                path: path,
+                time: ctx.getDuration(),
+                data: data
+            });
+        }, function (data) {
+            this.emit('ctx:reject', {
+                path: path,
+                time: ctx.getDuration(),
+                data: data
+            });
+        }, function (data) {
+            this.emit('ctx:notify', {
+                path: path,
+                time: ctx.getDuration(),
+                data: data
+            });
+        }, this);
 
-        if ( path in this.decls ) {
-            this._resolveUnit(track, this.decls[path], done);
+        if ( path in this.units ) {
 
-            return;
+            return this._resolveUnit(track, this.units[path], ctx);
         }
 
-        done.reject();
+        ctx.reject();
+
+        return ctx.promise();
     },
 
     /**
@@ -101,16 +95,19 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {String} path
      * @param {Object} unit
+     * @param {String} unit.path
      *
      * @returns {Tracker}
+     *
+     * @throws {ReferenceError}
      * */
-    unit: function (path, unit) {
-        unit = Object(unit);
+    unit: function (unit) {
+
+        var path = unit.path;
 
         if ( this._checkDeps(path, unit) ) {
-            this.decls[path] = unit;
+            this.units[path] = unit;
 
             return this;
         }
@@ -125,11 +122,24 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Object} unit
      * @param {Track} track
-     * @param {Bundle} bundle
-     * @param {Function} done
+     * @param {Context} ctx
+     *
+     * @returns {vow.Promise}
      * */
-    _call: function (unit, track, bundle, done) {
-        unit.data(track, bundle.errors, bundle.result, done);
+    _call: function (unit, track, ctx) {
+
+        var promise = unit.data;
+
+        if ( _.isFunction(promise) ) {
+            promise = vow.invoke(function () {
+
+                return unit.data(track, ctx);
+            });
+        }
+
+        ctx.resolve(promise);
+
+        return ctx.promise();
     },
 
     /**
@@ -144,28 +154,20 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     _checkDeps: function (path, unit) {
 
-        var deps = toArray(unit.deps);
-        var l = deps.length;
+        if ( _.isUndefined(unit) ) {
 
-        while ( l ) {
-            l -= 1;
+            return true;
+        }
 
-            if ( path === deps[l] ) {
+        return _.every(toArray(unit.deps), function (dep) {
+
+            if ( path === dep ) {
 
                 return false;
             }
 
-            unit = this.decls[deps[l]];
-
-            if ( void 0 === unit || this._checkDeps(path, unit) ) {
-
-                continue;
-            }
-
-            return false;
-        }
-
-        return true;
+            return this._checkDeps(path, this.units[dep]);
+        }, this);
     },
 
     /**
@@ -173,62 +175,13 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @returns {Bundle}
-     * */
-    _createBundle: function () {
-
-        return new Bundle();
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
+     * @param {*} params
      *
-     * @param {String} path
-     * @param {Next} next
-     *
-     * @returns {Function}
+     * @returns {Context}
      * */
-    _createResolver: function (path, next) {
+    _createContext: function (params) {
 
-        var date = new Date();
-        var self = this;
-
-        function trigger (name, data) {
-            self.emit(name, {
-                path: path,
-                time: new Date() - date,
-                data: data
-            });
-        }
-
-        function done (err, res) {
-
-            if ( 2 > arguments.length ) {
-                done.reject(err);
-
-                return;
-            }
-
-            done.accept(res);
-        }
-
-        done.accept = function (data) {
-            trigger('sys:accept', data);
-            next.resolve(null, data);
-        };
-
-        done.notify = function (data) {
-            trigger('sys:notify', data);
-        };
-
-        done.reject = function (data) {
-            trigger('sys:reject', data);
-            next.resolve(data);
-        };
-
-        return done;
+        return new Context(params);
     },
 
     /**
@@ -238,29 +191,30 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {Object} unit
-     * @param {Function} done
+     * @param {Context} cxt
+     *
+     * @returns {vow.Promise}
      * */
-    _resolveUnit: function (track, unit, done) {
+    _resolveUnit: function (track, unit, cxt) {
 
-        var bundle = this._createBundle();
         var deps = toArray(unit.deps);
-        var length = deps.length;
 
-        if ( 0 === length ) {
-            this._call(unit, track, bundle, done);
+        deps = _.map(deps, function (path) {
 
-            return;
-        }
+            var promise = this.resolve(track, path);
 
-        _.forEach(deps, function (path) {
-            this.resolve(track, path, function () {
-                bundle.bundlify(path, arguments);
-                length -= 1;
-
-                if ( 0 === length ) {
-                    this._call(unit, track, bundle, done);
-                }
+            promise.done(function (data) {
+                cxt.setResult(path, data);
+            }, function (data) {
+                cxt.setError(path, data);
             });
+
+            return promise;
+        }, this);
+
+        return vow.allResolved(deps).then(function () {
+
+            return this._call(unit, track, cxt);
         }, this);
     }
 

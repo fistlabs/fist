@@ -89,35 +89,27 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
+    parse: function (stream) {
 
-        var parser = this.parser;
-
-        parser.parse(stream, function (err, res) {
-
-            if ( 2 > arguments.length ) {
-                done(err);
-
-                return;
-            }
+        return this.parser.parse(stream).then(function (res) {
 
             if ( Array.isArray(res) ) {
-                done(null, {
-                    type: parser.type,
+
+                return {
+                    type: this.parser.type,
                     input: res[0],
                     files: res[1]
-                });
-
-                return;
+                };
             }
 
-            done(null, {
-                type: parser.type,
+            return {
+                type: this.parser.type,
                 input: res
-            });
-        });
+            };
+        }, this);
     }
 
 });

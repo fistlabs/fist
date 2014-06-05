@@ -7,13 +7,13 @@ var STATUS_CODES = require('http').STATUS_CODES;
 var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
 var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Cookie = /** @type Cookie */ require('../util/Cookie');
-var Next = /** @type Next */ require('fist.util.next/Next');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
 var _ = /** @type _ */ require('lodash-node');
 var uniqueId = require('unique-id');
+var vow = require('vow');
 
 /**
  * @class Connect
@@ -34,49 +34,56 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         /**
          * @public
          * @memberOf {Connect}
-         * @property {String}
+         * @property
+         * @type {String}
          * */
         this.id = uniqueId();
 
         /**
          * @public
          * @memberOf {Connect}
-         * @property {*}
+         * @property
+         * @type {*}
          * */
         this.match = null;
 
         /**
          * @public
          * @memberOf {Connect}
-         * @property {String}
+         * @property
+         * @type {String}
          * */
         this.method = req.method.toUpperCase();
 
         /**
          * @public
          * @memberOf {Connect}
-         * @property {String}
+         * @property
+         * @type {String}
          * */
         this.route = null;
 
         /**
          * @public
          * @memberOf {Connect}
-         * @property {Object}
+         * @property
+         * @type {Object}
          * */
         this.url = Connect.url(req);
 
         /**
          * @protected
          * @memberOf {Connect}
-         * @property {Object}
+         * @property
+         * @type {Object}
          * */
         this._req = req;
 
         /**
          * @protected
          * @memberOf {Connect}
-         * @property {http.IncomingMessage}
+         * @property
+         * @type {http.IncomingMessage}
          * */
         this._res = res;
     },
@@ -112,14 +119,13 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {Function} done
+     * @returns {vow.Promise}
      * */
-    body: function (done) {
+    body: function () {
 
-        var body;
         var params;
 
-        if ( !(this._body instanceof Next) ) {
+        if ( !vow.isPromise(this._body) ) {
             params = _.extend(this.mime().toParams(),
                 //  в глобальных опциях body можно определить настройки,
                 // которые будут ограничивать параметры запроса
@@ -131,14 +137,10 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
                     length: this.header('Content-Length')
                 });
 
-            body = this._body = new Next();
-
-            this._createBodyParser(params).parse(this._req, function () {
-                body.args(arguments);
-            });
+            this._body = this._createBodyParser(params).parse(this._req);
         }
 
-        this._body.done(done, this);
+        return this._body;
     },
 
     /**
@@ -278,7 +280,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         }
 
         //  setter
-        this.header('Content-Type', ContentType.create(mime, params));
+        this._setHead('Content-Type', ContentType.create(mime, params));
     },
 
     /**
@@ -304,7 +306,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             code = 302;
         }
 
-        this.header('Location', url);
+        this._setHead('Location', url);
 
         url = _.escape(url);
 
@@ -344,7 +346,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             id = code;
         }
 
-        args = Array.prototype.slice.call(arguments, i);
+        args = _.rest(arguments, i);
         this.send(this.agent.renderers[id].apply(this, args));
     },
 
@@ -501,7 +503,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        if ( Object(body) === body && 'function' === typeof body.pipe ) {
+        if (_.isObject(body) && _.isFunction(body.pipe) ) {
             this._writeReadable(body);
 
             return;
@@ -605,19 +607,13 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
             return;
         }
 
-        new Raw().parse(body, function (err, body) {
-
-            if ( 2 > arguments.length ) {
-                self._respond(500, err);
-
-                return;
-            }
-
-            self._setHead('Content-Type', 'application/octet-stream', true);
-            self._setHead('Content-Length', body.length, true);
-
-            self._res.end(body);
-        });
+        new Raw().parse(body).done(function (body) {
+            this._setHead('Content-Type', 'application/octet-stream', true);
+            this._setHead('Content-Length', body.length, true);
+            this._res.end(body);
+        }, function (err) {
+            self._respond(500, err);
+        }, this);
     }
 
 }, {
@@ -626,8 +622,9 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * @public
      * @static
      * @memberOf Connect
+     * @property
      *
-     * @property {Cookie}
+     * @type {Cookie}
      * */
     cookie: new Cookie(),
 
@@ -652,7 +649,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
         var headers = req.headers;
         var host = headers['x-forwarded-host'] || headers.host;
 
-        if ( 'string' === typeof host ) {
+        if ( _.isString(host) ) {
 
             return host.split(R_COMMA)[0];
         }
@@ -679,7 +676,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         proto = req.headers['x-forwarded-proto'];
 
-        if ( 'string' === typeof proto ) {
+        if ( _.isString(proto) ) {
 
             return proto.split(R_COMMA)[0];
         }

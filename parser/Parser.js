@@ -1,7 +1,7 @@
 'use strict';
 
 var Class = /** @type Class */ require('parent/Class');
-var Next = /** @type Next */ require('fist.util.next/Next');
+var vow = require('vow');
 
 var _ = /** @type _ */ require('lodash-node');
 
@@ -44,11 +44,17 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      * @method
      *
      * @param {Object} media
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (media, done) {
+    parse: function (media) {
+        /* eslint no-unused-vars: 0*/
 
-        done(null, Object.create(null));
+        var defer = vow.defer();
+
+        defer.resolve({});
+
+        return defer.promise();
     }
 
 }, {

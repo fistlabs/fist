@@ -22,7 +22,8 @@ var Track = Base.extend(/** @lends Track.prototype */{
         /**
          * @public
          * @memberOf {Track}
-         * @property {Tracker}
+         * @property
+         * @type {Tracker}
          * */
         this.agent = agent;
 
@@ -31,7 +32,7 @@ var Track = Base.extend(/** @lends Track.prototype */{
          * @memberOf {Track}
          * @property {Object}
          * */
-        this.tasks = Object.create(null);
+        this.tasks = {};
     },
 
     /**
@@ -42,10 +43,13 @@ var Track = Base.extend(/** @lends Track.prototype */{
      * @method
      *
      * @param {String} path
-     * @param {Function} done
+     * @param {*} [params]
+     *
+     * @returns {vow.Promise}
      * */
-    invoke: function (path, done) {
-        this.agent.resolve(this, path, done);
+    invoke: function (path, params) {
+
+        return this.agent.resolve(this, path, params);
     }
 
 });

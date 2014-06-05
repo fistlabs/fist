@@ -95,12 +95,13 @@ module.exports = {
                     boundary: boundary
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             first: 'vasya',
                             last: 'petrov'
-                        }, {
+                        },
+                        {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
@@ -127,7 +128,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             first: ['vasya', 'vasya', 'vasya'],
@@ -160,7 +161,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             last: 'petrov'
@@ -191,10 +192,10 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.ok(err);
                     res.end();
-                });
+                }).done();
 
             }, function (err) {
                 test.ok(!err);
@@ -224,10 +225,10 @@ module.exports = {
                     req.emit('error', 'ERR');
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
-                });
+                }).done();
 
             }, function (err) {
                 test.ok(!err);
@@ -257,10 +258,10 @@ module.exports = {
                     req.emit('error', err);
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
-                });
+                }).done();
 
                 req.once('data', function () {
                     req.emit('error', 'ERR');
@@ -288,10 +289,10 @@ module.exports = {
                     length: 4
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.strictEqual(err.code, 'ELENGTH');
                     res.end();
-                });
+                }).done();
 
             }, function (err) {
                 test.ok(!err);
@@ -307,14 +308,14 @@ module.exports = {
                 limit: 4
             });
 
-            parser.parse(stream, function (err) {
+            parser.parse(stream).fail(function (err) {
                 test.deepEqual(err, {
                     code: 'ELIMIT',
                     actual: 5,
                     expected: 4
                 });
                 test.done();
-            });
+            }).done();
         },
         function (test) {
 
@@ -327,7 +328,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             first: 'vasya',

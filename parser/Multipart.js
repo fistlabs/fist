@@ -5,6 +5,8 @@ var Dicer = /** @type Dicer */ require('dicer');
 var MediaHead = /** @type MediaHead */ require('../util/MediaHead');
 var Parser = /** @type Parser */ require('./Parser');
 
+var vow = require('vow');
+
 /**
  * @class Multipart
  * @extends Parser
@@ -17,10 +19,12 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
-        Multipart._parseMultipart(stream, this.params, done);
+    parse: function (stream) {
+
+        return Multipart._parseMultipart(stream, this.params);
     },
 
     /**
@@ -55,10 +59,12 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      *
      * @param {Object} stream
      * @param {Object} params
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    _parseMultipart: function (stream, params, done) {
+    _parseMultipart: function (stream, params) {
 
+        var defer = vow.defer();
         var parser = new Dicer(params);
         var received = 0;
         var result = [Object.create(null), Object.create(null)];
@@ -161,7 +167,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
             }
 
             cleanup();
-            done(null, result);
+            defer.resolve(result);
         }
 
         function parserError (err) {
@@ -176,7 +182,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
             }
 
             cleanup();
-            done(err);
+            defer.reject(err);
         }
 
         function streamData (chunk) {
@@ -221,6 +227,8 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
         parser.on('finish', parserFinish);
 
         stream.pipe(parser);
+
+        return defer.promise();
     }
 
 });

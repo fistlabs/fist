@@ -18,14 +18,15 @@ module.exports = {
 
                 var parser = new BodyParser();
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, {
                         input: {},
                         type: void 0
                     });
                     res.end();
                 });
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -36,14 +37,15 @@ module.exports = {
             }, function (req, res) {
                 var parser = new BodyParser();
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, {
                         input: {},
                         type: void 0
                     });
                     res.end();
                 });
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -62,14 +64,15 @@ module.exports = {
                     length: req.headers['content-length']
                 }));
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, {
                         input: new Buffer('asd'),
                         type: 'raw'
                     });
                     res.end();
                 });
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -88,7 +91,7 @@ module.exports = {
                     length: req.headers['content-length']
                 }));
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, {
                         input: {
                             a: '42'
@@ -98,7 +101,8 @@ module.exports = {
                     res.end();
                 });
 
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -117,7 +121,7 @@ module.exports = {
                     length: req.headers['content-length']
                 }));
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, {
                         input: {
                             a: '42'
@@ -126,7 +130,8 @@ module.exports = {
                     });
                     res.end();
                 });
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -145,11 +150,12 @@ module.exports = {
                     length: req.headers['content-length']
                 }));
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.ok(err instanceof SyntaxError);
                     res.end();
-                });
-            }, function () {
+                }).done();
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -167,14 +173,15 @@ module.exports = {
                     length: req.headers['content-length']
                 }));
 
-                parser.parse(req, function (err, body) {
+                parser.parse(req).done(function (body) {
                     test.deepEqual(body, {
                         type: void 0,
                         input: {}
                     });
                     res.end();
                 });
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         },
@@ -193,7 +200,7 @@ module.exports = {
                     length: req.headers['content-length']
                 }));
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, {
                         input: {
                             dima: 'ok'
@@ -203,7 +210,8 @@ module.exports = {
                     });
                     res.end();
                 });
-            }, function () {
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         }

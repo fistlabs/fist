@@ -15,20 +15,16 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
+    parse: function (stream) {
 
-        return Urlencoded.parent.parse.call(this, stream, function (err, res) {
+        return Urlencoded.parent.parse.call(this, stream).
+            then(function (res) {
 
-            if ( 2 > arguments.length ) {
-                done(err);
-
-                return;
-            }
-
-            done(null, QueryString.parse(String(res)));
-        });
+                return QueryString.parse(String(res));
+            });
     },
 
     /**

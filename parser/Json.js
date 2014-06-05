@@ -16,28 +16,13 @@ var Json = Raw.extend(/** @lends Json.prototype*/ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
-        Json.parent.parse.call(this, stream, function (err, res) {
-            /*eslint no-catch-shadow: 0*/
-            if ( 2 > arguments.length ) {
-                done(err);
+    parse: function (stream) {
 
-                return;
-            }
-
-            try {
-                res = JSON.parse(res);
-
-            } catch (err) {
-                done(err);
-
-                return;
-            }
-
-            done(null, res);
-        });
+        return Json.parent.parse.call(this, stream).
+            then(JSON.parse);
     },
 
     /**

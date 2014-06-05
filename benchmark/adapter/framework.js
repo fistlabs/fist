@@ -9,13 +9,7 @@ var Fs = require('fs');
 var MyServer = /** @type Server */ require('../../Framework').extend({
     //  Не триггерить события во время бенчмарка
     // для чистоты эксперимета
-    emit: function () {},
-
-    //  обрабатывать все узлы как функции
-    _call: function (unit, track, bundle, done) {
-        unit.data(track, bundle.errors, bundle.result, done);
-    }
-
+    emit: function () {}
 });
 
 var app = new MyServer();
@@ -23,16 +17,28 @@ var sock = 'benchmark/framework.sock';
 var Http = require('http');
 var path = require('../lib/path');
 
-app.decl('_', ['a'], function (track) {
-    track.send();
+app.unit({
+    path: '_',
+    deps: ['a'],
+    data: function (track) {
+        track.send();
+    }
 });
 
-app.decl('a', ['b'], function (track, errors, result, done) {
-    done(null, 'a');
+app.unit({
+    path: 'a',
+    deps: ['b'],
+    data: function (track, errors, result, done) {
+        done(null, 'a');
+    }
 });
 
-app.decl('b', [], function (track, errors, result, done) {
-    done(null, 'b');
+app.unit({
+    path: 'b',
+    deps: [],
+    data: function (track, errors, result, done) {
+        done(null, 'b');
+    }
 });
 
 app.route('GET /page/<pageName>/', '_');

@@ -2,23 +2,7 @@
 
 var Nodeunit = require('nodeunit');
 var glob = require('glob');
-var tests = glob.sync('test/common/**/*.js');
-
-function supports () {
-
-    try {
-        eval('(function * () {})');
-
-        return true;
-    } catch (ex) {
-
-        return false;
-    }
-}
-
-if ( supports() ) {
-    tests = tests.concat( glob.sync('test/harmony/**/*.js') );
-}
+var tests = glob.sync('test/root/**/*.js');
 
 process.on('uncaughtException', function (er) {
 
