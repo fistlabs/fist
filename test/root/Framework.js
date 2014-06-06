@@ -768,7 +768,6 @@ module.exports = {
                 }
             });
 
-
             server.unit({
                 path: 'dps',
                 data: function () {
@@ -821,7 +820,6 @@ module.exports = {
                     track.send('index');
                 }
             });
-
 
             server.unit({
                 path: 'controller',

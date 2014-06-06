@@ -2,7 +2,6 @@
 
 var Benchmark = /** @type Benchmark */ require('benchmark').Benchmark;
 var Suite = /** @type Suite */ Benchmark.Suite;
-var results = {};
 var suite = new Suite();
 
 var samples = {
@@ -12,11 +11,6 @@ var samples = {
 
 //  Для более точной статистики (ОЧЕНЬ ДОЛГО ДЕЛАЕТ 1000)
 Benchmark.options.minSamples = 1000;
-
-function diff (a, b) {
-
-    return b / ( a / 100 ) - 100;
-}
 
 Object.keys(samples).forEach(function (name) {
     var body = samples[name];

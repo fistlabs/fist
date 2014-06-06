@@ -10,7 +10,7 @@ var cache = Object.create(null);
 
 /**
  * @class Context
- * @extends vow.Deferred
+ * @extends Deferred
  * */
 var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
 
@@ -28,14 +28,6 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
          * @public
          * @memberOf {Context}
          * @property
-         * @type {Date}
-         * */
-        this.time = new Date();
-
-        /**
-         * @public
-         * @memberOf {Context}
-         * @property
          * @type {Object}
          * */
         this.ers = this.errors = {};
@@ -47,18 +39,6 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
          * @type {Object}
          * */
         this.res = this.result = {};
-    },
-
-    /**
-     * @public
-     * @memberOf {Context}
-     * @method
-     *
-     * @returns {Number}
-     * */
-    getDuration: function () {
-
-        return new Date() - this.time;
     },
 
     /**
