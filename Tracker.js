@@ -95,15 +95,15 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Object} unit
-     * @param {String} unit.path
+     * @param {Object} members
      *
      * @returns {Tracker}
      *
      * @throws {ReferenceError}
      * */
-    unit: function (unit) {
+    unit: function (members) {
 
+        var unit = this._createUnit(members);
         var path = unit.path;
 
         if ( this._checkDeps(path, unit) ) {
@@ -113,6 +113,20 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
         }
 
         throw new ReferenceError(path);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Object} members
+     *
+     * @returns {Object}
+     * */
+    _createUnit: function (members) {
+
+        return members;
     },
 
     /**

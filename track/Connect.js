@@ -170,7 +170,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     goToPath: function (name, params) {
 
-        this.redirect(this.buildPath(name, params));
+        return this.redirect(this.buildPath(name, params));
     },
 
     /**
@@ -188,7 +188,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     header: function (name, value, soft) {
         /*eslint consistent-return: 0*/
-        if ( Object(name) === name  ) {
+        if ( _.isObject(name) ) {
             soft = value;
 
             _.forOwn(name, function (value, name) {
