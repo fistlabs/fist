@@ -19,10 +19,12 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
      * @memberOf {Context}
      * @method
      *
+     * @param {Object} [params]
+     *
      * @constructs
      * */
-    constructor: function () {
-        Context.Parent.apply(this, arguments);
+    constructor: function (params) {
+        Context.Parent.call(this);
 
         /**
          * @public
@@ -39,7 +41,24 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
          * @type {Object}
          * */
         this.res = this.result = {};
+
+        /**
+         * @public
+         * @memberOf {Context}
+         * @property
+         * @type {Object}
+         * */
+        this.params = _.extend({}, this.params, params);
     },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Context.prototype
+     * @property
+     * @type {Object}
+     * */
+    params: {},
 
     /**
      * @public

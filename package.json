@@ -16,7 +16,8 @@
         "fist.lang.toarray": "~0.0.2",
         "lodash-node": "~2.4.1",
         "dicer": "~0.2.3",
-        "vow": "~0.4.3"
+        "vow": "~0.4.3",
+        "inherit": "~2.2.2"
     },
     "description": "nodejs application framework",
     "devDependencies": {

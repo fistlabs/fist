@@ -3,10 +3,12 @@
 var Context = /** @type Context */ require('./context/Context');
 var Class = /** @type Class */ require('parent/Class');
 var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
+var Unit = /** @type Unit */ require('./unit/Unit');
 
 var _ = /** @type _ */ require('lodash-node');
 var toArray = require('fist.lang.toarray');
 var vow = require('vow');
+var inherit = require('inherit');
 
 /**
  * @abstract
@@ -33,7 +35,7 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.units = {};
+        this.decls = {};
     },
 
     /**
@@ -72,11 +74,13 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     unit: function (members) {
 
-        var unit = this._createUnit(members);
+        var Class = this._createUnitClass(members);
+        var unit = new Class(this.params);
         var path = unit.path;
+        var decl = {unit: unit, Unit: Class};
 
-        if ( this.__checkDeps(path, unit) ) {
-            this.units[path] = unit;
+        if ( this.__checkDeps(path, decl) ) {
+            this.decls[path] = decl;
 
             return this;
         }
@@ -112,27 +116,44 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {*} params
-     *
-     * @returns {Context}
-     * */
-    _createContext: function (params) {
-
-        return new Context(params);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
      * @param {Object} members
      *
      * @returns {Object}
      * */
-    _createUnit: function (members) {
+    _createUnitClass: function (members) {
 
-        return members;
+        var Base;
+
+        if ( _.isFunction(members) ) {
+
+            return members;
+        }
+
+        members = Object(members);
+
+        if ( _.has(members, 'base') ) {
+            Base = members.base;
+
+            if ( !_.isFunction(Base) ) {
+
+                if ( _.has(this.decls, Base) ) {
+                    Base = this.decls[Base].Unit;
+
+                } else {
+                    Base = Unit;
+                }
+            }
+
+        } else {
+            Base = Unit;
+        }
+
+        if ( _.isArray(members) ) {
+
+            return inherit(Base, members[0], members[1]);
+        }
+
+        return inherit(Base, members);
     },
 
     /**
@@ -141,25 +162,25 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @method
      *
      * @param {String} path
-     * @param {Object} unit
+     * @param {Object} decl
      *
      * @returns {Boolean}
      * */
-    __checkDeps: function (path, unit) {
+    __checkDeps: function (path, decl) {
 
-        if ( _.isUndefined(unit) ) {
+        if ( _.isUndefined(decl) ) {
 
             return true;
         }
 
-        return _.every(toArray(unit.deps), function (dep) {
+        return _.every(toArray(decl.unit.deps), function (dep) {
 
             if ( path === dep ) {
 
                 return false;
             }
 
-            return this.__checkDeps(path, this.units[dep]);
+            return this.__checkDeps(path, this.decls[dep]);
         }, this);
     },
 
@@ -176,9 +197,18 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * */
     __resolveCtx: function (track, path, params) {
 
-        var ctxt = this._createContext(params);
         var date = new Date();
-        var unit;
+        var decl = this.decls[path];
+        var ctxt;
+        var hasUnit = true;
+
+        if ( _.has(this.decls, path) ) {
+            ctxt = decl.unit.createCtx(params);
+
+        } else {
+            ctxt = new Context(params);
+            hasUnit = false;
+        }
 
         ctxt.promise().done(function (data) {
             this.emit('ctx:accept', {
@@ -200,17 +230,15 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
             });
         }, this);
 
-        if ( !_.has(this.units, path) ) {
+        if ( !hasUnit ) {
             ctxt.reject();
 
             return ctxt;
         }
 
-        unit = this.units[path];
-
-        this.__resolveDeps(track, unit, ctxt).
+        this.__resolveDeps(track, decl.unit, ctxt).
             then(function () {
-                this._call(track, unit, ctxt);
+                this._call(track, decl.unit, ctxt);
             }, this);
 
         return ctxt;
