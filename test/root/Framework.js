@@ -782,7 +782,7 @@ module.exports = {
                 data: function (track) {
                     spy.push(3);
 
-                    track.send('LOCAL');
+                    return 'LOCAL';
                 }
             });
 
