@@ -1,15 +1,14 @@
 'use strict';
 
-var Base = /** @type Base */ require('parent/Base');
+var inherit = require('inherit');
 
 /**
- * @Base Track
- * @extends Base
+ * @class Track
  * */
-var Track = Base.extend(/** @lends Track.prototype */{
+var Track = inherit(/** @lends Track.prototype */{
 
     /**
-     * @protected
+     * @private
      * @memberOf {Track}
      * @method
      *
@@ -17,7 +16,7 @@ var Track = Base.extend(/** @lends Track.prototype */{
      *
      * @returns void
      * */
-    constructor: function (agent) {
+    __constructor: function (agent) {
 
         /**
          * @public
@@ -36,8 +35,6 @@ var Track = Base.extend(/** @lends Track.prototype */{
     },
 
     /**
-     * Запускает операцию разрешения узла
-     *
      * @public
      * @memberOf {Track}
      * @method

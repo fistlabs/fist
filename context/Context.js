@@ -2,17 +2,16 @@
 
 var R_WHITESPACE = /^\s+$/;
 
-var Class = /** @type Class */ require('parent/Class');
-var vow = /** @type vow */ require('vow');
-
 var _ = require('lodash-node');
 var cache = Object.create(null);
+var inherit = require('inherit');
+var vow = require('vow');
 
 /**
  * @class Context
  * @extends Deferred
  * */
-var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
+var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
     /**
      * @protected
@@ -23,8 +22,8 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
      *
      * @constructs
      * */
-    constructor: function (params) {
-        Context.Parent.call(this);
+    __constructor: function (params) {
+        this.__base.apply(this, arguments);
 
         /**
          * @public
@@ -118,7 +117,7 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
      * */
     _link: function (root, path, data) {
 
-        var existingData = Context.use(root, path);
+        var existingData = this.__self.use(root, path);
 
         if ( _.isObject(existingData) ) {
             _.extend(existingData, data);
@@ -126,7 +125,7 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
             return;
         }
 
-        Context.link(root, path, data);
+        this.__self.link(root, path, data);
     }
 
 }, {
@@ -185,7 +184,7 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
 
             if ( !isChunk ) {
 
-                if ( Context._isSpace(cur) ) {
+                if ( this._isSpace(cur) ) {
 
                     continue;
                 }
@@ -200,7 +199,7 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
                 throw new SyntaxError(path);
             }
 
-            if ( Context._isSpace(cur) ) {
+            if ( this._isSpace(cur) ) {
 
                 if ( chunk.length ) {
                     parts.push(chunk);
@@ -253,7 +252,7 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
         var i;
         var l;
         var part;
-        var parts = Context.parsePath(path);
+        var parts = this.parsePath(path);
 
         for ( i = 0, l = parts.length - 1; i < l; i += 1 ) {
             part = parts[i];
@@ -293,7 +292,7 @@ var Context = Class.extend.call(vow.Deferred, /** @lends Context.prototype */ {
 
         var i;
         var l;
-        var parts = Context.parsePath(path);
+        var parts = this.parsePath(path);
 
         for ( i = 0, l = parts.length; i < l; i += 1 ) {
 

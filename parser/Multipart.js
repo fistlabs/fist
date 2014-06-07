@@ -5,13 +5,14 @@ var Dicer = /** @type Dicer */ require('dicer');
 var MediaHead = /** @type MediaHead */ require('../util/MediaHead');
 var Parser = /** @type Parser */ require('./Parser');
 
+var inherit = require('inherit');
 var vow = require('vow');
 
 /**
  * @class Multipart
  * @extends Parser
  * */
-var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
+var Multipart = inherit(Parser, /** @lends Multipart.prototype */ {
 
     /**
      * @public
@@ -24,7 +25,7 @@ var Multipart = Parser.extend(/** @lends Multipart.prototype */ {
      * */
     parse: function (stream) {
 
-        return Multipart._parseMultipart(stream, this.params);
+        return this.__self._parseMultipart(stream, this.params);
     },
 
     /**

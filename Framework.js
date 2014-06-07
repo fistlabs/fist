@@ -6,24 +6,25 @@ var Connect = /** @type Connect */ require('./track/Connect');
 var Router = /** @type Router */ require('finger/Router');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
-var _ = /** @type _ */ require('lodash-node');
+var _ = require('lodash-node');
+var inherit = require('inherit');
 var vow = require('vow');
 
 /**
  * @class Framework
  * @extends Tracker
  * */
-var Framework = Tracker.extend(/** @lends Framework.prototype */ {
+var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
     /**
-     * @protected
+     * @private
      * @memberOf {Framework}
      * @method
      *
      * @constructs
      * */
-    constructor: function () {
-        Framework.Parent.apply(this, arguments);
+    __constructor: function () {
+        this.__base.apply(this, arguments);
 
         /**
          * Тут откладываются запросы поступившие во время инициализации
@@ -259,7 +260,7 @@ var Framework = Tracker.extend(/** @lends Framework.prototype */ {
 
         var defer = vow.defer();
 
-        Framework.parent.resolve.call(this, track, path, params).
+        this.__base.call(this, track, path, params).
             always(function (res) {
 
                 if ( track.sent() ) {

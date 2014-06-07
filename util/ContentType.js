@@ -3,12 +3,13 @@
 var MediaHead = /** @type MediaHead */ require('./MediaHead');
 
 var _ = /** @type _ */ require('lodash-node');
+var inherit = require('inherit');
 
 /**
  * @class ContentType
  * @extends MediaHead
  * */
-var ContentType = MediaHead.extend(/** @lends ContentType.prototype */ {
+var ContentType = inherit(MediaHead, /** @lends ContentType.prototype */ {
 
     /**
      * @protected
@@ -17,8 +18,8 @@ var ContentType = MediaHead.extend(/** @lends ContentType.prototype */ {
      *
      * @constructs
      * */
-    constructor: function () {
-        ContentType.Parent.apply(this, arguments);
+    __constructor: function () {
+        this.__base.apply(this, arguments);
 
         var type;
 

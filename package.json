@@ -10,7 +10,6 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
-        "parent": "~0.0.1",
         "unique-id": "~0.0.1",
         "finger": "~0.0.1",
         "fist.lang.toarray": "~0.0.2",

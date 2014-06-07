@@ -1,33 +1,30 @@
 'use strict';
 
 var Context = /** @type Context */ require('./context/Context');
-var Class = /** @type Class */ require('parent/Class');
-var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
+var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
 var Unit = /** @type Unit */ require('./unit/Unit');
 
 var _ = /** @type _ */ require('lodash-node');
+var inherit = require('inherit');
 var toArray = require('fist.lang.toarray');
 var vow = require('vow');
-var inherit = require('inherit');
 
 /**
  * @abstract
  * @class Tracker
  * @extends EventEmitter
- * @extends Class
  * */
-var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
+var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
 
     /**
-     * @protected
+     * @private
      * @memberOf {Tracker}
      * @method
      *
      * @constructs
      * */
-    constructor: function () {
-        Class.apply(this, arguments);
-        Tracker.Parent.apply(this, arguments);
+    __constructor: function (params) {
+        this.__base.apply(this, arguments);
 
         /**
          * @public
@@ -36,6 +33,14 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
          * @type {Object}
          * */
         this.decls = {};
+
+        /**
+         * @public
+         * @memberOf {Tracker}
+         * @property
+         * @type {Object}
+         * */
+        this.params = _.extend({}, this.params, params);
     },
 
     /**

@@ -1,28 +1,28 @@
 'use strict';
 
-var Base = /** @type Base */ require('parent/Base');
 var Json = /** @type Json */ require('../parser/Json');
 var Multipart = /** @type Multipart */ require('../parser/Multipart');
 var Parser = /** @type Parser */ require('../parser/Parser');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Urlencoded = /** @type Urlencoded */ require('../parser/Urlencoded');
 
-var _ = /** @type _*/ require('lodash-node');
+var _ = require('lodash-node');
+var inherit = require('inherit');
 
 /**
  * @class BodyParser
  * @extends Base
  * */
-var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
+var BodyParser = inherit(/** @lends BodyParser.prototype */ {
 
     /**
-     * @protected
+     * @private
      * @memberOf {BodyParser}
      * @method
      *
      * @constructs
      * */
-    constructor: function (params) {
+    __constructor: function (params) {
 
         /**
          * @public
@@ -69,9 +69,6 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
     },
 
     /**
-     * Этих парсеров достаточно более чем с головой,
-     * Но при желании теперь можно добавить дополнительные парсеры
-     *
      * @protected
      * @memberOf {BodyParser}
      * @property
@@ -94,22 +91,34 @@ var BodyParser = Base.extend(/** @lends BodyParser.prototype */ {
      * */
     parse: function (stream) {
 
-        return this.parser.parse(stream).then(function (res) {
+        return this.parser.parse(stream).
+            then(this.__applyTemplate, this);
+    },
 
-            if ( Array.isArray(res) ) {
+    /**
+     * @private
+     * @memberOf {BodyParser}
+     * @method
+     *
+     * @param {*} res
+     *
+     * @returns {Object}
+     * */
+    __applyTemplate: function (res) {
 
-                return {
-                    type: this.parser.type,
-                    input: res[0],
-                    files: res[1]
-                };
-            }
+        if ( _.isArray(res) ) {
 
             return {
                 type: this.parser.type,
-                input: res
+                input: res[0],
+                files: res[1]
             };
-        }, this);
+        }
+
+        return {
+            type: this.parser.type,
+            input: res
+        };
     }
 
 });

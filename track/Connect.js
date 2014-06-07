@@ -11,7 +11,8 @@ var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
-var _ = /** @type _ */ require('lodash-node');
+var _ = require('lodash-node');
+var inherit = require('inherit');
 var uniqueId = require('unique-id');
 var vow = require('vow');
 
@@ -19,17 +20,17 @@ var vow = require('vow');
  * @class Connect
  * @extends Track
  * */
-var Connect = Track.extend(/** @lends Connect.prototype */ {
+var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
     /**
-     * @protected
+     * @private
      * @memberOf {Connect}
      * @method
      *
      * @constructs
      * */
-    constructor: function (agent, req, res) {
-        Connect.Parent.call(this, agent);
+    __constructor: function (agent, req, res) {
+        this.__base.call(this, agent);
 
         /**
          * @public
@@ -69,7 +70,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = Connect.url(req);
+        this.url = this.__self.url(req);
 
         /**
          * @protected
@@ -696,8 +697,8 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
 
         var url = Url.parse(req.url);
 
-        url.host = Connect.host(req);
-        url.protocol = Connect.proto(req);
+        url.host = this.host(req);
+        url.protocol = this.proto(req);
 
         return Url.format(url);
     },
@@ -712,7 +713,7 @@ var Connect = Track.extend(/** @lends Connect.prototype */ {
      * */
     url: function (req) {
 
-        return Url.parse(Connect.href(req), true);
+        return Url.parse(this.href(req), true);
     }
 
 });

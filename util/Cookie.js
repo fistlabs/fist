@@ -4,13 +4,13 @@ var R_SEPARATOR = /[;,]\s*/;
 var R_QUOTED = /^"(?:\\[\s\S]|[^"])+"$/;
 var R_ESCCHAR = /\\([\s\S])/g;
 
-var Base = /** @type Base */ require('parent/Base');
+var inherit = require('inherit');
 
 /**
  * @class Cookie
  * @extends Base
  * */
-var Cookie = Base.extend(/** @lends Cookie.prototype */ {
+var Cookie = inherit(/** @lends Cookie.prototype */ {
 
     /**
      * @public

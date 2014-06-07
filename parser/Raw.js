@@ -2,13 +2,14 @@
 
 var Parser = /** @type Parser */ require('./Parser');
 
+var inherit = require('inherit');
 var vow = require('vow');
 
 /**
  * @class Raw
  * @extends Parser
  * */
-var Raw = Parser.extend(/** @lends Raw.prototype */ {
+var Raw = inherit(Parser, /** @lends Raw.prototype */ {
 
     /**
      * @public
@@ -21,7 +22,7 @@ var Raw = Parser.extend(/** @lends Raw.prototype */ {
      * */
     parse: function (stream) {
 
-        return Raw._download(stream, this.params);
+        return this.__self._download(stream, this.params);
     },
 
     /**

@@ -1,15 +1,16 @@
 'use strict';
 
-var Class = /** @type Class */ require('parent/Class');
+var Class = /** @type Class */ require('../util/Class');
 var vow = require('vow');
 
 var _ = /** @type _ */ require('lodash-node');
+var inherit = require('inherit');
 
 /**
  * @class Parser
  * @extends Class
  * */
-var Parser = Class.extend(/** @lends Parser.prototype */ {
+var Parser = inherit(Class, /** @lends Parser.prototype */ {
 
     /**
      * @protected
@@ -20,8 +21,8 @@ var Parser = Class.extend(/** @lends Parser.prototype */ {
      *
      * @param {*} [params]
      * */
-    constructor: function (params) {
-        Parser.Parent.apply(this, arguments);
+    __constructor: function (params) {
+        this.__base.apply(this, arguments);
 
         params = this.params;
 

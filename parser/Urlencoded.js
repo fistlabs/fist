@@ -3,11 +3,13 @@
 var Raw = /** @type Raw */ require('./Raw');
 var QueryString = /** @type QueryString */ require('querystring');
 
+var inherit = require('inherit');
+
 /**
  * @class Urlencoded
  * @extends Raw
  * */
-var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
+var Urlencoded = inherit(Raw, /** @lends Urlencoded.prototype*/ {
 
     /**
      * @public
@@ -20,7 +22,7 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
      * */
     parse: function (stream) {
 
-        return Urlencoded.parent.parse.call(this, stream).
+        return this.__base.call(this, stream).
             then(function (res) {
 
                 return QueryString.parse(String(res));

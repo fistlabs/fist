@@ -1,35 +1,16 @@
 'use strict';
 
 var Context = /** @type Context */ require('../context/Context');
+var Class = /** @type Class */ require('../util/Class');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
 
 /**
  * @class Unit
- * @extends Object
+ * @extends Class
  * */
-var Unit = inherit(Object, /** @lends Unit.prototype */ {
-
-    /**
-     * @private
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {Object} params
-     *
-     * @constructs
-     * */
-    __constructor: function (params) {
-
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        this.params = _.extend({}, this.params, params);
-    },
+var Unit = inherit(Class, /** @lends Unit.prototype */ {
 
     /**
      * @public
@@ -54,6 +35,7 @@ var Unit = inherit(Object, /** @lends Unit.prototype */ {
      * @method
      * */
     delDeps: function () {
+
         var args = _.flatten(arguments);
 
         this.deps = _.reject(this.deps, function (path) {
