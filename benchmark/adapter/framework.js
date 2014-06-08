@@ -1,12 +1,12 @@
 'use strict';
 
 var Fs = require('fs');
-
+var inherit = require('inherit');
 /**
  * @class MyServer
  * @extends Server
  * */
-var MyServer = /** @type Server */ require('../../Framework').extend({
+var MyServer = /** @type Server */ inherit(require('../../Framework'), {
     //  Не триггерить события во время бенчмарка
     // для чистоты эксперимета
     emit: function () {}
