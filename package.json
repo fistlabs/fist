@@ -46,5 +46,8 @@
         "cover": "istanbul cover test/runner",
         "benchmark": "node benchmark/runner"
     },
+    "engines": {
+        "node": ">= 0.10.0"
+    },
     "version": "0.0.3"
 }
