@@ -184,7 +184,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
             if ( !isChunk ) {
 
-                if ( this._isSpace(cur) ) {
+                if ( this.__isSpace(cur) ) {
 
                     continue;
                 }
@@ -199,7 +199,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
                 throw new SyntaxError(path);
             }
 
-            if ( this._isSpace(cur) ) {
+            if ( this.__isSpace(cur) ) {
 
                 if ( chunk.length ) {
                     parts.push(chunk);
@@ -317,7 +317,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
      *
      * @returns {Boolean}
      * */
-    _isSpace: function (str) {
+    __isSpace: function (str) {
 
         return R_WHITESPACE.test(str);
     }

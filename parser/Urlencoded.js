@@ -22,10 +22,7 @@ var Urlencoded = inherit(Raw, /** @lends Urlencoded.prototype*/ {
      * */
     parse: function (stream) {
 
-        return this.__base(stream).then(function (res) {
-
-            return QueryString.parse(String(res));
-        });
+        return this.__base(stream).then(parseQuery);
     },
 
     /**
@@ -55,5 +52,20 @@ var Urlencoded = inherit(Raw, /** @lends Urlencoded.prototype*/ {
     }
 
 });
+
+/**
+ * @private
+ * @static
+ * @memberOf Urlencoded
+ * @method
+ *
+ * @param {String|Buffer} res
+ *
+ * @returns {Object}
+ * */
+function parseQuery (res) {
+
+    return QueryString.parse(String(res));
+}
 
 module.exports = Urlencoded;
