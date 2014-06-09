@@ -1,7 +1,7 @@
 'use strict';
 
-var inherit = require('inherit');
 var _ = require('lodash-node');
+var inherit = require('inherit');
 
 /**
  * @class Class

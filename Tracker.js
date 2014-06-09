@@ -4,7 +4,7 @@ var Context = /** @type Context */ require('./context/Context');
 var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
 var Unit = /** @type Unit */ require('./unit/Unit');
 
-var _ = /** @type _ */ require('lodash-node');
+var _ = require('lodash-node');
 var inherit = require('inherit');
 var toArray = require('fist.lang.toarray');
 var vow = require('vow');
