@@ -1,64 +1,54 @@
 'use strict';
 
-var Bundle = /** @type Bundle */ require('./bundle/Bundle');
-var Class = /** @type Class */ require('fist.lang.class/Class');
-var Emitter = /** @type EventEmitter */ require('events').EventEmitter;
-var Next = /** @type Next */ require('fist.util.next/Next');
+var Context = /** @type Context */ require('./context/Context');
+var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
+var Unit = /** @type Unit */ require('./unit/Unit');
 
+var _ = require('lodash-node');
+var inherit = require('inherit');
 var toArray = require('fist.lang.toarray');
-var _ = /** @type _ */ require('lodash');
+var vow = require('vow');
 
 /**
  * @abstract
  * @class Tracker
  * @extends EventEmitter
- * @extends Class
  * */
-var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
+var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
 
     /**
-     * @protected
+     * @private
      * @memberOf {Tracker}
      * @method
      *
      * @constructs
      * */
-    constructor: function () {
-        Class.apply(this, arguments);
-        Tracker.Parent.apply(this, arguments);
+    __constructor: function (params) {
+        this.__base();
 
         /**
          * @public
          * @memberOf {Tracker}
-         * @property {Object}
+         * @property
+         * @type {Object}
          * */
-        this.decls = Object.create(null);
-    },
+        this.decls = {};
 
-    /**
-     * Декларирует узел
-     *
-     * @public
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {String} path
-     * @param {*} [deps]
-     * @param {Function} [data]
-     *
-     * @returns {Tracker}
-     * */
-    decl: function (path, deps, data) {
+        /**
+         * @private
+         * @memberOf {Tracker}
+         * @property
+         * @type {Object}
+         * */
+        this.__bases = {};
 
-        if ( 3 > arguments.length ) {
-            data = deps;
-            deps = [];
-        }
-
-        return this.unit(path, {
-            deps: deps,
-            data: data
-        });
+        /**
+         * @public
+         * @memberOf {Tracker}
+         * @property
+         * @type {Object}
+         * */
+        this.params = _.extend({}, this.params, params);
     },
 
     /**
@@ -70,30 +60,18 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {String} path
-     * @param {*} done
+     * @param {*} [params]
+     *
+     * @returns {vow.Promise}
      * */
-    resolve: function (track, path, done) {
+    resolve: function (track, path, params) {
 
-        var next;
+        if ( !_.has(track.tasks, path) ) {
 
-        if ( path in track.tasks ) {
-            track.tasks[path].done(done, this);
-
-            return;
+            track.tasks[path] = this.__resolveCtx(track, path, params);
         }
 
-        next = track.tasks[path] = new Next();
-        next.done(done, this);
-
-        done = this._createResolver(path, next);
-
-        if ( path in this.decls ) {
-            this._resolveUnit(track, this.decls[path], done);
-
-            return;
-        }
-
-        done.reject();
+        return track.tasks[path].promise();
     },
 
     /**
@@ -101,16 +79,31 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {String} path
-     * @param {Object} unit
+     * @param {Object} members
      *
      * @returns {Tracker}
+     *
+     * @throws {ReferenceError}
      * */
-    unit: function (path, unit) {
-        unit = Object(unit);
+    unit: function (members) {
 
-        if ( this._checkDeps(path, unit) ) {
-            this.decls[path] = unit;
+        var Class = this._createUnitClass(members);
+        var unit = new Class(this.params);
+        var path = unit.path;
+        var decl = {
+            orig: members,
+            unit: unit,
+            Unit: Class
+        };
+
+        if ( this.__checkDeps(path, decl) ) {
+            this.decls[path] = decl;
+
+            //  Если уже кто-то унаследовал от этого узла, хотя его еще не было
+            //  то надо снова унаследовать
+            if ( _.has(this.__bases, path) ) {
+                this.unit(this.decls[this.__bases[path]].orig);
+            }
 
             return this;
         }
@@ -123,13 +116,22 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Object} unit
      * @param {Track} track
-     * @param {Bundle} bundle
-     * @param {Function} done
+     * @param {Object} unit
+     * @param {Context} ctxt
      * */
-    _call: function (unit, track, bundle, done) {
-        unit.data(track, bundle.errors, bundle.result, done);
+    _call: function (track, unit, ctxt) {
+
+        if ( _.isFunction(unit.data) ) {
+            ctxt.resolve(vow.invoke(function () {
+
+                return unit.data(track, ctxt);
+            }));
+
+            return;
+        }
+
+        ctxt.resolve(unit.data);
     },
 
     /**
@@ -137,98 +139,133 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
+     * @param {Object} members
+     *
+     * @returns {Object}
+     * */
+    _createUnitClass: function (members) {
+
+        var Base;
+
+        if ( _.isFunction(members) ) {
+
+            return members;
+        }
+
+        members = Object(members);
+
+        if ( _.has(members, 'base') ) {
+            Base = members.base;
+
+            if ( !_.isFunction(Base) ) {
+                this.__bases[Base] = members.path;
+
+                if ( _.has(this.decls, Base) ) {
+                    Base = this.decls[Base].Unit;
+
+                } else {
+                    Base = Unit;
+                }
+            }
+
+        } else {
+            Base = Unit;
+        }
+
+        if ( _.isArray(members) ) {
+
+            return inherit(Base, members[0], members[1]);
+        }
+
+        return inherit(Base, members);
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
      * @param {String} path
-     * @param {Object} unit
+     * @param {Object} decl
      *
      * @returns {Boolean}
      * */
-    _checkDeps: function (path, unit) {
+    __checkDeps: function (path, decl) {
 
-        var deps = toArray(unit.deps);
-        var l = deps.length;
+        if ( _.isUndefined(decl) ) {
 
-        while ( l ) {
-            l -= 1;
+            return true;
+        }
 
-            if ( path === deps[l] ) {
+        return _.every(toArray(decl.unit.deps), function (dep) {
+
+            if ( path === dep ) {
 
                 return false;
             }
 
-            unit = this.decls[deps[l]];
-
-            if ( void 0 === unit || this._checkDeps(path, unit) ) {
-
-                continue;
-            }
-
-            return false;
-        }
-
-        return true;
+            return this.__checkDeps(path, this.decls[dep]);
+        }, this);
     },
 
     /**
-     * @protected
+     * @private
      * @memberOf {Tracker}
      * @method
      *
-     * @returns {Bundle}
-     * */
-    _createBundle: function () {
-
-        return new Bundle();
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
+     * @param {Track} track
      * @param {String} path
-     * @param {Next} next
+     * @param {Object} params
      *
-     * @returns {Function}
+     * @returns {Context}
      * */
-    _createResolver: function (path, next) {
+    __resolveCtx: function (track, path, params) {
 
         var date = new Date();
-        var self = this;
+        var decl = this.decls[path];
+        var ctxt;
+        var hasUnit = true;
 
-        function trigger (name, data) {
-            self.emit(name, {
+        if ( _.has(this.decls, path) ) {
+            ctxt = decl.unit.createCtx(params);
+
+        } else {
+            ctxt = new Context(params);
+            hasUnit = false;
+        }
+
+        ctxt.promise().done(function (data) {
+            this.emit('ctx:accept', {
                 path: path,
                 time: new Date() - date,
                 data: data
             });
+        }, function (data) {
+            this.emit('ctx:reject', {
+                path: path,
+                time: new Date() - date,
+                data: data
+            });
+        }, function (data) {
+            this.emit('ctx:notify', {
+                path: path,
+                time: new Date() - date,
+                data: data
+            });
+        }, this);
+
+        if ( !hasUnit ) {
+            ctxt.reject();
+
+            return ctxt;
         }
 
-        function done (err, res) {
+        this.__resolveDeps(track, decl.unit, ctxt).
+            then(function () {
+                this._call(track, decl.unit, ctxt);
+            }, this);
 
-            if ( 2 > arguments.length ) {
-                done.reject(err);
-
-                return;
-            }
-
-            done.accept(res);
-        }
-
-        done.accept = function (data) {
-            trigger('sys:accept', data);
-            next.resolve(null, data);
-        };
-
-        done.notify = function (data) {
-            trigger('sys:notify', data);
-        };
-
-        done.reject = function (data) {
-            trigger('sys:reject', data);
-            next.resolve(data);
-        };
-
-        return done;
+        return ctxt;
     },
 
     /**
@@ -238,34 +275,26 @@ var Tracker = Class.extend.call(Emitter, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {Object} unit
-     * @param {Function} done
+     * @param {Context} ctxt
+     *
+     * @returns {vow.Promise}
      * */
-    _resolveUnit: function (track, unit, done) {
+    __resolveDeps: function (track, unit, ctxt) {
 
-        var bundle;
-        var deps = toArray(unit.deps);
-        var length;
+        var deps = _.map(toArray(unit.deps), function (path) {
 
-        deps = toArray(deps);
-        bundle = this._createBundle();
-        length = deps.length;
+            var promise = this.resolve(track, path);
 
-        if ( 0 === length ) {
-            this._call(unit, track, bundle, done);
-
-            return;
-        }
-
-        _.forEach(deps, function (path) {
-            this.resolve(track, path, function () {
-                bundle.bundlify(path, arguments);
-                length -= 1;
-
-                if ( 0 === length ) {
-                    this._call(unit, track, bundle, done);
-                }
+            promise.done(function (data) {
+                ctxt.setResult(path, data);
+            }, function (data) {
+                ctxt.setError(path, data);
             });
+
+            return promise;
         }, this);
+
+        return vow.allResolved(deps);
     }
 
 });

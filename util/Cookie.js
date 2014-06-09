@@ -4,13 +4,14 @@ var R_SEPARATOR = /[;,]\s*/;
 var R_QUOTED = /^"(?:\\[\s\S]|[^"])+"$/;
 var R_ESCCHAR = /\\([\s\S])/g;
 
-var Base = /** @type Base */ require('fist.lang.class/Base');
+var _ = require('lodash-node');
+var inherit = require('inherit');
 
 /**
  * @class Cookie
  * @extends Base
  * */
-var Cookie = Base.extend(/** @lends Cookie.prototype */ {
+var Cookie = inherit(/** @lends Cookie.prototype */ {
 
     /**
      * @public
@@ -28,9 +29,9 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
         var e;
         var name;
         var cookie;
-        var result = Object.create(null);
+        var result = {};
 
-        if ( 'string' !== typeof cookies ) {
+        if ( !_.isString(cookies) ) {
 
             return result;
         }
@@ -76,7 +77,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
         var expires;
         var buf = [name + '=' + value];
 
-        if ( Object(opts) !== opts ) {
+        if ( !_.isObject(opts) ) {
 
             return buf[0];
         }
@@ -92,7 +93,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
         if ( opts.expires || 0 === opts.expires ) {
             expires = Cookie._buildGMTTime(opts.expires);
 
-            if ( 'string' === typeof expires ) {
+            if ( _.isString(expires) ) {
                 buf[buf.length] = 'expires=' + expires;
             }
         }
@@ -122,7 +123,7 @@ var Cookie = Base.extend(/** @lends Cookie.prototype */ {
      * */
     _buildGMTTime: function (expires) {
 
-        if ( 'number' === typeof expires ) {
+        if ( _.isNumber(expires) ) {
             expires = new Date(Date.now() + expires);
 
         } else {

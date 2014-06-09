@@ -9,7 +9,7 @@ module.exports = {
         function (test) {
             var req = new Parted(['a=5&b=6']);
             var parser = new Urlencoded();
-            parser.parse(req, function (err, res) {
+            parser.parse(req).done(function (res) {
                 test.deepEqual(res, {
                     a: '5',
                     b: '6'
@@ -20,7 +20,7 @@ module.exports = {
         function (test) {
             var req = new Parted(['a=5&b=6']);
             var parser = new Urlencoded();
-            parser.parse(req, function (err) {
+            parser.parse(req).fail(function (err) {
                 test.strictEqual(err, 42);
                 test.done();
             });

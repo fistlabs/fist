@@ -1,14 +1,15 @@
 'use strict';
 
-var Raw = /** @type Raw */ require('./Raw');
-var QueryString = /** @type QueryString */ require('querystring');
 var R_JSON = /^(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)$/i;
+var Raw = /** @type Raw */ require('./Raw');
+
+var inherit = require('inherit');
 
 /**
  * @class Json
  * @extends Raw
  * */
-var Json = Raw.extend(/** @lends Json.prototype*/ {
+var Json = inherit(Raw, /** @lends Json.prototype*/ {
 
     /**
      * @public
@@ -16,28 +17,12 @@ var Json = Raw.extend(/** @lends Json.prototype*/ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
-        Json.parent.parse.call(this, stream, function (err, res) {
-            /*eslint no-catch-shadow: 0*/
-            if ( 2 > arguments.length ) {
-                done(err);
+    parse: function (stream) {
 
-                return;
-            }
-
-            try {
-                res = JSON.parse(res);
-
-            } catch (err) {
-                done(err);
-
-                return;
-            }
-
-            done(null, res);
-        });
+        return this.__base(stream).then(JSON.parse);
     },
 
     /**

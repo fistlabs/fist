@@ -1,6 +1,6 @@
 'use strict';
 
-var Base = require('fist.lang.class/Base');
+var Base = require('parent/Base');
 
 var Gen = Base.extend({
 

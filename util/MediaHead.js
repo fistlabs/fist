@@ -1,18 +1,17 @@
 'use strict';
 
 var R_SPACE = /^\s+$/;
-var Base = /** @type Base */ require('fist.lang.class/Base');
 
-var _ = /** @type _ */ require('lodash');
+var _ = /** @type _ */ require('lodash-node');
+var inherit = require('inherit');
 
 /**
  * @class MediaHead
- * @extends Base
  * */
-var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
+var MediaHead = inherit(/** @lends MediaHead.prototype */ {
 
     /**
-     * @protected
+     * @private
      * @memberOf {MediaHead}
      * @method
      *
@@ -20,7 +19,7 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
      *
      * @param {String} header
      * */
-    constructor: function (header) {
+    __constructor: function (header) {
 
         var ast = [];
 
@@ -46,7 +45,7 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = _.reduce(ast, MediaHead._astReducer, Object.create(null));
+        this.params = _.reduce(ast, MediaHead._astReducer, {});
 
         /**
          * @protected
@@ -82,7 +81,7 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
                 return header + ';' + i + '=' + v;
             }
 
-            if ( Array.isArray(v) ) {
+            if ( _.isArray(v) ) {
 
                 return _.reduce(v, reducer, header);
             }
@@ -119,13 +118,13 @@ var MediaHead = Base.extend(/** @lends MediaHead.prototype */ {
      * */
     _astReducer: function (params, param) {
 
-        if ( Array.isArray(params[param[0]]) ) {
+        if ( _.isArray(params[param[0]]) ) {
             params[param[0]].push(param[1]);
 
             return params;
         }
 
-        if ( param[0] in params ) {
+        if ( _.has(params, param[0]) ) {
             params[param[0]] = [params[param[0]], param[1]];
 
             return params;

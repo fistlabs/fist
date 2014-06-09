@@ -1,7 +1,7 @@
 'use strict';
 
 var ContentType = require('../../../util/ContentType');
-var _ = require('lodash');
+var _ = require('lodash-node');
 
 module.exports = {
 

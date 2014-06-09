@@ -3,11 +3,13 @@
 var Raw = /** @type Raw */ require('./Raw');
 var QueryString = /** @type QueryString */ require('querystring');
 
+var inherit = require('inherit');
+
 /**
  * @class Urlencoded
  * @extends Raw
  * */
-var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
+var Urlencoded = inherit(Raw, /** @lends Urlencoded.prototype*/ {
 
     /**
      * @public
@@ -15,20 +17,12 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
      * @method
      *
      * @param {Object} stream
-     * @param {Function} done
+     *
+     * @returns {vow.Promise}
      * */
-    parse: function (stream, done) {
+    parse: function (stream) {
 
-        return Urlencoded.parent.parse.call(this, stream, function (err, res) {
-
-            if ( 2 > arguments.length ) {
-                done(err);
-
-                return;
-            }
-
-            done(null, QueryString.parse(String(res)));
-        });
+        return this.__base(stream).then(parseQuery);
     },
 
     /**
@@ -58,5 +52,20 @@ var Urlencoded = Raw.extend(/** @lends Urlencoded.prototype*/ {
     }
 
 });
+
+/**
+ * @private
+ * @static
+ * @memberOf Urlencoded
+ * @method
+ *
+ * @param {String|Buffer} res
+ *
+ * @returns {Object}
+ * */
+function parseQuery (res) {
+
+    return QueryString.parse(String(res));
+}
 
 module.exports = Urlencoded;

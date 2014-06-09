@@ -58,6 +58,18 @@ var FIXTURE2 = [
     '--' + BOUNDARY + '--'
 ].join('\r\n');
 
+var FIXTURE3 = [
+    '--' + BOUNDARY,
+    'content-disposition: form-data; name=first; filename=""',
+    '',
+    'vasya',
+    '--' + BOUNDARY,
+    'content-disposition: form-data; name="last"',
+    '',
+    'petrov',
+    '--' + BOUNDARY + '--'
+].join('\r\n');
+
 module.exports = {
 
     'Multipart.prototype.parse': [
@@ -83,12 +95,13 @@ module.exports = {
                     boundary: boundary
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             first: 'vasya',
                             last: 'petrov'
-                        }, {
+                        },
+                        {
                             file: {
                                 mime: 'application/octet-stream',
                                 name: 'buf',
@@ -115,7 +128,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             first: ['vasya', 'vasya', 'vasya'],
@@ -148,7 +161,7 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err, data) {
+                parser.parse(req).done(function (data) {
                     test.deepEqual(data, [
                         {
                             last: 'petrov'
@@ -179,10 +192,10 @@ module.exports = {
                     boundary: BOUNDARY
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.ok(err);
                     res.end();
-                });
+                }).done();
 
             }, function (err) {
                 test.ok(!err);
@@ -212,10 +225,10 @@ module.exports = {
                     req.emit('error', 'ERR');
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
-                });
+                }).done();
 
             }, function (err) {
                 test.ok(!err);
@@ -245,10 +258,10 @@ module.exports = {
                     req.emit('error', err);
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.strictEqual(err, 'ERR');
                     res.end();
-                });
+                }).done();
 
                 req.once('data', function () {
                     req.emit('error', 'ERR');
@@ -276,10 +289,10 @@ module.exports = {
                     length: 4
                 });
 
-                parser.parse(req, function (err) {
+                parser.parse(req).fail(function (err) {
                     test.strictEqual(err.code, 'ELENGTH');
                     res.end();
-                });
+                }).done();
 
             }, function (err) {
                 test.ok(!err);
@@ -295,12 +308,39 @@ module.exports = {
                 limit: 4
             });
 
-            parser.parse(stream, function (err) {
+            parser.parse(stream).fail(function (err) {
                 test.deepEqual(err, {
                     code: 'ELIMIT',
                     actual: 5,
                     expected: 4
                 });
+                test.done();
+            }).done();
+        },
+        function (test) {
+
+            http({
+                method: 'post',
+                body: FIXTURE3
+            }, function (req, res) {
+
+                var parser = new Multipart({
+                    boundary: BOUNDARY
+                });
+
+                parser.parse(req).done(function (data) {
+                    test.deepEqual(data, [
+                        {
+                            first: 'vasya',
+                            last: 'petrov'
+                        },
+                        {}
+                    ]);
+                    res.end();
+                });
+
+            }, function (err) {
+                test.ok(!err);
                 test.done();
             });
         }
