@@ -123,7 +123,7 @@ function parseMultipart (stream, params) {
                 //  это был файл
                 buf = {
                     mime: mime.value,
-                    name: filename,
+                    filename: filename,
                     data: buf
                 };
 
