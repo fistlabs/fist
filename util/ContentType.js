@@ -16,10 +16,12 @@ var ContentType = inherit(MediaHead, /** @lends ContentType.prototype */ {
      * @memberOf {ContentType}
      * @method
      *
+     * @param {String} header
+     *
      * @constructs
      * */
-    __constructor: function () {
-        this.__base.apply(this, arguments);
+    __constructor: function (header) {
+        this.__base(header);
 
         var type;
 

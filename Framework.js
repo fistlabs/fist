@@ -21,10 +21,12 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      *
+     * @param {Object} [params]
+     *
      * @constructs
      * */
-    __constructor: function () {
-        this.__base.apply(this, arguments);
+    __constructor: function (params) {
+        this.__base(params);
 
         /**
          * Тут откладываются запросы поступившие во время инициализации
@@ -260,7 +262,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         var defer = vow.defer();
 
-        this.__base.call(this, track, path, params).
+        this.__base(track, path, params).
             always(function (res) {
 
                 if ( track.sent() ) {

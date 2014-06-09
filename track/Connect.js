@@ -30,7 +30,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @constructs
      * */
     __constructor: function (agent, req, res) {
-        this.__base.call(this, agent);
+        this.__base(agent);
 
         /**
          * @public

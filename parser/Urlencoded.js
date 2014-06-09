@@ -22,11 +22,10 @@ var Urlencoded = inherit(Raw, /** @lends Urlencoded.prototype*/ {
      * */
     parse: function (stream) {
 
-        return this.__base.call(this, stream).
-            then(function (res) {
+        return this.__base(stream).then(function (res) {
 
-                return QueryString.parse(String(res));
-            });
+            return QueryString.parse(String(res));
+        });
     },
 
     /**

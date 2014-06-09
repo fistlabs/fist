@@ -22,8 +22,7 @@ var Json = inherit(Raw, /** @lends Json.prototype*/ {
      * */
     parse: function (stream) {
 
-        return this.__base.call(this, stream).
-            then(JSON.parse);
+        return this.__base(stream).then(JSON.parse);
     },
 
     /**

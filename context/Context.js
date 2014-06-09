@@ -23,7 +23,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
      * @constructs
      * */
     __constructor: function (params) {
-        this.__base.apply(this, arguments);
+        this.__base();
 
         /**
          * @public

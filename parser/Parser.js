@@ -22,7 +22,7 @@ var Parser = inherit(Class, /** @lends Parser.prototype */ {
      * @param {*} [params]
      * */
     __constructor: function (params) {
-        this.__base.apply(this, arguments);
+        this.__base(params);
 
         params = this.params;
 
