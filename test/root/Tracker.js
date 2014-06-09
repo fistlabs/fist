@@ -473,6 +473,26 @@ module.exports = {
             test.deepEqual(tracker.decls.unit.unit.deps, [1, 2, 3, 4]);
 
             test.done();
+        },
+        function (test) {
+            var tracker = new Tracker();
+
+            tracker.unit({
+                path: 'myUnit',
+                base: 'noBase'
+            });
+
+            test.ok(tracker.decls.myUnit.unit instanceof Unit);
+
+            tracker.unit({
+                path: 'noBase',
+                data: 42
+            });
+
+            test.ok(tracker.decls.myUnit.unit instanceof
+                tracker.decls.noBase.Unit);
+
+            test.done();
         }
     ]
 

@@ -35,6 +35,14 @@ var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
         this.decls = {};
 
         /**
+         * @private
+         * @memberOf {Tracker}
+         * @property
+         * @type {Object}
+         * */
+        this.__bases = {};
+
+        /**
          * @public
          * @memberOf {Tracker}
          * @property
@@ -82,10 +90,20 @@ var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
         var Class = this._createUnitClass(members);
         var unit = new Class(this.params);
         var path = unit.path;
-        var decl = {unit: unit, Unit: Class};
+        var decl = {
+            orig: members,
+            unit: unit,
+            Unit: Class
+        };
 
         if ( this.__checkDeps(path, decl) ) {
             this.decls[path] = decl;
+
+            //  Если уже кто-то унаследовал от этого узла, хотя его еще не было
+            //  то надо снова унаследовать
+            if ( _.has(this.__bases, path) ) {
+                this.unit(this.decls[this.__bases[path]].orig);
+            }
 
             return this;
         }
@@ -140,6 +158,7 @@ var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
             Base = members.base;
 
             if ( !_.isFunction(Base) ) {
+                this.__bases[Base] = members.path;
 
                 if ( _.has(this.decls, Base) ) {
                     Base = this.decls[Base].Unit;
