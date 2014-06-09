@@ -22,7 +22,7 @@ var Raw = inherit(Parser, /** @lends Raw.prototype */ {
      * */
     parse: function (stream) {
 
-        return this.__self._download(stream, this.params);
+        return this.__self.__download(stream, this.params);
     },
 
     /**
@@ -36,7 +36,7 @@ var Raw = inherit(Parser, /** @lends Raw.prototype */ {
 }, {
 
     /**
-     * @protected
+     * @private
      * @static
      * @memberOf Raw
      * @method
@@ -46,7 +46,7 @@ var Raw = inherit(Parser, /** @lends Raw.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    _download: function (stream, params) {
+    __download: function (stream, params) {
 
         var buf = [];
         var received = 0;

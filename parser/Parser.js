@@ -3,7 +3,7 @@
 var Class = /** @type Class */ require('../util/Class');
 var vow = require('vow');
 
-var _ = /** @type _ */ require('lodash-node');
+var _ = require('lodash-node');
 var inherit = require('inherit');
 
 /**
