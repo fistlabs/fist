@@ -168,18 +168,7 @@ app.unit({
     }
 })
 ```
-Разрешение узла влечет за собой триггер события [```ctx:accept```](#ctxacceptobject) или [```ctx:reject```](#ctxrejectobject). Функцию можно вызывать как непосредственно так и через свойства-методы ```done.accept([*])```, ```done.reject([*])```. Также есть метод ```done.notify([*])```, который не разрешает узел но поджигает событие [```ctx:notify```](#ctxnotifyobject)
-
-```js
-app.unit({
-    path: 'version', 
-    data: function () {
-
-        return require('./package.json').version;
-    }
-});
-```
-
+Разрешение узла влечет за собой триггер события [```ctx:accept```](#ctxacceptobject) или [```ctx:reject```](#ctxrejectobject). Также у контекста есть метод ```ctx.notify()``` который поджигает событие [```ctx:notify```](#ctxnotifyobject)
 ##Зависимости узлов
 Если узел имеет зависимости, то в контексте вызова узла можно обнаружить результаты их выполнения.
 ```js
