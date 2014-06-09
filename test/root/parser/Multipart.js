@@ -104,7 +104,7 @@ module.exports = {
                         {
                             file: {
                                 mime: 'application/octet-stream',
-                                name: 'buf',
+                                filename: 'buf',
                                 data: new Buffer('asd')
                             }
                         }
@@ -137,7 +137,7 @@ module.exports = {
                         {
                             file: {
                                 mime: 'application/octet-stream',
-                                name: 'buf',
+                                filename: 'buf',
                                 data: new Buffer('asd')
                             }
                         }
@@ -169,7 +169,7 @@ module.exports = {
                         {
                             file: {
                                 mime: void 0,
-                                name: 'buf',
+                                filename: 'buf',
                                 data: new Buffer('asd')
                             }
                         }
