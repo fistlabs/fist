@@ -38,7 +38,8 @@ var Track = inherit(/** @lends Track.prototype */{
         /**
          * @public
          * @memberOf {Track}
-         * @property {Object}
+         * @property
+         * @type {Object}
          * */
         this.tasks = {};
     },
