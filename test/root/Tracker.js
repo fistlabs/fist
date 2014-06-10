@@ -328,14 +328,17 @@ module.exports = {
             var spy = [];
 
             tracker.on('ctx:notify', function (e) {
+                test.strictEqual(e.trackId, track.id);
                 spy.push([-1, e.data]);
             });
 
             tracker.on('ctx:accept', function (e) {
+                test.strictEqual(e.trackId, track.id);
                 spy.push([0, e.data]);
             });
 
             tracker.on('ctx:reject', function (e) {
+                test.strictEqual(e.trackId, track.id);
                 spy.push([1, e.data]);
             });
 
