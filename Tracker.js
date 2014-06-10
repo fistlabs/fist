@@ -248,18 +248,21 @@ var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
 
         ctxt.promise().done(function (data) {
             this.emit('ctx:accept', {
+                trackId: track.id,
                 path: path,
                 time: new Date() - date,
                 data: data
             });
         }, function (data) {
             this.emit('ctx:reject', {
+                trackId: track.id,
                 path: path,
                 time: new Date() - date,
                 data: data
             });
         }, function (data) {
             this.emit('ctx:notify', {
+                trackId: track.id,
                 path: path,
                 time: new Date() - date,
                 data: data

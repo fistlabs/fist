@@ -1,6 +1,7 @@
 'use strict';
 
 var inherit = require('inherit');
+var uniqueId = require('unique-id');
 
 /**
  * @class Track
@@ -25,6 +26,14 @@ var Track = inherit(/** @lends Track.prototype */{
          * @type {Tracker}
          * */
         this.agent = agent;
+
+        /**
+         * @public
+         * @memberOf {Track}
+         * @property
+         * @type {String}
+         * */
+        this.id = uniqueId();
 
         /**
          * @public

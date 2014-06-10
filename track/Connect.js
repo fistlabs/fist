@@ -13,7 +13,6 @@ var Url = require('url');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var uniqueId = require('unique-id');
 var vow = require('vow');
 
 /**
@@ -31,14 +30,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     __constructor: function (agent, req, res) {
         this.__base(agent);
-
-        /**
-         * @public
-         * @memberOf {Connect}
-         * @property
-         * @type {String}
-         * */
-        this.id = uniqueId();
 
         /**
          * @public
