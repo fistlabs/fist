@@ -122,11 +122,23 @@ var Tracker = inherit(EventEmitter, /** @lends Tracker.prototype */ {
      * */
     _call: function (track, unit, ctxt) {
 
-        if ( _.isFunction(unit.data) ) {
-            ctxt.resolve(vow.invoke(function () {
+        var result;
 
-                return unit.data(track, ctxt);
-            }));
+        if ( _.isFunction(unit.data) ) {
+
+            try {
+                result = unit.data(track, ctxt);
+
+                if ( ctxt.promise() === result ) {
+
+                    return;
+                }
+
+                ctxt.resolve(result);
+
+            } catch (err) {
+                ctxt.reject(err);
+            }
 
             return;
         }
