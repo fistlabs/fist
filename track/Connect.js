@@ -1,7 +1,7 @@
 'use strict';
 
 var R_COMMA = /\s*,\s*/;
-var REDIRECT_STATUS = [300, 301, 302, 303, 305, 307];
+var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
@@ -287,9 +287,9 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     redirect: function (code, url) {
 
-        if ( 'number' === typeof code ) {
+        if ( _.isNumber(code) ) {
 
-            if ( -1 === REDIRECT_STATUS.indexOf(code) ) {
+            if ( !_.contains(REDIRECT_CODES, code) ) {
                 code = 302;
             }
 
@@ -329,7 +329,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         var args;
         var i;
 
-        if ( 'number' === typeof code ) {
+        if ( _.isNumber(code) ) {
             i = 2;
             this.status(code);
 
@@ -456,7 +456,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _respond: function (status, body) {
 
-        if ( 'number' === typeof status && STATUS_CODES[status] ) {
+        if ( _.isNumber(status) && _.has(STATUS_CODES, status) ) {
             this._res.statusCode = status;
 
             if ( 2 > arguments.length ) {
@@ -483,7 +483,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _writeBody: function (body) {
 
-        if ( 'string' === typeof body ) {
+        if ( _.isString(body) ) {
             this._writeString(body);
 
             return;
@@ -495,7 +495,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             return;
         }
 
-        if (_.isObject(body) && _.isFunction(body.pipe) ) {
+        if ( _.isObject(body) && _.isFunction(body.pipe) ) {
             this._writeReadable(body);
 
             return;
@@ -604,7 +604,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             this._setHead('Content-Length', body.length, true);
             this._res.end(body);
         }, function (err) {
-            self._respond(500, err);
+            this._respond(500, err);
         }, this);
     }
 
