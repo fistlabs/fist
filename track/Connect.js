@@ -5,12 +5,12 @@ var STATUS_CODES = require('http').STATUS_CODES;
 
 var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
 var ContentType = /** @type ContentType */ require('../util/ContentType');
-var Cookie = /** @type Cookie */ require('../util/Cookie');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
 var _ = require('lodash-node');
+var cookie = require('cookie');
 var inherit = require('inherit');
 var vow = require('vow');
 
@@ -220,7 +220,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         if ( 2 > arguments.length ) {
 
             if ( !this._cookies ) {
-                this._cookies = Connect.cookie.parse(this._req.headers.cookie);
+                this._cookies = cookie.parse(this._req.headers.cookie || '');
             }
 
             cookies = this._cookies;
@@ -230,7 +230,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
                 return cookies;
             }
 
-            return cookies[name] && decodeURIComponent(cookies[name]);
+            return cookies[name];
         }
 
         if ( null === value ) {
@@ -240,10 +240,10 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
                 opts = {};
             }
 
-            opts.expires = -1;
+            opts.expires = new Date();
         }
 
-        value = Connect.cookie.serialize(name, encodeURIComponent(value), opts);
+        value = cookie.serialize(name, value, opts);
 
         return this._setHead('Set-Cookie', value);
     },
@@ -608,16 +608,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     }
 
 }, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @property
-     *
-     * @type {Cookie}
-     * */
-    cookie: new Cookie(),
 
     /**
      * @public

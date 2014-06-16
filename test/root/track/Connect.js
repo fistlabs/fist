@@ -127,8 +127,8 @@ module.exports = {
                 res.end();
             }, function (err, data) {
                 test.deepEqual(data.headers['set-cookie'], [
-                    'x=y', 'x=; expires=' + (new Date(d - 1)).toUTCString(),
-                    'a=b', 'a=; expires=' + (new Date(d - 1)).toUTCString(),
+                    'x=y', 'x=; Expires=' + (new Date()).toUTCString(),
+                    'a=b', 'a=; Expires=' + (new Date()).toUTCString(),
                         'last=' + encodeURIComponent('Привет')
                 ]);
                 test.done();
