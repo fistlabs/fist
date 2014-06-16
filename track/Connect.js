@@ -1,6 +1,5 @@
 'use strict';
 
-var R_COMMA = /\s*,\s*/;
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 var STATUS_CODES = require('http').STATUS_CODES;
 
@@ -61,7 +60,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.__self.url(req);
+        this.url = this.__self.fetchUrl(req);
 
         /**
          * @protected
@@ -634,77 +633,27 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf Connect
      * @method
      *
-     * @returns {String}
-     * */
-    host: function (req) {
-
-        var headers = req.headers;
-        var host = headers['x-forwarded-host'] || headers.host;
-
-        if ( _.isString(host) ) {
-
-            return host.split(R_COMMA)[0];
-        }
-
-        return host;
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
-     * @returns {String}
-     * */
-    proto: function (req) {
-
-        var proto;
-
-        if ( req.socket.encrypted ) {
-
-            return 'https';
-        }
-
-        proto = req.headers['x-forwarded-proto'];
-
-        if ( _.isString(proto) ) {
-
-            return proto.split(R_COMMA)[0];
-        }
-
-        return 'http';
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
-     * @returns {String}
-     * */
-    href: function (req) {
-
-        var url = Url.parse(req.url);
-
-        url.host = this.host(req);
-        url.protocol = this.proto(req);
-
-        return Url.format(url);
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
      * @returns {Object}
      * */
-    url: function (req) {
+    fetchUrl: function (req) {
 
-        return Url.parse(this.href(req), true);
+        var headers = req.headers;
+        var url = Url.parse(req.url);
+        var value = headers['x-forwarded-host'] || headers.host;
+
+        url.host = value.split(/\s*,\s*/)[0];
+
+        if ( req.socket.encrypted ) {
+            value = 'https';
+
+        } else {
+            value = headers['x-forwarded-proto'] || 'http';
+        }
+
+        url.protocol = value;
+        url = Url.format(url);
+
+        return Url.parse(url, true);
     }
 
 });

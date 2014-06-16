@@ -437,80 +437,34 @@ module.exports = {
             });
         }
     ],
-    'Connect.host': [
+    'Connect.fetchUrl': [
         function (test) {
-            test.strictEqual(Connect.host({
+            var req = {
+                url: '/path/to/page?no=5',
+                socket: {
+                    encrypted: false
+                },
                 headers: {
-                    'x-forwarded-host': 'www.yandex.ru'
+                    host: 'fistlabs.co:80',
+                    'x-forwarded-proto': 'https'
                 }
-            }), 'www.yandex.ru');
-            test.strictEqual(Connect.host({
-                headers: {
-                    host: 'www.yandex.ru'
-                }
-            }), 'www.yandex.ru');
-            test.strictEqual(Connect.host({
-                headers: {}
-            }), void 0);
-
+            };
+            test.deepEqual(Connect.fetchUrl(req),
+                Url.parse('https://fistlabs.co:80/path/to/page?no=5', true));
             test.done();
-        }
-    ],
-    'Connect.proto': [
+        },
         function (test) {
-            test.strictEqual(Connect.proto({
+            var req = {
+                url: '/path/to/page?no=5',
                 socket: {
                     encrypted: true
-                }
-            }), 'https');
-            test.strictEqual(Connect.proto({
-                socket: {
-                    encrypted: false
                 },
                 headers: {
-                    'x-forwarded-proto': 'fist.server'
-                }
-            }), 'fist.server');
-            test.strictEqual(Connect.proto({
-                socket: {
-                    encrypted: false
-                },
-                headers: {}
-            }), 'http');
-            test.done();
-        }
-    ],
-    'Connect.href': [
-        function (test) {
-            var req = {
-                url: '/path/to/page?no=5',
-                socket: {
-                    encrypted: false
-                },
-                headers: {
-                    host: 'fistlabs.co:80',
-                    'x-forwarded-proto': 'https'
+                    host: 'localhost:80'
                 }
             };
-            test.strictEqual(Connect.href(req),
-                'https://fistlabs.co:80/path/to/page?no=5');
-            test.done();
-        }
-    ],
-    'Connect.url': [
-        function (test) {
-            var req = {
-                url: '/path/to/page?no=5',
-                socket: {
-                    encrypted: false
-                },
-                headers: {
-                    host: 'fistlabs.co:80',
-                    'x-forwarded-proto': 'https'
-                }
-            };
-            test.deepEqual(Connect.url(req),
-                Url.parse('https://fistlabs.co:80/path/to/page?no=5', true));
+            test.deepEqual(Connect.fetchUrl(req),
+                Url.parse('https://localhost:80/path/to/page?no=5', true));
             test.done();
         }
     ],
