@@ -50,7 +50,7 @@ var BodyParser = inherit(/** @lends BodyParser.prototype */ {
         var l;
 
         if ( !params ||
-            'string' !== typeof params.length || params.length == '0' ) {
+            'string' !== typeof params.length || '0' == params.length ) {
 
             return null;
         }

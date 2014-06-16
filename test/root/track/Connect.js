@@ -106,8 +106,6 @@ module.exports = {
         },
         function (test) {
 
-            var d;
-
             connect({
                 method: 'GET',
                 headers: {
@@ -115,7 +113,6 @@ module.exports = {
                 }
             }, function (t, req, res) {
 
-                d = new Date();
                 t.cookie('x', 'y');
                 t.cookie('x', null, {});
                 t.cookie('a', 'b');

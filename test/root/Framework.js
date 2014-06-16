@@ -377,7 +377,7 @@ module.exports = {
 
             framework.unit({
                 path: 'index',
-                data: function fn (track, ctx) {
+                data: function fn (track) {
                     test.strictEqual(this.data, fn);
 
                     track.send({});
@@ -779,7 +779,7 @@ module.exports = {
 
             server.unit({
                 path: 'local',
-                data: function (track) {
+                data: function () {
                     spy.push(3);
 
                     return 'LOCAL';

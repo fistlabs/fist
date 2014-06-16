@@ -518,7 +518,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _writeError: function (body) {
 
-        if ( this._res.statusCode >= 500 ) {
+        if ( 500 <= this._res.statusCode ) {
 
             if ( this.agent.params.staging ) {
                 this._writeString(STATUS_CODES[this._res.statusCode]);
