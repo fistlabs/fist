@@ -11,7 +11,7 @@
     ],
     "dependencies": {
         "unique-id": "~0.0.1",
-        "finger": "~0.0.1",
+        "finger": "~0.0.2",
         "fist.lang.toarray": "~0.0.2",
         "lodash-node": "~2.4.1",
         "dicer": "~0.2.3",
