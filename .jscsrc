@@ -107,8 +107,6 @@
         "requireParamTypes": true
     },
 
-    "fileExtensions": "*",
-
     "excludeFiles": [
         "coverage/**",
         "node_modules/**"
