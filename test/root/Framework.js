@@ -80,7 +80,7 @@ module.exports = [
                 };
             }
         }, function (err, res) {
-            test.strictEqual(res.statusCode, 502);
+            test.strictEqual(res.statusCode, 500);
             test.done();
         });
     },

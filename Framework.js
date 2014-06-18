@@ -257,7 +257,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         //  При инициализации произошла ошибка
         if ( this.ready().isRejected() ) {
-            track.send(502);
+            track.send(500);
 
             return;
         }
