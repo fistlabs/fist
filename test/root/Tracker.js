@@ -8,7 +8,6 @@ var Unit = require('../../unit/Unit');
 var vow = require('vow');
 
 module.exports = {
-
     'Tracker.prototype.resolve': [
         function (test) {
 
@@ -303,23 +302,6 @@ module.exports = {
                 test.done();
             });
         },
-        function (test) {
-            var tracker = new Tracker();
-
-            tracker.unit({
-                path: 'a',
-                deps: 'b'
-            });
-
-            test.throws(function () {
-                tracker.unit({
-                    path: 'b',
-                    deps: 'a'
-                });
-            }, ReferenceError);
-
-            test.done();
-        },
         //  EVENTS
         function (test) {
 
@@ -384,119 +366,5 @@ module.exports = {
                 test.done();
             });
         }
-    ],
-    'Tracker.prototype.unit': [
-        function (test) {
-            var tracker = new Tracker();
-
-            tracker.unit({
-                path: 'base'
-            });
-
-            test.ok(tracker.decls.base.unit instanceof Unit);
-
-            tracker.unit({
-                path: 'unit',
-                base: 'base'
-            });
-
-            test.ok(tracker.decls.unit.unit instanceof Unit);
-
-            test.done();
-        },
-        function (test) {
-            var tracker = new Tracker();
-
-            tracker.unit({
-                base: Unit,
-                path: 'base'
-            });
-
-            test.ok(tracker.decls.base.unit instanceof Unit);
-            test.ok(tracker.decls.base.unit instanceof
-                tracker.decls.base.Unit);
-
-            tracker.unit({
-                path: 'unit',
-                base: 'base123'
-            });
-
-            test.ok(tracker.decls.unit.unit instanceof Unit);
-
-            test.done();
-        },
-        function (test) {
-            var tracker = new Tracker();
-
-            tracker.unit(Unit);
-
-            test.ok(tracker.decls.unit.unit instanceof Unit);
-
-            tracker.unit([
-                {
-                    base: 'unit',
-                    path: 'unit2'
-                },
-                {
-                    staticProp: 'x'
-                }
-            ]);
-
-            test.ok(tracker.decls.unit2.unit instanceof
-                tracker.decls.unit.Unit);
-
-            test.ok(tracker.decls.unit2.unit instanceof
-                tracker.decls.unit2.Unit);
-
-            test.strictEqual(tracker.decls.unit2.Unit.staticProp, 'x');
-
-            test.done();
-        },
-        function (test) {
-            var tracker = new Tracker();
-
-            tracker.unit({
-                path: 'base',
-                __constructor: function () {
-                    this.__base.apply(this, arguments);
-                    this.addDeps(1, 2, 3);
-                }
-            });
-
-            tracker.unit({
-                base: 'base',
-                path: 'unit',
-                __constructor: function () {
-                    this.__base.apply(this, arguments);
-                    this.addDeps(4, 2, 1);
-                }
-            });
-
-            test.deepEqual(tracker.decls.base.unit.deps, [1, 2, 3]);
-            test.deepEqual(tracker.decls.unit.unit.deps, [1, 2, 3, 4]);
-
-            test.done();
-        },
-        function (test) {
-            var tracker = new Tracker();
-
-            tracker.unit({
-                path: 'myUnit',
-                base: 'noBase'
-            });
-
-            test.ok(tracker.decls.myUnit.unit instanceof Unit);
-
-            tracker.unit({
-                path: 'noBase',
-                data: 42
-            });
-
-            test.ok(tracker.decls.myUnit.unit instanceof
-                tracker.decls.noBase.Unit);
-
-            test.done();
-        }
     ]
-
 };

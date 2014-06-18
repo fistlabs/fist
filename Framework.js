@@ -39,26 +39,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this._pends = [];
 
         /**
-         * Количество запущенных инициализаций
-         *
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Number}
-         * */
-        this._pending = 0;
-
-        /**
-         * Состояние приложения
-         *
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Number}
-         * */
-        this._state = -1;
-
-        /**
          * Плагины, задачи на инициализацию
          *
          * @protected
@@ -66,7 +46,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
          * @property
          * @type {Array<Function>}
          * */
-        this._tasks = [];
+        this._plugs = [];
 
         /**
          * Шаблоны для track.render()
@@ -130,116 +110,73 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         server.listen.apply(server, arguments);
 
         //  автоматически запускаю инициализацию
-        this.ready();
+        this.ready(true);
 
         return server;
     },
 
     /**
-     * Добавляет плагин
+     * Добавляет плагин[ы]
      *
      * @public
      * @memberOf {Framework}
      * @method
      * */
     plug: function () {
-        Array.prototype.push.apply(this._tasks, arguments);
+
+        var plugs = _.map(arguments, this.__wrapPlugin, this);
+
+        Array.prototype.push.apply(this._plugs, plugs);
+    },
+
+    __wrapPlugin: function (plug) {
+
+        var self = this;
+
+        return function () {
+
+            var defer = vow.defer();
+
+            plug.call(self, function (err) {
+
+                if ( 0 === arguments.length ) {
+                    defer.resolve();
+
+                    return;
+                }
+
+                defer.reject(err);
+            });
+
+            return defer.promise();
+        };
     },
 
     /**
-     * Запускает инициализацию приложения
-     *
-     * @public
+     * @protected
      * @memberOf {Framework}
      * @method
+     *
+     * @returns {vow.Promise}
      * */
-    ready: function () {
+    _getReady: function () {
 
-        var length = this._tasks.length;
-        var self = this;
+        var promise = this.__base().then(function () {
 
-        //  приложение в состоянии ошибки
-        if ( 1 === this._state ) {
+            return vow.all(_.map(this._plugs, function (plug) {
+                return plug();
+            }));
+        }, this);
 
-            return;
-        }
+        promise.always(function () {
 
-        this._state = -1;
-
-        if ( 0 === this._pending ) {
-            this.emit('sys:pending');
-        }
-
-        //  увеличиваю количество запросов на инициализацию
-        this._pending += 1;
-
-        //  нет задач
-        if ( 0 === length ) {
-            this._pending -= 1;
-
-            if ( 0 === this._pending ) {
-                this._state = 0;
-                this.emit('sys:ready');
-                // TODO RESEARCH: могут ли тут быть отложенные запросы?
+            while ( _.size(this._pends) ) {
+                this._handle(this._pends.shift());
             }
 
-            return;
-        }
+        }, this).done();
 
-        function ready (err) {
-
-            //  разрешение плагина не требуется,
-            // потому что уже произошла ошибка
-            if ( 1 === self._state ) {
-
-                return;
-            }
-
-            //  плагин разрешен с ошибкой
-            if ( arguments.length ) {
-                //  Если произошла критическая ошибка то вы можете
-                // поджечь сами sys:ready если можете ее разрешить
-                self.once('sys:ready', function () {
-                    self._pending -= 1;
-                    self._state = 0;
-                    ready();
-                });
-
-                self._state = 1;
-                self.emit('sys:error', err);
-
-                return;
-            }
-
-            //  уменьшаем количество разрешенных задач
-            length -= 1;
-
-            //  все задачи разрешены
-            if ( 0 === length ) {
-                //  уменьшаем количество запросов на инициализацию
-                self._pending -= 1;
-
-                //  все запросы на инициализацию завершены
-                if ( 0 === self._pending ) {
-                    self._state = 0;
-                    self.emit('sys:ready');
-
-                    while ( self._pends.length ) {
-                        self._handle(self._pends.shift());
-                    }
-                }
-            }
-        }
-
-        while ( this._tasks.length ) {
-
-            if ( 1 === self._state ) {
-
-                break;
-            }
-
-            this._tasks.shift().call(this, ready);
-        }
+        return promise;
     },
 
     /**
@@ -350,14 +287,14 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         }
 
         //  При инициализации произошла ошибка
-        if ( 1 === this._state ) {
+        if ( this.ready().isRejected() ) {
             track.send(502);
 
             return;
         }
 
         //  еще не проинициализирован
-        if ( -1 === this._state ) {
+        if ( !this.ready().isResolved() ) {
             //  отложить запрос
             this._pends.push(track);
 

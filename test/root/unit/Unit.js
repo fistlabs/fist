@@ -1,7 +1,6 @@
 'use strict';
 
 var Unit = require('../../../unit/Unit');
-var Context = require('../../../context/Context');
 
 module.exports = {
     Unit: [
@@ -46,18 +45,6 @@ module.exports = {
             unit.delDeps(1, 2, [3, 4]);
 
             test.deepEqual(unit.deps, [5, 6]);
-
-            test.done();
-        }
-    ],
-    'Unit.prototype.createCtx': [
-        function (test) {
-
-            var unit = new Unit();
-            var ctxt = unit.createCtx({a: 5});
-
-            test.ok(ctxt instanceof Context);
-            test.deepEqual(ctxt.params, {a: 5});
 
             test.done();
         }

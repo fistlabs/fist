@@ -1,6 +1,5 @@
 'use strict';
 
-var Context = /** @type Context */ require('../context/Context');
 var Class = /** @type Class */ require('../util/Class');
 
 var _ = require('lodash-node');
@@ -58,21 +57,7 @@ var Unit = inherit(Class, /** @lends Unit.prototype */ {
      * @property
      * @type {Object}
      * */
-    params: {},
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {Object} params
-     *
-     * @returns {Context}
-     * */
-    createCtx: function (params) {
-
-        return new Context(params);
-    }
+    params: {}
 
 });
 
