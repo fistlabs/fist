@@ -1,17 +1,16 @@
 'use strict';
 
-var R_COMMA = /\s*,\s*/;
-var REDIRECT_STATUS = [300, 301, 302, 303, 305, 307];
+var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
 var ContentType = /** @type ContentType */ require('../util/ContentType');
-var Cookie = /** @type Cookie */ require('../util/Cookie');
 var Raw = /** @type Raw */ require('../parser/Raw');
 var Track = /** @type Track */ require('./Track');
 var Url = require('url');
 
 var _ = require('lodash-node');
+var cookie = require('cookie');
 var inherit = require('inherit');
 var vow = require('vow');
 
@@ -61,7 +60,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.__self.url(req);
+        this.url = this.__self.fetchUrl(req);
 
         /**
          * @protected
@@ -221,7 +220,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         if ( 2 > arguments.length ) {
 
             if ( !this._cookies ) {
-                this._cookies = Connect.cookie.parse(this._req.headers.cookie);
+                this._cookies = cookie.parse(this._req.headers.cookie || '');
             }
 
             cookies = this._cookies;
@@ -231,7 +230,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
                 return cookies;
             }
 
-            return cookies[name] && decodeURIComponent(cookies[name]);
+            return cookies[name];
         }
 
         if ( null === value ) {
@@ -241,10 +240,10 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
                 opts = {};
             }
 
-            opts.expires = -1;
+            opts.expires = new Date();
         }
 
-        value = Connect.cookie.serialize(name, encodeURIComponent(value), opts);
+        value = cookie.serialize(name, value, opts);
 
         return this._setHead('Set-Cookie', value);
     },
@@ -287,9 +286,9 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     redirect: function (code, url) {
 
-        if ( 'number' === typeof code ) {
+        if ( _.isNumber(code) ) {
 
-            if ( -1 === REDIRECT_STATUS.indexOf(code) ) {
+            if ( !_.contains(REDIRECT_CODES, code) ) {
                 code = 302;
             }
 
@@ -329,7 +328,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         var args;
         var i;
 
-        if ( 'number' === typeof code ) {
+        if ( _.isNumber(code) ) {
             i = 2;
             this.status(code);
 
@@ -456,7 +455,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _respond: function (status, body) {
 
-        if ( 'number' === typeof status && STATUS_CODES[status] ) {
+        if ( _.isNumber(status) && _.has(STATUS_CODES, status) ) {
             this._res.statusCode = status;
 
             if ( 2 > arguments.length ) {
@@ -483,7 +482,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _writeBody: function (body) {
 
-        if ( 'string' === typeof body ) {
+        if ( _.isString(body) ) {
             this._writeString(body);
 
             return;
@@ -495,7 +494,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             return;
         }
 
-        if (_.isObject(body) && _.isFunction(body.pipe) ) {
+        if ( _.isObject(body) && _.isFunction(body.pipe) ) {
             this._writeReadable(body);
 
             return;
@@ -519,7 +518,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _writeError: function (body) {
 
-        if ( this._res.statusCode >= 500 ) {
+        if ( 500 <= this._res.statusCode ) {
 
             if ( this.agent.params.staging ) {
                 this._writeString(STATUS_CODES[this._res.statusCode]);
@@ -604,21 +603,11 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             this._setHead('Content-Length', body.length, true);
             this._res.end(body);
         }, function (err) {
-            self._respond(500, err);
+            this._respond(500, err);
         }, this);
     }
 
 }, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @property
-     *
-     * @type {Cookie}
-     * */
-    cookie: new Cookie(),
 
     /**
      * @public
@@ -634,77 +623,27 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf Connect
      * @method
      *
-     * @returns {String}
-     * */
-    host: function (req) {
-
-        var headers = req.headers;
-        var host = headers['x-forwarded-host'] || headers.host;
-
-        if ( _.isString(host) ) {
-
-            return host.split(R_COMMA)[0];
-        }
-
-        return host;
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
-     * @returns {String}
-     * */
-    proto: function (req) {
-
-        var proto;
-
-        if ( req.socket.encrypted ) {
-
-            return 'https';
-        }
-
-        proto = req.headers['x-forwarded-proto'];
-
-        if ( _.isString(proto) ) {
-
-            return proto.split(R_COMMA)[0];
-        }
-
-        return 'http';
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
-     * @returns {String}
-     * */
-    href: function (req) {
-
-        var url = Url.parse(req.url);
-
-        url.host = this.host(req);
-        url.protocol = this.proto(req);
-
-        return Url.format(url);
-    },
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
      * @returns {Object}
      * */
-    url: function (req) {
+    fetchUrl: function (req) {
 
-        return Url.parse(this.href(req), true);
+        var headers = req.headers;
+        var url = Url.parse(req.url);
+        var value = headers['x-forwarded-host'] || headers.host;
+
+        url.host = value.split(/\s*,\s*/)[0];
+
+        if ( req.socket.encrypted ) {
+            value = 'https';
+
+        } else {
+            value = headers['x-forwarded-proto'] || 'http';
+        }
+
+        url.protocol = value;
+        url = Url.format(url);
+
+        return Url.parse(url, true);
     }
 
 });
