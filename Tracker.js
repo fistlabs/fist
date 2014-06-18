@@ -98,6 +98,20 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
     },
 
     /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Object} params
+     *
+     * @returns {Context}
+     * */
+    _createCtx: function (params) {
+
+        return new Context(params);
+    },
+
+    /**
      * @private
      * @memberOf {Tracker}
      * @method
@@ -178,20 +192,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }, this);
 
         return vow.allResolved(deps);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Object} params
-     *
-     * @returns {Context}
-     * */
-    _createCtx: function (params) {
-
-        return new Context(params);
     }
 
 });

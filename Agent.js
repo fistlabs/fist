@@ -56,6 +56,20 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
+     * @param {String} path
+     *
+     * @returns {Unit}
+     * */
+    getUnit: function (path) {
+
+        return (this.units[path] || [])[1];
+    },
+
+    /**
+     * @public
+     * @memberOf {Agent}
+     * @method
+     *
      * @param {Object} members
      *
      * @returns {Agent}
@@ -72,45 +86,6 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
         this.decls.push([Object(members), statics, this.params]);
 
         return this;
-    },
-
-    /**
-     * @public
-     * @memberOf {Agent}
-     * @method
-     *
-     * @param {String} path
-     *
-     * @returns {Unit}
-     * */
-    getUnit: function (path) {
-
-        return (this.units[path] || [])[1];
-    },
-
-    /**
-     * @protected
-     * @memberOf {Agent}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    _getReady: function () {
-
-        var defer = vow.defer();
-
-        defer.promise().then(function (units) {
-            this.units = units;
-        }, this);
-
-        try {
-            defer.resolve(createUnits(this.decls));
-
-        } catch (err) {
-            defer.reject(err);
-        }
-
-        return defer.promise();
     },
 
     /**
@@ -138,6 +113,31 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
         }, this);
 
         return this._fistReady;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Agent}
+     * @method
+     *
+     * @returns {vow.Promise}
+     * */
+    _getReady: function () {
+
+        var defer = vow.defer();
+
+        defer.promise().then(function (units) {
+            this.units = units;
+        }, this);
+
+        try {
+            defer.resolve(createUnits(this.decls));
+
+        } catch (err) {
+            defer.reject(err);
+        }
+
+        return defer.promise();
     }
 
 });

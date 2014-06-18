@@ -56,7 +56,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
          * @property
          * @type {Object<Function>}
          * */
-        this.renderers = Object.create(null);
+        this.renderers = {};
 
         /**
          * @public
@@ -127,56 +127,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         var plugs = _.map(arguments, this.__wrapPlugin, this);
 
         Array.prototype.push.apply(this._plugs, plugs);
-    },
-
-    __wrapPlugin: function (plug) {
-
-        var self = this;
-
-        return function () {
-
-            var defer = vow.defer();
-
-            plug.call(self, function (err) {
-
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
-
-                    return;
-                }
-
-                defer.reject(err);
-            });
-
-            return defer.promise();
-        };
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    _getReady: function () {
-
-        var promise = this.__base().then(function () {
-
-            return vow.all(_.map(this._plugs, function (plug) {
-                return plug();
-            }));
-        }, this);
-
-        promise.always(function () {
-
-            while ( _.size(this._pends) ) {
-                this._handle(this._pends.shift());
-            }
-
-        }, this).done();
-
-        return promise;
     },
 
     /**
@@ -273,6 +223,33 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      *
+     * @returns {vow.Promise}
+     * */
+    _getReady: function () {
+
+        var promise = this.__base().then(function () {
+
+            return vow.all(_.map(this._plugs, function (plug) {
+                return plug();
+            }));
+        }, this);
+
+        promise.always(function () {
+
+            while ( _.size(this._pends) ) {
+                this._handle(this._pends.shift());
+            }
+
+        }, this).done();
+
+        return promise;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
      * @param {Connect} track
      * */
     _handle: function (track) {
@@ -353,6 +330,38 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         }
 
         next();
+    },
+
+    /**
+     * @private
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Function} plug
+     *
+     * @returns {Function}
+     * */
+    __wrapPlugin: function (plug) {
+
+        var self = this;
+
+        return function () {
+
+            var defer = vow.defer();
+
+            plug.call(self, function (err) {
+
+                if ( 0 === arguments.length ) {
+                    defer.resolve();
+
+                    return;
+                }
+
+                defer.reject(err);
+            });
+
+            return defer.promise();
+        };
     }
 
 });
