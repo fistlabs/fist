@@ -278,7 +278,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
     _handle: function (track) {
         /*eslint complexity: [2, 11]*/
         var self = this;
-        var results = [];
 
         //  был сделан send() где-то в обработчке события sys:request
         if ( track.sent() ) {
@@ -308,12 +307,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
             //  однозначно нет такого маршрута
             if ( null === route ) {
-
-                if ( results.length ) {
-                    track.send(_.last(results));
-
-                    return;
-                }
 
                 self.emit('sys:ematch', track);
                 track.send(404);
@@ -352,8 +345,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             self.emit('sys:match', track);
 
             self.resolve(track, route.data.unit).
-                done(function (res) {
-                    results.push(res);
+                done(function () {
                     next();
                 }, function (err) {
                     track.send(500, err);

@@ -441,11 +441,16 @@ module.exports = [
 
         asker({
             path: '/',
-            socketPath: sock
+            socketPath: sock,
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                };
+            }
         }, function (err, res) {
-            test.deepEqual(res.statusCode, 200);
+            test.deepEqual(res.statusCode, 404);
             test.deepEqual(spy, [1, 2, 3]);
-            test.deepEqual(res.data, new Buffer('LOCAL'));
             test.done();
         });
     },
