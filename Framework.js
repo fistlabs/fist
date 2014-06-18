@@ -123,10 +123,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @method
      * */
     plug: function () {
-
-        var plugs = _.map(arguments, this.__wrapPlugin, this);
-
-        Array.prototype.push.apply(this._plugs, plugs);
+        Array.prototype.push.apply(this._plugs, arguments);
     },
 
     /**
@@ -229,9 +226,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         var promise = this.__base().then(function () {
 
-            return vow.all(_.map(this._plugs, function (plug) {
-                return plug();
-            }));
+            return vow.all(_.map(this._plugs, callPlugin, this));
         }, this);
 
         promise.always(function () {
@@ -253,8 +248,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @param {Connect} track
      * */
     _handle: function (track) {
-        /*eslint complexity: [2, 11]*/
-        var self = this;
 
         //  был сделан send() где-то в обработчке события sys:request
         if ( track.sent() ) {
@@ -277,15 +270,14 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             return;
         }
 
-        function next () {
+        (function next () {
             //  выбирается маршрут
-            var route = self.router.
+            var route = this.router.
                 find(track.method, track.url.pathname, track.route);
 
             //  однозначно нет такого маршрута
             if ( null === route ) {
-
-                self.emit('sys:ematch', track);
+                this.emit('sys:ematch', track);
                 track.send(404);
 
                 return;
@@ -294,7 +286,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             //  возвращен массив
             if ( _.isArray(route) ) {
                 //  это тоже значит что нет такого роута
-                self.emit('sys:ematch', track);
+                this.emit('sys:ematch', track);
 
                 //  если массив пустой, то на сервере совсем нет ни одного
                 //  маршрута отвечающего по такому методу запроса
@@ -319,51 +311,33 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             route = route.route;
             track.route = route.data.name;
 
-            self.emit('sys:match', track);
+            this.emit('sys:match', track);
 
-            self.resolve(track, route.data.unit).
-                done(function () {
-                    next();
-                }, function (err) {
-                    track.send(500, err);
-                });
-        }
+            this.resolve(track, route.data.unit).done(next, function (err) {
+                track.send(500, err);
+            }, this);
 
-        next();
-    },
-
-    /**
-     * @private
-     * @memberOf {Framework}
-     * @method
-     *
-     * @param {Function} plug
-     *
-     * @returns {Function}
-     * */
-    __wrapPlugin: function (plug) {
-
-        var self = this;
-
-        return function () {
-
-            var defer = vow.defer();
-
-            plug.call(self, function (err) {
-
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
-
-                    return;
-                }
-
-                defer.reject(err);
-            });
-
-            return defer.promise();
-        };
+        }.call(this));
     }
 
 });
+
+function callPlugin (plug) {
+
+    var defer = vow.defer();
+
+    plug.call(this, function (err) {
+
+        if ( 0 === arguments.length ) {
+            defer.resolve();
+
+            return;
+        }
+
+        defer.reject(err);
+    });
+
+    return defer.promise();
+}
 
 module.exports = Framework;
