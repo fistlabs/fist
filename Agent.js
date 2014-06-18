@@ -134,7 +134,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
         this._fistReady.done(function () {
             this.emit('sys:ready');
         }, function (err) {
-            this.emit('sys:error', err);
+            this.emit('sys:eready', err);
         }, this);
 
         return this._fistReady;

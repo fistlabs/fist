@@ -155,7 +155,7 @@ module.exports = {
                 deps: ['a']
             });
 
-            agent.on('sys:error', function (err) {
+            agent.on('sys:eready', function (err) {
                 test.ok(err instanceof ReferenceError);
                 test.done();
             });
