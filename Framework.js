@@ -224,10 +224,10 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * */
     _getReady: function () {
 
-        var promise = this.__base().then(function () {
-
-            return vow.all(_.map(this._plugs, callPlugin, this));
-        }, this);
+        var promise = vow.
+            //  сначала свой и только потом базовый
+            all(_.map(this._plugs, callPlugin, this)).
+            then(this.__base, this);
 
         promise.always(function () {
 
