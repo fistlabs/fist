@@ -309,19 +309,24 @@ module.exports = {
             var track = new Track(tracker);
             var spy = [];
 
+            tracker.on('ctx:pending', function (e) {
+                test.strictEqual(e.trackId, track.id);
+                spy.push([-1, e.path]);
+            });
+
             tracker.on('ctx:notify', function (e) {
                 test.strictEqual(e.trackId, track.id);
-                spy.push([-1, e.data]);
+                spy.push([2, e.path]);
             });
 
             tracker.on('ctx:accept', function (e) {
                 test.strictEqual(e.trackId, track.id);
-                spy.push([0, e.data]);
+                spy.push([0, e.path]);
             });
 
             tracker.on('ctx:reject', function (e) {
                 test.strictEqual(e.trackId, track.id);
-                spy.push([1, e.data]);
+                spy.push([1, e.path]);
             });
 
             tracker.unit({
@@ -356,11 +361,14 @@ module.exports = {
             tracker.resolve(track, 'a').done(function (res) {
                 test.strictEqual(res, 'a');
                 test.deepEqual(spy, [
-                    [-1, 'c'],
-                    [0, 'c'],
-                    [-1, 'b'],
-                    [1, 'b'],
                     [-1, 'a'],
+                    [-1, 'b'],
+                    [-1, 'c'],
+                    [2, 'c'],
+                    [0, 'c'],
+                    [2, 'b'],
+                    [1, 'b'],
+                    [2, 'a'],
                     [0, 'a']
                 ]);
                 test.done();

@@ -151,6 +151,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
             });
         }, this);
 
+        this.emit('ctx:pending', {
+            trackId: track.id,
+            path: path,
+            time: 0
+        });
+
         if ( _.isUndefined(unit) ) {
             ctxt.reject();
 
