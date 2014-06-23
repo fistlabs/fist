@@ -2,13 +2,13 @@
 
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 
-var ContentType = /** @type ContentType */ require('../util/ContentType');
 var Req = /** @type Req */ require('../req/Req');
 var Res = /** @type Res */ require('../res/Res');
 var Track = /** @type Track */ require('./Track');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
+var mediaTyper = require('media-typer');
 var vow = require('vow');
 
 /**
@@ -225,6 +225,8 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     redirect: function (code, url) {
 
+        var mime;
+
         if ( _.isNumber(code) ) {
 
             if ( !_.contains(REDIRECT_CODES, code) ) {
@@ -238,12 +240,16 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         this.res.setHeader('Location', url);
 
-        //  TODO смотреть на Accept!
-        if ( 'text/html' === new ContentType(this.res.
-            getHeader('Content-Type')).value ) {
-            url = _.escape(url);
+        mime = this.res.getHeader('Content-Type');
 
-            url = '<a href="' + url + '">' + url + '</a>';
+        //  TODO смотреть на Accept!
+        if ( mime ) {
+            mime = mediaTyper.parse(mime);
+
+            if ( 'text' === mime.type && 'html' === mime.subtype ) {
+                url = _.escape(url);
+                url = '<a href="' + url + '">' + url + '</a>';
+            }
         }
 
         this.res.respond(code, url);

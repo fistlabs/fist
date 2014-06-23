@@ -1,12 +1,19 @@
 'use strict';
 
-var ContentType = /** @type ContentType */ require('../util/ContentType');
-var Dicer = /** @type Dicer */ require('dicer');
-var MediaHead = /** @type MediaHead */ require('../util/MediaHead');
-var Parser = /** @type Parser */ require('./Parser');
+var R_FIELD_NAME = /;\s*name\s*=\s*(?:"((?:\\[\s\S]|[^"])*)"|([^\s";]*))/;
+var R_FILENAME = /;\s*filename\s*=\s*(?:"((?:\\[\s\S]|[^"])*)"|([^\s";]*))/;
 
+var Dicer = /** @type Dicer */ require('dicer');
+var Parser = /** @type Parser */ require('./Parser');
 var inherit = require('inherit');
 var vow = require('vow');
+
+function getParam (regex, disp) {
+
+    var result = regex.exec(disp) || [];
+
+    return result[1] || result[2];
+}
 
 /**
  * @class Multipart
@@ -84,15 +91,14 @@ function parseMultipart (stream, params) {
 
             var disp = (header['content-disposition'] || [])[0];
 
-            disp = new MediaHead(disp);
-            field = disp.params.name;
+            field = getParam(R_FIELD_NAME, disp);
 
             if ( field ) {
-                filename = disp.params.filename;
+                filename = getParam(R_FILENAME, disp);
 
                 if ( filename ) {
-                    mime = (header['content-type'] || [])[0];
-                    mime = new ContentType(mime);
+                    mime = header['content-type'] ||
+                           ['application/octet-stream'];
                 }
 
                 return;
@@ -122,7 +128,7 @@ function parseMultipart (stream, params) {
 
                 //  это был файл
                 buf = {
-                    mime: mime.value,
+                    mime: mime[0],
                     filename: filename,
                     data: buf
                 };

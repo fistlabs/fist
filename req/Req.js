@@ -1,12 +1,12 @@
 'use strict';
 
 var BodyParser = require('../util/BodyParser');
-var ContentType = require('../util/ContentType');
 var Url = require('url');
 
 var _ = require('lodash-node');
 var cookie = require('cookie');
 var inherit = require('inherit');
+var mediaTyper = require('media-typer');
 var vow = require('vow');
 
 /**
@@ -115,10 +115,14 @@ var Req = inherit(/** @lends Req.prototype */ {
 
         if ( !vow.isPromise(this.__body) ) {
             headers = this._req.headers;
-            params = new ContentType(headers['content-type']).toParams();
-            params = _.extend(params, this.params.body, {
-                length: headers['content-length']
-            });
+            params = headers['content-type'];
+
+            if ( params ) {
+                params = mediaTyper.parse(params);
+                params = _.extend(params.parameters, params, {
+                    length: headers['content-length']
+                }, this.params.body);
+            }
 
             this.__body = this._createBodyParser(params).parse(this._req);
         }

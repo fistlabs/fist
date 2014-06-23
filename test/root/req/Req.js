@@ -269,6 +269,28 @@ module.exports = {
                 test.ok(!err);
                 test.done();
             });
+        },
+        function (test) {
+            http({}, function (req, res) {
+
+                var promise;
+
+                req = new Req(req);
+
+                promise = req.getBody();
+
+                test.strictEqual(promise, req.getBody());
+
+                promise.then(function (body) {
+                    test.strictEqual(body.type, void 0);
+                    test.deepEqual(body.input, {});
+                    res.end();
+                });
+
+            }, function (err) {
+                test.ok(!err);
+                test.done();
+            });
         }
     ]
 };

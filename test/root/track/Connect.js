@@ -5,7 +5,6 @@ var Res = require('../../../res/Res');
 var Tracker = require('../../../Framework');
 var Connect = require('../../../track/Connect');
 var doConnect = require('../../util/connect');
-var ContentType = require('../../../util/ContentType');
 
 var _ = require('lodash-node');
 
@@ -214,6 +213,18 @@ module.exports = {
                 url = _.escape('/test/');
                 test.deepEqual(res.data, new Buffer('<a href="' + url + '">' +
                     url + '</a>'));
+                test.done();
+            });
+        },
+        function (test) {
+            doConnect({}, function (track) {
+                track.header('Content-Type', 'text/plain');
+                track.redirect('/test/');
+            }, function (err, res) {
+                test.ok(!err);
+                test.strictEqual(res.statusCode, 302);
+                test.strictEqual(res.headers.location, '/test/');
+                test.deepEqual(res.data, new Buffer('/test/'));
                 test.done();
             });
         }
