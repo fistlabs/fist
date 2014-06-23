@@ -144,6 +144,35 @@ module.exports = {
         function (test) {
             http({
                 method: 'post',
+                body: '{"a": "42"}',
+                headers: {
+                    'content-type': 'application/foo+json'
+                }
+            }, function (req, res) {
+
+                var mime = toParams(req.headers['content-type']);
+
+                var parser = new BodyParser(_.extend(mime, {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req).done(function (data) {
+                    test.deepEqual(data, {
+                        input: {
+                            a: '42'
+                        },
+                        type: 'json'
+                    });
+                    res.end();
+                });
+            }, function (err) {
+                test.ok(!err);
+                test.done();
+            });
+        },
+        function (test) {
+            http({
+                method: 'post',
                 body: '{"a": "42}',
                 headers: {
                     'content-type': 'application/json'
