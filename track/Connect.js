@@ -1,16 +1,13 @@
 'use strict';
 
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
-var STATUS_CODES = require('http').STATUS_CODES;
 
-var BodyParser = /** @type BodyParser */ require('../util/BodyParser');
 var ContentType = /** @type ContentType */ require('../util/ContentType');
-var Raw = /** @type Raw */ require('../parser/Raw');
+var Req = /** @type Req */ require('../req/Req');
+var Res = /** @type Res */ require('../res/Res');
 var Track = /** @type Track */ require('./Track');
-var Url = require('url');
 
 var _ = require('lodash-node');
-var cookie = require('cookie');
 var inherit = require('inherit');
 var vow = require('vow');
 
@@ -36,7 +33,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {*}
          * */
-        this.match = null;
+        this.match = {};
 
         /**
          * @public
@@ -45,6 +42,22 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @type {String}
          * */
         this.method = req.method.toUpperCase();
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property
+         * @type {Req}
+         * */
+        this.req = this._createReq(req, agent.params.req);
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property
+         * @type {Res}
+         * */
+        this.res = this._createRes(res, agent.params.res);
 
         /**
          * @public
@@ -60,23 +73,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.__self.fetchUrl(req);
-
-        /**
-         * @protected
-         * @memberOf {Connect}
-         * @property
-         * @type {Object}
-         * */
-        this._req = req;
-
-        /**
-         * @protected
-         * @memberOf {Connect}
-         * @property
-         * @type {http.IncomingMessage}
-         * */
-        this._res = res;
+        this.url = this.req.getUrl();
     },
 
     /**
@@ -112,26 +109,14 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    body: function () {
+    body: function (body) {
 
-        var params;
+        if ( 0 === arguments.length ) {
 
-        if ( !vow.isPromise(this._body) ) {
-            params = _.extend(this.mime().toParams(),
-                //  в глобальных опциях body можно определить настройки,
-                // которые будут ограничивать параметры запроса
-                this.agent.params.body, {
-                    //  кроме этого!
-                    // По наличию этого параметра определяется в принципе
-                    // есть ли body у запроса причем оно
-                    // должно всегда соответствовать реально длине тела
-                    length: this.header('Content-Length')
-                });
-
-            this._body = this._createBodyParser(params).parse(this._req);
+            return this.req.getBody();
         }
 
-        return this._body;
+        return this.send(body);
     },
 
     /**
@@ -161,7 +146,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     goToPath: function (name, params) {
 
-        return this.redirect(this.buildPath(name, params));
+        return this.redirect(302, this.buildPath(name, params));
     },
 
     /**
@@ -178,28 +163,26 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @returns {*}
      * */
     header: function (name, value, soft) {
-        /*eslint consistent-return: 0*/
+
+        if ( 0 === arguments.length ) {
+
+            return this.req.getHeaders();
+        }
+
         if ( _.isObject(name) ) {
-            soft = value;
+            this.res.setHeaders(name, value);
 
-            _.forOwn(name, function (value, name) {
-                this._setHead(name, value, soft);
-            }, this);
-
-            return;
+            return this;
         }
 
-        if ( 2 > arguments.length ) {
+        if ( 1 === arguments.length ) {
 
-            if ( 0 === arguments.length ) {
-
-                return this._req.headers;
-            }
-
-            return this._getHead(name);
+            return this.req.getHeader(name);
         }
 
-        this._setHead(name, value, soft);
+        this.res.setHeader(name, value, soft);
+
+        return this;
     },
 
     /**
@@ -215,63 +198,19 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     cookie: function (name, value, opts) {
 
-        var cookies;
-
-        if ( 2 > arguments.length ) {
-
-            if ( !this._cookies ) {
-                this._cookies = cookie.parse(this._req.headers.cookie || '');
-            }
-
-            cookies = this._cookies;
-
-            if ( 0 === arguments.length ) {
-
-                return cookies;
-            }
-
-            return cookies[name];
-        }
-
-        if ( null === value ) {
-            value = '';
-
-            if ( !opts ) {
-                opts = {};
-            }
-
-            opts.expires = new Date();
-        }
-
-        value = cookie.serialize(name, value, opts);
-
-        return this._setHead('Set-Cookie', value);
-    },
-
-    /**
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {String} [mime]
-     * @param {Object} [params]
-     *
-     * @returns {ContentType|void}
-     * */
-    mime: function (mime, params) {
-
-        //  getter
         if ( 0 === arguments.length ) {
 
-            if ( !this._reqMime ) {
-                this._reqMime = new ContentType(this.header('Content-Type'));
-            }
-
-            return this._reqMime;
+            return this.req.getCookies();
         }
 
-        //  setter
-        this._setHead('Content-Type', ContentType.create(mime, params));
+        if ( 1 === arguments.length ) {
+
+            return this.req.getCookie(name);
+        }
+
+        this.res.setCookie(name, value, opts);
+
+        return this;
     },
 
     /**
@@ -297,18 +236,19 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             code = 302;
         }
 
-        this._setHead('Location', url);
-
-        url = _.escape(url);
+        this.res.setHeader('Location', url);
 
         //  TODO смотреть на Accept!
-        if ( 'text/html' === new ContentType(this._res.
+        if ( 'text/html' === new ContentType(this.res.
             getHeader('Content-Type')).value ) {
+            url = _.escape(url);
 
             url = '<a href="' + url + '">' + url + '</a>';
         }
 
-        this.send(code, url);
+        this.res.respond(code, url);
+
+        return this;
     },
 
     /**
@@ -330,15 +270,17 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         if ( _.isNumber(code) ) {
             i = 2;
-            this.status(code);
 
         } else {
             i = 1;
             id = code;
+            code = this.res.getStatus();
         }
 
         args = _.rest(arguments, i);
-        this.send(this.agent.renderers[id].apply(this, args));
+
+        return this.res.respond(code,
+            this.agent.renderers[id].apply(this, args));
     },
 
     /**
@@ -348,12 +290,19 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      * */
-    send: function () {
-        this.send = Connect.noop;
-        this._respond.apply(this, arguments);
+    send: function (status, body) {
+
+        if ( !_.isNumber(status) ) {
+            body = status;
+            status = this.res.getStatus();
+        }
+
+        return this.res.respond(status, body);
     },
 
     /**
+     * @deprecated
+     *
      * Проверяет, был ли выполнен ответ приложением
      *
      * @public
@@ -364,30 +313,32 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     sent: function () {
 
-        return this.send === Connect.noop;
+        return this.res.hasResponded();
     },
 
     /**
+     * @deprecated
+     *
      * Ставит статус ответа или возыращает его
      *
      * @public
      * @memberOf {Connect}
      * @method
      *
-     * @param {Number} [statusCode]
+     * @param {Number} [status]
      *
-     * @returns {Number}
+     * @returns {Number|Connect}
      * */
-    status: function (statusCode) {
+    status: function (status) {
 
         if ( 0 === arguments.length ) {
 
-            return this._res.statusCode;
+            return this.res.getStatus();
         }
 
-        this._res.statusCode = statusCode;
+        this.res.setStatus(status);
 
-        return statusCode;
+        return this;
     },
 
     /**
@@ -395,13 +346,14 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {*} [params]
+     * @param {http.IncomingMessage} req
+     * @param {Object} params
      *
-     * @returns {BodyParser}
+     * @returns {Req}
      * */
-    _createBodyParser: function (params) {
+    _createReq: function (req, params) {
 
-        return new BodyParser(params);
+        return new Req(req, params);
     },
 
     /**
@@ -409,241 +361,14 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {String} name
-     * @param {*} value
-     * @param {Boolean} [soft]
-     * */
-    _setHead: function (name, value, soft) {
-        name = String(name).toLowerCase();
-
-        if ( soft && this._res.getHeader(name) ) {
-
-            return;
-        }
-
-        if ( 'set-cookie' === name ) {
-            value = (this._res.getHeader(name) || []).concat(value);
-            this._res.setHeader(name, value);
-
-            return;
-        }
-
-        this._res.setHeader(name, value);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
+     * @param {http.OutgoingMessage} res
+     * @param {Object} params
      *
-     * @param {String} name
-     *
-     * @returns {String}
+     * @returns {Res}
      * */
-    _getHead: function (name) {
+    _createRes: function (res, params) {
 
-        return this._req.headers[ String(name).toLowerCase() ];
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {*} [status]
-     * @param {*} [body]
-     * */
-    _respond: function (status, body) {
-
-        if ( _.isNumber(status) && _.has(STATUS_CODES, status) ) {
-            this._res.statusCode = status;
-
-            if ( 2 > arguments.length ) {
-                body = STATUS_CODES[status];
-            }
-
-        } else {
-            body = status;
-        }
-
-        if ( void 0 === body ) {
-            body = STATUS_CODES[this._res.statusCode];
-        }
-
-        this._writeBody(body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {*} [body]
-     * */
-    _writeBody: function (body) {
-
-        if ( _.isString(body) ) {
-            this._writeString(body);
-
-            return;
-        }
-
-        if ( Buffer.isBuffer(body) ) {
-            this._writeBuffer(body);
-
-            return;
-        }
-
-        if ( _.isObject(body) && _.isFunction(body.pipe) ) {
-            this._writeReadable(body);
-
-            return;
-        }
-
-        if ( body instanceof Error ) {
-            this._writeError(body);
-
-            return;
-        }
-
-        this._writeJson(body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {Error} body
-     * */
-    _writeError: function (body) {
-
-        if ( 500 <= this._res.statusCode ) {
-
-            if ( this.agent.params.staging ) {
-                this._writeString(STATUS_CODES[this._res.statusCode]);
-
-                return;
-            }
-
-            this._writeString(body.stack);
-
-            return;
-        }
-
-        this._writeJson(body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {String} body
-     * */
-    _writeString: function (body) {
-        this._setHead('Content-Type', 'text/plain', true);
-        this._setHead('Content-Length', Buffer.byteLength(body), true);
-        this._res.end(body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {Buffer} body
-     * */
-    _writeBuffer: function (body) {
-        this._setHead('Content-Type', 'application/octet-stream', true);
-        this._setHead('Content-Length', body.length, true);
-        this._res.end(body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {*} body
-     * */
-    _writeJson: function (body) {
-        body = JSON.stringify(body);
-        this._setHead('Content-Type', 'application/json', true);
-        this._setHead('Content-Length', Buffer.byteLength(body), true);
-        this._res.end(body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {*} body
-     * */
-    _writeReadable: function (body) {
-
-        var self = this;
-
-        if ( this._res.getHeader('Content-Length') ) {
-            this._setHead('Content-Type', 'application/octet-stream', true);
-
-            body.on('error', function (err) {
-                self._res.removeHeader('Content-Type');
-                self._respond(500, err);
-            });
-
-            body.pipe(this._res);
-
-            return;
-        }
-
-        new Raw().parse(body).done(function (body) {
-            this._setHead('Content-Type', 'application/octet-stream', true);
-            this._setHead('Content-Length', body.length, true);
-            this._res.end(body);
-        }, function (err) {
-            this._respond(500, err);
-        }, this);
-    }
-
-}, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     * */
-    noop: function () {},
-
-    /**
-     * @public
-     * @static
-     * @memberOf Connect
-     * @method
-     *
-     * @returns {Object}
-     * */
-    fetchUrl: function (req) {
-
-        var headers = req.headers;
-        var url = Url.parse(req.url);
-        var value = headers['x-forwarded-host'] || headers.host;
-
-        url.host = value.split(/\s*,\s*/)[0];
-
-        if ( req.socket.encrypted ) {
-            value = 'https';
-
-        } else {
-            value = headers['x-forwarded-proto'] || 'http';
-        }
-
-        url.protocol = value;
-        url = Url.format(url);
-
-        return Url.parse(url, true);
+        return new Res(res, params);
     }
 
 });

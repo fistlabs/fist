@@ -26,11 +26,11 @@ module.exports = function (params, handle, receive) {
         if (err) {
             receive(err);
         } else {
+
             if ( null === res.data ) {
-                res.data = '';
+                res.data = new Buffer(0);
             }
 
-            res.data += '';
             receive(err, res);
         }
     });
