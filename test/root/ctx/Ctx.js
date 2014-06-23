@@ -7,11 +7,11 @@ module.exports = {
     Ctx: [
         function (test) {
 
-            var context = new Ctx();
+            var ctx = new Ctx();
 
-            test.ok(context instanceof vow.Deferred);
-            test.deepEqual(context.errors, {});
-            test.deepEqual(context.result, {});
+            test.ok(ctx instanceof vow.Deferred);
+            test.deepEqual(ctx.errors, {});
+            test.deepEqual(ctx.result, {});
 
             test.done();
         }
@@ -19,28 +19,28 @@ module.exports = {
     'Ctx.prototype.getResolver': [
         function (test) {
 
-            var context = new Ctx();
-            var done = context.getResolver();
+            var ctx = new Ctx();
+            var done = ctx.getResolver();
 
             setTimeout(function () {
                 done(null, 42);
             }, 0);
 
-            context.promise().done(function (res) {
+            ctx.promise().done(function (res) {
                 test.strictEqual(res, 42);
                 test.done();
             });
         },
         function (test) {
 
-            var context = new Ctx();
-            var done = context.getResolver();
+            var ctx = new Ctx();
+            var done = ctx.getResolver();
 
             setTimeout(function () {
                 done(42);
             }, 0);
 
-            context.promise().fail(function (res) {
+            ctx.promise().fail(function (res) {
                 test.strictEqual(res, 42);
                 test.done();
             }).done();
@@ -116,19 +116,45 @@ module.exports = {
             test.done();
         }
     ],
+    'Ctx.prototype.getRes': [
+        function (test) {
+            var ctx = new Ctx();
+            ctx.setRes('a.b.c', 42);
+            test.strictEqual(ctx.getRes('a.b.c'), 42);
+            test.deepEqual(ctx.getRes('a.b'), {
+                c: 42
+            });
+            test.strictEqual(ctx.getRes('a.b.d'), void 0);
+            test.strictEqual(ctx.getRes('a.b.c.d'), void 0);
+            test.done();
+        }
+    ],
+    'Ctx.prototype.getErr': [
+        function (test) {
+            var ctx = new Ctx();
+            ctx.setErr('a.b.c', 42);
+            test.strictEqual(ctx.getErr('a.b.c'), 42);
+            test.deepEqual(ctx.getErr('a.b'), {
+                c: 42
+            });
+            test.strictEqual(ctx.getErr('a.b.d'), void 0);
+            test.strictEqual(ctx.getErr('a.b.c.d'), void 0);
+            test.done();
+        }
+    ],
     'Ctx.prototype.setRes': [
         function (test) {
 
-            var context = new Ctx();
+            var ctx = new Ctx();
 
-            context.setRes('a.b', {c: {}});
-            test.deepEqual(context.result, {a: {b: {c: {}}}});
+            ctx.setRes('a.b', {c: {}});
+            test.deepEqual(ctx.result, {a: {b: {c: {}}}});
 
-            context.setRes('a.b.c.d', 42);
-            test.deepEqual(context.result, {a: {b: {c: {d: 42}}}});
+            ctx.setRes('a.b.c.d', 42);
+            test.deepEqual(ctx.result, {a: {b: {c: {d: 42}}}});
 
-            context.setRes('a.b.c', {z: 146});
-            test.deepEqual(context.result, {a: {b: {c: {d: 42, z: 146}}}});
+            ctx.setRes('a.b.c', {z: 146});
+            test.deepEqual(ctx.result, {a: {b: {c: {d: 42, z: 146}}}});
 
             test.done();
         }
@@ -136,10 +162,10 @@ module.exports = {
     'Ctx.prototype.setErr': [
         function (test) {
 
-            var context = new Ctx();
+            var ctx = new Ctx();
 
-            context.setErr('err', 500);
-            test.deepEqual(context.errors, {err: 500});
+            ctx.setErr('err', 500);
+            test.deepEqual(ctx.errors, {err: 500});
 
             test.done();
         }

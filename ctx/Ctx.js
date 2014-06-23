@@ -65,6 +65,34 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * @method
      *
      * @param {String} path
+     *
+     * @returns {*}
+     * */
+    getRes: function (path) {
+
+        return Ctx.use(this.res, path);
+    },
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {String} path
+     *
+     * @returns {*}
+     * */
+    getErr: function (path) {
+
+        return Ctx.use(this.ers, path);
+    },
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {String} path
      * @param {*} data
      * */
     setRes: function (path, data) {
