@@ -70,7 +70,7 @@ function download (stream, params) {
         if ( received > params.limit ) {
             stream.emit('error', Parser.ELIMIT({
                 expected: params.limit,
-                actual: received
+                received: received
             }));
 
             return;
@@ -94,7 +94,7 @@ function download (stream, params) {
         if ( Infinity !== params.length && received !== params.length ) {
             stream.emit('error', Parser.ELENGTH({
                 expected: params.length,
-                actual: received
+                received: received
             }));
 
             return;
