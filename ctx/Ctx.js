@@ -145,7 +145,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * */
     _link: function (root, path, data) {
 
-        var existingData = this.__self.use(root, path);
+        var existingData = Ctx.use(root, path);
 
         if ( _.isObject(existingData) ) {
             _.extend(existingData, data);
@@ -153,7 +153,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
             return;
         }
 
-        this.__self.link(root, path, data);
+        Ctx.link(root, path, data);
     }
 
 }, {
@@ -170,96 +170,15 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * @throws {SyntaxError}
      * */
     parsePath: function (path) {
-        /*eslint complexity: [2, 14] */
-        var cur;
-        var index;
-        var isEscape;
-        var isChunk;
-        var chunk;
-        var parts;
 
         if ( path in cache ) {
 
             return cache[path];
         }
 
-        isEscape = false;
-        isChunk = true;
-        chunk = '';
-        parts = [];
+        cache[path] = parse(path);
 
-        /* eslint no-cond-assign: 0 */
-        for ( index = 0; cur = path.charAt(index); index += 1 ) {
-
-            if ( '\\' === cur && !isEscape ) {
-                isEscape = true;
-
-                continue;
-            }
-
-            if ( isEscape ) {
-
-                if ( !isChunk ) {
-
-                    throw new SyntaxError(path);
-                }
-
-                chunk += cur;
-                isEscape = false;
-
-                continue;
-            }
-
-            if ( !isChunk ) {
-
-                if ( isSpace(cur) ) {
-
-                    continue;
-                }
-
-                if ( '.' === cur ) {
-                    chunk = '';
-                    isChunk = true;
-
-                    continue;
-                }
-
-                throw new SyntaxError(path);
-            }
-
-            if ( isSpace(cur) ) {
-
-                if ( chunk.length ) {
-                    parts.push(chunk);
-                    isChunk = false;
-                }
-
-                continue;
-            }
-
-            if ( '.' === cur ) {
-                parts.push(chunk);
-                isChunk = false;
-                index -= 1;
-
-                continue;
-            }
-
-            chunk += cur;
-        }
-
-        if ( isEscape ) {
-
-            throw new SyntaxError(path);
-        }
-
-        if ( isChunk ) {
-            parts.push(chunk);
-        }
-
-        cache[path] = parts;
-
-        return parts;
+        return cache[path];
     },
 
     /**
@@ -337,6 +256,97 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
     }
 
 });
+
+/**
+ * @private
+ * @static
+ * @memberOf Ctx
+ * @method
+ *
+ * @param {String} path
+ *
+ * @returns {Array<String>}
+ * */
+function parse (path) {
+    /*eslint complexity: [2, 13] */
+    var cur;
+    var index;
+    var isEscape = false;
+    var isChunk = true;
+    var chunk = '';
+    var parts = [];
+
+    /* eslint no-cond-assign: 0 */
+    for ( index = 0; cur = path.charAt(index); index += 1 ) {
+
+        if ( '\\' === cur && !isEscape ) {
+            isEscape = true;
+
+            continue;
+        }
+
+        if ( isEscape ) {
+
+            if ( !isChunk ) {
+
+                throw new SyntaxError(path);
+            }
+
+            chunk += cur;
+            isEscape = false;
+
+            continue;
+        }
+
+        if ( !isChunk ) {
+
+            if ( isSpace(cur) ) {
+
+                continue;
+            }
+
+            if ( '.' === cur ) {
+                chunk = '';
+                isChunk = true;
+
+                continue;
+            }
+
+            throw new SyntaxError(path);
+        }
+
+        if ( isSpace(cur) ) {
+
+            if ( chunk.length ) {
+                parts.push(chunk);
+                isChunk = false;
+            }
+
+            continue;
+        }
+
+        if ( '.' === cur ) {
+            parts.push(chunk);
+            isChunk = false;
+            index -= 1;
+
+            continue;
+        }
+
+        chunk += cur;
+    }
+
+    if ( isEscape ) {
+
+        throw new SyntaxError(path);
+    }
+
+    if ( isChunk ) {
+        parts.push(chunk);
+    }
+
+    return parts;
+}
 
 /**
  * @private
