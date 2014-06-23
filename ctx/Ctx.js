@@ -8,14 +8,14 @@ var inherit = require('inherit');
 var vow = require('vow');
 
 /**
- * @class Context
+ * @class Ctx
  * @extends Deferred
  * */
-var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
+var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Context}
+     * @memberOf {Ctx}
      * @method
      *
      * @param {Object} [params]
@@ -27,7 +27,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
         /**
          * @public
-         * @memberOf {Context}
+         * @memberOf {Ctx}
          * @property
          * @type {Object}
          * */
@@ -35,7 +35,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
         /**
          * @public
-         * @memberOf {Context}
+         * @memberOf {Ctx}
          * @property
          * @type {Object}
          * */
@@ -43,7 +43,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
         /**
          * @public
-         * @memberOf {Context}
+         * @memberOf {Ctx}
          * @property
          * @type {Object}
          * */
@@ -53,7 +53,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Context.prototype
+     * @memberOf Ctx.prototype
      * @property
      * @type {Object}
      * */
@@ -61,7 +61,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
     /**
      * @public
-     * @memberOf {Context}
+     * @memberOf {Ctx}
      * @method
      *
      * @param {String} path
@@ -73,7 +73,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
     /**
      * @public
-     * @memberOf {Context}
+     * @memberOf {Ctx}
      * @method
      *
      * @param {String} path
@@ -85,7 +85,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
     /**
      * @public
-     * @memberOf {Context}
+     * @memberOf {Ctx}
      * @method
      *
      * @returns {Function}
@@ -108,7 +108,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Context}
+     * @memberOf {Ctx}
      * @method
      *
      * @param {Object} root
@@ -133,7 +133,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Context
+     * @memberOf Ctx
      *
      * @param {String} path
      *
@@ -237,7 +237,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Context
+     * @memberOf Ctx
      *
      * @method
      *
@@ -279,7 +279,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Context
+     * @memberOf Ctx
      *
      * @method
      *
@@ -312,7 +312,7 @@ var Context = inherit(vow.Deferred, /** @lends Context.prototype */ {
 
 /**
  * @private
- * @memberOf {Context}
+ * @memberOf {Ctx}
  * @method
  *
  * @param {String} str
@@ -324,4 +324,4 @@ function isSpace (str) {
     return R_WHITESPACE.test(str);
 }
 
-module.exports = Context;
+module.exports = Ctx;

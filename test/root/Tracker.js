@@ -1,7 +1,6 @@
 'use strict';
 
 var Tracker = require('../../Tracker');
-var Context = require('../../context/Context');
 var Track = require('../../track/Track');
 var Unit = require('../../unit/Unit');
 

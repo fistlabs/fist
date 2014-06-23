@@ -1,13 +1,13 @@
 'use strict';
 
-var Context = require('../../../context/Context');
+var Ctx = require('../../../ctx/Ctx');
 var vow = require('vow');
 
 module.exports = {
-    Context: [
+    Ctx: [
         function (test) {
 
-            var context = new Context();
+            var context = new Ctx();
 
             test.ok(context instanceof vow.Deferred);
             test.deepEqual(context.errors, {});
@@ -16,10 +16,10 @@ module.exports = {
             test.done();
         }
     ],
-    'Context.prototype.getResolver': [
+    'Ctx.prototype.getResolver': [
         function (test) {
 
-            var context = new Context();
+            var context = new Ctx();
             var done = context.getResolver();
 
             setTimeout(function () {
@@ -33,7 +33,7 @@ module.exports = {
         },
         function (test) {
 
-            var context = new Context();
+            var context = new Ctx();
             var done = context.getResolver();
 
             setTimeout(function () {
@@ -46,36 +46,36 @@ module.exports = {
             }).done();
         }
     ],
-    'Context.link': [
+    'Ctx.link': [
         function (test) {
 
             var root;
 
             root = {a: {}};
-            Context.link(root, 'a.b.c', 5);
+            Ctx.link(root, 'a.b.c', 5);
             test.deepEqual(root, {a: {b: {c: 5}}});
 
             root = {a: 0};
-            Context.link(root, 'a.b.c', 5);
+            Ctx.link(root, 'a.b.c', 5);
             test.deepEqual(root, {a: {b: {c: 5}}});
 
             test.done();
         }
     ],
-    'Context.parsePath': [
+    'Ctx.parsePath': [
         function (test) {
 
-            test.deepEqual(Context.parsePath('a.b.c'), ['a', 'b', 'c']);
+            test.deepEqual(Ctx.parsePath('a.b.c'), ['a', 'b', 'c']);
 
             test.done();
         },
         function (test) {
 
-            test.deepEqual(Context.parsePath('a.b\\.c'), ['a', 'b.c']);
-            test.deepEqual(Context.parsePath('a.b\\ \\.c'), ['a', 'b .c']);
-            test.deepEqual(Context.parsePath('a.b.\\ .c'),
+            test.deepEqual(Ctx.parsePath('a.b\\.c'), ['a', 'b.c']);
+            test.deepEqual(Ctx.parsePath('a.b\\ \\.c'), ['a', 'b .c']);
+            test.deepEqual(Ctx.parsePath('a.b.\\ .c'),
                 ['a', 'b', ' ', 'c']);
-            test.deepEqual(Context.parsePath('a.b.\\ .c'),
+            test.deepEqual(Ctx.parsePath('a.b.\\ .c'),
                 ['a', 'b', ' ', 'c']);
 
             test.done();
@@ -83,43 +83,43 @@ module.exports = {
         function (test) {
 
             test.throws(function () {
-                Context.parsePath('a.b c');
+                Ctx.parsePath('a.b c');
             }, SyntaxError);
 
             test.throws(function () {
-                Context.parsePath('a.b \\c');
+                Ctx.parsePath('a.b \\c');
             }, SyntaxError);
 
             test.done();
         },
         function (test) {
-            test.deepEqual(Context.parsePath(' a.b.c '), ['a', 'b', 'c']);
-            test.deepEqual(Context.parsePath(' a. b . c '), ['a', 'b', 'c']);
-            test.deepEqual(Context.parsePath(' a   .b . c'), ['a', 'b', 'c']);
+            test.deepEqual(Ctx.parsePath(' a.b.c '), ['a', 'b', 'c']);
+            test.deepEqual(Ctx.parsePath(' a. b . c '), ['a', 'b', 'c']);
+            test.deepEqual(Ctx.parsePath(' a   .b . c'), ['a', 'b', 'c']);
 
             test.done();
         },
         function (test) {
 
             test.throws(function () {
-                Context.parsePath('a.c.b\\');
+                Ctx.parsePath('a.c.b\\');
             }, SyntaxError);
 
             test.done();
         }
     ],
-    'Context.use': [
+    'Ctx.use': [
         function (test) {
 
-            test.strictEqual(Context.use({a: {b: {c: 0}}}, 'a.b.c'), 0);
+            test.strictEqual(Ctx.use({a: {b: {c: 0}}}, 'a.b.c'), 0);
 
             test.done();
         }
     ],
-    'Context.prototype.setResult': [
+    'Ctx.prototype.setResult': [
         function (test) {
 
-            var context = new Context();
+            var context = new Ctx();
 
             context.setResult('a.b', {c: {}});
             test.deepEqual(context.result, {a: {b: {c: {}}}});
@@ -133,10 +133,10 @@ module.exports = {
             test.done();
         }
     ],
-    'Context.prototype.setError': [
+    'Ctx.prototype.setError': [
         function (test) {
 
-            var context = new Context();
+            var context = new Ctx();
 
             context.setError('err', 500);
             test.deepEqual(context.errors, {err: 500});
