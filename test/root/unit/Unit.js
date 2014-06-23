@@ -23,7 +23,7 @@ module.exports = {
                 deps: [1, 1, 1, 2, 2, 3, 3]
             });
 
-            test.deepEqual(new MyUnit().deps, [1 ,2, 3]);
+            test.deepEqual(new MyUnit().deps, [1, 2, 3]);
 
             test.done();
         }
