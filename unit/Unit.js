@@ -1,16 +1,30 @@
 'use strict';
 
-var Class = /** @type Class */ require('../util/Class');
-
 var _ = require('lodash-node');
 var inherit = require('inherit');
 
 /**
  * @class Unit
- * @extends Class
  * */
-var Unit = inherit(Class, /** @lends Unit.prototype */ {
+var Unit = inherit(/** @lends Unit.prototype */ {
 
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @constructs
+     * */
+    __constructor: function (params) {
+
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        this.params = _.extend({}, this.params, params);
+    },
     /**
      * @public
      * @memberOf {Unit}
