@@ -67,7 +67,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * @param {String} path
      * @param {*} data
      * */
-    setResult: function (path, data) {
+    setRes: function (path, data) {
         this._link(this.res, path, data);
     },
 
@@ -79,7 +79,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * @param {String} path
      * @param {*} data
      * */
-    setError: function (path, data) {
+    setErr: function (path, data) {
         this._link(this.ers, path, data);
     },
 

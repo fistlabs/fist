@@ -189,9 +189,9 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
             var promise = this.resolve(track, path);
 
             promise.done(function (data) {
-                ctx.setResult(path, data);
+                ctx.setRes(path, data);
             }, function (data) {
-                ctx.setError(path, data);
+                ctx.setErr(path, data);
             });
 
             return promise;

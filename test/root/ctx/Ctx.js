@@ -116,29 +116,29 @@ module.exports = {
             test.done();
         }
     ],
-    'Ctx.prototype.setResult': [
+    'Ctx.prototype.setRes': [
         function (test) {
 
             var context = new Ctx();
 
-            context.setResult('a.b', {c: {}});
+            context.setRes('a.b', {c: {}});
             test.deepEqual(context.result, {a: {b: {c: {}}}});
 
-            context.setResult('a.b.c.d', 42);
+            context.setRes('a.b.c.d', 42);
             test.deepEqual(context.result, {a: {b: {c: {d: 42}}}});
 
-            context.setResult('a.b.c', {z: 146});
+            context.setRes('a.b.c', {z: 146});
             test.deepEqual(context.result, {a: {b: {c: {d: 42, z: 146}}}});
 
             test.done();
         }
     ],
-    'Ctx.prototype.setError': [
+    'Ctx.prototype.setErr': [
         function (test) {
 
             var context = new Ctx();
 
-            context.setError('err', 500);
+            context.setErr('err', 500);
             test.deepEqual(context.errors, {err: 500});
 
             test.done();
