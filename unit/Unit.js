@@ -24,7 +24,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
          * @type {Object}
          * */
         this.params = _.extend({}, this.params, params);
+
+        //  make proto-deps own and unique
+        this.addDeps(this.deps);
     },
+
     /**
      * @public
      * @memberOf {Unit}
