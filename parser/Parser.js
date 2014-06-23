@@ -32,13 +32,13 @@ var Parser = inherit(/** @lends Parser.prototype */ {
 
         params.limit = +params.limit;
 
-        if ( isNaN(params.limit) ) {
+        if ( _.isNaN(params.limit) ) {
             params.limit = Infinity;
         }
 
         params.length = +params.length;
 
-        if ( isNaN(params.length) ) {
+        if ( _.isNaN(params.length) ) {
             params.length = Infinity;
         }
     },
@@ -55,11 +55,7 @@ var Parser = inherit(/** @lends Parser.prototype */ {
     parse: function (media) {
         /* eslint no-unused-vars: 0*/
 
-        var defer = vow.defer();
-
-        defer.resolve({});
-
-        return defer.promise();
+        return vow.resolve({});
     }
 
 }, {

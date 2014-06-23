@@ -5,6 +5,8 @@ var R_FILENAME = /;\s*filename\s*=\s*(?:"((?:\\[\s\S]|[^"])*)"|([^\s";]*))/;
 
 var Dicer = /** @type Dicer */ require('dicer');
 var Parser = /** @type Parser */ require('./Parser');
+
+var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
 
@@ -77,7 +79,7 @@ function parseMultipart (stream, params) {
     var defer = vow.defer();
     var parser = new Dicer(params);
     var received = 0;
-    var result = [Object.create(null), Object.create(null)];
+    var result = [{}, {}];
 
     function parserPart (part) {
 
@@ -137,12 +139,12 @@ function parseMultipart (stream, params) {
                 buf = String(buf);
             }
 
-            if ( Array.isArray(result[sect][field]) ) {
+            if ( _.isArray(result[sect][field]) ) {
                 result[sect][field].push(buf);
 
             } else {
 
-                if ( field in result[sect] ) {
+                if ( _.has(result[sect], field) ) {
                     result[sect][field] = [result[sect][field], buf];
 
                 } else {
