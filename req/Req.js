@@ -137,21 +137,12 @@ var Req = inherit(/** @lends Req.prototype */ {
 
         var headers = this._req.headers;
         var url = Url.parse(this._req.url);
-        var value = headers['x-forwarded-host'] || headers.host;
 
-        url.host = value.split(/\s*,\s*/)[0];
+        url.host = headers['x-forwarded-host'] || headers.host;
+        url.protocol = this._req.socket.encrypted ?
+            'https' : headers['x-forwarded-proto'] || 'http';
 
-        if ( this._req.socket.encrypted ) {
-            value = 'https';
-
-        } else {
-            value = headers['x-forwarded-proto'] || 'http';
-        }
-
-        url.protocol = value;
-        url = Url.format(url);
-
-        return Url.parse(url, true);
+        return Url.parse(Url.format(url), true);
     },
 
     /**
