@@ -397,7 +397,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     getStatusMessage: function (code) {
 
-        return STATUS_CODES[code];
+        return STATUS_CODES[code] || String(code);
     }
 
 });

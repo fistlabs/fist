@@ -32,7 +32,7 @@ module.exports = {
             test.done();
         },
         function (test) {
-            test.strictEqual(Res.getStatusMessage(2), STATUS_CODES[2]);
+            test.strictEqual(Res.getStatusMessage(2), '2');
             test.done();
         }
     ],
