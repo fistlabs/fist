@@ -29,16 +29,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.__base(params);
 
         /**
-         * Тут откладываются запросы поступившие во время инициализации
-         *
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Array<Track>}
-         * */
-        this._pends = [];
-
-        /**
          * Плагины, задачи на инициализацию
          *
          * @protected
@@ -239,21 +229,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             return defer.promise();
         }, this);
 
-        var promise = vow.all(plugins).then(this.__base, this);
-
-        promise.always(function () {
-
-            var pends = _.map(this._pends, function (track) {
-
-                return this._handle(track);
-            }, this);
-
-            this._pends = [];
-
-            return vow.all(pends);
-        }, this).done();
-
-        return promise;
+        return vow.all(plugins).then(this.__base, this);
     },
 
     /**
@@ -269,21 +245,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         if ( track.res.hasResponded() ) {
 
             return track.res.respondDefer.promise();
-        }
-
-        //  еще не проинициализирован
-        if ( !this.ready().isResolved() ) {
-            //  отложить запрос
-            this._pends.push(track);
-
-            return track.res.respondDefer.promise();
-        }
-
-        //  При инициализации произошла ошибка
-        if ( this.ready().isRejected() ) {
-
-            //  Internal Server Error
-            return track.send(500, this.ready().valueOf());
         }
 
         function next () {
