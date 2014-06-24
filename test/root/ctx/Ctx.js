@@ -108,6 +108,19 @@ module.exports = {
             test.done();
         }
     ],
+    'Ctx.add': [
+        function (test) {
+            var obj = {a: {b: {c: 42}}};
+
+            Ctx.add(obj, 'a.b', {
+                d: 15
+            });
+
+            test.deepEqual(obj, {a: {b: {d: 15, c: 42}}});
+
+            test.done();
+        }
+    ],
     'Ctx.use': [
         function (test) {
 
@@ -147,14 +160,8 @@ module.exports = {
 
             var ctx = new Ctx();
 
-            ctx.setRes('a.b', {c: {}});
-            test.deepEqual(ctx.result, {a: {b: {c: {}}}});
-
-            ctx.setRes('a.b.c.d', 42);
-            test.deepEqual(ctx.result, {a: {b: {c: {d: 42}}}});
-
-            ctx.setRes('a.b.c', {z: 146});
-            test.deepEqual(ctx.result, {a: {b: {c: {d: 42, z: 146}}}});
+            ctx.setRes('r', 200);
+            test.deepEqual(ctx.res, {r: 200});
 
             test.done();
         }
@@ -164,8 +171,8 @@ module.exports = {
 
             var ctx = new Ctx();
 
-            ctx.setErr('err', 500);
-            test.deepEqual(ctx.errors, {err: 500});
+            ctx.setErr('e', 500);
+            test.deepEqual(ctx.ers, {e: 500});
 
             test.done();
         }

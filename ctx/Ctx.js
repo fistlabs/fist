@@ -96,7 +96,8 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * @param {*} data
      * */
     setRes: function (path, data) {
-        this._link(this.res, path, data);
+
+        return Ctx.add(this.res, path, data);
     },
 
     /**
@@ -108,7 +109,8 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
      * @param {*} data
      * */
     setErr: function (path, data) {
-        this._link(this.ers, path, data);
+
+        return Ctx.add(this.ers, path, data);
     },
 
     /**
@@ -132,53 +134,29 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
 
             self.resolve(res);
         };
-    },
-
-    /**
-     * @protected
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @param {Object} root
-     * @param {String} path
-     * @param {*} data
-     * */
-    _link: function (root, path, data) {
-
-        var existingData = Ctx.use(root, path);
-
-        if ( _.isObject(existingData) ) {
-            _.extend(existingData, data);
-
-            return;
-        }
-
-        Ctx.link(root, path, data);
     }
 
 }, {
 
     /**
      * @public
-     * @static
      * @memberOf Ctx
+     * @method
      *
+     * @param {Object} root
      * @param {String} path
-     *
-     * @returns {?}
-     *
-     * @throws {SyntaxError}
+     * @param {*} data
      * */
-    parsePath: function (path) {
+    add: function (root, path, data) {
 
-        if ( path in cache ) {
+        var existingData = Ctx.use(root, path);
 
-            return cache[path];
+        if ( _.isObject(existingData) ) {
+
+            return _.extend(existingData, data);
         }
 
-        cache[path] = parse(path);
-
-        return cache[path];
+        return Ctx.link(root, path, data);
     },
 
     /**
@@ -221,6 +199,29 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
         root[part] = data;
 
         return root[part];
+    },
+
+    /**
+     * @public
+     * @static
+     * @memberOf Ctx
+     *
+     * @param {String} path
+     *
+     * @returns {?}
+     *
+     * @throws {SyntaxError}
+     * */
+    parsePath: function (path) {
+
+        if ( path in cache ) {
+
+            return cache[path];
+        }
+
+        cache[path] = parse(path);
+
+        return cache[path];
     },
 
     /**
