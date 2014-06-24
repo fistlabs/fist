@@ -68,9 +68,7 @@ fist.unit({
     path: 'content.news',
     //  тело узла
     data: function () {
-        
         var defer = vow.defer();
-        
         doRequestForNews(function (err, res) {
             if ( err ) {
                 defer.reject(err);
@@ -78,7 +76,6 @@ fist.unit({
                 defer.resolve(res);
             }
         });
-        
         return defer.promise();
     }
 });
@@ -88,7 +85,6 @@ fist.unit({
     //  Зависимости узла
     deps: ['content.news'],
     data: function (track, ctx) {
-        
         return track.send(doTemplate(ctx.getRes('content.news')));
     }
 });
