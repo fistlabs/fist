@@ -176,9 +176,63 @@ app.plug(function (done) {
         if ( err ) {
             done(err);
         } else {
-            done()
+            done();
         }
     });
 });
 ```
 Если есть возможность устранить проблему, то по факту ее устранения можно перезапустить приложение вызвав ```app.ready(true)```
+#Узлы
+Узлом приложения является инкапсулированная логическая часть приложения, динамичность поведения которого зависит от контекста вызова и параметров запроса. Узлы декларируются методом ```app.unit```. Необходимо обязательно указать ```path``` узла и имплементировать метод ```data```. Узел может зависеть от результатов других узлов, тогда нужно указать массив ```deps``` с идентификаторами узлов.
+
+```js
+app.unit({
+    path: 'fortyTwo',
+    deps: ['someUnit'],
+    data: function () {
+        
+        return 42;   
+    }
+});
+```
+Объект передаваемый в метод ```app.unit``` является расширением прототипа узла. По умолчанию каждый узел наследует от ```fist/unit/Unit```, но можно наследовать от любого узла. Для этого необходимо указать ```String base```, что является именем узла, от которого нужно унаследовать. В приложении могут быть абстрактные узлы, декларация которых не требуется, но от которых нужно унаследовать. Такие абстрактные узлы должны наследовать от ```fist/unit/Unit``` с помощью [```inherit```](/dfilatov/inherit). Получившийся в результате наследования конструктор должен указываться в ```base```.
+```js
+var Model = require('./lib/Model');
+
+app.unit({
+    base: Model,
+    path: 'users',
+    data: function (track, ctx) {
+        return getUsers(this.__base(track, ctx));
+    }
+});
+
+```
+###```unit.addDeps(deps)```
+Добавляет зависимости в узел.
+```js
+app.unit({
+    base: 'users',
+    path: 'extendedUsers',
+    __constructor: function (params) {
+        this.__base(params);
+        this.addDeps('userExtensions');
+    },
+    data: function (track, ctx) {
+        return doSomethingWithUsers(this.__base(track, ctx));
+    }
+});
+```
+
+###```unit.params```
+Параметры узла. Все узлы инстанцируются со всеми параметрами приложения.
+```js
+var config = {a: 42};
+var app = new Framework(config);
+app.unit({
+    path: 'test',
+    __constructor: function (params) {
+        assert.deepEqual(params, config);
+    }
+})
+```
