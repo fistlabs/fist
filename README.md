@@ -2,15 +2,15 @@ fist [![Build Status](https://travis-ci.org/fistlabs/fist.png?branch=master)](ht
 =========
 ```Fist``` - это nodejs-фреймворк для написания серверных приложений. ```Fist``` предлагает архитектуру, поддержка которой одинаково проста как для простых так и для сложных web-серверов.
 ```js
-var Fist = require('fist/Framework');
-var fist = new Fist();
+var Framework = require('fist/Framework');
+var app = new Framework();
 
-fist.unit({
+app.unit({
     path: 'time.appstart', 
     data: new Date()
 });
 
-fist.unit({
+app.unit({
     path: 'time.uptime',
     deps: ['time.appstart'],
     data: function (track, ctx) {
@@ -18,7 +18,7 @@ fist.unit({
     }
 });
 
-fist.unit({
+app.unit({
     path: 'uptimeController', 
     deps: ['time.uptime'], 
     data: function (track, ctx) {
@@ -26,9 +26,9 @@ fist.unit({
     }
 });
 
-fist.route('/uptime/', 'uptimeController');
+app.route('/uptime/', 'uptimeController');
 
-fist.listen(1337);
+app.listen(1337);
 ```
 
 Приложение фреймворка представляет собой плагинизируемый веб-сервер, состоящий из множества взаимосвязанных, зависящих друг от друга узлов, один из которых может обработать поступивший запрос, принятый роутером.
@@ -38,7 +38,7 @@ fist.listen(1337);
 ```js
 //  при любом запросе проверять права на просмотр страницы
 //  может отправить например 403 если прав нет
-fist.route('/ e', {
+app.route('/ e', {
     // название роута
     name: 'checkRights',
     //  название узла с которым роут ассоциирован
@@ -46,13 +46,13 @@ fist.route('/ e', {
 });
 
 //  отображает главную страницу если есть права
-fist.route('/', {
+app.route('/', {
     name: 'indexPage',
     unit: 'indexPageController'
 });
 
-//  настройки приложения
-fist.route('/settings/', {
+//  настройки сайта
+app.route('/settings/', {
     name: 'settingsPage',
     unit: 'settingsPageController'
 });
@@ -63,7 +63,7 @@ fist.route('/settings/', {
 Узлом приложения является инстанс класса ```fist/unit/Unit```. Каждый узел должен иметь некоторый идентификатор и имплементирать метод ```data```, в который отвечает за разрешение узла. Узлы могут зависеть друг от друга, что должно быть указано в декларации. Это значит что до того как выполнится текущий узел, будут выполнены его зависимости, результаты которых будут доступны в методе ```data```.
 
 ```js
-fist.unit({
+app.unit({
     //  идентификатор узла
     path: 'content.news',
     //  тело узла
@@ -80,7 +80,7 @@ fist.unit({
     }
 });
 
-fist.unit({
+app.unit({
     path: 'indexPage',
     //  Зависимости узла
     deps: ['content.news'],
