@@ -99,10 +99,57 @@ app.unit({
 ```fist``` работает на nodejs >= 0.10
 
 #Приложение
-##```Framework new Framework([Object params])```
+##API
+###```new Framework([params])```
+Инстанцирует приложение
 ```js
 var Framework = require('fist/Framework');
 var configs = require('./configs');
 //  Инстанцирую приложение
 var app = new Framework(configs);
 ```
+###```app.listen()```
+Запускает сервер приложения
+```js
+app.listen(1337);
+```
+###```app.plug(plugin...)```
+Добавляет в приложение плагин.
+```js
+app.plug(function (done) {
+    this.myFeature = 42;
+    done();
+});
+```
+###```app.route(pattern, data)```
+Линкует роут с узлом.
+```js
+app.route('/', {
+    name: 'index',
+    unit: 'indexController'
+});
+```
+###```app.unit(decl)```
+Добавляет в приложение функциональный узел
+```js
+app.unit({
+    path: 'indexController',
+    data: function () {
+        doSomething()
+    }
+});
+```
+##Событие
+Приложение обладает свойствами ```EventEmitter```, поэтому на нем можно слушать некоторые автоматические события.
+###```sys:ready```
+Приложение готово обрабатывать запросы
+###```sys:eready```
+Ошибка инициализации приложения
+###```ctx:pending```
+Начинается разрешение узла
+###```ctx:accept```
+Узел разрешен без ошибки
+###```ctx:reject```
+Узeл разрешен с ошибкой
+###```ctx:notify```
+Узел послал уведомление
