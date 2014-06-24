@@ -97,3 +97,12 @@ fist.unit({
 
 
 ```fist``` работает на nodejs >= 0.10
+
+#Приложение
+##```Framework new Framework([Object params])```
+```js
+var Framework = require('fist/Framework');
+var configs = require('./configs');
+//  Инстанцирую приложение
+var app = new Framework(configs);
+```
