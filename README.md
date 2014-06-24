@@ -19,15 +19,14 @@ fist.unit({
 });
 
 fist.unit({
-    path: 'index', 
+    path: 'uptimeController', 
     deps: ['time.uptime'], 
     data: function (track, ctx) {
-        track.header('Content-Type', 'text/html');
-        return track.send(200, '<div>Server uptime: ' + ctx.getRes('time.uptime') + 'ms</div>');
+        return track.send(ctx.getRes('time.uptime'));
     }
 });
 
-fist.route('GET /', 'index');
+fist.route('GET /uptime/', 'uptimeController');
 
 fist.listen(1337);
 ```
