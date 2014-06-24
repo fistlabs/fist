@@ -236,3 +236,32 @@ app.unit({
     }
 })
 ```
+#Track
+Этот объект является контекстом запроса. В нем содержатся средства для чтения из ```request``` и для записи в ```response```.
+###```track.arg(name[, only])```
+Возвращает параметр запроса. Если передать только ```name```, то будет возвращено значение из ```pathname``` или из ```query``` если в ```pathname``` он не будет найден. Параметр ```only``` означает что значения из query не интересуют, и нужно искать параметр только в ```pathname```.
+```js
+app.route('/(<pageName>/)', {name: 'anyPage', unit: 'universalController'});
+//  ***
+//  GET /index/
+track.arg('pageName') // -> index
+//  GET /?pageName=foo
+track.arg('pageName') // -> foo
+track.arg('pageName', true) // -> undefined
+```
+###```track.header(name[, value])```
+Устанавливает заголовок в ```response``` или читает его из ```request```
+###```track.cookie(name[, value[, opts]])```
+Читает куку из ```request``` или ставит ее в ```response```
+###```track.send([status[, body]])```
+Выполняет ответ приложения
+###```track.body()```
+Скачивает тело запроса и парсит его, возвращает ```promise```
+###```track.redirect([status, ]url)```
+Создает перенаправление на клиенте
+###```track.buidlPath(routeName[, opts])```
+Создает ```url``` из шаблона запроса
+###```track.url```
+Объект распаршенного ```url``` запроса
+###```track.match```
+Объект параметров запроса, сматчившихся на шаблон ```url```-а
