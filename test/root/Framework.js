@@ -94,6 +94,24 @@ module.exports = {
                 test.strictEqual(err, 'ERR');
                 test.done();
             });
+        },
+        function (test) {
+            var framework = new Framework();
+
+            framework.plug(function (done) {
+                setTimeout(function () {
+                    done();
+                }, 0);
+            });
+
+            framework.plug(function () {
+                throw 'ERR';
+            });
+
+            framework.ready().fail(function (err) {
+                test.strictEqual(err, 'ERR');
+                test.done();
+            });
         }
     ],
     'Framework.prototype._handle': [

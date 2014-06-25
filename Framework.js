@@ -215,24 +215,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @returns {vow.Promise}
      * */
     _getReady: function () {
-
-        var plugins = _.map(this._plugs, function (plug) {
-
-            var defer = vow.defer();
-
-            plug.call(this, function (err) {
-
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
-
-                    return;
-                }
-
-                defer.reject(err);
-            });
-
-            return defer.promise();
-        }, this);
+        var plugins = _.map(this._plugs, this.__invokePlugin, this);
 
         return vow.all(plugins).then(this.__base, this);
     },
@@ -299,6 +282,52 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         }
 
         return next.call(this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Function} plug
+     *
+     * @returns {vow.Promise}
+     * */
+    __invokePlugin: function (plug) {
+
+        return vow.invoke(this.__wrapPlugin(plug));
+    },
+
+    /**
+     * @private
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Function} plug
+     *
+     * @returns {Function}
+     * */
+    __wrapPlugin: function (plug) {
+
+        var self = this;
+
+        return function () {
+
+            var defer = vow.defer();
+
+            plug.call(self, function (err) {
+
+                if ( 0 === arguments.length ) {
+                    defer.resolve();
+
+                    return;
+                }
+
+                defer.reject(err);
+            });
+
+            return defer.promise();
+        };
     }
 
 });
