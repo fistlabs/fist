@@ -33,7 +33,7 @@
         "media-typer": "~0.2.0"
     },
     "license": "MIT",
-    "main": "Framework",
+    "main": "fist",
     "name": "fist",
     "repository": {
         "type": "git",
