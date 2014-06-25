@@ -133,6 +133,11 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         var defer = vow.defer();
 
+        if ( track.res.hasResponded() ) {
+
+            return defer.promise();
+        }
+
         this.__base(track, path, params).
             always(function (promise) {
 
@@ -241,14 +246,13 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * */
     _handle: function (track) {
 
-        //  был сделан send() где-то в обработчке события sys:request
+        //  был сделан send() где-то в обработчике события sys:request
         if ( track.res.hasResponded() ) {
 
             return track.res.respondDefer.promise();
         }
 
         function next () {
-
             //  выбирается маршрут
             var result = this.router.
                 find(track.method, track.url.pathname, track.route);
@@ -256,7 +260,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             //  однозначно нет такого маршрута
             if ( null === result ) {
                 this.emit('sys:ematch', track);
-
                 //  Not Found
                 return track.send(404);
             }
@@ -286,11 +289,13 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
             this.emit('sys:match', track);
 
-            return this.resolve(track, result.route.data.unit).
-                then(next, function (err) {
+            this.resolve(track, result.route.data.unit).
+                done(next, function (err) {
 
                     return track.send(500, err);
                 }, this);
+
+            return track.res.respondDefer.promise();
         }
 
         return next.call(this);

@@ -338,6 +338,88 @@ module.exports = {
                 test.strictEqual(res.statusCode, 500);
                 test.done();
             });
+        },
+        function (test) {
+            var spy = [];
+            var framework = new Framework();
+
+            framework.route('GET /', 'foo');
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (err) {}
+
+            framework.unit({
+                path: 'foo',
+                deps: ['bar'],
+                data: function (track) {
+                    spy.push(2);
+                    test.ok(track.res.hasResponded());
+                    return track.send(43);
+                }
+            });
+
+            framework.unit({
+                path: 'bar',
+                data: function (track) {
+                    spy.push(1);
+                    return track.send(42);
+                }
+            });
+
+            framework.on('sys:response', function () {
+                spy.push(3);
+            });
+
+            framework.listen(sock);
+
+            asker({
+                path: '/',
+                socketPath: sock,
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, res) {
+                test.ok(!err);
+                test.deepEqual(res.data + '', new Buffer('42') + '');
+                setTimeout(function () {
+                    test.deepEqual(spy, [1, 3]);
+                    test.done();
+                }, 50);
+            });
+        },
+        function (test) {
+            var framework = new Framework();
+
+            framework.route('GET /', 'foo');
+
+            framework.on('sys:match', function (track) {
+                track.send(201);
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (err) {}
+
+            framework.listen(sock);
+
+            asker({
+                path: '/',
+                socketPath: sock,
+                statusFilter: function () {
+
+                    return {
+                        accept: true
+                    };
+                }
+            }, function (err, res) {
+                test.ok(!err);
+                test.strictEqual(res.statusCode, 201);
+                test.done();
+            });
         }
     ]
 };
