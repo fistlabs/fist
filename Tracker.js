@@ -128,17 +128,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         deps = vow.allResolved(deps);
 
         deps.done(function () {
-
-            var data = unit.data;
-
-            if ( _.isFunction(unit.data) ) {
-                data = vow.invoke(function () {
-
-                    return unit.data(track, defer);
-                });
-            }
-
-            defer.resolve(data);
+            defer.resolve(unit.getValue(track, defer));
         });
 
         return defer.promise();

@@ -381,5 +381,54 @@ module.exports = {
                 test.done();
             });
         }
+    ],
+    'Unit\'s caching': [
+        function (test) {
+            var tracker = new Tracker();
+
+            tracker.unit({
+                path: 'test',
+                spy: [],
+                data: function () {
+                    this.spy.push(1);
+
+                    return this.spy;
+                },
+                _maxAge: 5000
+            });
+
+            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
+                test.deepEqual(spy, [1]);
+            }).always(function () {
+                tracker.resolve(new Track(tracker), 'test').
+                    done(function (spy) {
+                        test.deepEqual(spy, [1]);
+                        test.done();
+                    });
+            });
+        },
+        function (test) {
+            var tracker = new Tracker();
+
+            tracker.unit({
+                path: 'test',
+                spy: [],
+                data: function () {
+                    this.spy.push(1);
+
+                    return this.spy;
+                }
+            });
+
+            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
+                test.deepEqual(spy, [1]);
+            }).always(function () {
+                tracker.resolve(new Track(tracker), 'test').
+                    done(function (spy) {
+                        test.deepEqual(spy, [1, 1]);
+                        test.done();
+                    });
+            });
+        }
     ]
 };
