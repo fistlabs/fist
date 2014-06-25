@@ -29,16 +29,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.__base(params);
 
         /**
-         * Тут откладываются запросы поступившие во время инициализации
-         *
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Array<Track>}
-         * */
-        this._pends = [];
-
-        /**
          * Плагины, задачи на инициализацию
          *
          * @protected
@@ -56,7 +46,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
          * @property
          * @type {Object<Function>}
          * */
-        this.renderers = Object.create(null);
+        this.renderers = {};
 
         /**
          * @public
@@ -81,18 +71,15 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         var self = this;
 
         return function (req, res) {
-
             var date = new Date();
             var track = self._createTrack(req, res);
 
-            res.once('finish', function () {
-                track.time = new Date() - date;
-                self.emit('sys:response', track);
-            });
-
             self.emit('sys:request', track);
 
-            self._handle(track);
+            self._handle(track).always(function () {
+                track.time = new Date() - date;
+                this.emit('sys:response', track);
+            }, self);
         };
     },
 
@@ -123,60 +110,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @method
      * */
     plug: function () {
-
-        var plugs = _.map(arguments, this.__wrapPlugin, this);
-
-        Array.prototype.push.apply(this._plugs, plugs);
-    },
-
-    __wrapPlugin: function (plug) {
-
-        var self = this;
-
-        return function () {
-
-            var defer = vow.defer();
-
-            plug.call(self, function (err) {
-
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
-
-                    return;
-                }
-
-                defer.reject(err);
-            });
-
-            return defer.promise();
-        };
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    _getReady: function () {
-
-        var promise = this.__base().then(function () {
-
-            return vow.all(_.map(this._plugs, function (plug) {
-                return plug();
-            }));
-        }, this);
-
-        promise.always(function () {
-
-            while ( _.size(this._pends) ) {
-                this._handle(this._pends.shift());
-            }
-
-        }, this).done();
-
-        return promise;
+        Array.prototype.push.apply(this._plugs, arguments);
     },
 
     /**
@@ -199,15 +133,20 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         var defer = vow.defer();
 
-        this.__base(track, path, params).
-            always(function (res) {
+        if ( track.res.hasResponded() ) {
 
-                if ( track.sent() ) {
+            return defer.promise();
+        }
+
+        this.__base(track, path, params).
+            always(function (promise) {
+
+                if ( track.res.hasResponded() ) {
 
                     return;
                 }
 
-                defer.resolve(res);
+                defer.resolve(promise);
             });
 
         return defer.promise();
@@ -273,86 +212,93 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      *
-     * @param {Connect} track
+     * @returns {vow.Promise}
      * */
-    _handle: function (track) {
-        /*eslint complexity: [2, 11]*/
-        var self = this;
+    _getReady: function () {
 
-        //  был сделан send() где-то в обработчке события sys:request
-        if ( track.sent() ) {
+        var plugins = _.map(this._plugs, function (plug) {
 
-            return;
-        }
+            var defer = vow.defer();
 
-        //  При инициализации произошла ошибка
-        if ( this.ready().isRejected() ) {
-            track.send(502);
+            plug.call(this, function (err) {
 
-            return;
-        }
-
-        //  еще не проинициализирован
-        if ( !this.ready().isResolved() ) {
-            //  отложить запрос
-            this._pends.push(track);
-
-            return;
-        }
-
-        function next () {
-            //  выбирается маршрут
-            var route = self.router.
-                find(track.method, track.url.pathname, track.route);
-
-            //  однозначно нет такого маршрута
-            if ( null === route ) {
-
-                self.emit('sys:ematch', track);
-                track.send(404);
-
-                return;
-            }
-
-            //  возвращен массив
-            if ( _.isArray(route) ) {
-                //  это тоже значит что нет такого роута
-                self.emit('sys:ematch', track);
-
-                //  если массив пустой, то на сервере совсем нет ни одного
-                //  маршрута отвечающего по такому методу запроса
-                if ( 0 === route.length ) {
-                    //  Not Implemented
-                    track.send(501);
+                if ( 0 === arguments.length ) {
+                    defer.resolve();
 
                     return;
                 }
 
-                //  Иначе есть такие маршруты, но для них не
-                // поддерживается такой метод
-                track.header('Allow', route.join(', '));
+                defer.reject(err);
+            });
 
-                //  Method Not Allowed
-                track.send(405);
+            return defer.promise();
+        }, this);
 
-                return;
-            }
+        return vow.all(plugins).then(this.__base, this);
+    },
 
-            track.match = route.match;
-            route = route.route;
-            track.route = route.data.name;
+    /**
+     * @protected
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Connect} track
+     * */
+    _handle: function (track) {
 
-            self.emit('sys:match', track);
+        //  был сделан send() где-то в обработчике события sys:request
+        if ( track.res.hasResponded() ) {
 
-            self.resolve(track, route.data.unit).
-                done(function () {
-                    next();
-                }, function (err) {
-                    track.send(500, err);
-                });
+            return track.res.respondDefer.promise();
         }
 
-        next();
+        function next () {
+            //  выбирается маршрут
+            var result = this.router.
+                find(track.method, track.url.pathname, track.route);
+
+            //  однозначно нет такого маршрута
+            if ( null === result ) {
+                this.emit('sys:ematch', track);
+                //  Not Found
+                return track.send(404);
+            }
+
+            //  возвращен массив
+            if ( _.isArray(result) ) {
+                //  это тоже значит что нет такого роута
+                this.emit('sys:ematch', track);
+
+                //  если массив пустой, то на сервере совсем нет ни одного
+                //  маршрута отвечающего по такому методу запроса
+                if ( 0 === result.length ) {
+                    //  Not Implemented
+                    return track.send(501);
+                }
+
+                //  Иначе есть такие маршруты, но для них не
+                // поддерживается такой метод
+                track.header('Allow', result.join(', '));
+
+                //  Method Not Allowed
+                return track.send(405);
+            }
+
+            track.match = result.match;
+            track.route = result.route.data.name;
+
+            this.emit('sys:match', track);
+
+            this.resolve(track, result.route.data.unit).
+                done(next, function (err) {
+
+                    return track.send(500, err);
+                }, this);
+
+            return track.res.respondDefer.promise();
+        }
+
+        return next.call(this);
     }
 
 });

@@ -1,6 +1,7 @@
 'use strict';
 
 var Unit = require('../../../unit/Unit');
+var inherit = require('inherit');
 
 module.exports = {
     Unit: [
@@ -13,6 +14,16 @@ module.exports = {
             test.deepEqual(unit.params, {
                 a: 42
             });
+
+            test.done();
+        },
+        function (test) {
+
+            var MyUnit = inherit(Unit, {
+                deps: [1, 1, 1, 2, 2, 3, 3]
+            });
+
+            test.deepEqual(new MyUnit().deps, [1, 2, 3]);
 
             test.done();
         }

@@ -1,7 +1,6 @@
 'use strict';
 
 var Tracker = require('../../Tracker');
-var Context = require('../../context/Context');
 var Track = require('../../track/Track');
 var Unit = require('../../unit/Unit');
 
@@ -16,13 +15,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.resolve(42);
+                        defer.resolve(42);
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -107,13 +108,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.reject(42);
+                        defer.reject(42);
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -129,13 +132,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.resolve(vow.reject(42));
+                        defer.resolve(vow.reject(42));
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -151,13 +156,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.resolve(vow.reject(vow.resolve(42)));
+                        defer.resolve(vow.reject(vow.resolve(42)));
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -309,19 +316,24 @@ module.exports = {
             var track = new Track(tracker);
             var spy = [];
 
+            tracker.on('ctx:pending', function (e) {
+                test.strictEqual(e.trackId, track.id);
+                spy.push([-1, e.path]);
+            });
+
             tracker.on('ctx:notify', function (e) {
                 test.strictEqual(e.trackId, track.id);
-                spy.push([-1, e.data]);
+                spy.push([2, e.path]);
             });
 
             tracker.on('ctx:accept', function (e) {
                 test.strictEqual(e.trackId, track.id);
-                spy.push([0, e.data]);
+                spy.push([0, e.path]);
             });
 
             tracker.on('ctx:reject', function (e) {
                 test.strictEqual(e.trackId, track.id);
-                spy.push([1, e.data]);
+                spy.push([1, e.path]);
             });
 
             tracker.unit({
@@ -356,11 +368,14 @@ module.exports = {
             tracker.resolve(track, 'a').done(function (res) {
                 test.strictEqual(res, 'a');
                 test.deepEqual(spy, [
-                    [-1, 'c'],
-                    [0, 'c'],
-                    [-1, 'b'],
-                    [1, 'b'],
                     [-1, 'a'],
+                    [-1, 'b'],
+                    [-1, 'c'],
+                    [2, 'c'],
+                    [0, 'c'],
+                    [2, 'b'],
+                    [1, 'b'],
+                    [2, 'a'],
                     [0, 'a']
                 ]);
                 test.done();

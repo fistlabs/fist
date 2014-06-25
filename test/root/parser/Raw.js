@@ -44,7 +44,7 @@ module.exports = {
 
             parser.parse(req).fail(function (err) {
                 test.deepEqual(err, {
-                    actual: 4,
+                    received: 4,
                     expected: 3,
                     code: 'ELIMIT'
                 });
@@ -63,7 +63,7 @@ module.exports = {
 
             parser.parse(req).fail(function (err) {
                 test.deepEqual(err, {
-                    actual: 5,
+                    received: 5,
                     expected: 3,
                     code: 'ELENGTH'
                 });

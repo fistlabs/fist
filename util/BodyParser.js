@@ -45,12 +45,18 @@ var BodyParser = inherit(/** @lends BodyParser.prototype */ {
      * @returns {*}
      * */
     _createParser: function (params) {
-        /*eslint new-cap: 0, eqeqeq: 0*/
+        /*eslint new-cap: 0*/
         var i;
         var l;
 
-        if ( !params ||
-            'string' !== typeof params.length || '0' == params.length ) {
+        if ( !params ) {
+
+            return null;
+        }
+
+        l = +params.length;
+
+        if ( _.isNaN(l) || 0 === l ) {
 
             return null;
         }

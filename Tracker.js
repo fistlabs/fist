@@ -1,7 +1,7 @@
 'use strict';
 
 var Agent = require('./Agent');
-var Context = /** @type Context */ require('./context/Context');
+var Ctx = /** @type Ctx */ require('./ctx/Ctx');
 var Unit = /** @type Unit */ require('./unit/Unit');
 
 var _ = require('lodash-node');
@@ -53,48 +53,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         return this.ready().then(function () {
 
-            if ( !_.has(track.tasks, path) ) {
-                track.tasks[path] = this.__resolveCtx(track, path, params);
+            if ( !vow.isPromise(track.tasks[path]) ) {
+                track.tasks[path] = this.__resolveUnit(track, path, params);
             }
 
-            return track.tasks[path].promise();
-
+            return track.tasks[path];
         }, this);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {Object} unit
-     * @param {Context} ctxt
-     * */
-    _call: function (track, unit, ctxt) {
-
-        var result;
-
-        if ( _.isFunction(unit.data) ) {
-
-            try {
-                result = unit.data(track, ctxt);
-
-                if ( ctxt.promise() === result ) {
-
-                    return;
-                }
-
-                ctxt.resolve(result);
-
-            } catch (err) {
-                ctxt.reject(err);
-            }
-
-            return;
-        }
-
-        ctxt.resolve(unit.data);
     },
 
     /**
@@ -104,17 +68,16 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {String} path
-     * @param {Object} params
-     *
-     * @returns {Context}
+     * @param {*} [params]
      * */
-    __resolveCtx: function (track, path, params) {
+    __resolveUnit: function (track, path, params) {
 
         var date = new Date();
-        var ctxt = this._createCtx(params);
+        var defer = this._createCtx(params);
+        var deps;
         var unit = this.getUnit(path);
 
-        ctxt.promise().done(function (data) {
+        defer.promise().done(function (data) {
             this.emit('ctx:accept', {
                 trackId: track.id,
                 path: path,
@@ -137,47 +100,48 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
             });
         }, this);
 
-        if ( _.isUndefined(unit) ) {
-            ctxt.reject();
+        this.emit('ctx:pending', {
+            trackId: track.id,
+            path: path,
+            time: 0
+        });
 
-            return ctxt;
+        if ( _.isUndefined(unit) ) {
+            defer.reject();
+
+            return defer.promise();
         }
 
-        this.__resolveDeps(track, unit, ctxt).
-            then(function () {
-                this._call(track, unit, ctxt);
-            }, this);
+        deps = _.map(toArray(unit.deps), function (path) {
 
-        return ctxt;
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {Unit} unit
-     * @param {Context} ctxt
-     *
-     * @returns {vow.Promise}
-     * */
-    __resolveDeps: function (track, unit, ctxt) {
-
-        var deps = _.map(toArray(unit.deps), function (path) {
-
-            var promise = this.resolve(track, path);
+            var promise = this.resolve(track, path, params);
 
             promise.done(function (data) {
-                ctxt.setResult(path, data);
+                defer.setRes(path, data);
             }, function (data) {
-                ctxt.setError(path, data);
+                defer.setErr(path, data);
             });
 
             return promise;
         }, this);
 
-        return vow.allResolved(deps);
+        deps = vow.allResolved(deps);
+
+        deps.done(function () {
+
+            var data = unit.data;
+
+            if ( _.isFunction(unit.data) ) {
+                data = vow.invoke(function () {
+
+                    return unit.data(track, defer);
+                });
+            }
+
+            defer.resolve(data);
+        });
+
+        return defer.promise();
     },
 
     /**
@@ -187,11 +151,11 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      *
      * @param {Object} params
      *
-     * @returns {Context}
+     * @returns {Ctx}
      * */
     _createCtx: function (params) {
 
-        return new Context(params);
+        return new Ctx(params);
     }
 
 });

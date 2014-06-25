@@ -1,11 +1,17 @@
 'use strict';
 
 var BodyParser = require('../../../util/BodyParser');
-var ContentType = require('../../../util/ContentType');
 
+var mediaTyper = require('media-typer');
 var http = require('../../util/http');
 
 var _ = require('lodash-node');
+
+function toParams (mime) {
+    mime = mediaTyper.parse(mime);
+
+    return _.extend(mime.parameters, mime);
+}
 
 module.exports = {
 
@@ -58,9 +64,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var mime = new ContentType(req.headers['content-type']);
+                var mime = toParams(req.headers['content-type']);
 
-                var parser = new BodyParser(_.extend(mime.toParams(), {
+                var parser = new BodyParser(_.extend(mime, {
                     length: req.headers['content-length']
                 }));
 
@@ -85,9 +91,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var mime = new ContentType(req.headers['content-type']);
+                var mime = toParams(req.headers['content-type']);
 
-                var parser = new BodyParser(_.extend(mime.toParams(), {
+                var parser = new BodyParser(_.extend(mime, {
                     length: req.headers['content-length']
                 }));
 
@@ -115,9 +121,38 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var mime = new ContentType(req.headers['content-type']);
+                var mime = toParams(req.headers['content-type']);
 
-                var parser = new BodyParser(_.extend(mime.toParams(), {
+                var parser = new BodyParser(_.extend(mime, {
+                    length: req.headers['content-length']
+                }));
+
+                parser.parse(req).done(function (data) {
+                    test.deepEqual(data, {
+                        input: {
+                            a: '42'
+                        },
+                        type: 'json'
+                    });
+                    res.end();
+                });
+            }, function (err) {
+                test.ok(!err);
+                test.done();
+            });
+        },
+        function (test) {
+            http({
+                method: 'post',
+                body: '{"a": "42"}',
+                headers: {
+                    'content-type': 'application/foo+json'
+                }
+            }, function (req, res) {
+
+                var mime = toParams(req.headers['content-type']);
+
+                var parser = new BodyParser(_.extend(mime, {
                     length: req.headers['content-length']
                 }));
 
@@ -144,9 +179,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var mime = new ContentType(req.headers['content-type']);
+                var mime = toParams(req.headers['content-type']);
 
-                var parser = new BodyParser(_.extend(mime.toParams(), {
+                var parser = new BodyParser(_.extend(mime, {
                     length: req.headers['content-length']
                 }));
 
@@ -167,9 +202,9 @@ module.exports = {
                 }
             }, function (req, res) {
 
-                var mime = new ContentType(req.headers['content-type']);
+                var mime = toParams(req.headers['content-type']);
 
-                var parser = new BodyParser(_.extend(mime.toParams(), {
+                var parser = new BodyParser(_.extend(mime, {
                     length: req.headers['content-length']
                 }));
 
@@ -194,9 +229,9 @@ module.exports = {
                 bodyEncoding: 'multipart'
             }, function (req, res) {
 
-                var mime = new ContentType(req.headers['content-type']);
+                var mime = toParams(req.headers['content-type']);
 
-                var parser = new BodyParser(_.extend(mime.toParams(), {
+                var parser = new BodyParser(_.extend(mime, {
                     length: req.headers['content-length']
                 }));
 

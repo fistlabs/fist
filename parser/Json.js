@@ -1,6 +1,5 @@
 'use strict';
 
-var R_JSON = /^(?:(?:[-\w\.]+\+)?json|json\+[-\w\.]+)$/i;
 var Raw = /** @type Raw */ require('./Raw');
 
 var inherit = require('inherit');
@@ -48,7 +47,7 @@ var Json = inherit(Raw, /** @lends Json.prototype*/ {
     matchMedia: function (media) {
 
         return 'application' === media.type &&
-            R_JSON.test(media.subtype);
+               ('json' === media.subtype || 'json' === media.suffix);
     }
 
 });
