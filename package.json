@@ -17,7 +17,8 @@
         "dicer": "~0.2.3",
         "vow": "~0.4.4",
         "inherit": "~2.2.2",
-        "cookie": "~0.1.2"
+        "cookie": "~0.1.2",
+        "media-typer": "~0.2.0"
     },
     "description": "nodejs application framework",
     "devDependencies": {
@@ -29,8 +30,7 @@
         "vow": "~0.4.4",
         "glob": "~4.0.2",
         "benchmark": "~1.0.0",
-        "express": "~4.4.3",
-        "media-typer": "~0.2.0"
+        "express": "~4.4.3"
     },
     "license": "MIT",
     "main": "Framework",
@@ -51,5 +51,5 @@
     "engines": {
         "node": ">= 0.10.0"
     },
-    "version": "1.1.0"
+    "version": "1.1.1"
 }
