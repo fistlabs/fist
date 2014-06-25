@@ -51,69 +51,6 @@ module.exports = {
             test.done();
         }
     ],
-    'Framework.prototype.plug': [
-        function (test) {
-            var spy = [];
-            var framework = new Framework();
-
-            framework.plug(function (done) {
-                setTimeout(function () {
-                    spy.push(1);
-                    done();
-                }, 0);
-            });
-
-            framework.plug(function (done) {
-                setTimeout(function () {
-                    spy.push(2);
-                    done();
-                }, 10);
-            });
-
-            framework.ready().done(function () {
-                test.deepEqual(spy, [1, 2]);
-                test.done();
-            });
-        },
-        function (test) {
-            var framework = new Framework();
-
-            framework.plug(function (done) {
-                setTimeout(function () {
-                    done();
-                }, 0);
-            });
-
-            framework.plug(function (done) {
-                setTimeout(function () {
-                    done('ERR');
-                }, 10);
-            });
-
-            framework.ready().fail(function (err) {
-                test.strictEqual(err, 'ERR');
-                test.done();
-            });
-        },
-        function (test) {
-            var framework = new Framework();
-
-            framework.plug(function (done) {
-                setTimeout(function () {
-                    done();
-                }, 0);
-            });
-
-            framework.plug(function () {
-                throw 'ERR';
-            });
-
-            framework.ready().fail(function (err) {
-                test.strictEqual(err, 'ERR');
-                test.done();
-            });
-        }
-    ],
     'Framework.prototype._handle': [
         function (test) {
             var framework = new Framework();

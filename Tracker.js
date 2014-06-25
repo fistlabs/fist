@@ -34,6 +34,24 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
          * @type {Object}
          * */
         this.tasks = {};
+
+        /**
+         *
+         * @protected
+         * @memberOf {Tracker}
+         * @property
+         * @type {Array<Function>}
+         * */
+        this._plugs = [];
+    },
+
+    /**
+     * @public
+     * @memberOf {Tracker}
+     * @method
+     * */
+    plug: function () {
+        Array.prototype.push.apply(this._plugs, arguments);
     },
 
     /**
@@ -59,6 +77,33 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
             return track.tasks[path];
         }, this);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Object} params
+     *
+     * @returns {Ctx}
+     * */
+    _createCtx: function (params) {
+
+        return new Ctx(params);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @returns {vow.Promise}
+     * */
+    _getReady: function () {
+        var plugins = _.map(this._plugs, this.__invokePlugin, this);
+
+        return vow.all(plugins).then(this.__base, this);
     },
 
     /**
@@ -135,17 +180,49 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
     },
 
     /**
-     * @protected
+     * @private
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Object} params
+     * @param {Function} plug
      *
-     * @returns {Ctx}
+     * @returns {vow.Promise}
      * */
-    _createCtx: function (params) {
+    __invokePlugin: function (plug) {
 
-        return new Ctx(params);
+        return vow.invoke(this.__wrapPlugin(plug));
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Function} plug
+     *
+     * @returns {Function}
+     * */
+    __wrapPlugin: function (plug) {
+
+        var self = this;
+
+        return function () {
+
+            var defer = vow.defer();
+
+            plug.call(self, function (err) {
+
+                if ( 0 === arguments.length ) {
+                    defer.resolve();
+
+                    return;
+                }
+
+                defer.reject(err);
+            });
+
+            return defer.promise();
+        };
     }
 
 });

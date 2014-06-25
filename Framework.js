@@ -29,16 +29,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.__base(params);
 
         /**
-         * Плагины, задачи на инициализацию
-         *
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Array<Function>}
-         * */
-        this._plugs = [];
-
-        /**
          * Шаблоны для track.render()
          *
          * @public
@@ -100,17 +90,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.ready(true);
 
         return server;
-    },
-
-    /**
-     * Добавляет плагин[ы]
-     *
-     * @public
-     * @memberOf {Framework}
-     * @method
-     * */
-    plug: function () {
-        Array.prototype.push.apply(this._plugs, arguments);
     },
 
     /**
@@ -212,19 +191,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      * @memberOf {Framework}
      * @method
      *
-     * @returns {vow.Promise}
-     * */
-    _getReady: function () {
-        var plugins = _.map(this._plugs, this.__invokePlugin, this);
-
-        return vow.all(plugins).then(this.__base, this);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
      * @param {Connect} track
      * */
     _handle: function (track) {
@@ -282,52 +248,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         }
 
         return next.call(this);
-    },
-
-    /**
-     * @private
-     * @memberOf {Framework}
-     * @method
-     *
-     * @param {Function} plug
-     *
-     * @returns {vow.Promise}
-     * */
-    __invokePlugin: function (plug) {
-
-        return vow.invoke(this.__wrapPlugin(plug));
-    },
-
-    /**
-     * @private
-     * @memberOf {Framework}
-     * @method
-     *
-     * @param {Function} plug
-     *
-     * @returns {Function}
-     * */
-    __wrapPlugin: function (plug) {
-
-        var self = this;
-
-        return function () {
-
-            var defer = vow.defer();
-
-            plug.call(self, function (err) {
-
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
-
-                    return;
-                }
-
-                defer.reject(err);
-            });
-
-            return defer.promise();
-        };
     }
 
 });
