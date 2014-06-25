@@ -1,4 +1,4 @@
-fist [![Build Status](https://travis-ci.org/fistlabs/fist.png?branch=master)](https://travis-ci.org/fistlabs/fist)
+fist [![Build Status](https://travis-ci.org/fistlabs/fist.png?branch=master)](https://travis-ci.org/fistlabs/fist) [![Dependency Status](https://david-dm.org/fistlabs/fist.svg)](https://david-dm.org/fistlabs/fist) [![devDependency Status](https://david-dm.org/fistlabs/fist/dev-status.svg)](https://david-dm.org/fistlabs/fist#info=devDependencies)
 =========
 ```Fist``` - это nodejs-фреймворк для написания серверных приложений. ```Fist``` предлагает архитектуру, поддержка которой одинаково проста как для простых так и для сложных web-серверов.
 ```js
