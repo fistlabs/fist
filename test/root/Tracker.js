@@ -15,13 +15,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.resolve(42);
+                        defer.resolve(42);
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -106,13 +108,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.reject(42);
+                        defer.reject(42);
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -128,13 +132,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.resolve(vow.reject(42));
+                        defer.resolve(vow.reject(42));
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 
@@ -150,13 +156,15 @@ module.exports = {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, ctx) {
+                data: function () {
+
+                    var defer = vow.defer();
 
                     setTimeout(function () {
-                        ctx.resolve(vow.reject(vow.resolve(42)));
+                        defer.resolve(vow.reject(vow.resolve(42)));
                     }, 0);
 
-                    return ctx.promise();
+                    return defer.promise();
                 }
             });
 

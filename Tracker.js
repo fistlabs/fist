@@ -53,62 +53,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         return this.ready().then(function () {
 
-            if ( !_.has(track.tasks, path) ) {
-                track.tasks[path] = this.__resolveCtx(track, path, params);
+            if ( !vow.isPromise(track.tasks[path]) ) {
+                track.tasks[path] = this.__resolveUnit(track, path, params);
             }
 
-            return track.tasks[path].promise();
-
+            return track.tasks[path];
         }, this);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {Object} unit
-     * @param {Ctx} ctx
-     * */
-    _call: function (track, unit, ctx) {
-
-        var result;
-
-        if ( _.isFunction(unit.data) ) {
-
-            try {
-                result = unit.data(track, ctx);
-
-                if ( ctx.promise() === result ) {
-
-                    return;
-                }
-
-                ctx.resolve(result);
-
-            } catch (err) {
-                ctx.reject(err);
-            }
-
-            return;
-        }
-
-        ctx.resolve(unit.data);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Object} params
-     *
-     * @returns {Ctx}
-     * */
-    _createCtx: function (params) {
-
-        return new Ctx(params);
     },
 
     /**
@@ -118,17 +68,16 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      *
      * @param {Track} track
      * @param {String} path
-     * @param {Object} params
-     *
-     * @returns {Ctx}
+     * @param {*} [params]
      * */
-    __resolveCtx: function (track, path, params) {
+    __resolveUnit: function (track, path, params) {
 
         var date = new Date();
-        var ctx = this._createCtx(params);
+        var defer = this._createCtx(params);
+        var deps;
         var unit = this.getUnit(path);
 
-        ctx.promise().done(function (data) {
+        defer.promise().done(function (data) {
             this.emit('ctx:accept', {
                 trackId: track.id,
                 path: path,
@@ -158,46 +107,55 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         });
 
         if ( _.isUndefined(unit) ) {
-            ctx.reject();
+            defer.reject();
 
-            return ctx;
+            return defer.promise();
         }
 
-        this.__resolveDeps(track, unit, ctx).
-            then(function () {
-                this._call(track, unit, ctx);
-            }, this);
+        deps = _.map(toArray(unit.deps), function (path) {
 
-        return ctx;
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {Unit} unit
-     * @param {Ctx} ctx
-     *
-     * @returns {vow.Promise}
-     * */
-    __resolveDeps: function (track, unit, ctx) {
-
-        var deps = _.map(toArray(unit.deps), function (path) {
-
-            var promise = this.resolve(track, path);
+            var promise = this.resolve(track, path, params);
 
             promise.done(function (data) {
-                ctx.setRes(path, data);
+                defer.setRes(path, data);
             }, function (data) {
-                ctx.setErr(path, data);
+                defer.setErr(path, data);
             });
 
             return promise;
         }, this);
 
-        return vow.allResolved(deps);
+        deps = vow.allResolved(deps);
+
+        deps.done(function () {
+
+            var data = unit.data;
+
+            if ( _.isFunction(unit.data) ) {
+                data = vow.invoke(function () {
+
+                    return unit.data(track, defer);
+                });
+            }
+
+            defer.resolve(data);
+        });
+
+        return defer.promise();
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Object} params
+     *
+     * @returns {Ctx}
+     * */
+    _createCtx: function (params) {
+
+        return new Ctx(params);
     }
 
 });
