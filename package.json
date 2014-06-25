@@ -10,6 +10,7 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
         "finger": "0.0.2",
         "fist.lang.toarray": "0.0.2",
