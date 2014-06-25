@@ -382,6 +382,69 @@ module.exports = {
             });
         }
     ],
+    'Tracker.prototype.plug': [
+        function (test) {
+            var spy = [];
+            var tracker = new Tracker();
+
+            tracker.plug(function (done) {
+                setTimeout(function () {
+                    spy.push(1);
+                    done();
+                }, 0);
+            });
+
+            tracker.plug(function (done) {
+                setTimeout(function () {
+                    spy.push(2);
+                    done();
+                }, 10);
+            });
+
+            tracker.ready().done(function () {
+                test.deepEqual(spy, [1, 2]);
+                test.done();
+            });
+        },
+        function (test) {
+            var tracker = new Tracker();
+
+            tracker.plug(function (done) {
+                setTimeout(function () {
+                    done();
+                }, 0);
+            });
+
+            tracker.plug(function (done) {
+                setTimeout(function () {
+                    done('ERR');
+                }, 10);
+            });
+
+            tracker.ready().fail(function (err) {
+                test.strictEqual(err, 'ERR');
+                test.done();
+            });
+        },
+        function (test) {
+            var tracker = new Tracker();
+
+            tracker.plug(function (done) {
+                setTimeout(function () {
+                    done();
+                }, 0);
+            });
+
+            tracker.plug(function () {
+                throw 'ERR';
+            });
+
+            tracker.ready().fail(function (err) {
+                test.strictEqual(err, 'ERR');
+                test.done();
+            });
+        }
+    ],
     'Unit\'s caching': [
         function (test) {
             var tracker = new Tracker();

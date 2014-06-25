@@ -29,16 +29,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.__base(params);
 
         /**
-         * Плагины, задачи на инициализацию
-         *
-         * @protected
-         * @memberOf {Framework}
-         * @property
-         * @type {Array<Function>}
-         * */
-        this._plugs = [];
-
-        /**
          * Шаблоны для track.render()
          *
          * @public
@@ -100,17 +90,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.ready(true);
 
         return server;
-    },
-
-    /**
-     * Добавляет плагин[ы]
-     *
-     * @public
-     * @memberOf {Framework}
-     * @method
-     * */
-    plug: function () {
-        Array.prototype.push.apply(this._plugs, arguments);
     },
 
     /**
@@ -205,36 +184,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
     _createTrack: function (req, res) {
 
         return new Connect(this, req, res);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    _getReady: function () {
-
-        var plugins = _.map(this._plugs, function (plug) {
-
-            var defer = vow.defer();
-
-            plug.call(this, function (err) {
-
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
-
-                    return;
-                }
-
-                defer.reject(err);
-            });
-
-            return defer.promise();
-        }, this);
-
-        return vow.all(plugins).then(this.__base, this);
     },
 
     /**
