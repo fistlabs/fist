@@ -142,14 +142,11 @@ function parseMultipart (stream, params) {
             if ( _.isArray(result[sect][field]) ) {
                 result[sect][field].push(buf);
 
+            } else if ( _.has(result[sect], field) ) {
+                result[sect][field] = [result[sect][field], buf];
+
             } else {
-
-                if ( _.has(result[sect], field) ) {
-                    result[sect][field] = [result[sect][field], buf];
-
-                } else {
-                    result[sect][field] = buf;
-                }
+                result[sect][field] = buf;
             }
 
             partCleanup();
