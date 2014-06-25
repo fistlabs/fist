@@ -16,36 +16,6 @@ module.exports = {
             test.done();
         }
     ],
-    'Ctx.prototype.getResolver': [
-        function (test) {
-
-            var ctx = new Ctx();
-            var done = ctx.getResolver();
-
-            setTimeout(function () {
-                done(null, 42);
-            }, 0);
-
-            ctx.promise().done(function (res) {
-                test.strictEqual(res, 42);
-                test.done();
-            });
-        },
-        function (test) {
-
-            var ctx = new Ctx();
-            var done = ctx.getResolver();
-
-            setTimeout(function () {
-                done(42);
-            }, 0);
-
-            ctx.promise().fail(function (res) {
-                test.strictEqual(res, 42);
-                test.done();
-            }).done();
-        }
-    ],
     'Ctx.link': [
         function (test) {
 

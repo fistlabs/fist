@@ -111,29 +111,6 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
     setErr: function (path, data) {
 
         return Ctx.add(this.ers, path, data);
-    },
-
-    /**
-     * @public
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @returns {Function}
-     * */
-    getResolver: function () {
-
-        var self = this;
-
-        return function (err, res) {
-
-            if ( 2 > arguments.length ) {
-                self.reject(err);
-
-                return;
-            }
-
-            self.resolve(res);
-        };
     }
 
 }, {
