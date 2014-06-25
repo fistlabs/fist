@@ -35,7 +35,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
          * @property
          * @type {LRUCache}
          * */
-        this.__cache = new LRUCache(this.__getCacheOpts());
+        this.__cache = this._createCache(this._getCacheOpts());
 
         //  make proto-deps own and unique
         this.addDeps(this.deps);
@@ -152,6 +152,38 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     },
 
     /**
+     * @protected
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Object} params
+     *
+     * @returns {LRUCache}
+     * */
+    _createCache: function (params) {
+
+        return new LRUCache(params);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Unit}
+     * @method
+     *
+     * @returns {Object}
+     * */
+    _getCacheOpts: function () {
+
+        var params = _.extend({}, this.params.cache, {
+            maxAge: this._maxAge
+        });
+
+        params.maxAge = cast2LRUCacheMaxAge(params.maxAge);
+
+        return params;
+    },
+
+    /**
      * @private
      * @memberOf {Unit}
      * @method
@@ -189,24 +221,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         }
 
         return vow.resolve(this.data);
-    },
-
-    /**
-     * @private
-     * @memberOf {Unit}
-     * @method
-     *
-     * @returns {Object}
-     * */
-    __getCacheOpts: function () {
-
-        var params = _.extend({}, this.params.cache, {
-            maxAge: this._maxAge
-        });
-
-        params.maxAge = cast2LRUCacheMaxAge(params.maxAge);
-
-        return params;
     }
 
 });
