@@ -413,6 +413,7 @@ module.exports = {
             tracker.unit({
                 path: 'test',
                 spy: [],
+                _maxAge: 0,
                 data: function () {
                     this.spy.push(1);
 

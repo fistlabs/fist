@@ -35,9 +35,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
          * @property
          * @type {LRUCache}
          * */
-        this.__cache = new LRUCache(_.extend({
-            maxAge: this._maxAge
-        }, this.params.cache));
+        this.__cache = new LRUCache(this.__getCacheOpts());
 
         //  make proto-deps own and unique
         this.addDeps(this.deps);
@@ -141,14 +139,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     /**
      * @protected
      * @memberOf {Unit}
-     * @property
-     * @type {Number}
-     * */
-    _maxAge: -Infinity,
-
-    /**
-     * @protected
-     * @memberOf {Unit}
      * @method
      *
      * @param {Track} track
@@ -199,8 +189,54 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         }
 
         return vow.resolve(this.data);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @returns {Object}
+     * */
+    __getCacheOpts: function () {
+
+        var params = _.extend({}, this.params.cache, {
+            maxAge: this._maxAge
+        });
+
+        params.maxAge = cast2LRUCacheMaxAge(params.maxAge);
+
+        return params;
     }
 
 });
+
+/**
+ * @private
+ * @static
+ * @memberOf Unit
+ *
+ * @method
+ *
+ * @param {*} n
+ *
+ * @returns {Number}
+ * */
+function cast2LRUCacheMaxAge (n) {
+
+    n = +n;
+
+    if ( _.isNaN(n) ) {
+
+        return -Infinity;
+    }
+
+    if ( 0 === n ) {
+
+        return -Infinity;
+    }
+
+    return n;
+}
 
 module.exports = Unit;
