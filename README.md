@@ -255,16 +255,51 @@ track.arg('pageName', true) // -> undefined
 ```
 ###```track.header(name[, value])```
 Устанавливает заголовок в ```response``` или читает его из ```request```
+```js
+//  Поставить шапку в ответ
+track.header('Content-Type', 'text/html');
+
+track.header('Cookie') // -> name=value
+```
 ###```track.cookie(name[, value[, opts]])```
 Читает куку из ```request``` или ставит ее в ```response```
+```js
+track.cookie('name') // -> value
+
+//  Выставить куку
+track.cookie('name', 'value', {
+    path: '/'
+})
+```
 ###```track.send([status[, body]])```
 Выполняет ответ приложения
+```js
+track.send(200, ':)');
+```
 ###```track.body()```
 Скачивает тело запроса и парсит его, возвращает ```promise```
+```js
+track.body().then(function (body) {
+
+    //  в поле body.type содержится тип тела multipart/json/urlencoded/raw
+    //  в поле body.input содержится само тело, во всех случаях кроме raw это ключ-значение,
+    //  если тело - raw, то это будет Buffer
+    //  Если тело - multipart, то можно обнаружит специальное поле files
+});
+```
 ###```track.redirect([status, ]url)```
 Создает перенаправление на клиенте
+```js
+track.redirect(301, 'http://www.yandex.ru');
+```
 ###```track.buidlPath(routeName[, opts])```
 Создает ```url``` из шаблона запроса
+```js
+app.route('/(<pageName>/)', {name: 'anyPage', unit: 'universalController'});
+//  ***
+track.buildPath('anyPage', {pageName: 'test', x: 42}); // -> /test/?x=42
+```
+
 ###```track.url```
 Объект распаршенного ```url``` запроса
 ###```track.match```
