@@ -30,8 +30,7 @@
         "asker": "0.4.5",
         "vow": "0.4.4",
         "glob": "4.0.2",
-        "benchmark": "1.0.0",
-        "express": "4.4.3"
+        "express": "4.4.4"
     },
     "license": "MIT",
     "main": "fist",
@@ -47,7 +46,7 @@
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
         "cover": "istanbul cover test/runner",
-        "benchmark": "node benchmark/runner"
+        "benchmark": "benchmark/runner.sh benchmark/express.js && benchmark/runner.sh benchmark/fist.js"
     },
     "engines": {
         "node": ">= 0.10.0"
