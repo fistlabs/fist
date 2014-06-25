@@ -231,13 +231,7 @@ function createUnits (decls) {
     var units = {};
     var remaining = decls.length;
 
-    do {
-
-        if ( _.isEmpty(decls) ) {
-
-            break;
-        }
-
+    while ( !_.isEmpty(decls) ) {
         decls = addUnits(decls, units);
 
         if ( _.size(decls) < remaining ) {
@@ -248,8 +242,7 @@ function createUnits (decls) {
 
         throw new ReferenceError('There is no base unit for: %s!',
             _.map(decls, getDeclPath).join(', '));
-
-    } while (true);
+    }
 
     if ( checkDeps(units) ) {
 
