@@ -12,7 +12,7 @@
     "dependencies": {
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
-        "finger": "0.1.0",
+        "finger": "0.1.1",
         "lodash-node": "2.4.1",
         "vow": "0.4.4",
         "inherit": "2.2.2",
