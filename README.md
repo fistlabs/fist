@@ -2,8 +2,8 @@ fist [![Build Status](https://travis-ci.org/fistlabs/fist.png?branch=master)](ht
 =========
 ```Fist``` - это nodejs-фреймворк для написания серверных приложений. ```Fist``` предлагает архитектуру, поддержка которой одинаково проста как для простых так и для сложных web-серверов.
 ```js
-var Framework = require('fist/Framework');
-var app = new Framework();
+var fist = require('fist');
+var app = fist();
 
 app.unit({
     path: 'time.appstart', 
@@ -60,7 +60,7 @@ app.route('/settings/', {
 //  далее идет декларация узлов
 //  ***
 ```
-Узлом приложения является инстанс класса ```fist/unit/Unit```. Каждый узел должен иметь некоторый идентификатор и имплементирать метод ```data```, в который отвечает за разрешение узла. Узлы могут зависеть друг от друга, что должно быть указано в декларации. Это значит что до того как выполнится текущий узел, будут выполнены его зависимости, результаты которых будут доступны в методе ```data```.
+Узлом приложения является инстанс класса ```fist/unit/_unit```. Каждый узел должен иметь некоторый идентификатор и имплементирать метод ```data```, который отвечает за разрешение узла. Узлы могут зависеть друг от друга, что должно быть указано в декларации. Это значит что до того как выполнится текущий узел, будут выполнены его зависимости, результаты которых будут доступны в методе ```data```.
 
 ```js
 app.unit({
@@ -100,13 +100,13 @@ app.unit({
 
 #Приложение
 ##API
-###```new Framework([params])```
+###```fist([params])```
 Инстанцирует приложение
 ```js
-var Framework = require('fist/Framework');
+var fist = require('fist');
 var configs = require('./configs');
 //  Инстанцирую приложение
-var app = new Framework(configs);
+var app = fist(configs);
 ```
 ###```app.listen()```
 Запускает сервер приложения
@@ -146,6 +146,13 @@ app.unit({
 Все параметры приложения, которые были переданы в конструктор
 ###```app.renderers```
 Объект, ключами которого являются имена шаблонов, а значениями - функции, которые вызываются в контексте ```track```. Используется в методе ```track.render``` для шаблонизации данных.
+
+###```app._createCache(params)```
+_protected_
+
+Этот метод вызывается при инстанцировании. Возвращаемый объект реализует механизм кэширования и должен имплементировать некоторый интерфейс
+####```cache.set(key, value, maxAge, callback)```
+####```cache.get(key, callback)```
 
 ##События
 Приложение обладает свойствами ```EventEmitter```, поэтому на нем можно слушать некоторые автоматические события.
@@ -199,15 +206,20 @@ app.unit({
     }
 });
 ```
-Объект передаваемый в метод ```app.unit``` является расширением прототипа узла. По умолчанию каждый узел наследует от ```fist/unit/Unit```, но можно наследовать от любого узла. Для этого необходимо указать ```String base```, что является именем узла, от которого нужно унаследовать. В приложении могут быть абстрактные узлы, декларация которых не требуется, но от которых нужно унаследовать. Такие абстрактные узлы должны наследовать от ```fist/unit/Unit``` с помощью [```inherit```](//github.com/dfilatov/inherit). Получившийся в результате наследования конструктор должен указываться в ```base```.
+Объект передаваемый в метод ```app.unit``` является расширением прототипа узла. По умолчанию каждый узел наследует от ```fist/unit/_unit```, но можно наследовать от любого узла. Для этого необходимо указать ```base```, что является именем узла, от которого нужно унаследовать. В приложении могут быть абстрактные узлы, декларация которых не требуется, но от которых нужно унаследовать. Чтобы создать такой узел в его ```path``` первый символ должен быть не буквенный. Подобные узлы нет смысла добавлять в зависимости, потому что они не участвуют в операции разрешения.
 ```js
-var Model = require('./lib/Model');
 
 app.unit({
-    base: Model,
+    path: '_model',
+    data: function () {
+        return doAuth();
+    }
+})
+app.unit({
+    base: '_model',
     path: 'users',
     data: function (track, ctx) {
-        return getUsers(this.__base(track, ctx));
+        return this.__base(track, ctx).then(getUsers);
     }
 });
 
@@ -238,8 +250,25 @@ app.unit({
     __constructor: function (params) {
         assert.deepEqual(params, config);
     }
+});
+```
+
+###Кэширование
+У узлов есть возможность кэширования результатов выполнения. Для этого нужно указать в декларации свойство ```_maxAge``` и имплементировать метод ```_getCacheKeyParts``` который должен вернуть массив строк - токенов ключа для кэширования.
+```js
+app.unit({
+    path: 'newsPost',
+    _maxAge: 500, //ms
+    _getCacheKeyParts: function (track, ctx) {
+        return [track.arg('blogId'), track.arg('postId')];
+    },
+    data: function () {
+        return loadPost();
+    }
 })
 ```
+
+Механизм кэширования можно [заменить](#app_createcacheparams) на свой.
 #Track
 Этот объект является контекстом запроса. В нем содержатся средства для чтения из ```request``` и для записи в ```response```.
 ###```track.arg(name[, only])```
@@ -248,10 +277,10 @@ app.unit({
 app.route('/(<pageName>/)', {name: 'anyPage', unit: 'universalController'});
 //  ***
 //  GET /index/
-track.arg('pageName') // -> index
+track.arg('pageName'); // -> index
 //  GET /?pageName=foo
-track.arg('pageName') // -> foo
-track.arg('pageName', true) // -> undefined
+track.arg('pageName'); // -> foo
+track.arg('pageName', true); // -> undefined
 ```
 ###```track.header(name[, value])```
 Устанавливает заголовок в ```response``` или читает его из ```request```
@@ -259,17 +288,17 @@ track.arg('pageName', true) // -> undefined
 //  Поставить шапку в ответ
 track.header('Content-Type', 'text/html');
 
-track.header('Cookie') // -> name=value
+track.header('Cookie'); // -> name=value
 ```
 ###```track.cookie(name[, value[, opts]])```
 Читает куку из ```request``` или ставит ее в ```response```
 ```js
-track.cookie('name') // -> value
+track.cookie('name'); // -> value
 
 //  Выставить куку
 track.cookie('name', 'value', {
     path: '/'
-})
+});
 ```
 ###```track.send([status[, body]])```
 Выполняет ответ приложения
