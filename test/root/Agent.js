@@ -128,7 +128,22 @@ module.exports = {
 
             agent.unit({
                 path: 'a',
+                deps: ['b', 'd']
+            });
+
+            agent.unit({
+                path: 'b',
+                deps: 'c'
+            });
+
+            agent.unit({
+                path: 'c',
                 deps: ['a']
+            });
+
+            agent.unit({
+                path: 'd',
+                deps: ['b']
             });
 
             agent.ready().fail(function (err) {

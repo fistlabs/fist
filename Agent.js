@@ -184,44 +184,56 @@ function addUnits (decls, units) {
     }, []);
 }
 
-/**
- * @private
- * @static
- * @memberOf Agent
- * @param {Object} units
- *
- * @returns {Object}
- * */
-function checkDeps (units) {
+function findAllConflicts (units) {
 
-    return _.every(units, function checkDeps (unit, path) {
+    var found4 = {};
 
-        var deps;
+    return _.reduce(units, function (conflicts, unit, path) {
 
-        if ( _.isUndefined(unit) ) {
+        return conflicts.concat(findConflicts(path, units, [], found4));
+    }, []);
+}
 
-            return true;
+function findConflicts (part, units, path, found4) {
+
+    var decl = units[part];
+    var deps;
+    var paths = [];
+
+    if ( _.has(found4, part) ) {
+
+        return paths;
+    }
+
+    if ( _.isUndefined(decl) ) {
+
+        return paths;
+    }
+
+    deps = decl[1].deps;
+
+    if ( !_.size(deps) ) {
+
+        return paths;
+    }
+
+    _.forEach(deps, function (dep) {
+        var branch = _.clone(path);
+
+        branch.push(dep);
+
+        if ( _.contains(path, dep) ) {
+            paths.push(branch);
+
+            return;
         }
 
-        unit = unit[1];
-        deps = unit.deps;
-
-        if ( _.isUndefined(deps) || _.isNull(deps) ) {
-            deps = [];
-        } else if ( !_.isArray(deps) ) {
-            deps = [deps];
-        }
-
-        return _.every(deps, function (name) {
-
-            if ( path === name ) {
-
-                return false;
-            }
-
-            return checkDeps(units[name], path);
-        }, this);
+        paths = paths.concat(findConflicts(dep, units, branch, found4));
     });
+
+    found4[part] = true;
+
+    return paths;
 }
 
 /**
@@ -236,10 +248,11 @@ function checkDeps (units) {
  * */
 function createUnits (decls) {
 
+    var conflicts;
     var units = {};
     var remaining = decls.length;
 
-    while ( !_.isEmpty(decls) ) {
+    while ( _.size(decls) ) {
         decls = addUnits(decls, units);
 
         if ( _.size(decls) < remaining ) {
@@ -248,17 +261,19 @@ function createUnits (decls) {
             continue;
         }
 
-        throw new ReferenceError('There is no base unit for: %s!',
-            _.map(decls, getDeclPath).join(', '));
+        throw new ReferenceError('no base unit for: ' +
+            _.map(decls, formatBaseConflictDetails).join(', '));
     }
 
-    if ( checkDeps(units) ) {
+    conflicts = findAllConflicts(units);
+
+    if ( !_.size(conflicts) ) {
 
         return units;
     }
 
-    //  TODO better error message (a>b>c>a)
-    throw new ReferenceError('Recursive dependencies detected');
+    throw new ReferenceError('unit dependencies conflict: ' +
+        _.map(conflicts, formatDepsConflictDetails).join(', '));
 }
 
 /**
@@ -269,11 +284,26 @@ function createUnits (decls) {
  *
  * @param {Array} decl
  *
- * @returns {*}
+ * @returns {String}
  * */
-function getDeclPath (decl) {
+function formatBaseConflictDetails (decl) {
 
-    return decl[0].path;
+    return decl[0].path + ' (needs ' + decl[0].base + ')';
+}
+
+/**
+ * @private
+ * @static
+ * @memberOf Agent
+ * @method
+ *
+ * @param {Array<String>} path
+ *
+ * @returns {String}
+ * */
+function formatDepsConflictDetails (path) {
+
+    return path.join(' < ');
 }
 
 module.exports = Agent;

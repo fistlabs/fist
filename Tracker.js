@@ -36,12 +36,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         /**
          *
-         * @protected
+         * @private
          * @memberOf {Tracker}
          * @property
          * @type {Array<Function>}
          * */
-        this._plugs = [];
+        this.__plugs = [];
     },
 
     /**
@@ -50,7 +50,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @method
      * */
     plug: function () {
-        Array.prototype.push.apply(this._plugs, arguments);
+        Array.prototype.push.apply(this.__plugs, arguments);
     },
 
     /**
@@ -82,6 +82,17 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }, this);
     },
 
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Track} track
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {vow.Promise}
+     * */
     __immediateResolve: function (track, path, params) {
 
         if ( !_.has(track.tasks, path) ) {
@@ -113,7 +124,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     _getReady: function () {
-        var plugins = _.map(this._plugs, this.__invokePlugin, this);
+        var plugins = _.map(this.__plugs, this.__invokePlugin, this);
 
         return vow.all(plugins).then(this.__base, this);
     },
@@ -171,13 +182,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }
 
         deps = unit.deps;
-
-        if ( _.isUndefined(deps) || _.isNull(deps) ) {
-            deps = [];
-
-        } else if ( !_.isArray(deps) ) {
-            deps = [deps];
-        }
 
         //  avoid possible tick
         if ( 0 === deps.length ) {
