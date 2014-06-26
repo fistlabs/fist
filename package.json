@@ -22,7 +22,7 @@
     },
     "description": "nodejs application framework",
     "devDependencies": {
-        "jscs": "1.5.1",
+        "jscs": "1.5.4",
         "eslint": "0.6.2",
         "nodeunit": "0.9.0",
         "istanbul": "0.2.11",
