@@ -111,24 +111,22 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
     resolve: function (track, path, params) {
 
         var defer = vow.defer();
-        var promise;
 
         if ( track.res.hasResponded() ) {
 
             return defer.promise();
         }
 
-        promise = this.__base(track, path, params);
+        this.__base(track, path, params).
+            always(function (promise) {
 
-        promise.always(function (promise) {
+                if ( track.res.hasResponded() ) {
 
-            if ( track.res.hasResponded() ) {
+                    return;
+                }
 
-                return;
-            }
-
-            defer.resolve(promise);
-        }).done();
+                defer.resolve(promise);
+            }).done();
 
         return defer.promise();
     },
