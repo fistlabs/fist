@@ -29,14 +29,6 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @public
          * @memberOf {Agent}
          * @property
-         * @type {Array}
-         * */
-        this.decls = [];
-
-        /**
-         * @public
-         * @memberOf {Agent}
-         * @property
          * @type {Object}
          * */
         this.params = _.extend({}, this.params, params);
@@ -48,6 +40,14 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @type {Object}
          * */
         this.units = {};
+
+        /**
+         * @private
+         * @memberOf {Agent}
+         * @property
+         * @type {Array}
+         * */
+        this.__decls = [];
     },
 
     /**
@@ -82,7 +82,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
             members = members[0];
         }
 
-        this.decls.push([Object(members), statics]);
+        this.__decls.push([Object(members), statics]);
 
         return this;
     },
@@ -132,7 +132,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
 
         defer.resolve(vow.invoke(function () {
 
-            return self.__createUnits(self.decls);
+            return self.__createUnits(self.__decls);
         }));
 
         return defer.promise();

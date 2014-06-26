@@ -12,7 +12,6 @@ module.exports = {
             var agent = new Agent();
 
             test.ok(agent instanceof EventEmitter);
-            test.ok(_.isArray(agent.decls));
             test.ok(_.isObject(agent.units));
             test.done();
         }
