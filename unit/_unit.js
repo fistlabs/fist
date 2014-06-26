@@ -47,7 +47,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @property
      * @type {String}
      * */
-    path: 'unit',
+    path: '_unit',
 
     /**
      * @public

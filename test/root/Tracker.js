@@ -2,7 +2,6 @@
 
 var Tracker = require('../../Tracker');
 var Track = require('../../track/Track');
-var Unit = require('../../unit/Unit');
 
 var vow = require('vow');
 

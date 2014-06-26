@@ -1,6 +1,6 @@
 'use strict';
 
-var BaseUnit = require('./unit/Unit');
+var BaseUnit = require('./unit/_unit');
 var EventEmitter = require('events').EventEmitter;
 
 var _ = require('lodash-node');
@@ -127,7 +127,10 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
         var self = this;
 
         defer.promise().then(function (units) {
-            this.units = units;
+            this.units = _.omit(units, function (unit, path) {
+
+                return !/^[a-z]/i.test(path);
+            });
         }, this);
 
         defer.resolve(vow.invoke(function () {
@@ -137,6 +140,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
 
         return defer.promise();
     },
+
     /**
      * @private
      * @memberOf {Agent}
@@ -149,7 +153,9 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
     __createUnits: function (decls) {
 
         var conflicts;
-        var units = {};
+        var units = {
+            _unit: [BaseUnit, new BaseUnit(this.params)]
+        };
         var remaining = decls.length;
 
         while ( _.size(decls) ) {
@@ -190,22 +196,20 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
 
         return _.reduce(decls, function (decls, decl) {
 
-            var Base;
             var Unit;
+            var base;
             var members = Object(decl[0]);
             var unit;
 
             //  Если не передали base, то сами добьем
             if ( !_.has(members, 'base') ) {
-                members.base = BaseUnit;
+                members.base = '_unit';
             }
 
-            Base = members.base;
+            base = members.base;
 
-            if ( _.isFunction(Base) ||
-                _.has(units, Base) && (Base = units[Base][0]) ) {
-
-                Unit = inherit(Base, members, decl[1]);
+            if ( _.has(units, base) ) {
+                Unit = inherit(units[base][0], members, decl[1]);
                 unit = new Unit(this.params);
                 units[unit.path] = [Unit, unit];
 

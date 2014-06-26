@@ -2,7 +2,7 @@
 
 var Agent = require('../../Agent');
 var EventEmitter = require('events').EventEmitter;
-var Unit = require('../../unit/Unit');
+var Unit = require('../../unit/_unit');
 var _ = require('lodash-node');
 
 module.exports = {
@@ -172,6 +172,49 @@ module.exports = {
             });
 
             agent.ready();
+        },
+        function (test) {
+
+            var agent = new Agent();
+
+            agent.unit({
+                path: '_x',
+                prop: 42
+            });
+
+            agent.unit({
+                base: '_x',
+                path: 'a',
+                deps: ['b']
+            });
+
+            agent.unit({
+                path: 'b'
+            });
+
+            agent.ready().then(function () {
+                test.ok(agent.getUnit('a') instanceof Unit);
+                test.strictEqual(agent.getUnit('a').prop, 42);
+                test.ok(agent.getUnit('b') instanceof Unit);
+                test.strictEqual(agent.getUnit('_x'), void 0);
+                test.strictEqual(agent.getUnit('_unit'), void 0);
+                test.done();
+            });
+        },
+        function (test) {
+
+            var agent = new Agent();
+
+            agent.unit([{
+                path: 'b'
+            }, {
+                st: 42
+            }]);
+
+            agent.ready().then(function () {
+                test.strictEqual(agent.getUnit('b').__self.st, 42);
+                test.done();
+            });
         }
     ]
 };
