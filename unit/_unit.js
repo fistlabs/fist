@@ -51,25 +51,26 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     /**
      * @public
      * @memberOf {Unit}
-     * @method
+     * @property
+     * @type {Array<String>}
      * */
-    addDeps: function () {
-        this.deps = _.union(this.deps, _.flatten(arguments));
-    },
+    deps: [],
+
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Object}
+     * */
+    params: {},
 
     /**
      * @public
      * @memberOf {Unit}
      * @method
      * */
-    delDeps: function () {
-
-        var args = _.flatten(arguments);
-
-        this.deps = _.reject(this.deps, function (path) {
-
-            return _.contains(args, path);
-        });
+    addDeps: function () {
+        this.deps = _.union(this.deps, _.flatten(arguments));
     },
 
     /**
@@ -85,6 +86,21 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     data: function (track, ctx) {
         /*eslint no-unused-vars: 0*/
+    },
+
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @method
+     * */
+    delDeps: function () {
+
+        var args = _.flatten(arguments);
+
+        this.deps = _.reject(this.deps, function (path) {
+
+            return _.contains(args, path);
+        });
     },
 
     /**
@@ -143,34 +159,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @returns {Number}
-     * */
-    _getRandomFactor: function () {
-
-        return Math.pow(Math.random() * Math.random(), 0.5);
-    },
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Array<String>}
-     * */
-    deps: [],
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Object}
-     * */
-    params: {},
-
-    /**
-     * @protected
-     * @memberOf {Unit}
-     * @method
-     *
      * @param {Track} track
      * @param {Ctx} defer
      *
@@ -182,18 +170,15 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     },
 
     /**
-     * @private
+     * @protected
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Ctx} defer
-     *
-     * @returns {String}
+     * @returns {Number}
      * */
-    __getCacheKey: function (track, defer) {
+    _getRandomFactor: function () {
 
-        return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
+        return Math.pow(Math.random() * Math.random(), 0.5);
     },
 
     /**
@@ -219,6 +204,21 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         }
 
         return vow.resolve(self.data);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Track} track
+     * @param {Ctx} defer
+     *
+     * @returns {String}
+     * */
+    __getCacheKey: function (track, defer) {
+
+        return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
     }
 
 });
