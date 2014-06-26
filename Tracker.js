@@ -6,7 +6,6 @@ var Unit = /** @type Unit */ require('./unit/Unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var toArray = require('fist.lang.toarray');
 var vow = require('vow');
 
 /**
@@ -69,14 +68,27 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     resolve: function (track, path, params) {
 
-        return this.ready().then(function () {
+        var ready = this.ready();
 
-            if ( !vow.isPromise(track.tasks[path]) ) {
-                track.tasks[path] = this.__resolveUnit(track, path, params);
-            }
+        //  -1 possible tick
+        if ( ready.isResolved() ) {
 
-            return track.tasks[path];
+            return this.__immediateResolve(track, path, params);
+        }
+
+        return ready.then(function () {
+
+            return this.__immediateResolve(track, path, params);
         }, this);
+    },
+
+    __immediateResolve: function (track, path, params) {
+
+        if ( !_.has(track.tasks, path) ) {
+            track.tasks[path] = this.__resolveUnit(track, path, params);
+        }
+
+        return track.tasks[path];
     },
 
     /**
@@ -121,24 +133,25 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         var defer = this._createCtx(params);
         var deps;
         var unit = this.getUnit(path);
+        var trackId = track.id;
 
         defer.promise().done(function (data) {
             this.emit('ctx:accept', {
-                trackId: track.id,
+                trackId: trackId,
                 path: path,
                 time: new Date() - date,
                 data: data
             });
         }, function (data) {
             this.emit('ctx:reject', {
-                trackId: track.id,
+                trackId: trackId,
                 path: path,
                 time: new Date() - date,
                 data: data
             });
         }, function (data) {
             this.emit('ctx:notify', {
-                trackId: track.id,
+                trackId: trackId,
                 path: path,
                 time: new Date() - date,
                 data: data
@@ -146,7 +159,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }, this);
 
         this.emit('ctx:pending', {
-            trackId: track.id,
+            trackId: trackId,
             path: path,
             time: 0
         });
@@ -157,22 +170,39 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
             return defer.promise();
         }
 
-        deps = _.map(toArray(unit.deps), function (path) {
+        deps = unit.deps;
 
+        if ( _.isUndefined(deps) || _.isNull(deps) ) {
+            deps = [];
+
+        } else if ( !_.isArray(deps) ) {
+            deps = [deps];
+        }
+
+        //  avoid possible tick
+        if ( 0 === deps.length ) {
+            defer.resolve(unit.getValue(track, defer));
+
+            return defer.promise();
+        }
+
+        deps = _.map(deps, function (path) {
             var promise = this.resolve(track, path, params);
 
-            promise.done(function (data) {
-                defer.setRes(path, data);
-            }, function (data) {
-                defer.setErr(path, data);
+            promise.always(function (promise) {
+
+                if ( promise.isRejected() ) {
+                    defer.setErr(path, promise.valueOf());
+
+                } else {
+                    defer.setRes(path, promise.valueOf());
+                }
             });
 
             return promise;
         }, this);
 
-        deps = vow.allResolved(deps);
-
-        deps.done(function () {
+        vow.allResolved(deps).done(function () {
             defer.resolve(unit.getValue(track, defer));
         });
 

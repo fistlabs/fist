@@ -13,7 +13,6 @@
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
         "finger": "0.0.2",
-        "fist.lang.toarray": "0.0.2",
         "lodash-node": "2.4.1",
         "dicer": "0.2.3",
         "vow": "0.4.4",
@@ -28,10 +27,8 @@
         "nodeunit": "0.9.0",
         "istanbul": "0.2.11",
         "asker": "0.4.5",
-        "vow": "0.4.4",
         "glob": "4.0.2",
-        "benchmark": "1.0.0",
-        "express": "4.4.3"
+        "express": "4.4.4"
     },
     "license": "MIT",
     "main": "fist",
@@ -47,7 +44,7 @@
         "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
         "cover": "istanbul cover test/runner",
-        "benchmark": "node benchmark/runner"
+        "benchmark": "benchmark/runner.sh benchmark/express.js && benchmark/runner.sh benchmark/fist.js"
     },
     "engines": {
         "node": ">= 0.10.0"

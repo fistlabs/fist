@@ -111,22 +111,34 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
     resolve: function (track, path, params) {
 
         var defer = vow.defer();
+        var promise;
 
         if ( track.res.hasResponded() ) {
 
             return defer.promise();
         }
 
-        this.__base(track, path, params).
-            always(function (promise) {
+        promise = this.__base(track, path, params);
 
-                if ( track.res.hasResponded() ) {
+        //  avoid possible tick
+        if ( promise.isResolved() ) {
 
-                    return;
-                }
-
+            if ( !track.res.hasResponded() ) {
                 defer.resolve(promise);
-            });
+            }
+
+            return defer.promise();
+        }
+
+        promise.always(function (promise) {
+
+            if ( track.res.hasResponded() ) {
+
+                return;
+            }
+
+            defer.resolve(promise);
+        }).done();
 
         return defer.promise();
     },
@@ -187,6 +199,63 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
     },
 
     /**
+     * @private
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Connect} track
+     *
+     * @returns {Promise}
+     * */
+    __next: function (track) {
+        //  выбирается маршрут
+        var result = this.router.
+            find(track.method, track.url.pathname, track.route);
+
+        //  однозначно нет такого маршрута
+        if (_.isNull(result) ) {
+            this.emit('sys:ematch', track);
+            //  Not Found
+            return track.send(404);
+        }
+
+        //  возвращен массив
+        if ( _.isArray(result) ) {
+            //  это тоже значит что нет такого роута
+            this.emit('sys:ematch', track);
+
+            //  если массив пустой, то на сервере совсем нет ни одного
+            //  маршрута отвечающего по такому методу запроса
+            if ( 0 === result.length ) {
+                //  Not Implemented
+                return track.send(501);
+            }
+
+            //  Иначе есть такие маршруты, но для них не
+            // поддерживается такой метод
+            track.header('Allow', result.join(', '));
+
+            //  Method Not Allowed
+            return track.send(405);
+        }
+
+        track.match = result.match;
+        track.route = result.route.data.name;
+
+        this.emit('sys:match', track);
+
+        this.resolve(track, result.route.data.unit).
+            done(function () {
+                return this.__next(track);
+            }, function (err) {
+
+                return track.send(500, err);
+            }, this);
+
+        return track.res.respondDefer.promise();
+    },
+
+    /**
      * @protected
      * @memberOf {Framework}
      * @method
@@ -201,53 +270,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             return track.res.respondDefer.promise();
         }
 
-        function next () {
-            //  выбирается маршрут
-            var result = this.router.
-                find(track.method, track.url.pathname, track.route);
-
-            //  однозначно нет такого маршрута
-            if ( null === result ) {
-                this.emit('sys:ematch', track);
-                //  Not Found
-                return track.send(404);
-            }
-
-            //  возвращен массив
-            if ( _.isArray(result) ) {
-                //  это тоже значит что нет такого роута
-                this.emit('sys:ematch', track);
-
-                //  если массив пустой, то на сервере совсем нет ни одного
-                //  маршрута отвечающего по такому методу запроса
-                if ( 0 === result.length ) {
-                    //  Not Implemented
-                    return track.send(501);
-                }
-
-                //  Иначе есть такие маршруты, но для них не
-                // поддерживается такой метод
-                track.header('Allow', result.join(', '));
-
-                //  Method Not Allowed
-                return track.send(405);
-            }
-
-            track.match = result.match;
-            track.route = result.route.data.name;
-
-            this.emit('sys:match', track);
-
-            this.resolve(track, result.route.data.unit).
-                done(next, function (err) {
-
-                    return track.send(500, err);
-                }, this);
-
-            return track.res.respondDefer.promise();
-        }
-
-        return next.call(this);
+        return this.__next(track);
     }
 
 });
