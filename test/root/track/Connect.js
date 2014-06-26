@@ -152,19 +152,6 @@ module.exports = {
             });
         }
     ],
-    'Connect.prototype.status': [
-        function (test) {
-            doConnect({}, function (track, req, res) {
-                track.status(201);
-                test.strictEqual(track.status(), 201);
-                res.end();
-            }, function (err, res) {
-                test.ok(!err);
-                test.strictEqual(res.statusCode, 201);
-                test.done();
-            });
-        }
-    ],
     'Connect.prototype.redirect': [
         function (test) {
             doConnect({}, function (track) {

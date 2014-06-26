@@ -375,6 +375,44 @@ module.exports = {
                 test.strictEqual(res.statusCode, 201);
                 test.done();
             });
+        },
+        function (test) {
+            var framework = new Framework();
+
+            framework.route('/', 'preset');
+            framework.route('/', 'index');
+
+            framework.unit({
+                path: 'preset',
+                data: function (track) {
+                    track.url.query.role = 'admin';
+                }
+            });
+
+            framework.unit({
+                path: 'index',
+                data: function (track) {
+                    test.deepEqual(track.url.query, {
+                        role: 'admin'
+                    });
+                    track.send(201);
+                }
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (err) {}
+
+            framework.listen(sock);
+
+            asker({
+                path: '/',
+                socketPath: sock
+            }, function (err, res) {
+                test.ok(!err);
+                test.strictEqual(res.statusCode, 201);
+                test.done();
+            });
         }
     ]
 };
