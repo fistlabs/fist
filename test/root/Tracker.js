@@ -492,6 +492,30 @@ module.exports = {
                         test.done();
                     });
             });
+        },
+        function (test) {
+            var tracker = new Tracker();
+
+            tracker.unit({
+                path: 'test',
+                spy: [],
+                _maxAge: 10000,
+                data: function () {
+                    this.spy.push(1);
+
+                    throw this.spy;
+                }
+            });
+
+            tracker.resolve(new Track(tracker), 'test').fail(function (spy) {
+                test.deepEqual(spy, [1]);
+            }).always(function () {
+                tracker.resolve(new Track(tracker), 'test').
+                    fail(function (spy) {
+                        test.deepEqual(spy, [1, 1]);
+                        test.done();
+                    }).done();
+            });
         }
     ]
 };

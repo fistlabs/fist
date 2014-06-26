@@ -1,7 +1,6 @@
 'use strict';
 
 var S_SEPARATOR = '\u0000';
-var LRUCache = require('lru-cache');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -21,6 +20,14 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     __constructor: function (params) {
 
+        var maxAge = +this._maxAge;
+
+        if ( _.isNaN(maxAge) ) {
+            maxAge = 0;
+        }
+
+        this._maxAge = maxAge;
+
         /**
          * @public
          * @memberOf {Unit}
@@ -28,14 +35,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
          * @type {Object}
          * */
         this.params = _.extend({}, this.params, params);
-
-        /**
-         * @private
-         * @memberOf {Unit}
-         * @property
-         * @type {LRUCache}
-         * */
-        this.__cache = this._createCache(this._getCacheOpts());
 
         //  make proto-deps own and unique
         this.addDeps(this.deps);
@@ -52,25 +51,26 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     /**
      * @public
      * @memberOf {Unit}
-     * @method
+     * @property
+     * @type {Array<String>}
      * */
-    addDeps: function () {
-        this.deps = _.union(this.deps, _.flatten(arguments));
-    },
+    deps: [],
+
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Object}
+     * */
+    params: {},
 
     /**
      * @public
      * @memberOf {Unit}
      * @method
      * */
-    delDeps: function () {
-
-        var args = _.flatten(arguments);
-
-        this.deps = _.reject(this.deps, function (path) {
-
-            return _.contains(args, path);
-        });
+    addDeps: function () {
+        this.deps = _.union(this.deps, _.flatten(arguments));
     },
 
     /**
@@ -92,6 +92,21 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @public
      * @memberOf {Unit}
      * @method
+     * */
+    delDeps: function () {
+
+        var args = _.flatten(arguments);
+
+        this.deps = _.reject(this.deps, function (path) {
+
+            return _.contains(args, path);
+        });
+    },
+
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @method
      *
      * @param {Track} track
      * @param {Ctx} defer
@@ -100,41 +115,44 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     getValue: function (track, defer) {
 
-        var cacheKey = this.__getCacheKey(track, defer);
+        var ageChecker;
+        var cache;
+        var cacheKey;
+        var cacheMaxAge;
+        var lastUpdated;
         var promise;
 
-        if ( this.__cache.has(cacheKey) ) {
+        if ( 0 >= this._maxAge ) {
 
-            return this.__cache.get(cacheKey);
+            return this.__call(track, defer);
         }
+
+        ageChecker = track.agent.ageChecker;
+        cache = track.agent.cache;
+        cacheKey = this.__getCacheKey(track, defer);
+
+        if ( cache.has(cacheKey) && !ageChecker[cacheKey]() ) {
+
+            return cache.get(cacheKey);
+        }
+
+        lastUpdated = +new Date();
+        cacheMaxAge = this._getRandomFactor() * this._maxAge;
+
+        ageChecker[cacheKey] = function () {
+
+            return new Date() - lastUpdated > cacheMaxAge;
+        };
 
         promise = this.__call(track, defer);
 
+        cache.set(cacheKey, promise);
         promise.done(null, function () {
-            //  Если узел зареджектился то не кэшируем
-            this.__cache.del(cacheKey);
-        }, this);
-
-        this.__cache.set(cacheKey, promise);
+            cache.del(cacheKey);
+        });
 
         return promise;
     },
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Array<String>}
-     * */
-    deps: [],
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Object}
-     * */
-    params: {},
 
     /**
      * @protected
@@ -156,46 +174,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Object} params
-     *
-     * @returns {LRUCache}
+     * @returns {Number}
      * */
-    _createCache: function (params) {
+    _getRandomFactor: function () {
 
-        return new LRUCache(params);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Unit}
-     * @method
-     *
-     * @returns {Object}
-     * */
-    _getCacheOpts: function () {
-
-        var params = _.extend({}, this.params.cache, {
-            maxAge: this._maxAge
-        });
-
-        params.maxAge = cast2LRUCacheMaxAge(params.maxAge);
-
-        return params;
-    },
-
-    /**
-     * @private
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {Track} track
-     * @param {Ctx} defer
-     *
-     * @returns {String}
-     * */
-    __getCacheKey: function (track, defer) {
-
-        return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
+        return Math.pow(Math.random() * Math.random(), 0.5);
     },
 
     /**
@@ -221,36 +204,23 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         }
 
         return vow.resolve(self.data);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Track} track
+     * @param {Ctx} defer
+     *
+     * @returns {String}
+     * */
+    __getCacheKey: function (track, defer) {
+
+        return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
     }
 
 });
-
-/**
- * @private
- * @static
- * @memberOf Unit
- *
- * @method
- *
- * @param {*} n
- *
- * @returns {Number}
- * */
-function cast2LRUCacheMaxAge (n) {
-
-    n = +n;
-
-    if ( _.isNaN(n) ) {
-
-        return -Infinity;
-    }
-
-    if ( 0 === n ) {
-
-        return -Infinity;
-    }
-
-    return n;
-}
 
 module.exports = Unit;
