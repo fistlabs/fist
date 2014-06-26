@@ -17,24 +17,6 @@ module.exports = {
             test.done();
         }
     ],
-    'Agent.prototype.unit': [
-        function (test) {
-
-            var agent = new Agent({x: 5});
-
-            agent.unit([{a: 1}, {b: 2}]);
-
-            test.deepEqual(agent.decls, [[{a: 1}, {b: 2}, {x: 5}]]);
-
-            agent.unit({a: 42});
-
-            test.deepEqual(agent.decls, [[{a: 1}, {b: 2}, {x: 5}],
-                [{a: 42}, void 0, {x: 5}]]);
-
-            test.done();
-        }
-    ],
-
     'Agent.prototype.ready': [
         function (test) {
 
