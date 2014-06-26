@@ -120,16 +120,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         promise = this.__base(track, path, params);
 
-        //  avoid possible tick
-        if ( promise.isResolved() ) {
-
-            if ( !track.res.hasResponded() ) {
-                defer.resolve(promise);
-            }
-
-            return defer.promise();
-        }
-
         promise.always(function (promise) {
 
             if ( track.res.hasResponded() ) {

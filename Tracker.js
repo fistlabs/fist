@@ -82,6 +82,17 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }, this);
     },
 
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Track} track
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {vow.Promise}
+     * */
     __immediateResolve: function (track, path, params) {
 
         if ( !_.has(track.tasks, path) ) {
@@ -171,13 +182,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }
 
         deps = unit.deps;
-
-        if ( _.isUndefined(deps) || _.isNull(deps) ) {
-            deps = [];
-
-        } else if ( !_.isArray(deps) ) {
-            deps = [deps];
-        }
 
         //  avoid possible tick
         if ( 0 === deps.length ) {
