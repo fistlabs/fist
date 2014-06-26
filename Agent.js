@@ -2,6 +2,7 @@
 
 var BaseUnit = require('./unit/_unit');
 var EventEmitter = require('events').EventEmitter;
+var LRUCache = require('lru-cache');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -48,6 +49,28 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @type {Array}
          * */
         this.__decls = [];
+
+        params = _.extend({}, this.params.cache, {
+            //  у нас будет своя стратегия кэширования
+            //  будем использовать только фишку LRU
+            maxAge: Infinity
+        });
+
+        /**
+         * @public
+         * @memberOf {Agent}
+         * @property
+         * @type {LRUCache}
+         * */
+        this.cache = new LRUCache(params);
+
+        /**
+         * @public
+         * @memberOf {Agent}
+         * @property
+         * @type {Object}
+         * */
+        this.ageChecker = {};
     },
 
     /**
