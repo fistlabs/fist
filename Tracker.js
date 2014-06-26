@@ -36,12 +36,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         /**
          *
-         * @protected
+         * @private
          * @memberOf {Tracker}
          * @property
          * @type {Array<Function>}
          * */
-        this._plugs = [];
+        this.__plugs = [];
     },
 
     /**
@@ -50,7 +50,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @method
      * */
     plug: function () {
-        Array.prototype.push.apply(this._plugs, arguments);
+        Array.prototype.push.apply(this.__plugs, arguments);
     },
 
     /**
@@ -113,7 +113,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     _getReady: function () {
-        var plugins = _.map(this._plugs, this.__invokePlugin, this);
+        var plugins = _.map(this.__plugs, this.__invokePlugin, this);
 
         return vow.all(plugins).then(this.__base, this);
     },
