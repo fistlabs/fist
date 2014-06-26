@@ -94,30 +94,30 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} defer
      *
      * @returns {*}
      * */
-    getValue: function (track, ctx) {
+    getValue: function (track, defer) {
 
-        var cacheKey = this.__getCacheKey(track, ctx);
-        var data = this.__cache.get(cacheKey);
+        var cacheKey = this.__getCacheKey(track, defer);
+        var promise;
 
-        if ( vow.isPromise(data) ) {
+        if ( this.__cache.has(cacheKey) ) {
 
-            return data;
+            return this.__cache.get(cacheKey);
         }
 
-        data = this.__call(track, ctx);
+        promise = this.__call(track, defer);
 
-        data.fail(function () {
+        promise.done(null, function () {
             //  Если узел зареджектился то не кэшируем
             this.__cache.del(cacheKey);
-        }, this).done();
+        }, this);
 
-        this.__cache.set(cacheKey, data);
+        this.__cache.set(cacheKey, promise);
 
-        return data;
+        return promise;
     },
 
     /**
@@ -142,11 +142,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} defer
      *
      * @returns {Array<String>}
      * */
-    _getCacheKeyParts: function (track, ctx) {
+    _getCacheKeyParts: function (track, defer) {
         /*eslint no-unused-vars: 0*/
         return [];
     },
@@ -189,13 +189,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} defer
      *
      * @returns {String}
      * */
-    __getCacheKey: function (track, ctx) {
+    __getCacheKey: function (track, defer) {
 
-        return this._getCacheKeyParts(track, ctx).join(S_SEPARATOR);
+        return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
     },
 
     /**
@@ -204,23 +204,23 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} defer
      *
      * @returns {*}
      * */
-    __call: function (track, ctx) {
+    __call: function (track, defer) {
 
         var self = this;
 
-        if ( _.isFunction(this.data) ) {
+        if ( _.isFunction(self.data) ) {
 
             return vow.invoke(function () {
 
-                return self.data(track, ctx);
+                return self.data(track, defer);
             });
         }
 
-        return vow.resolve(this.data);
+        return vow.resolve(self.data);
     }
 
 });

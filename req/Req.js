@@ -40,7 +40,7 @@ var Req = inherit(/** @lends Req.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = _.extend({}, this.params, params);
+        this.params = params || {};
     },
 
     /**
@@ -110,17 +110,17 @@ var Req = inherit(/** @lends Req.prototype */ {
      * */
     getBody: function () {
 
-        var headers;
+        var header;
         var params;
 
         if ( !vow.isPromise(this.__body) ) {
-            headers = this._req.headers;
-            params = headers['content-type'];
+            header = this._req.headers;
+            params = header['content-type'];
 
             if ( params ) {
                 params = mediaTyper.parse(params);
                 params = _.extend(params.parameters, params, {
-                    length: headers['content-length']
+                    length: header['content-length']
                 }, this.params.body);
             }
 
@@ -138,15 +138,12 @@ var Req = inherit(/** @lends Req.prototype */ {
      * @returns {Object}
      * */
     getUrl: function () {
-
         var headers = this._req.headers;
-        var url = Url.parse(this._req.url);
-
-        url.host = headers['x-forwarded-host'] || headers.host;
-        url.protocol = this._req.socket.encrypted ?
+        var host = headers['x-forwarded-host'] || headers.host;
+        var protocol = this._req.socket.encrypted ?
             'https' : headers['x-forwarded-proto'] || 'http';
 
-        return Url.parse(Url.format(url), true);
+        return Url.parse(protocol + '://' + host + this._req.url, true);
     },
 
     /**

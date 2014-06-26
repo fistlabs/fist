@@ -33,7 +33,7 @@ var Res = inherit(/** @lends Res.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = _.extend({}, this.params, params);
+        this.params = params || {};
 
         /**
          * @public
@@ -76,9 +76,7 @@ var Res = inherit(/** @lends Res.prototype */ {
             return this;
         }
 
-        name = String(name).toLowerCase();
-
-        if ( 'set-cookie' === name ) {
+        if ( /^set-cookie$/i.test(name) ) {
             value = (this._res.getHeader(name) || []).concat(value);
         }
 
@@ -98,7 +96,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @returns {Res}
      * */
     setHeaders: function (headers, soft) {
-        _.forOwn(headers, function (value, name) {
+        _.forEach(headers, function (value, name) {
             this.setHeader(name, value, soft);
         }, this);
 
@@ -118,7 +116,6 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     setCookie: function (name, value, opts) {
         value = cookie.serialize(name, value, opts);
-
         this.setHeader('Set-Cookie', value);
 
         return this;
@@ -170,14 +167,20 @@ var Res = inherit(/** @lends Res.prototype */ {
 
         body = this.__createBody(status, body);
 
-        this._respondPromise = vow.when(body, function (args) {
-            this.__end(args[0], args[1], args[2]);
-        }, function (err) {
-            //  надо снова сделать respond но по-другому
-            delete this._respondPromise;
+        if ( vow.isPromise(body) ) {
+            this._respondPromise = vow.when(body, function (data) {
 
-            return this.respond(500, err);
-        }, this);
+                return this.__end(data);
+            }, function (err) {
+                //  надо снова сделать respond но по-другому
+                delete this._respondPromise;
+
+                return this.respond(500, err);
+            }, this);
+        } else {
+            //  avoid possible tick
+            this._respondPromise = vow.resolve(this.__end(body));
+        }
 
         this.respondDefer.resolve(this._respondPromise);
 
@@ -193,7 +196,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     hasResponded: function () {
 
-        return vow.isPromise(this._respondPromise);
+        return !!this._respondPromise;
     },
 
     /**
@@ -201,14 +204,15 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
-     * @param {Number} status
-     * @param {Object} headers
-     * @param {*} data
+     * @param {Object} data
+     *
+     * @returns {?}
      * */
-    __end: function (status, headers, data) {
-        this._res.statusCode = status;
-        this.setHeaders(headers, true);
-        this._res.end(data);
+    __end: function (data) {
+        this._res.statusCode = data.status;
+        this.setHeaders(data.header, true);
+
+        return this._res.end(data.body);
     },
 
     /**
@@ -223,7 +227,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     __createBody: function (status, body) {
 
-        if ( void 0 === body ) {
+        if ( _.isUndefined(body) ) {
             body = Res.getStatusMessage(status);
         }
 
@@ -262,10 +266,14 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     __createByString: function (status, body) {
 
-        return [status, {
-            'Content-Type': 'text/plain',
-            'Content-Length': Buffer.byteLength(body)
-        }, body];
+        return {
+            status: status,
+            header: {
+                'Content-Type': 'text/plain',
+                'Content-Length': Buffer.byteLength(body)
+            },
+            body: body
+        };
     },
 
     /**
@@ -280,10 +288,14 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     __createByBuffer: function (status, body) {
 
-        return [status, {
-            'Content-Type': 'application/octet-stream',
-            'Content-Length': body.length
-        }, body];
+        return {
+            status: status,
+            header: {
+                'Content-Type': 'application/octet-stream',
+                'Content-Length': body.length
+            },
+            body: body
+        };
     },
 
     /**
@@ -377,10 +389,14 @@ var Res = inherit(/** @lends Res.prototype */ {
     __createByJson: function (status, body) {
         body = JSON.stringify(body);
 
-        return [status, {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(body)
-        }, body];
+        return {
+            status: status,
+            header: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body)
+            },
+            body: body
+        };
     }
 
 }, {

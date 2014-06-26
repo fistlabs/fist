@@ -47,7 +47,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = _.extend({}, this.params, params);
+        this.params = params || {};
     },
 
     /**

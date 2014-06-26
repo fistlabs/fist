@@ -5,7 +5,6 @@ var EventEmitter = require('events').EventEmitter;
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var toArray = require('fist.lang.toarray');
 var vow = require('vow');
 
 /**
@@ -197,14 +196,23 @@ function checkDeps (units) {
 
     return _.every(units, function checkDeps (unit, path) {
 
+        var deps;
+
         if ( _.isUndefined(unit) ) {
 
             return true;
         }
 
         unit = unit[1];
+        deps = unit.deps;
 
-        return _.every(toArray(unit.deps), function (name) {
+        if ( _.isUndefined(deps) || _.isNull(deps) ) {
+            deps = [];
+        } else if ( !_.isArray(deps) ) {
+            deps = [deps];
+        }
+
+        return _.every(deps, function (name) {
 
             if ( path === name ) {
 
