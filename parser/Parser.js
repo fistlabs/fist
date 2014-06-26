@@ -28,6 +28,11 @@ var Parser = inherit(/** @lends Parser.prototype */ {
          * */
         this.params = _.extend({}, this.params, params);
 
+        //  compat with https://www.npmjs.org/package/media-typer
+        params = this.params.parameters;
+        delete this.params.parameters;
+        _.extend(this.params, params);
+
         params = this.params;
 
         params.limit = +params.limit;

@@ -119,10 +119,14 @@ var Req = inherit(/** @lends Req.prototype */ {
 
             if ( params ) {
                 params = mediaTyper.parse(params);
-                params = _.extend(params.parameters, params, {
-                    length: header['content-length']
-                }, this.params.body);
+
+            } else {
+                params = {};
             }
+
+            params = _.extend(params, {
+                length: header['content-length']
+            }, this.params.body);
 
             this.__body = this._createBodyParser(params).parse(this._req);
         }
