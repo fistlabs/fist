@@ -2,7 +2,7 @@
 
 var Agent = require('../../Agent');
 var EventEmitter = require('events').EventEmitter;
-var Unit = require('../../unit/Unit');
+var Unit = require('../../unit/_unit');
 var _ = require('lodash-node');
 
 module.exports = {
@@ -12,29 +12,10 @@ module.exports = {
             var agent = new Agent();
 
             test.ok(agent instanceof EventEmitter);
-            test.ok(_.isArray(agent.decls));
             test.ok(_.isObject(agent.units));
             test.done();
         }
     ],
-    'Agent.prototype.unit': [
-        function (test) {
-
-            var agent = new Agent({x: 5});
-
-            agent.unit([{a: 1}, {b: 2}]);
-
-            test.deepEqual(agent.decls, [[{a: 1}, {b: 2}, {x: 5}]]);
-
-            agent.unit({a: 42});
-
-            test.deepEqual(agent.decls, [[{a: 1}, {b: 2}, {x: 5}],
-                [{a: 42}, void 0, {x: 5}]]);
-
-            test.done();
-        }
-    ],
-
     'Agent.prototype.ready': [
         function (test) {
 
@@ -191,6 +172,49 @@ module.exports = {
             });
 
             agent.ready();
+        },
+        function (test) {
+
+            var agent = new Agent();
+
+            agent.unit({
+                path: '_x',
+                prop: 42
+            });
+
+            agent.unit({
+                base: '_x',
+                path: 'a',
+                deps: ['b']
+            });
+
+            agent.unit({
+                path: 'b'
+            });
+
+            agent.ready().then(function () {
+                test.ok(agent.getUnit('a') instanceof Unit);
+                test.strictEqual(agent.getUnit('a').prop, 42);
+                test.ok(agent.getUnit('b') instanceof Unit);
+                test.strictEqual(agent.getUnit('_x'), void 0);
+                test.strictEqual(agent.getUnit('_unit'), void 0);
+                test.done();
+            });
+        },
+        function (test) {
+
+            var agent = new Agent();
+
+            agent.unit([{
+                path: 'b'
+            }, {
+                st: 42
+            }]);
+
+            agent.ready().then(function () {
+                test.strictEqual(agent.getUnit('b').__self.st, 42);
+                test.done();
+            });
         }
     ]
 };

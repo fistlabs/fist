@@ -1,6 +1,6 @@
 'use strict';
 
-var Unit = require('../../../unit/Unit');
+var Unit = require('../../../unit/_unit');
 var inherit = require('inherit');
 
 module.exports = {

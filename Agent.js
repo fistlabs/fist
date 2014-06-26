@@ -1,6 +1,6 @@
 'use strict';
 
-var BaseUnit = require('./unit/Unit');
+var BaseUnit = require('./unit/_unit');
 var EventEmitter = require('events').EventEmitter;
 
 var _ = require('lodash-node');
@@ -29,14 +29,6 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @public
          * @memberOf {Agent}
          * @property
-         * @type {Array}
-         * */
-        this.decls = [];
-
-        /**
-         * @public
-         * @memberOf {Agent}
-         * @property
          * @type {Object}
          * */
         this.params = _.extend({}, this.params, params);
@@ -48,6 +40,14 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @type {Object}
          * */
         this.units = {};
+
+        /**
+         * @private
+         * @memberOf {Agent}
+         * @property
+         * @type {Array}
+         * */
+        this.__decls = [];
     },
 
     /**
@@ -82,7 +82,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
             members = members[0];
         }
 
-        this.decls.push([Object(members), statics, this.params]);
+        this.__decls.push([Object(members), statics]);
 
         return this;
     },
@@ -124,65 +124,105 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
     _getReady: function () {
 
         var defer = vow.defer();
+        var self = this;
 
         defer.promise().then(function (units) {
-            this.units = units;
+            this.units = _.omit(units, function (unit, path) {
+
+                return !/^[a-z]/i.test(path);
+            });
         }, this);
 
-        try {
-            defer.resolve(createUnits(this.decls));
+        defer.resolve(vow.invoke(function () {
 
-        } catch (err) {
-            defer.reject(err);
-        }
+            return self.__createUnits(self.__decls);
+        }));
 
         return defer.promise();
+    },
+
+    /**
+     * @private
+     * @memberOf {Agent}
+     * @method
+     *
+     * @param {Array} decls
+     *
+     * @returns {Object}
+     * */
+    __createUnits: function (decls) {
+
+        var conflicts;
+        var units = {
+            _unit: [BaseUnit, new BaseUnit(this.params)]
+        };
+        var remaining = decls.length;
+
+        while ( _.size(decls) ) {
+            decls = this.__addUnits(decls, units);
+
+            if ( _.size(decls) < remaining ) {
+                remaining = decls.length;
+
+                continue;
+            }
+
+            throw new ReferenceError('no base unit for: ' +
+                _.map(decls, formatBaseConflictDetails).join(', '));
+        }
+
+        conflicts = findAllConflicts(units);
+
+        if ( !_.size(conflicts) ) {
+
+            return units;
+        }
+
+        throw new ReferenceError('unit dependencies conflict: ' +
+            _.map(conflicts, formatDepsConflictDetails).join(', '));
+    },
+
+    /**
+     * @private
+     * @memberOf {Agent}
+     * @method
+     *
+     * @param {Array} decls
+     * @param {Object} units
+     *
+     * @returns {Array}
+     * */
+    __addUnits: function (decls, units) {
+
+        return _.reduce(decls, function (decls, decl) {
+
+            var Unit;
+            var base;
+            var members = Object(decl[0]);
+            var unit;
+
+            //  Если не передали base, то сами добьем
+            if ( !_.has(members, 'base') ) {
+                members.base = '_unit';
+            }
+
+            base = members.base;
+
+            if ( _.has(units, base) ) {
+                Unit = inherit(units[base][0], members, decl[1]);
+                unit = new Unit(this.params);
+                units[unit.path] = [Unit, unit];
+
+                return decls;
+            }
+
+            decls.push(decl);
+
+            return decls;
+        }, [], this);
     }
 
 });
-
-/**
- * @private
- * @static
- * @memberOf Agent
- * @method
- *
- * @param {Array} decls
- * @param {Object} units
- *
- * @returns {Array}
- * */
-function addUnits (decls, units) {
-
-    return _.reduce(decls, function (decls, decl) {
-
-        var Base;
-        var Unit;
-        var members = Object(decl[0]);
-        var unit;
-
-        //  Если не передали base, то сами добьем
-        if ( !_.has(members, 'base') ) {
-            members.base = BaseUnit;
-        }
-
-        Base = members.base;
-
-        if ( _.isFunction(Base) ||
-            _.has(units, Base) && (Base = units[Base][0]) ) {
-
-            Unit = inherit(Base, members, decl[1]);
-            unit = new Unit(decl[2]);
-            units[unit.path] = [Unit, unit];
-
-            return decls;
-        }
-
-        decls.push(decl);
-
-        return decls;
-    }, []);
-}
 
 function findAllConflicts (units) {
 
@@ -234,46 +274,6 @@ function findConflicts (part, units, path, found4) {
     found4[part] = true;
 
     return paths;
-}
-
-/**
- * @private
- * @static
- * @memberOf Agent
- * @method
- *
- * @param {Array} decls
- *
- * @returns {Object}
- * */
-function createUnits (decls) {
-
-    var conflicts;
-    var units = {};
-    var remaining = decls.length;
-
-    while ( _.size(decls) ) {
-        decls = addUnits(decls, units);
-
-        if ( _.size(decls) < remaining ) {
-            remaining = decls.length;
-
-            continue;
-        }
-
-        throw new ReferenceError('no base unit for: ' +
-            _.map(decls, formatBaseConflictDetails).join(', '));
-    }
-
-    conflicts = findAllConflicts(units);
-
-    if ( !_.size(conflicts) ) {
-
-        return units;
-    }
-
-    throw new ReferenceError('unit dependencies conflict: ' +
-        _.map(conflicts, formatDepsConflictDetails).join(', '));
 }
 
 /**

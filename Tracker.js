@@ -2,7 +2,6 @@
 
 var Agent = require('./Agent');
 var Ctx = /** @type Ctx */ require('./ctx/Ctx');
-var Unit = /** @type Unit */ require('./unit/Unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
