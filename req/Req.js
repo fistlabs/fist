@@ -1,6 +1,6 @@
 'use strict';
 
-var BodyParser = require('../util/BodyParser');
+var AttachParser = require('attach-parser');
 var Url = require('url');
 
 var _ = require('lodash-node');
@@ -157,11 +157,11 @@ var Req = inherit(/** @lends Req.prototype */ {
      *
      * @param {Object} [params]
      *
-     * @returns {BodyParser}
+     * @returns {AttachParser}
      * */
     _createBodyParser: function (params) {
 
-        return new BodyParser(params);
+        return new AttachParser(params);
     }
 
 });
