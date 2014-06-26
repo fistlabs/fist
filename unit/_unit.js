@@ -6,10 +6,6 @@ var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
 
-function random () {
-    return Math.pow(Math.random() * Math.random(), 0.5);
-}
-
 /**
  * @class Unit
  * */
@@ -103,12 +99,12 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     getValue: function (track, defer) {
 
+        var ageChecker;
         var cache;
         var cacheKey;
+        var cacheMaxAge;
         var lastUpdated;
         var promise;
-        var randomFactor;
-        var ageChecker;
 
         if ( 0 >= this._maxAge ) {
 
@@ -125,11 +121,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         }
 
         lastUpdated = +new Date();
-        randomFactor = random() * this._maxAge;
+        cacheMaxAge = this._getRandomFactor() * this._maxAge;
 
         ageChecker[cacheKey] = function () {
 
-            return new Date() - lastUpdated > randomFactor;
+            return new Date() - lastUpdated > cacheMaxAge;
         };
 
         promise = this.__call(track, defer);
@@ -140,6 +136,18 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         });
 
         return promise;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Unit}
+     * @method
+     *
+     * @returns {Number}
+     * */
+    _getRandomFactor: function () {
+
+        return Math.pow(Math.random() * Math.random(), 0.5);
     },
 
     /**
