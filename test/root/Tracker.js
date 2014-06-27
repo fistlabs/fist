@@ -1,8 +1,10 @@
 'use strict';
 
+var AsyncCache = require('../util/AsyncCache');
 var Tracker = require('../../Tracker');
 var Track = require('../../track/Track');
 
+var inherit = require('inherit');
 var vow = require('vow');
 
 module.exports = {
@@ -516,6 +518,79 @@ module.exports = {
                         test.done();
                     }).done();
             });
+        },
+        function (test) {
+
+            var SlyTracker = inherit(Tracker, {
+                _createCache: function (p) {
+
+                    return new AsyncCache(p);
+                }
+            });
+
+            var tracker = new SlyTracker();
+
+            tracker.unit({
+                path: 'test',
+                spy: [],
+                _maxAge: 10000,
+                data: function () {
+                    this.spy.push(1);
+
+                    return this.spy;
+                }
+            });
+
+            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
+                test.deepEqual(spy, [1]);
+            }).always(function () {
+                tracker.resolve(new Track(tracker), 'test').
+                    then(function (spy) {
+                        test.deepEqual(spy, [1]);
+                        test.done();
+                    }).done();
+            }).done();
+        },
+        function (test) {
+
+            var e = [];
+            var SlyTracker = inherit(Tracker, {
+                _createCache: function (p) {
+
+                    return new (inherit(AsyncCache, {
+                        broken: 42
+                    }))(p);
+                }
+            });
+
+            var tracker = new SlyTracker();
+
+            tracker.on('ctx:notify', function (event) {
+                e.push(event.data);
+            });
+
+            tracker.unit({
+                path: 'test',
+                spy: [],
+                _maxAge: 10000,
+                data: function () {
+                    this.spy.push(1);
+
+                    return this.spy;
+                }
+            });
+
+            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
+                test.deepEqual(spy, [1]);
+                test.deepEqual(e, [42, 42]);
+            }).always(function () {
+                tracker.resolve(new Track(tracker), 'test').
+                    then(function (spy) {
+                        test.deepEqual(spy, [1, 1]);
+                        test.deepEqual(e, [42, 42, 42, 42]);
+                        test.done();
+                    }).done();
+            }).done();
         }
     ]
 };

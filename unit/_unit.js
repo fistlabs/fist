@@ -115,43 +115,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     getValue: function (track, defer) {
 
-        var ageChecker;
-        var cache;
-        var cacheKey;
-        var cacheMaxAge;
-        var lastUpdated;
-        var promise;
-
         if ( 0 >= this._maxAge ) {
 
             return this.__call(track, defer);
         }
 
-        ageChecker = track.agent.ageChecker;
-        cache = track.agent.cache;
-        cacheKey = this.__getCacheKey(track, defer);
-
-        if ( cache.has(cacheKey) && !ageChecker[cacheKey]() ) {
-
-            return cache.get(cacheKey);
-        }
-
-        lastUpdated = +new Date();
-        cacheMaxAge = this._getRandomFactor() * this._maxAge;
-
-        ageChecker[cacheKey] = function () {
-
-            return new Date() - lastUpdated > cacheMaxAge;
-        };
-
-        promise = this.__call(track, defer);
-
-        cache.set(cacheKey, promise);
-        promise.done(null, function () {
-            cache.del(cacheKey);
-        });
-
-        return promise;
+        return this.__getFromCache(this.
+            __getCacheKey(track, defer), track, defer);
     },
 
     /**
@@ -167,18 +137,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     _getCacheKeyParts: function (track, defer) {
         /*eslint no-unused-vars: 0*/
         return [];
-    },
-
-    /**
-     * @protected
-     * @memberOf {Unit}
-     * @method
-     *
-     * @returns {Number}
-     * */
-    _getRandomFactor: function () {
-
-        return Math.pow(Math.random() * Math.random(), 0.5);
     },
 
     /**
@@ -219,6 +177,128 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     __getCacheKey: function (track, defer) {
 
         return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {String} cacheKey
+     * @param {Track} track
+     * @param {Ctx} defer
+     *
+     * @returns {vow.Promise}
+     * */
+    __getFromCache: function (cacheKey, track, defer) {
+
+        if ( track.agent.cache.local ) {
+
+            return this.__getLocal(cacheKey, track, defer);
+        }
+
+        return this.__getRemote(cacheKey, track, defer);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {String} cacheKey
+     * @param {Track} track
+     * @param {Ctx} defer
+     *
+     * @returns {vow.Promise}
+     * */
+    __getLocal: function (cacheKey, track, defer) {
+
+        var cache = track.agent.cache;
+        var promise = cache.get(cacheKey);
+
+        if ( _.isUndefined(promise) ) {
+            promise = this.__call(track, defer);
+            cache.set(cacheKey, promise, this._maxAge);
+
+            promise.done(null, function () {
+                cache.del(cacheKey);
+            });
+        }
+
+        return promise;
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {String} cacheKey
+     * @param {Track} track
+     * @param {Ctx} ctx
+     *
+     * @returns {vow.Promise}
+     * */
+    __getRemote: function (cacheKey, track, ctx) {
+
+        var defer = vow.defer();
+        var self = this;
+
+        //  пробуем взять значение из кэша...
+        track.agent.cache.get(cacheKey, function (err, res) {
+
+            if ( 2 > arguments.length ) {
+                //  ошибка доступа к кэшу
+                ctx.notify(err);
+
+                //  обновим
+                return defer.resolve(self.__updateRemote(cacheKey, track, ctx));
+            }
+
+            //  Нет в кэше такого
+            if ( _.isObject(res) ) {
+
+                //  все хорошо, ради этой строчки все было задумано
+                return defer.resolve(res.data);
+            }
+
+            return defer.resolve(self.__updateRemote(cacheKey, track, ctx));
+        });
+
+        return defer.promise();
+    },
+
+    /**
+     * @protected
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {String} cacheKey
+     * @param {Track} track
+     * @param {Ctx} ctx
+     *
+     * @returns {vow.Promise}
+     * */
+    __updateRemote: function (cacheKey, track, ctx) {
+
+        //  или чего-то нет в кэше или ошибка...
+        var promise = this.__call(track, ctx);
+
+        promise.then(function (data) {
+            //  если запрос выполнен успешно то сохраняем в кэш
+            track.agent.cache.set(cacheKey, {
+                //  Вкладываю в свойтво объекта чтобы понимать есть ключ
+                //  в кэше или нет, потому что можно закэшировать undefined
+                data: data
+            }, this._maxAge, function (err) {
+                //  ошибка сохоанения
+                if ( 2 > arguments.length ) {
+                    ctx.notify(err);
+                }
+            });
+        }, this);
+
+        return promise;
     }
 
 });
