@@ -1,8 +1,19 @@
 'use strict';
 
 var Framework = require('./Framework');
+var inherit = require('inherit');
 
-module.exports = function (params) {
+/**
+ * @param {Object} [params]
+ * @param {Object} [members]
+ * @param {Object} [statics]
+ *
+ * @returns {Framework}
+ * */
+function fist (params, members, statics) {
+    var Fist = inherit(Framework, members, statics);
 
-    return new Framework(params);
-};
+    return new Fist(params);
+}
+
+module.exports = fist;
