@@ -1,7 +1,6 @@
 'use strict';
 
 var Cache = require('../../../util/Cache');
-var inherit = require('inherit');
 
 module.exports = {
     'Cache.prototype.get': [

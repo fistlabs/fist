@@ -2,8 +2,6 @@
 
 var Req = require('../../../req/Req');
 var Res = require('../../../res/Res');
-var Tracker = require('../../../Framework');
-var Connect = require('../../../track/Connect');
 var doConnect = require('../../util/connect');
 
 var _ = require('lodash-node');
