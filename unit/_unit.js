@@ -186,60 +186,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @param {String} cacheKey
      * @param {Track} track
-     * @param {Ctx} defer
-     *
-     * @returns {vow.Promise}
-     * */
-    __getFromCache: function (cacheKey, track, defer) {
-
-        if ( track.agent.cache.local ) {
-
-            return this.__getLocal(cacheKey, track, defer);
-        }
-
-        return this.__getRemote(cacheKey, track, defer);
-    },
-
-    /**
-     * @private
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {String} cacheKey
-     * @param {Track} track
-     * @param {Ctx} defer
-     *
-     * @returns {vow.Promise}
-     * */
-    __getLocal: function (cacheKey, track, defer) {
-
-        var cache = track.agent.cache;
-        var promise = cache.get(cacheKey);
-
-        if ( _.isUndefined(promise) ) {
-            promise = this.__call(track, defer);
-            cache.set(cacheKey, promise, this._maxAge);
-
-            promise.done(null, function () {
-                cache.del(cacheKey);
-            });
-        }
-
-        return promise;
-    },
-
-    /**
-     * @private
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {String} cacheKey
-     * @param {Track} track
      * @param {Ctx} ctx
      *
      * @returns {vow.Promise}
      * */
-    __getRemote: function (cacheKey, track, ctx) {
+    __getFromCache: function (cacheKey, track, ctx) {
 
         var defer = vow.defer();
         var self = this;
@@ -252,7 +203,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
                 ctx.notify(err);
 
                 //  обновим
-                return defer.resolve(self.__updateRemote(cacheKey, track, ctx));
+                return defer.resolve(self.__callAndCache(cacheKey, track, ctx));
             }
 
             //  Нет в кэше такого
@@ -262,14 +213,14 @@ var Unit = inherit(/** @lends Unit.prototype */ {
                 return defer.resolve(res.data);
             }
 
-            return defer.resolve(self.__updateRemote(cacheKey, track, ctx));
+            return defer.resolve(self.__callAndCache(cacheKey, track, ctx));
         });
 
         return defer.promise();
     },
 
     /**
-     * @protected
+     * @private
      * @memberOf {Unit}
      * @method
      *
@@ -279,7 +230,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    __updateRemote: function (cacheKey, track, ctx) {
+    __callAndCache: function (cacheKey, track, ctx) {
 
         //  или чего-то нет в кэше или ошибка...
         var promise = this.__call(track, ctx);

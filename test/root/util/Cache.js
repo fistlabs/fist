@@ -8,21 +8,45 @@ module.exports = {
         function (test) {
             var cache = new Cache();
 
-            cache.set('k', 42, 0);
-            test.strictEqual(cache.get('k'), void 0);
+            cache.set('k', 42, 0, function (err) {
+                test.ok(!err);
+                cache.get('k', function (err, res) {
+                    test.ok(!err);
+                    test.strictEqual(res, void 0);
+                    test.done();
+                });
+            });
+        },
+        function (test) {
+            var cache = new Cache();
 
-            cache.set('k', 42);
-            test.strictEqual(cache.get('k'), void 0);
+            cache.set('k', 42, NaN, function (err) {
+                test.ok(!err);
+                cache.get('k', function (err, res) {
+                    test.ok(!err);
+                    test.strictEqual(res, void 0);
+                    test.done();
+                });
+            });
+        },
+        function (test) {
+            var cache = new Cache();
 
-            cache.set('k', 42, 50);
-            test.ok(cache.has('k'));
-            test.ok(cache.has('k'));
-            test.strictEqual(cache.get('k'), 42);
+            cache.set('k', 42, 50, function (err) {
+                test.ok(!err);
+                cache.get('k', function (err, res) {
+                    test.ok(!err);
+                    test.strictEqual(res, 42);
+                });
 
-            setTimeout(function () {
-                test.strictEqual(cache.get('k'), void 0);
-                test.done();
-            }, 100);
+                setTimeout(function () {
+                    cache.get('k', function (err, res) {
+                        test.ok(!err);
+                        test.strictEqual(res, void 0);
+                        test.done();
+                    });
+                }, 100);
+            });
         }
     ]
 };
