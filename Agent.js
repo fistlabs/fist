@@ -176,9 +176,11 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
     __createUnits: function (decls) {
 
         var conflicts;
-        var units = {
-            _unit: [BaseUnit, new BaseUnit(this.params)]
-        };
+        var baseUnit = new BaseUnit(this.params);
+        var units = {};
+
+        units[baseUnit.path] = [BaseUnit, baseUnit];
+
         var remaining = decls.length;
 
         while ( _.size(decls) ) {
