@@ -10,15 +10,17 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "asker": "0.4.6",
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
-        "finger": "0.1.1",
+        "finger": "0.1.2",
         "lodash-node": "2.4.1",
         "vow": "0.4.4",
         "inherit": "2.2.2",
         "cookie": "0.1.2",
         "media-typer": "0.2.0",
-        "attach-parser": "0.0.1"
+        "attach-parser": "0.0.1",
+        "glob": "4.0.3"
     },
     "description": "nodejs application framework",
     "devDependencies": {
@@ -26,8 +28,6 @@
         "eslint": "0.6.2",
         "nodeunit": "0.9.0",
         "istanbul": "0.2.11",
-        "asker": "0.4.5",
-        "glob": "4.0.2",
         "express": "4.4.4"
     },
     "license": "MIT",
