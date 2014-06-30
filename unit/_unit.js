@@ -1,6 +1,7 @@
 'use strict';
 
 var S_SEPARATOR = '\u0000';
+var EventEmitter = require('events').EventEmitter;
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -80,11 +81,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} deps
      *
      * @returns {*}
      * */
-    data: function (track, ctx) {
+    data: function (track, deps) {
         /*eslint no-unused-vars: 0*/
     },
 
@@ -109,19 +110,19 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} defer
+     * @param {Ctx} deps
      *
      * @returns {*}
      * */
-    getValue: function (track, defer) {
+    getValue: function (track, deps) {
 
         if ( 0 >= this._maxAge ) {
 
-            return this.__call(track, defer);
+            return this.__call(track, deps);
         }
 
         return this.__getFromCache(this.
-            __getCacheKey(track, defer), track, defer);
+            __getCacheKey(track, deps), track, deps);
     },
 
     /**
@@ -130,11 +131,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} defer
+     * @param {Ctx} deps
      *
      * @returns {Array<String>}
      * */
-    _getCacheKeyParts: function (track, defer) {
+    _getCacheKeyParts: function (track, deps) {
         /*eslint no-unused-vars: 0*/
         return [];
     },
@@ -145,11 +146,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} defer
+     * @param {Ctx} deps
      *
      * @returns {*}
      * */
-    __call: function (track, defer) {
+    __call: function (track, deps) {
 
         var self = this;
 
@@ -157,7 +158,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
             return vow.invoke(function () {
 
-                return self.data(track, defer);
+                return self.data(track, deps);
             });
         }
 
@@ -170,13 +171,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} defer
+     * @param {Ctx} deps
      *
      * @returns {String}
      * */
-    __getCacheKey: function (track, defer) {
+    __getCacheKey: function (track, deps) {
 
-        return this._getCacheKeyParts(track, defer).join(S_SEPARATOR);
+        return this._getCacheKeyParts(track, deps).join(S_SEPARATOR);
     },
 
     /**
@@ -186,11 +187,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @param {String} cacheKey
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} deps
      *
      * @returns {vow.Promise}
      * */
-    __getFromCache: function (cacheKey, track, ctx) {
+    __getFromCache: function (cacheKey, track, deps) {
 
         var defer = vow.defer();
         var self = this;
@@ -200,10 +201,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
             if ( 2 > arguments.length ) {
                 //  ошибка доступа к кэшу
-                ctx.notify(err);
+                deps.notify(err);
 
                 //  обновим
-                return defer.resolve(self.__callAndCache(cacheKey, track, ctx));
+                return defer.resolve(self.
+                    __callAndCache(cacheKey, track, deps));
             }
 
             //  Нет в кэше такого
@@ -213,7 +215,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
                 return defer.resolve(res.data);
             }
 
-            return defer.resolve(self.__callAndCache(cacheKey, track, ctx));
+            return defer.resolve(self.__callAndCache(cacheKey, track, deps));
         });
 
         return defer.promise();
@@ -226,14 +228,14 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @param {String} cacheKey
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Ctx} deps
      *
      * @returns {vow.Promise}
      * */
-    __callAndCache: function (cacheKey, track, ctx) {
+    __callAndCache: function (cacheKey, track, deps) {
 
         //  или чего-то нет в кэше или ошибка...
-        var promise = this.__call(track, ctx);
+        var promise = this.__call(track, deps);
 
         promise.then(function (data) {
             //  если запрос выполнен успешно то сохраняем в кэш
@@ -244,7 +246,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             }, this._maxAge, function (err) {
                 //  ошибка сохоанения
                 if ( 2 > arguments.length ) {
-                    ctx.notify(err);
+                    deps.notify(err);
                 }
             });
         }, this);

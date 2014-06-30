@@ -223,6 +223,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
             var base;
             var members = Object(decl[0]);
             var unit;
+            var self = this;
 
             //  Если не передали base, то сами добьем
             if ( !_.has(members, 'base') ) {
@@ -233,7 +234,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
 
             if ( _.has(units, base) ) {
                 Unit = inherit(units[base][0], members, decl[1]);
-                unit = new Unit(this.params);
+                unit = new Unit(self.params);
                 units[unit.path] = [Unit, unit];
 
                 return decls;
