@@ -141,6 +141,21 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     },
 
     /**
+     * @protected
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Track} track
+     * @param {Ctx} deps
+     *
+     * @returns {Boolean}
+     * */
+    _hasOutsideResolved: function (track, deps) {
+
+        return deps.promise().isResolved();
+    },
+
+    /**
      * @private
      * @memberOf {Unit}
      * @method
@@ -238,6 +253,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         var promise = this.__call(track, deps);
 
         promise.then(function (data) {
+
+            //  При вызове может быть резолв
+            if ( this._hasOutsideResolved(track, deps) ) {
+
+                return;
+            }
+
             //  если запрос выполнен успешно то сохраняем в кэш
             track.agent.cache.set(cacheKey, {
                 //  Вкладываю в свойтво объекта чтобы понимать есть ключ
