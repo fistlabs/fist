@@ -5,30 +5,8 @@ var _ = require('lodash-node');
 
 module.exports = function (done) {
     globs(this.params.units).then(function (units) {
-
-        try {
-            units = _.map(units, function (filename) {
-
-                return require(filename);
-            });
-        } catch (err) {
-            done(err);
-
-            return;
-        }
-
-        try {
-            _.forEach(units, function (unit) {
-                this.unit(unit);
-            }, this);
-
-        } catch (err) {
-            done(err);
-
-            return;
-        }
-
+        units = _.map(units, require);
+        _.forEach(units, this.unit, this);
         done();
-
-    }, done, this);
+    }, done, this).done(null, done);
 };

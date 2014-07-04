@@ -10,6 +10,8 @@ var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
 
+var plugRoutes = require('./plug/routes');
+
 /**
  * @class Framework
  * @extends Tracker
@@ -45,6 +47,8 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
          * @type {Router}
          * */
         this.router = this._createRouter(this.params.router);
+
+        this.plug(plugRoutes);
     },
 
     /**
@@ -61,6 +65,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         var self = this;
 
         return function (req, res) {
+
             var date = new Date();
             var track = self._createTrack(req, res);
 
@@ -201,7 +206,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
             find(track.method, track.url.pathname, track.route);
 
         //  однозначно нет такого маршрута
-        if (_.isNull(result) ) {
+        if ( _.isNull(result) ) {
             this.emit('sys:ematch', track);
             //  Not Found
             return track.send(404);
@@ -234,6 +239,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         this.resolve(track, result.route.data.unit).
             done(function () {
+
                 return this.__next(track);
             }, function (err) {
 

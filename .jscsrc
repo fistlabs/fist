@@ -108,6 +108,7 @@
     },
 
     "excludeFiles": [
+        "test/fixtures/**",
         "coverage/**",
         "node_modules/**"
     ]

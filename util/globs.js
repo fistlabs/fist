@@ -4,14 +4,16 @@ var _ = require('lodash-node');
 var glob = require('glob');
 var vow = require('vow');
 
-function singleGlob (expr) {
+function singleGlob (expr, opts) {
 
     var defer = vow.defer();
 
     try {
-        glob(expr, function (err, res) {
+        glob(expr, opts, function (err, res) {
+
             if ( 2 > arguments.length ) {
                 defer.reject(err);
+
                 return;
             }
 
@@ -27,9 +29,11 @@ function singleGlob (expr) {
 
 /**
  * @param {Array} globs
+ * @param {Object} opts
+ *
  * @returns {vow.Promise}
  * */
-module.exports = function (globs) {
+function globs (globs, opts) {
 
     if (_.isUndefined(globs) || _.isNull(globs) ) {
         globs = [];
@@ -38,13 +42,18 @@ module.exports = function (globs) {
         globs = [globs];
     }
 
-    globs = _.map(globs, singleGlob);
+    globs = _.map(globs, function (glob) {
+
+        return singleGlob(glob, opts);
+    });
 
     return vow.all(globs).then(function (results) {
 
         return _.reduce(results, function (results, result) {
 
             return results.concat(result);
-        });
+        }, []);
     });
-};
+}
+
+module.exports = globs;

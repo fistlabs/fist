@@ -307,47 +307,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     },
 
     /**
-     * @deprecated
-     *
-     * Проверяет, был ли выполнен ответ приложением
-     *
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @returns {Boolean}
-     * */
-    sent: function () {
-
-        return this.res.hasResponded();
-    },
-
-    /**
-     * @deprecated
-     *
-     * Ставит статус ответа или возыращает его
-     *
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {Number} [status]
-     *
-     * @returns {Number|Connect}
-     * */
-    status: function (status) {
-
-        if ( 0 === arguments.length ) {
-
-            return this.res.getStatus();
-        }
-
-        this.res.setStatus(status);
-
-        return this;
-    },
-
-    /**
      * @protected
      * @memberOf {Connect}
      * @method

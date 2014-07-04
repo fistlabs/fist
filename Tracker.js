@@ -8,9 +8,6 @@ var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
 
-var bundledUnits = Path.join(__dirname, 'unit', 'decl', '**', '*.js');
-
-var plugRoutes = require('./plug/routes');
 var plugUnits = require('./plug/units');
 
 /**
@@ -56,16 +53,18 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         //  Может это в сам плагин добавить?
         if ( _.isUndefined(units) || _.isNull(units) ) {
-            this.params.units = [bundledUnits];
+            this.params.units = [Tracker.BUNDLED_UNITS_PATH];
 
         } else if ( !_.isArray(units) ) {
-            this.params.units = [bundledUnits, units];
+            //  Добавляю в начало чтобы можно было
+            // переопредедить встроенные узлы
+            this.params.units = [Tracker.BUNDLED_UNITS_PATH, units];
 
         } else {
-            this.params.units.unshift(units);
+            this.params.units.unshift(Tracker.BUNDLED_UNITS_PATH);
         }
 
-        this.plug(plugRoutes, plugUnits);
+        this.plug(plugUnits);
     },
 
     /**
@@ -283,6 +282,17 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         };
     }
 
+}, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Tracker
+     * @const
+     * @property
+     * @type {String}
+     * */
+    BUNDLED_UNITS_PATH: Path.join(__dirname, 'unit', 'decl', '**', '*.js')
 });
 
 module.exports = Tracker;

@@ -27,6 +27,12 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             maxAge = 0;
         }
 
+        /**
+         * @protected
+         * @memberOf {Unit}
+         * @property
+         * @type {Number}
+         * */
         this._maxAge = maxAge;
 
         /**

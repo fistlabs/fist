@@ -160,11 +160,6 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     respond: function (status, body) {
 
-        if ( this.hasResponded() ) {
-
-            return this.respondDefer.promise();
-        }
-
         body = this.__createBody(status, body);
 
         if ( vow.isPromise(body) ) {
