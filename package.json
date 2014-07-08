@@ -22,7 +22,8 @@
         "attach-parser": "0.0.1",
         "glob": "4.0.3",
         "negotiator": "0.4.7",
-        "fast-url-parser": "1.0.6-0"
+        "fast-url-parser": "1.0.6-0",
+        "double-ended-queue": "2.0.0-0"
     },
     "description": "nodejs application framework",
     "devDependencies": {
