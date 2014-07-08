@@ -45,4 +45,16 @@ describe('fist/plug/units', function () {
             done();
         });
     });
+
+    it('Should reject init coz params.units is wrong', function (done) {
+
+        var tracker = new Tracker({
+            units: [null]
+        });
+
+        tracker.ready().done(null, function (err) {
+            assert.instanceOf(err, Error);
+            done();
+        });
+    });
 });
