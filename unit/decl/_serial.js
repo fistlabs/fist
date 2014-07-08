@@ -1,5 +1,7 @@
 'use strict';
 
+var Deque = require('double-ended-queue');
+
 var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
@@ -12,7 +14,7 @@ module.exports = {
 
     data: function (track, deps) {
 
-        return this.__next(track, deps, _.clone(this._steps), false);
+        return this.__next(track, deps, new Deque(this._steps), false);
     },
 
     _steps: [],
@@ -23,7 +25,7 @@ module.exports = {
         var name;
         var self = this;
 
-        if ( this._hasOutsideResolved(track, deps) || 0 === _.size(steps) ) {
+        if ( this._hasOutsideResolved(track, deps) || steps.isEmpty() ) {
 
             return deps.data;
         }
@@ -51,7 +53,7 @@ module.exports = {
             isError = promise.isRejected();
 
             if ( isError ) {
-                steps = ['e' + name];
+                steps = new Deque(['e' + name]);
             }
 
             return this.__next(track, deps, steps, isError);
