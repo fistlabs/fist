@@ -157,7 +157,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
      * @param {String} event
      * @param {*} [data]
      * */
-    __notifyAgent: function (event,  data) {
+    __notifyAgent: function (event, data) {
         this.track.agent.emit(event, {
             path: this.path,
             data: data,

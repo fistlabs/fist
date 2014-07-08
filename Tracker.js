@@ -96,7 +96,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         //  -1 possible tick
         if ( ready.isResolved() ) {
 
-            return this.__resolveUnit(track, path, params);
+            if ( ready.isFulfilled() ) {
+
+                return this.__resolveUnit(track, path, params);
+            }
+
+            return ready;
         }
 
         return ready.then(function () {
