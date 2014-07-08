@@ -87,7 +87,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {String} path
      * @param {*} [params]
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     resolve: function (track, path, params) {
 
@@ -114,7 +114,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {String} path
      * @param {Object} [params]
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     __resolveUnit: function (track, path, params) {
 
@@ -146,7 +146,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     _getReady: function () {
         var plugins = _.map(this.__plugs, this.__invokePlugin, this);
@@ -161,7 +161,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      *
      * @param {Function} plug
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     __invokePlugin: function (plug) {
 

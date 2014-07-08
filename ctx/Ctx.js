@@ -9,7 +9,6 @@ var vow = require('vow');
 
 /**
  * @class Ctx
- * @extends Deferred
  * */
 var Ctx = inherit(/** @lends Ctx.prototype */ {
 
@@ -80,7 +79,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
      * @memberOf {Ctx}
      * @method
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     execute: function () {
 
@@ -120,7 +119,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
      * @memberOf {Ctx}
      * @method
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     __setResults: function (deps) {
 
@@ -134,7 +133,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
      *
      * @param {String} path
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     __resolveAndSet: function (path) {
 
