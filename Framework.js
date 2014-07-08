@@ -198,7 +198,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
      *
      * @param {Connect} track
      *
-     * @returns {Promise}
+     * @returns {vow.Promise}
      * */
     __next: function (track) {
         //  выбирается маршрут
