@@ -8,5 +8,5 @@ module.exports = function (done) {
         units = _.map(units, require);
         _.forEach(units, this.unit, this);
         done();
-    }, done, this).done(null, done);
+    }, this).done(null, done);
 };
