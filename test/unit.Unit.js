@@ -219,9 +219,13 @@ describe('fist/unit/_unit', function () {
             tracker.unit({
                 path: 'test',
                 spy: [],
+                _rsv: false,
+                _hasOutsideResolved: function () {
+                    return !!this._rsv;
+                },
                 _maxAge: 10000,
-                data: function (track, ctx) {
-                    ctx.resolve(100500);
+                data: function () {
+                    this._rsv = true;
                     spy.push(1);
 
                     return 123;
@@ -231,11 +235,12 @@ describe('fist/unit/_unit', function () {
             tracker.resolve(new Track(tracker), 'test').then(function (res) {
                 assert.deepEqual(spy, [1]);
                 assert.deepEqual(e.slice(0), [42]);
-                assert.strictEqual(res, 100500);
-            }).always(function () {
+                assert.strictEqual(res, 123);
+            }).always(function (promise) {
+                assert.ok(promise.isFulfilled());
                 tracker.resolve(new Track(tracker), 'test').
                     then(function (res) {
-                        assert.strictEqual(res, 100500);
+                        assert.strictEqual(res, 123);
                         assert.deepEqual(spy, [1, 1]);
                         assert.deepEqual(e.slice(0), [42, 42]);
 
