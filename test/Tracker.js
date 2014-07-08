@@ -68,6 +68,34 @@ describe('fist/Tracker', function () {
             });
         });
 
+        it('Should be rejected coz init failed', function (done) {
+
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+
+            tracker.plug(function () {
+
+                throw 42;
+            });
+
+            tracker.unit({
+                path: 'a',
+                data: function () {
+
+                    return 42;
+                }
+            });
+
+            tracker.ready().always(function () {
+
+                tracker.resolve(track, 'a').done(null, function (res) {
+                    assert.strictEqual(res, 42);
+                    done();
+                });
+            });
+
+        });
+
         it('Should reject undefined unit', function (done) {
 
             var tracker = new Tracker();

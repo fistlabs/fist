@@ -49,6 +49,16 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.router = this._createRouter(this.params.router);
 
         this.plug(plugRoutes);
+
+        //  Необходимо переопределить базовый узел
+        // чтобы он мог замечать сайд-эффекты
+        this.unit({
+            path: '_unit',
+            _hasOutsideResolved: function (ctx) {
+
+                return ctx.track.res.hasResponded();
+            }
+        });
     },
 
     /**
@@ -246,7 +256,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
                 return track.send(500, err);
             }, this);
 
-        return track.res.respondDefer.promise();
+        return track.res.defer.promise();
     },
 
     /**
@@ -261,7 +271,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         //  был сделан send() где-то в обработчике события sys:request
         if ( track.res.hasResponded() ) {
 
-            return track.res.respondDefer.promise();
+            return track.res.defer.promise();
         }
 
         return this.__next(track);

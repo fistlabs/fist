@@ -1,9 +1,13 @@
 /*global describe, it*/
 'use strict';
 
+var Fs = require('fs');
+var sock = require('./util/sock');
 var Track = require('../track/Track');
 var Tracker = require('../Tracker');
+var Framework = require('../Framework');
 
+var asker = require('asker');
 var assert = require('chai').assert;
 var inherit = require('inherit');
 
@@ -247,6 +251,56 @@ describe('fist/unit/_unit', function () {
                         done();
                     }).done();
             }).done();
+        });
+
+        it('Should not cache result coz unit has resolved ' +
+           'the context', function (done) {
+
+            var spy = [];
+
+            var tracker = new Framework({
+                routes: {
+                    pattern: '/',
+                    name: 'test'
+                }
+            });
+
+            tracker.unit({
+                path: 'test',
+                spy: [],
+                _maxAge: 10000,
+                data: function (track, ctx) {
+                    ctx.track.send(200, 0);
+                    spy.push(1);
+
+                    return 123;
+                }
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+            } catch (err) {}
+
+            tracker.listen(sock);
+
+            asker({
+                path: '/',
+                socketPath: sock
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.deepEqual(spy, [1]);
+                assert.deepEqual(res.data, new Buffer('0'));
+
+                asker({
+                    path: '/',
+                    socketPath: sock
+                }, function (err, res) {
+                    assert.ok(!err);
+                    assert.deepEqual(spy, [1, 1]);
+                    assert.deepEqual(res.data, new Buffer('0'));
+                    done();
+                });
+            });
         });
 
         it('Should cache result', function (done) {

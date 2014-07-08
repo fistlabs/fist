@@ -76,116 +76,27 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    execute: function () {
-
-        var defer = vow.defer();
-        var path = this.path;
-        var self = this;
-        var unit = self.track.agent.getUnit(path);
-
-        this.__notifyAgent('ctx:pending');
-
-        defer.promise().done(function (data) {
-            self.__notifyAgent('ctx:accept', data);
-        }, function (data) {
-            self.__notifyAgent('ctx:reject', data);
-        });
-
-        if ( _.isUndefined(unit) ) {
-            defer.reject();
-
-            return defer.promise();
-        }
-
-        if ( 0 === _.size(unit.deps) ) {
-            defer.resolve(unit.getValue(self));
-
-        } else {
-            this.__setResults(unit.deps).done(function () {
-                defer.resolve(unit.getValue(self));
-            });
-        }
-
-        return defer.promise();
-    },
-
-    /**
-     * @private
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    __setResults: function (deps) {
-
-        return vow.allResolved(_.map(deps, this.__resolveAndSet, this));
-    },
-
-    /**
-     * @private
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @param {String} path
-     *
-     * @returns {vow.Promise}
-     * */
-    __resolveAndSet: function (path) {
-
-        var self = this;
-        var promise = this.track.agent.resolve(this.track, path, this.params);
-
-        promise.done(function (data) {
-            self.setRes(path, data);
-        }, function (data) {
-            self.setErr(path, data);
-        });
-
-        return promise;
-    },
-
-    /**
-     * @private
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @param {String} event
-     * @param {*} [data]
-     * */
-    __notifyAgent: function (event,  data) {
-        this.track.agent.emit(event, {
-            path: this.path,
-            data: data,
-            time: new Date() - this.__creationDate,
-            trackId: this.track.id
-        });
-    },
-
-    /**
-     * @public
-     * @memberOf {Ctx}
-     * @method
-     *
-     * @param {*} data
-     * */
-    notify: function (data) {
-
-        return this.__notifyAgent('ctx:notify', data);
-    },
-
-    /**
-     * @public
      * @static
      * @memberOf Ctx.prototype
      * @property
      * @type {Object}
      * */
     params: {},
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {Array<String>} deps
+     *
+     * @returns {vow.Promise}
+     * */
+    append: function (deps) {
+        deps = _.map(deps, this.__resolveAndSet, this);
+
+        return vow.allResolved(deps);
+    },
 
     /**
      * @public
@@ -220,6 +131,35 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
      * @memberOf {Ctx}
      * @method
      *
+     * @param {*} data
+     * */
+    notify: function (data) {
+
+        return this.trigger('ctx:notify', data);
+    },
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {String} event
+     * @param {*} [data]
+     * */
+    trigger: function (event, data) {
+        this.track.agent.emit(event, {
+            path: this.path,
+            data: data,
+            time: new Date() - this.__creationDate,
+            trackId: this.track.id
+        });
+    },
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
      * @param {String} path
      * @param {*} data
      * */
@@ -239,6 +179,28 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
     setErr: function (path, data) {
 
         return Ctx.add(this.ers, path, data);
+    },
+
+    /**
+     * @private
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {String} path
+     *
+     * @returns {vow.Promise}
+     * */
+    __resolveAndSet: function (path) {
+
+        var promise = this.track.agent.resolve(this.track, path, this.params);
+
+        promise.done(function (data) {
+            this.setRes(path, data);
+        }, function (data) {
+            this.setErr(path, data);
+        }, this);
+
+        return promise;
     }
 
 }, {
