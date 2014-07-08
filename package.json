@@ -10,24 +10,26 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "asker": "0.4.6",
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
-        "finger": "0.1.1",
+        "finger": "0.1.2",
         "lodash-node": "2.4.1",
         "vow": "0.4.4",
         "inherit": "2.2.2",
         "cookie": "0.1.2",
         "media-typer": "0.2.0",
-        "attach-parser": "0.0.1"
+        "attach-parser": "0.0.1",
+        "glob": "4.0.3",
+        "negotiator": "0.4.7"
     },
     "description": "nodejs application framework",
     "devDependencies": {
         "jscs": "1.5.4",
         "eslint": "0.6.2",
-        "nodeunit": "0.9.0",
-        "istanbul": "0.2.11",
-        "asker": "0.4.5",
-        "glob": "4.0.2",
+        "mocha": "1.20.1",
+        "chai": "1.9.1",
+        "istanbul": "0.2.16",
         "express": "4.4.4"
     },
     "license": "MIT",
@@ -38,16 +40,16 @@
         "url": "git://github.com/fistlabs/fist.git"
     },
     "scripts": {
+        "unit": "mocha",
+        "cover": "istanbul cover node_modules/.bin/_mocha",
         "jscs": "jscs .",
         "eslint": "eslint .",
         "lint": "npm run jscs && npm run eslint",
-        "unit": "node --harmony test/runner",
         "test": "npm run lint && npm run unit",
-        "cover": "istanbul cover test/runner",
         "benchmark": "benchmark/runner.sh benchmark/express.js && benchmark/runner.sh benchmark/fist.js"
     },
     "engines": {
         "node": ">= 0.10.0"
     },
-    "version": "1.1.1"
+    "version": "1.2.0"
 }

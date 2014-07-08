@@ -196,7 +196,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
             return cache[path];
         }
 
-        cache[path] = parse(path);
+        cache[path] = parsePath(path);
 
         return cache[path];
     },
@@ -245,7 +245,7 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
  *
  * @returns {Array<String>}
  * */
-function parse (path) {
+function parsePath (path) {
     /*eslint complexity: [2, 13] */
     var cur;
     var index;

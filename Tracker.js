@@ -2,10 +2,13 @@
 
 var Agent = require('./Agent');
 var Ctx = /** @type Ctx */ require('./ctx/Ctx');
+var Path = require('path');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
+
+var plugUnits = require('./plug/units');
 
 /**
  * @class Tracker
@@ -23,6 +26,9 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {Object} [params]
      * */
     __constructor: function (params) {
+
+        var units;
+
         this.__base(params);
 
         /**
@@ -41,6 +47,24 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
          * @type {Array<Function>}
          * */
         this.__plugs = [];
+
+        //  добавляю в параметры встроенные узлы
+        units = this.params.units;
+
+        //  Может это в сам плагин добавить?
+        if ( _.isUndefined(units) || _.isNull(units) ) {
+            this.params.units = [Tracker.BUNDLED_UNITS_PATH];
+
+        } else if ( !_.isArray(units) ) {
+            //  Добавляю в начало чтобы можно было
+            // переопредедить встроенные узлы
+            this.params.units = [Tracker.BUNDLED_UNITS_PATH, units];
+
+        } else {
+            this.params.units.unshift(Tracker.BUNDLED_UNITS_PATH);
+        }
+
+        this.plug(plugUnits);
     },
 
     /**
@@ -258,6 +282,17 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         };
     }
 
+}, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Tracker
+     * @const
+     * @property
+     * @type {String}
+     * */
+    BUNDLED_UNITS_PATH: Path.join(__dirname, 'unit', 'decl', '**', '*.js')
 });
 
 module.exports = Tracker;

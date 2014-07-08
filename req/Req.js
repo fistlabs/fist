@@ -110,25 +110,28 @@ var Req = inherit(/** @lends Req.prototype */ {
      * */
     getBody: function () {
 
-        var header;
-        var params;
+        var self = this;
 
         if ( !vow.isPromise(this.__body) ) {
-            header = this._req.headers;
-            params = header['content-type'];
+            this.__body = vow.invoke(function () {
 
-            if ( params ) {
-                params = mediaTyper.parse(params);
+                var header = self._req.headers;
+                var params = header['content-type'];
 
-            } else {
-                params = {};
-            }
+                if ( params ) {
+                    //  may throw an exception
+                    params = mediaTyper.parse(params);
 
-            params = _.extend(params, {
-                length: header['content-length']
-            }, this.params.body);
+                } else {
+                    params = {};
+                }
 
-            this.__body = this._createBodyParser(params).parse(this._req);
+                params = _.extend(params, {
+                    length: header['content-length']
+                }, self.params.body);
+
+                return self._createBodyParser(params).parse(self._req);
+            });
         }
 
         return this.__body;
