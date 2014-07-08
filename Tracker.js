@@ -98,7 +98,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
             if ( ready.isFulfilled() ) {
 
-                return this.__resolveUnit(track, path, params);
+                return this.__resolvePath(track, path, params);
             }
 
             return ready;
@@ -106,7 +106,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         return ready.then(function () {
 
-            return this.__resolveUnit(track, path, params);
+            return this.__resolvePath(track, path, params);
         }, this);
     },
 
@@ -121,13 +121,56 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    __resolveUnit: function (track, path, params) {
+    __resolvePath: function (track, path, params) {
 
         if ( !_.has(track.tasks, path) ) {
-            track.tasks[path] = this._createCtx(track, path, params).execute();
+            track.tasks[path] = this.__executeUnit(track, path, params);
         }
 
         return track.tasks[path];
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Track} track
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {vow.Promise}
+     * */
+    __executeUnit: function (track, path, params) {
+
+        var deps = this._createCtx(track, path, params);
+        var exec = vow.defer();
+        var unit = track.agent.getUnit(path);
+
+        deps.trigger('ctx:pending');
+
+        exec.promise().done(function (data) {
+            deps.trigger('ctx:accept', data);
+        }, function (data) {
+            deps.trigger('ctx:reject', data);
+        });
+
+        if ( _.isUndefined(unit) ) {
+            exec.reject();
+
+            return exec.promise();
+        }
+
+        if ( 0 === _.size(unit.deps) ) {
+            exec.resolve(unit.getValue(deps));
+
+        } else {
+            deps.append(unit.deps).done(function () {
+                exec.resolve(unit.getValue(deps));
+            });
+        }
+
+        return exec.promise();
     },
 
     /**
