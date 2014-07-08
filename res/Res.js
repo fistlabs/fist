@@ -364,8 +364,7 @@ var Res = inherit(/** @lends Res.prototype */ {
 
         if ( this.params.hideStackTrace ) {
 
-            return this.__createByString(status, Res.
-                getStatusMessage(status));
+            return this.__createByJson(status, body);
         }
 
         return this.__createByString(status, body.stack);
