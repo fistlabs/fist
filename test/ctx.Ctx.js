@@ -47,16 +47,12 @@ describe('fist/ctx/Ctx', function () {
             assert.instanceOf(ctx, Ctx);
         });
 
-        it('Should be an instance of vow.Deferred', function () {
-            assert.instanceOf(ctx, vow.Deferred);
-        });
-
     });
 
-    describe('new Ctx(params)', function () {
+    describe('new Ctx(track, path, params)', function () {
 
         var params = {a: 42};
-        var ctx = new Ctx(params);
+        var ctx = new Ctx(null, null, params);
 
         it('Should have a "params" property', function () {
             assert.property(ctx, 'params');

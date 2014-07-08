@@ -87,11 +87,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {*}
      * */
-    data: function (track, deps) {
+    data: function (track, ctx) {
         /*eslint no-unused-vars: 0*/
     },
 
@@ -115,20 +115,18 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {*}
      * */
-    getValue: function (track, deps) {
+    getValue: function (ctx) {
 
         if ( 0 >= this._maxAge ) {
 
-            return this.__call(track, deps);
+            return this.__call(ctx);
         }
 
-        return this.__getFromCache(this.
-            __getCacheKey(track, deps), track, deps);
+        return this.__getFromCache(this.__getCacheKey(ctx), ctx);
     },
 
     /**
@@ -137,11 +135,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {Array<String>}
      * */
-    _getCacheKeyParts: function (track, deps) {
+    _getCacheKeyParts: function (track, ctx) {
         /*eslint no-unused-vars: 0*/
         return [];
     },
@@ -151,14 +149,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {Boolean}
      * */
-    _hasOutsideResolved: function (track, deps) {
-
-        return deps.promise().isResolved();
+    _hasOutsideResolved: function (ctx) {
+        /*eslint no-unused-vars: 0*/
+        return false;
     },
 
     /**
@@ -166,12 +163,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {*}
      * */
-    __call: function (track, deps) {
+    __call: function (ctx) {
 
         var self = this;
 
@@ -179,7 +175,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
             return vow.invoke(function () {
 
-                return self.data(track, deps);
+                return self._callData(ctx);
             });
         }
 
@@ -187,18 +183,33 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     },
 
     /**
+     * @protected
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Ctx} ctx
+     *
+     * @returns {*}
+     *
+     * @throws {*}
+     * */
+    _callData: function (ctx) {
+
+        return this.data(ctx.track, ctx);
+    },
+
+    /**
      * @private
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {String}
      * */
-    __getCacheKey: function (track, deps) {
+    __getCacheKey: function (ctx) {
 
-        return this._getCacheKeyParts(track, deps).join(S_SEPARATOR);
+        return this._getCacheKeyParts(ctx.track, ctx).join(S_SEPARATOR);
     },
 
     /**
@@ -207,13 +218,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} cacheKey
-     * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {vow.Promise}
      * */
-    __getFromCache: function (cacheKey, track, deps) {
+    __getFromCache: function (cacheKey, ctx) {
 
+        var track = ctx.track;
         var defer = vow.defer();
         var self = this;
 
@@ -222,11 +233,10 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
             if ( 2 > arguments.length ) {
                 //  ошибка доступа к кэшу
-                deps.notify(err);
+                ctx.notify(err);
 
                 //  обновим
-                return defer.resolve(self.
-                    __callAndCache(cacheKey, track, deps));
+                return defer.resolve(self.__callAndCache(cacheKey, ctx));
             }
 
             //  Нет в кэше такого
@@ -236,7 +246,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
                 return defer.resolve(res.data);
             }
 
-            return defer.resolve(self.__callAndCache(cacheKey, track, deps));
+            return defer.resolve(self.__callAndCache(cacheKey, ctx));
         });
 
         return defer.promise();
@@ -248,33 +258,32 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} cacheKey
-     * @param {Track} track
-     * @param {Ctx} deps
+     * @param {Ctx} ctx
      *
      * @returns {vow.Promise}
      * */
-    __callAndCache: function (cacheKey, track, deps) {
+    __callAndCache: function (cacheKey, ctx) {
 
         //  или чего-то нет в кэше или ошибка...
-        var promise = this.__call(track, deps);
+        var promise = this.__call(ctx);
 
         promise.then(function (data) {
 
             //  При вызове может быть резолв
-            if ( this._hasOutsideResolved(track, deps) ) {
+            if ( this._hasOutsideResolved(ctx) ) {
 
                 return;
             }
 
             //  если запрос выполнен успешно то сохраняем в кэш
-            track.agent.cache.set(cacheKey, {
+            ctx.track.agent.cache.set(cacheKey, {
                 //  Вкладываю в свойтво объекта чтобы понимать есть ключ
                 //  в кэше или нет, потому что можно закэшировать undefined
                 data: data
             }, this._maxAge, function (err) {
                 //  ошибка сохоанения
                 if ( 2 > arguments.length ) {
-                    deps.notify(err);
+                    ctx.notify(err);
                 }
             });
         }, this);

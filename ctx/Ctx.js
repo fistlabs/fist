@@ -11,19 +11,20 @@ var vow = require('vow');
  * @class Ctx
  * @extends Deferred
  * */
-var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
+var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @protected
      * @memberOf {Ctx}
      * @method
      *
+     * @param {Track} track
+     * @param {String} path
      * @param {Object} [params]
      *
      * @constructs
      * */
-    __constructor: function (params) {
-        this.__base();
+    __constructor: function (track, path, params) {
 
         /**
          * @public
@@ -48,6 +49,134 @@ var Ctx = inherit(vow.Deferred, /** @lends Ctx.prototype */ {
          * @type {Object}
          * */
         this.params = params || {};
+
+        /**
+         * @public
+         * @memberOf {Ctx}
+         * @property
+         * @type {Track}
+         * */
+        this.track = track;
+
+        /**
+         * @private
+         * @memberOf {Ctx}
+         * @property
+         * @type {String}
+         * */
+        this.path = path;
+
+        /**
+         * @private
+         * @memberOf {Ctx}
+         * @property
+         * @type {Date}
+         * */
+        this.__creationDate = new Date();
+    },
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @returns {Promise}
+     * */
+    execute: function () {
+
+        var defer = vow.defer();
+        var path = this.path;
+        var self = this;
+        var unit = self.track.agent.getUnit(path);
+
+        this.__notifyAgent('ctx:pending');
+
+        defer.promise().done(function (data) {
+            self.__notifyAgent('ctx:accept', data);
+        }, function (data) {
+            self.__notifyAgent('ctx:reject', data);
+        });
+
+        if ( _.isUndefined(unit) ) {
+            defer.reject();
+
+            return defer.promise();
+        }
+
+        if ( 0 === _.size(unit.deps) ) {
+            defer.resolve(unit.getValue(self));
+
+        } else {
+            this.__setResults(unit.deps).done(function () {
+                defer.resolve(unit.getValue(self));
+            });
+        }
+
+        return defer.promise();
+    },
+
+    /**
+     * @private
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @returns {Promise}
+     * */
+    __setResults: function (deps) {
+
+        return vow.allResolved(_.map(deps, this.__resolveAndSet, this));
+    },
+
+    /**
+     * @private
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {String} path
+     *
+     * @returns {Promise}
+     * */
+    __resolveAndSet: function (path) {
+
+        var self = this;
+        var promise = this.track.agent.resolve(this.track, path, this.params);
+
+        promise.done(function (data) {
+            self.setRes(path, data);
+        }, function (data) {
+            self.setErr(path, data);
+        });
+
+        return promise;
+    },
+
+    /**
+     * @private
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {String} event
+     * @param {*} [data]
+     * */
+    __notifyAgent: function (event,  data) {
+        this.track.agent.emit(event, {
+            path: this.path,
+            data: data,
+            time: new Date() - this.__creationDate,
+            trackId: this.track.id
+        });
+    },
+
+    /**
+     * @public
+     * @memberOf {Ctx}
+     * @method
+     *
+     * @param {*} data
+     * */
+    notify: function (data) {
+
+        return this.__notifyAgent('ctx:notify', data);
     },
 
     /**

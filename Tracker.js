@@ -87,7 +87,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {String} path
      * @param {*} [params]
      *
-     * @returns {vow.Promise}
+     * @returns {Promise}
      * */
     resolve: function (track, path, params) {
 
@@ -96,12 +96,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         //  -1 possible tick
         if ( ready.isResolved() ) {
 
-            return this.__immediateResolve(track, path, params);
+            return this.__resolveUnit(track, path, params);
         }
 
         return ready.then(function () {
 
-            return this.__immediateResolve(track, path, params);
+            return this.__resolveUnit(track, path, params);
         }, this);
     },
 
@@ -114,12 +114,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {String} path
      * @param {Object} [params]
      *
-     * @returns {vow.Promise}
+     * @returns {Promise}
      * */
-    __immediateResolve: function (track, path, params) {
+    __resolveUnit: function (track, path, params) {
 
         if ( !_.has(track.tasks, path) ) {
-            track.tasks[path] = this.__resolveUnit(track, path, params);
+            track.tasks[path] = this._createCtx(track, path, params).execute();
         }
 
         return track.tasks[path];
@@ -130,13 +130,15 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
+     * @param {Track} track
+     * @param {String} path
      * @param {Object} params
      *
      * @returns {Ctx}
      * */
-    _createCtx: function (params) {
+    _createCtx: function (track, path, params) {
 
-        return new Ctx(params);
+        return new Ctx(track, path, params);
     },
 
     /**
@@ -144,7 +146,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @returns {vow.Promise}
+     * @returns {Promise}
      * */
     _getReady: function () {
         var plugins = _.map(this.__plugs, this.__invokePlugin, this);
@@ -157,93 +159,9 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Track} track
-     * @param {String} path
-     * @param {*} [params]
-     * */
-    __resolveUnit: function (track, path, params) {
-
-        var date = new Date();
-        var defer = this._createCtx(params);
-        var deps;
-        var unit = this.getUnit(path);
-        var trackId = track.id;
-
-        defer.promise().done(function (data) {
-            this.emit('ctx:accept', {
-                trackId: trackId,
-                path: path,
-                time: new Date() - date,
-                data: data
-            });
-        }, function (data) {
-            this.emit('ctx:reject', {
-                trackId: trackId,
-                path: path,
-                time: new Date() - date,
-                data: data
-            });
-        }, function (data) {
-            this.emit('ctx:notify', {
-                trackId: trackId,
-                path: path,
-                time: new Date() - date,
-                data: data
-            });
-        }, this);
-
-        this.emit('ctx:pending', {
-            trackId: trackId,
-            path: path,
-            time: 0
-        });
-
-        if ( _.isUndefined(unit) ) {
-            defer.reject();
-
-            return defer.promise();
-        }
-
-        deps = unit.deps;
-
-        //  avoid possible tick
-        if ( 0 === deps.length ) {
-            defer.resolve(unit.getValue(track, defer));
-
-            return defer.promise();
-        }
-
-        deps = _.map(deps, function (path) {
-            var promise = this.resolve(track, path, params);
-
-            promise.always(function (promise) {
-
-                if ( promise.isRejected() ) {
-                    defer.setErr(path, promise.valueOf());
-
-                } else {
-                    defer.setRes(path, promise.valueOf());
-                }
-            });
-
-            return promise;
-        }, this);
-
-        vow.allResolved(deps).done(function () {
-            defer.resolve(unit.getValue(track, defer));
-        });
-
-        return defer.promise();
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
      * @param {Function} plug
      *
-     * @returns {vow.Promise}
+     * @returns {Promise}
      * */
     __invokePlugin: function (plug) {
 
