@@ -20,7 +20,8 @@
         "cookie": "0.1.2",
         "media-typer": "0.2.0",
         "attach-parser": "0.0.1",
-        "glob": "4.0.3"
+        "glob": "4.0.3",
+        "negotiator": "0.4.7"
     },
     "description": "nodejs application framework",
     "devDependencies": {

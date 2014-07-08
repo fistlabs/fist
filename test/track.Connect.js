@@ -163,7 +163,11 @@ describe('fist/track/Connect', function () {
 
     describe('.redirect', function () {
         it('Should redirect with code', function (done) {
-            doConnect({}, function (track) {
+            doConnect({
+                headers: {
+                    accept: 'text/plain'
+                }
+            }, function (track) {
                 track.header('content-type', 'text/plain');
                 track.redirect(301, '/test/');
             }, function (err, res) {
@@ -182,7 +186,6 @@ describe('fist/track/Connect', function () {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 302);
                 assert.strictEqual(res.headers.location, '/test/');
-                assert.deepEqual(res.data, new Buffer('/test/'));
                 done();
             });
         });
@@ -194,14 +197,16 @@ describe('fist/track/Connect', function () {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 302);
                 assert.strictEqual(res.headers.location, '/test/');
-                assert.deepEqual(res.data, new Buffer('/test/'));
                 done();
             });
         });
 
         it('Should render hyperlink if accepts', function (done) {
-            doConnect({}, function (track) {
-                track.header('Content-Type', 'text/html');
+            doConnect({
+                headers: {
+                    accept: 'text/html'
+                }
+            }, function (track) {
                 track.redirect('/test/');
             }, function (err, res) {
 
@@ -230,7 +235,6 @@ describe('fist/track/Connect', function () {
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.headers.location, '/test/');
-                assert.deepEqual(res.data, new Buffer('/test/'));
                 done();
             });
             tracker.route('/<page>/', 'page');
