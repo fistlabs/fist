@@ -3,7 +3,7 @@
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var _ = require('lodash-node');
-var cookie = require('cookie');
+var cookie = require('cookieparser');
 var inherit = require('inherit');
 var vow = require('vow');
 
