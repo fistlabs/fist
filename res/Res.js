@@ -20,14 +20,6 @@ var Res = inherit(/** @lends Res.prototype */ {
     __constructor: function (res, params) {
 
         /**
-         * @protected
-         * @memberOF {Res}
-         * @property
-         * @type {http.OutgoingMessage}
-         * */
-        this._res = res;
-
-        /**
          * @public
          * @memberOf {Res}
          * @property
@@ -42,6 +34,22 @@ var Res = inherit(/** @lends Res.prototype */ {
          * @type {Deferred}
          * */
         this.respondDefer = vow.defer();
+
+        /**
+         * @protected
+         * @memberOF {Res}
+         * @property
+         * @type {http.OutgoingMessage}
+         * */
+        this._res = res;
+
+        /**
+         * @private
+         * @memberOf {Res}
+         * @property
+         * @type {Boolean}
+         * */
+        this.__hasResponded = false;
     },
 
     /**
@@ -160,24 +168,27 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     respond: function (status, body) {
 
+        var promise;
+
         body = this.__createBody(status, body);
 
-        if ( vow.isPromise(body) ) {
-            this._respondPromise = vow.when(body, function (data) {
+        this.__hasResponded = true;
+
+        if ( _.isFunction(body.then) ) {
+            promise = vow.when(body, function (data) {
 
                 return this.__end(data);
             }, function (err) {
-                //  надо снова сделать respond но по-другому
-                delete this._respondPromise;
 
                 return this.respond(500, err);
             }, this);
+
         } else {
             //  avoid possible tick
-            this._respondPromise = vow.resolve(this.__end(body));
+            promise = vow.resolve(this.__end(body));
         }
 
-        this.respondDefer.resolve(this._respondPromise);
+        this.respondDefer.resolve(promise);
 
         return this.respondDefer.promise();
     },
@@ -191,7 +202,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     hasResponded: function () {
 
-        return !!this._respondPromise;
+        return this.__hasResponded;
     },
 
     /**
