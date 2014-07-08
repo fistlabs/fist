@@ -1,7 +1,7 @@
 'use strict';
 
 var AttachParser = require('attach-parser');
-var Url = require('url');
+var Url = require('fast-url-parser');
 
 var _ = require('lodash-node');
 var cookie = require('cookie');
