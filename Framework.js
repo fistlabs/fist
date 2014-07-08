@@ -246,7 +246,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
                 return track.send(500, err);
             }, this);
 
-        return track.res.respondDefer.promise();
+        return track.res.defer.promise();
     },
 
     /**
@@ -261,7 +261,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         //  был сделан send() где-то в обработчике события sys:request
         if ( track.res.hasResponded() ) {
 
-            return track.res.respondDefer.promise();
+            return track.res.defer.promise();
         }
 
         return this.__next(track);

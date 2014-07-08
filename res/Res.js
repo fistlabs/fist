@@ -23,17 +23,17 @@ var Res = inherit(/** @lends Res.prototype */ {
          * @public
          * @memberOf {Res}
          * @property
-         * @type {Object}
+         * @type {Deferred}
          * */
-        this.params = params || {};
+        this.defer = vow.defer();
 
         /**
          * @public
          * @memberOf {Res}
          * @property
-         * @type {Deferred}
+         * @type {Object}
          * */
-        this.respondDefer = vow.defer();
+        this.params = params || {};
 
         /**
          * @protected
@@ -188,9 +188,9 @@ var Res = inherit(/** @lends Res.prototype */ {
             promise = vow.resolve(this.__end(body));
         }
 
-        this.respondDefer.resolve(promise);
+        this.defer.resolve(promise);
 
-        return this.respondDefer.promise();
+        return this.defer.promise();
     },
 
     /**
