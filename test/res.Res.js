@@ -322,7 +322,7 @@ describe('fist/res/Res', function () {
             });
         });
 
-        it('Should show status message instead of trace', function (done) {
+        it('Should show json instead of Error-trace', function (done) {
 
             var error = new Error();
 
@@ -334,10 +334,13 @@ describe('fist/res/Res', function () {
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
-                assert.strictEqual(res.headers['content-type'], 'text/plain');
+                assert.strictEqual(res.headers['content-type'],
+                    'application/json');
                 assert.strictEqual(res.headers['content-length'],
                     String(res.data.length));
-                assert.deepEqual(res.data, new Buffer(STATUS_CODES[201]));
+
+                assert.deepEqual(res.data, new Buffer(JSON.stringify(error)));
+                assert.deepEqual(res.data, new Buffer('{}'));
 
                 done();
             });
