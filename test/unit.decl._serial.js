@@ -27,16 +27,17 @@ describe('fist/unit/decl/_serial', function () {
             }
         });
 
-        tracker.on('ctx:notify', function (event) {
-            spy.push([event.path, event.data[0]]);
+        tracker.on('ctx:a', function () {
+            spy.push('a');
+        });
+
+        tracker.on('ctx:b', function () {
+            spy.push('b');
         });
 
         tracker.resolve(track, 'test').done(function (res) {
             assert.strictEqual(res, 42);
-            assert.deepEqual(spy, [
-                ['test', 'a'],
-                ['test', 'b']
-            ]);
+            assert.deepEqual(spy, ['a', 'b']);
             done();
         });
     });
@@ -60,17 +61,21 @@ describe('fist/unit/decl/_serial', function () {
             }
         });
 
-        tracker.on('ctx:notify', function (event) {
-            spy.push([event.path, event.data[0]]);
+        tracker.on('ctx:a', function () {
+            spy.push('a');
+        });
+
+        tracker.on('ctx:b', function () {
+            spy.push('b');
+        });
+
+        tracker.on('ctx:eb', function () {
+            spy.push('eb');
         });
 
         tracker.resolve(track, 'test').fail(function (res) {
             assert.strictEqual(res, 'ERR');
-            assert.deepEqual(spy, [
-                ['test', 'a'],
-                ['test', 'b'],
-                ['test', 'eb']
-            ]);
+            assert.deepEqual(spy, ['a', 'b', 'eb']);
             done();
         }).done();
     });
@@ -98,16 +103,21 @@ describe('fist/unit/decl/_serial', function () {
             }
         });
 
-        tracker.on('ctx:notify', function (event) {
-            spy.push([event.path, event.data[0]]);
+        tracker.on('ctx:a', function () {
+            spy.push('a');
+        });
+
+        tracker.on('ctx:ea', function () {
+            spy.push('ea');
+        });
+
+        tracker.on('ctx:b', function () {
+            spy.push('b');
         });
 
         tracker.resolve(track, 'test').done(function (res) {
             assert.strictEqual(res, 'RES');
-            assert.deepEqual(spy, [
-                ['test', 'a'],
-                ['test', 'ea']
-            ]);
+            assert.deepEqual(spy, ['a', 'ea']);
             done();
         });
     });
