@@ -149,7 +149,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         deps.trigger('ctx:pending');
 
-        exec.promise().done(function (data) {
+        exec.promise().then(function (data) {
             deps.trigger('ctx:accept', data);
         }, function (data) {
             deps.trigger('ctx:reject', data);
