@@ -2,6 +2,7 @@
 
 var S_SEPARATOR = '\u0000';
 var EventEmitter = require('events').EventEmitter;
+var SkipResolver = require('../util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -121,12 +122,62 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     getValue: function (ctx) {
 
+        var key;
+
         if ( 0 >= this._maxAge ) {
 
             return this.__call(ctx);
         }
 
-        return this.__getFromCache(this.__getCacheKey(ctx), ctx);
+        key = this.__getCacheKey(ctx);
+
+        return this.__callThroughCache(key, ctx).then(function (value) {
+
+            var data = value.data;
+
+            //  из кэша или резолвер
+            if ( !value.fresh || data instanceof SkipResolver ) {
+
+                return data;
+            }
+
+            //  только что загружено
+            delete value.fresh;
+
+            this.__setCache(key, value, ctx).fail(ctx.notify, ctx);
+
+            return data;
+        }, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {String} key
+     * @param {*} value
+     * @param {Ctx} ctx
+     *
+     * @returns {*}
+     * */
+    __setCache: function (key, value, ctx) {
+
+        var defer = vow.defer();
+
+        //  если запрос выполнен успешно то сохраняем в кэш
+        ctx.track.agent.cache.set(key, value, this._maxAge, function (err) {
+
+            if ( err ) {
+                defer.reject(err);
+
+                return;
+            }
+
+            defer.resolve(err);
+        });
+
+        return defer.promise();
     },
 
     /**
@@ -142,20 +193,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     _getCacheKeyParts: function (track, ctx) {
         /*eslint no-unused-vars: 0*/
         return [];
-    },
-
-    /**
-     * @protected
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {Ctx} ctx
-     *
-     * @returns {Boolean}
-     * */
-    _hasOutsideResolved: function (ctx) {
-        /*eslint no-unused-vars: 0*/
-        return false;
     },
 
     /**
@@ -180,6 +217,26 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         }
 
         return vow.resolve(self.data);
+    },
+
+    /**
+     * @private
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Ctx} ctx
+     *
+     * @returns {vow.Promise}
+     * */
+    __callAndWrap: function (ctx) {
+
+        return this.__call(ctx).then(function (data) {
+
+            return {
+                data: data,
+                fresh: true
+            };
+        });
     },
 
     /**
@@ -217,39 +274,28 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {String} cacheKey
+     * @param {String} key
      * @param {Ctx} ctx
      *
      * @returns {vow.Promise}
      * */
-    __getFromCache: function (cacheKey, ctx) {
+    __callThroughCache: function (key, ctx) {
 
-        var track = ctx.track;
-        var defer = vow.defer();
-        var self = this;
+        return this.__getCache(key, ctx).then(function (res) {
 
-        //  пробуем взять значение из кэша...
-        track.agent.cache.get(cacheKey, function (err, res) {
-
-            if ( 2 > arguments.length ) {
-                //  ошибка доступа к кэшу
-                ctx.notify(err);
-
-                //  обновим
-                return defer.resolve(self.__callAndCache(cacheKey, ctx));
-            }
-
-            //  Нет в кэше такого
             if ( _.isObject(res) ) {
 
-                //  все хорошо, ради этой строчки все было задумано
-                return defer.resolve(res.data);
+                return res;
             }
 
-            return defer.resolve(self.__callAndCache(cacheKey, ctx));
-        });
+            return this.__callAndWrap(ctx);
 
-        return defer.promise();
+        }, function (err) {
+            //  ошибка забора из кэша
+            ctx.notify(err);
+
+            return this.__callAndWrap(ctx);
+        }, this);
     },
 
     /**
@@ -262,33 +308,22 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    __callAndCache: function (cacheKey, ctx) {
+    __getCache: function (cacheKey, ctx) {
 
-        //  или чего-то нет в кэше или ошибка...
-        var promise = this.__call(ctx);
+        var defer = vow.defer();
 
-        promise.then(function (data) {
+        ctx.track.agent.cache.get(cacheKey, function (err, res) {
 
-            //  При вызове может быть резолв
-            if ( this._hasOutsideResolved(ctx) ) {
+            if ( err ) {
+                defer.reject(err);
 
                 return;
             }
 
-            //  если запрос выполнен успешно то сохраняем в кэш
-            ctx.track.agent.cache.set(cacheKey, {
-                //  Вкладываю в свойтво объекта чтобы понимать есть ключ
-                //  в кэше или нет, потому что можно закэшировать undefined
-                data: data
-            }, this._maxAge, function (err) {
-                //  ошибка сохоанения
-                if ( 2 > arguments.length ) {
-                    ctx.notify(err);
-                }
-            });
-        }, this);
+            defer.resolve(res);
+        });
 
-        return promise;
+        return defer.promise();
     }
 
 });

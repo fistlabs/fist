@@ -145,6 +145,8 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     },
 
     /**
+     * is it useful?
+     *
      * @public
      * @memberOf {Connect}
      * @method
@@ -228,20 +230,20 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {*} [code]
+     * @param {*} [status]
      * @param {String} url
      * */
-    redirect: function (code, url) {
+    redirect: function (status, url) {
 
-        if ( _.isNumber(code) ) {
+        if ( _.isNumber(status) ) {
 
-            if ( !_.contains(REDIRECT_CODES, code) ) {
-                code = 302;
+            if ( !_.contains(REDIRECT_CODES, status) ) {
+                status = 302;
             }
 
         } else {
-            url = code;
-            code = 302;
+            url = status;
+            status = 302;
         }
 
         this.res.setHeader('Location', url);
@@ -251,9 +253,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             url = '<a href="' + url + '">' + url + '</a>';
         }
 
-        this.res.respond(code, url);
-
-        return this;
+        return this.res.respond(status, url);
     },
 
     /**
@@ -264,27 +264,27 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {*} [code]
+     * @param {*} [status]
      * @param {String} id
      * @param {*} [arg...]
      * */
-    render: function (code, id, arg) {
+    render: function (status, id, arg) {
         /*eslint no-unused-vars: 0*/
         var args;
         var i;
 
-        if ( _.isNumber(code) ) {
+        if ( _.isNumber(status) ) {
             i = 2;
 
         } else {
             i = 1;
-            id = code;
-            code = this.res.getStatus();
+            id = status;
+            status = this.res.getStatus();
         }
 
         args = _.rest(arguments, i);
 
-        return this.res.respond(code,
+        return this.res.respond(status,
             this.agent.renderers[id].apply(this, args));
     },
 

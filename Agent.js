@@ -71,6 +71,8 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
             return this.__base.apply(this, arguments);
 
         } catch (err) {
+            //  So lazy to write test for unhandled exceptions
+            /* istanbul ignore next */
             setTimeout(function () {
 
                 throw err;

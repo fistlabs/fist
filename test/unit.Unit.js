@@ -1,13 +1,11 @@
 /*global describe, it*/
 'use strict';
 
-var Fs = require('fs');
-var sock = require('./util/sock');
+var Framework = require('../Framework');
 var Track = require('../track/Track');
 var Tracker = require('../Tracker');
-var Framework = require('../Framework');
+var SkipResolver = require('../util/skip-resolver');
 
-var asker = require('asker');
 var assert = require('chai').assert;
 var inherit = require('inherit');
 
@@ -200,129 +198,50 @@ describe('fist/unit/_unit', function () {
             }).done();
         });
 
-        it('Should not cache result coz unit has resolved ' +
-           'the context', function (done) {
+        it('Should not cache SkipResolver', function (done) {
 
-            var e = [];
+            var tracker = new Tracker();
             var spy = [];
-            var SlyTracker = inherit(Tracker, {
-                _createCache: function (p) {
-
-                    return new (inherit(AsyncCache, {
-                        broken: 42
-                    }))(p);
-                }
-            });
-
-            var tracker = new SlyTracker();
-
-            tracker.on('ctx:notify', function (event) {
-                e.push(event.data);
-            });
 
             tracker.unit({
                 path: 'test',
-                spy: [],
-                _rsv: false,
-                _hasOutsideResolved: function () {
-                    return !!this._rsv;
-                },
                 _maxAge: 10000,
                 data: function () {
-                    this._rsv = true;
                     spy.push(1);
 
-                    return 123;
+                    return new SkipResolver();
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').then(function (res) {
+            tracker.resolve(new Track(tracker), 'test').then(function () {
                 assert.deepEqual(spy, [1]);
-                assert.deepEqual(e.slice(0), [42]);
-                assert.strictEqual(res, 123);
-            }).always(function (promise) {
-                assert.ok(promise.isFulfilled());
+            }).always(function () {
                 tracker.resolve(new Track(tracker), 'test').
-                    then(function (res) {
-                        assert.strictEqual(res, 123);
+                    then(function () {
                         assert.deepEqual(spy, [1, 1]);
-                        assert.deepEqual(e.slice(0), [42, 42]);
-
                         done();
                     }).done();
             }).done();
         });
 
-        it('Should not cache result coz unit has resolved ' +
-           'the context', function (done) {
-
-            var spy = [];
-
-            var tracker = new Framework({
-                routes: {
-                    pattern: '/',
-                    name: 'test'
-                }
-            });
-
-            tracker.unit({
-                path: 'test',
-                spy: [],
-                _maxAge: 10000,
-                data: function (track, ctx) {
-                    ctx.track.send(200, 0);
-                    spy.push(1);
-
-                    return 123;
-                }
-            });
-
-            try {
-                Fs.unlinkSync(sock);
-            } catch (err) {}
-
-            tracker.listen(sock);
-
-            asker({
-                path: '/',
-                socketPath: sock
-            }, function (err, res) {
-                assert.ok(!err);
-                assert.deepEqual(spy, [1]);
-                assert.deepEqual(res.data, new Buffer('0'));
-
-                asker({
-                    path: '/',
-                    socketPath: sock
-                }, function (err, res) {
-                    assert.ok(!err);
-                    assert.deepEqual(spy, [1, 1]);
-                    assert.deepEqual(res.data, new Buffer('0'));
-                    done();
-                });
-            });
-        });
-
         it('Should cache result', function (done) {
 
             var tracker = new Tracker();
+            var spy = [];
 
             tracker.unit({
                 path: 'test',
-                spy: [],
                 _maxAge: 10000,
                 data: function () {
-                    this.spy.push(1);
-
-                    return this.spy;
+                    spy.push(1);
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
+            tracker.resolve(new Track(tracker), 'test').then(function () {
                 assert.deepEqual(spy, [1]);
             }).always(function () {
                 tracker.resolve(new Track(tracker), 'test').
-                    then(function (spy) {
+                    then(function () {
                         assert.deepEqual(spy, [1]);
                         done();
                     }).done();

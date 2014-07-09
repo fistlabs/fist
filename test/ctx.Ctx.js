@@ -3,7 +3,8 @@
 
 var _ = require('lodash-node');
 var assert = require('chai').assert;
-var vow = require('vow');
+var Tracker = require('../Tracker');
+var Track = require('../track/Track');
 
 function generateTokens (len) {
     var path = [];
@@ -213,6 +214,67 @@ describe('fist/ctx/Ctx', function () {
             var ctx = new Ctx();
             ctx.setErr('a.b.c', 42);
             assert.strictEqual(ctx.getErr('a.b.c'), 42);
+        });
+    });
+
+    describe('.append', function () {
+        it('Should append deps', function (done) {
+
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+            var ctx = new Ctx(track, 'c');
+
+            tracker.unit({
+                path: 'a',
+                data: 42
+            });
+
+            ctx.append(['a', 'b']).then(function () {
+                assert.deepEqual(ctx.res, {
+                    a: 42
+                });
+
+                assert.deepEqual(ctx.ers, {
+                    b: void 0
+                });
+
+                done();
+            });
+
+        });
+    });
+
+    describe('.trigger', function () {
+        it('Should trigger the event', function (done) {
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+            var ctx = new Ctx(track, 'c');
+
+            tracker.on('my-event', function (e) {
+                assert.strictEqual(e.trackId, track.id);
+                assert.strictEqual(e.path, 'c');
+                assert.strictEqual(e.data, 42);
+                done();
+            });
+
+            ctx.trigger('my-event', 42);
+        });
+    });
+
+    describe('.notify', function () {
+        it('Should trigger ctx:notify event', function (done) {
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+            var ctx = new Ctx(track, 'c');
+
+            tracker.on('ctx:notify', function (e) {
+                assert.strictEqual(e.trackId, track.id);
+                assert.strictEqual(e.path, 'c');
+                assert.strictEqual(e.data, 42);
+                done();
+            });
+
+            ctx.notify(42);
         });
     });
 });

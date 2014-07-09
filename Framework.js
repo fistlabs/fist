@@ -4,13 +4,14 @@ var Http = require('http');
 
 var Connect = /** @type Connect */ require('./track/Connect');
 var Router = /** @type Router */ require('finger/Router');
+var Res = /** @type Res */ require('./res/Res');
+var SkipResolver = /** @type SkipResolver */ require('./util/skip-resolver');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var vow = require('vow');
-
 var plugRoutes = require('./plug/routes');
+var vow = require('vow');
 
 /**
  * @class Framework
@@ -49,16 +50,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.router = this._createRouter(this.params.router);
 
         this.plug(plugRoutes);
-
-        //  Необходимо переопределить базовый узел
-        // чтобы он мог замечать сайд-эффекты
-        this.unit({
-            path: '_unit',
-            _hasOutsideResolved: function (ctx) {
-
-                return ctx.track.res.hasResponded();
-            }
-        });
     },
 
     /**
@@ -81,10 +72,11 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
             self.emit('sys:request', track);
 
-            self._handle(track).always(function () {
+            self.__next(track).done(function (resp) {
+                Res.end(res, resp);
                 track.time = new Date() - date;
-                this.emit('sys:response', track);
-            }, self);
+                self.emit('sys:response', track);
+            });
         };
     },
 
@@ -105,45 +97,6 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         this.ready(true);
 
         return server;
-    },
-
-    /**
-     * Запускает операцию разрешения узла.
-     * Если один из узлов, участвующих в операции
-     * разрешения выполнил ответ приложения самостоятельно,
-     * то коллбэк вызван не будет
-     *
-     * @public
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Connect} track
-     * @param {String} path
-     * @param {*} [params]
-     *
-     * @returns {vow.Promise}
-     * */
-    resolve: function (track, path, params) {
-
-        var defer = vow.defer();
-
-        if ( track.res.hasResponded() ) {
-
-            return defer.promise();
-        }
-
-        this.__base(track, path, params).
-            always(function (promise) {
-
-                if ( track.res.hasResponded() ) {
-
-                    return;
-                }
-
-                defer.resolve(promise);
-            }).done();
-
-        return defer.promise();
     },
 
     /**
@@ -229,7 +182,7 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
             //  если массив пустой, то на сервере совсем нет ни одного
             //  маршрута отвечающего по такому методу запроса
-            if ( 0 === result.length ) {
+            if ( 0 === _.size(result) ) {
                 //  Not Implemented
                 return track.send(501);
             }
@@ -247,34 +200,19 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
 
         this.emit('sys:match', track);
 
-        this.resolve(track, result.route.data.unit).
-            done(function () {
+        return this.resolve(track, result.route.data.unit).
+            then(function (data) {
+                //  was sent
+                if ( data instanceof SkipResolver ) {
+
+                    return data;
+                }
 
                 return this.__next(track);
             }, function (err) {
-
+                //  как быть если err instanceOf SkipResolver
                 return track.send(500, err);
             }, this);
-
-        return track.res.defer.promise();
-    },
-
-    /**
-     * @protected
-     * @memberOf {Framework}
-     * @method
-     *
-     * @param {Connect} track
-     * */
-    _handle: function (track) {
-
-        //  был сделан send() где-то в обработчике события sys:request
-        if ( track.res.hasResponded() ) {
-
-            return track.res.defer.promise();
-        }
-
-        return this.__next(track);
     }
 
 });

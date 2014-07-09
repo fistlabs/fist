@@ -3,10 +3,11 @@
 
 var Req = require('../req/Req');
 var Res = require('../res/Res');
-var doConnect = require('./util/connect');
 
 var _ = require('lodash-node');
 var assert = require('chai').assert;
+var doConnect = require('./util/connect');
+var vow = require('vow');
 
 describe('fist/track/Connect', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
@@ -110,8 +111,10 @@ describe('fist/track/Connect', function () {
 
     describe('.send', function () {
         it('Should set status automatically', function (done) {
-            doConnect({}, function (track) {
-                track.send(':)');
+            doConnect({}, function (track, req, res) {
+                vow.when(track.send(':)'), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 200);
@@ -121,8 +124,10 @@ describe('fist/track/Connect', function () {
         });
 
         it('Should send body with status', function (done) {
-            doConnect({}, function (track) {
-                track.send(201);
+            doConnect({}, function (track, req, res) {
+                vow.when(track.send(201), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
@@ -151,8 +156,10 @@ describe('fist/track/Connect', function () {
         });
 
         it('Should send body', function (done) {
-            doConnect({}, function (track) {
-                track.body(':)');
+            doConnect({}, function (track, req, res) {
+                vow.when(track.body(':)'), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.deepEqual(res.data, new Buffer(':)'));
@@ -167,9 +174,11 @@ describe('fist/track/Connect', function () {
                 headers: {
                     accept: 'text/plain'
                 }
-            }, function (track) {
+            }, function (track, req, res) {
                 track.header('content-type', 'text/plain');
-                track.redirect(301, '/test/');
+                vow.when(track.redirect(301, '/test/'), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 301);
@@ -180,8 +189,10 @@ describe('fist/track/Connect', function () {
         });
 
         it('Should apply default redirect code if wrong', function (done) {
-            doConnect({}, function (track) {
-                track.redirect(1, '/test/');
+            doConnect({}, function (track, req, res) {
+                vow.when(track.redirect(1, '/test/'), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 302);
@@ -191,8 +202,10 @@ describe('fist/track/Connect', function () {
         });
 
         it('Should apply default redirect code if omitted', function (done) {
-            doConnect({}, function (track) {
-                track.redirect('/test/');
+            doConnect({}, function (track, req, res) {
+                vow.when(track.redirect('/test/'), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 302);
@@ -206,8 +219,10 @@ describe('fist/track/Connect', function () {
                 headers: {
                     accept: 'text/html'
                 }
-            }, function (track) {
-                track.redirect('/test/');
+            }, function (track, req, res) {
+                vow.when(track.redirect('/test/'), function (resp) {
+                    Res.end(res, resp);
+                });
             }, function (err, res) {
 
                 var url;
@@ -228,9 +243,11 @@ describe('fist/track/Connect', function () {
         it('Should go to route path', function (done) {
             var tracker = /** @type {Framework}*/ doConnect({
 
-            }, function (track) {
-                track.goToPath('page', {
+            }, function (track, req, res) {
+                vow.when(track.goToPath('page', {
                     page: 'test'
+                }), function (resp) {
+                    Res.end(res, resp);
                 });
             }, function (err, res) {
                 assert.ok(!err);
@@ -246,9 +263,11 @@ describe('fist/track/Connect', function () {
         it('Should render response by template', function (done) {
             var tracker = /** @type {Framework} */ doConnect({
 
-            }, function (track) {
-                track.render('test', {
+            }, function (track, req, res) {
+                vow.when(track.render('test', {
                     name: 'spacy'
+                }), function (resp) {
+                    Res.end(res, resp);
                 });
             }, function (err, res) {
                 assert.ok(!err);
@@ -266,9 +285,11 @@ describe('fist/track/Connect', function () {
         it('Should render response by template with code', function (done) {
             var tracker = /** @type {Framework} */ doConnect({
 
-            }, function (track) {
-                track.render(201, 'test', {
+            }, function (track, req, res) {
+                vow.when(track.render(201, 'test', {
                     name: 'spacy'
+                }), function (resp) {
+                    Res.end(res, resp);
                 });
             }, function (err, res) {
                 assert.ok(!err);
