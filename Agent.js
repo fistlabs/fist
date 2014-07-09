@@ -63,6 +63,25 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
      * @public
      * @memberOf {Agent}
      * @method
+     * */
+    emit: function () {
+
+        try {
+
+            return this.__base.apply(this, arguments);
+
+        } catch (err) {
+            setTimeout(function () {
+
+                throw err;
+            }, 0);
+        }
+    },
+
+    /**
+     * @public
+     * @memberOf {Agent}
+     * @method
      *
      * @param {String} path
      *
@@ -114,7 +133,7 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
 
         this._fistReady = this._getReady();
 
-        this._fistReady.done(function () {
+        this._fistReady.then(function () {
             this.emit('sys:ready');
         }, function (err) {
             this.emit('sys:eready', err);
