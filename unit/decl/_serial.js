@@ -19,29 +19,29 @@ module.exports = {
 
     _steps: [],
 
-    __next: function (track, deps, steps, isError) {
+    __next: function (track, ctx, steps, isError) {
 
         var func;
         var name;
         var self = this;
 
-        if ( this._hasOutsideResolved(track, deps) || steps.isEmpty() ) {
+        if ( this._hasOutsideResolved(ctx) || steps.isEmpty() ) {
 
-            return deps.data;
+            return ctx.data;
         }
 
         name = steps.shift();
-        deps.notify([name, deps.data]);
+        ctx.trigger('ctx:' + name, ctx.data);
         func = this['_$' + name];
 
         if ( isError && !_.isFunction(func) ) {
 
-            return vow.reject(deps.data);
+            return vow.reject(ctx.data);
         }
 
         return vow.invoke(function () {
 
-            return func.call(self, track, deps);
+            return func.call(self, track, ctx);
         }).always(function (promise) {
 
             if ( isError ) {
@@ -49,14 +49,14 @@ module.exports = {
                 return promise;
             }
 
-            deps.data = promise.valueOf();
+            ctx.data = promise.valueOf();
             isError = promise.isRejected();
 
             if ( isError ) {
                 steps = new Deque(['e' + name]);
             }
 
-            return this.__next(track, deps, steps, isError);
+            return this.__next(track, ctx, steps, isError);
         }, this);
     }
 
