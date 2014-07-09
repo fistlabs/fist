@@ -192,7 +192,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
      * */
     __resolveAndSet: function (path) {
 
-        var promise = this.track.agent.resolve(this.track, path, this.params);
+        var promise = this.track.invoke(path, this.params);
 
         promise.done(function (data) {
             this.setRes(path, data);
