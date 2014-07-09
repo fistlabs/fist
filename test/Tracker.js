@@ -350,4 +350,49 @@ describe('fist/Tracker', function () {
         });
     });
 
+    describe('skip resolving', function () {
+
+        var SkipResolver = require('../util/skip-resolver');
+
+        it('Should skip resolving by returning ' +
+            '{SkipResolver}', function (done) {
+
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+            var skip = new SkipResolver();
+
+            tracker.unit({
+                path: 'a',
+                data: function () {
+
+                    return skip;
+                }
+            });
+
+            tracker.unit({
+                path: 'b',
+                deps: ['a'],
+                data: 'b'
+            });
+
+            tracker.unit({
+                path: 'c',
+                data: 'c'
+            });
+
+            tracker.unit({
+                path: 'd',
+                deps: ['b', 'c'],
+                data: 'd'
+            });
+
+            tracker.resolve(track, 'd').done(function (res) {
+                assert.strictEqual(res, skip);
+                done();
+            });
+
+        });
+
+    });
+
 });

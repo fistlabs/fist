@@ -1,6 +1,7 @@
 'use strict';
 
 var Deque = require('double-ended-queue');
+var SkipResolver = require('../../util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -25,7 +26,7 @@ module.exports = {
         var name;
         var self = this;
 
-        if ( this._hasOutsideResolved(ctx) || steps.isEmpty() ) {
+        if ( steps.isEmpty() || ctx.data instanceof SkipResolver ) {
 
             return ctx.data;
         }

@@ -1,6 +1,7 @@
 /*global describe, it*/
 'use strict';
 
+var SkipResolver = require('../util/skip-resolver');
 var assert = require('chai').assert;
 
 describe('fist/unit/decl/_serial', function () {
@@ -118,6 +119,41 @@ describe('fist/unit/decl/_serial', function () {
         tracker.resolve(track, 'test').done(function (res) {
             assert.strictEqual(res, 'RES');
             assert.deepEqual(spy, ['a', 'ea']);
+            done();
+        });
+    });
+
+    it('Should be resolved by SkipResolver', function (done) {
+        var tracker = new Tracker();
+        var track = new Track(tracker);
+        var spy = [];
+        var skip = new SkipResolver();
+
+        tracker.unit({
+            base: '_serial',
+            path: 'test',
+            _steps: ['a', 'b'],
+            _$a: function () {
+
+                return skip;
+            },
+            _$b: function (track, ctx) {
+
+                return ctx.data + 2;
+            }
+        });
+
+        tracker.on('ctx:a', function () {
+            spy.push('a');
+        });
+
+        tracker.on('ctx:b', function () {
+            spy.push('b');
+        });
+
+        tracker.resolve(track, 'test').done(function (res) {
+            assert.strictEqual(res, skip);
+            assert.deepEqual(spy, ['a']);
             done();
         });
     });

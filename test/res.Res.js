@@ -6,6 +6,7 @@ var Parted = require('./util/Parted');
 var _ = require('lodash-node');
 var assert = require('chai').assert;
 var http = require('./util/http');
+var vow = require('vow');
 
 describe('fist/res/Res', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
@@ -179,43 +180,53 @@ describe('fist/res/Res', function () {
         var STATUS_CODES = require('http').STATUS_CODES;
 
         it('Should respond by Undefined', function (done) {
-            http({}, function (req, res) {
-                res = new Res(res);
-                res.respond(201, void 0);
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                vow.when(res.respond(201), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer(STATUS_CODES[201]));
                 done();
             });
         });
 
         it('Should respond by String', function (done) {
-            http({}, function (req, res) {
-                res = new Res(res);
-                res.respond(201, 'test');
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                vow.when(res.respond(201, 'test'), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(res.headers['content-length'], '4');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer('test'));
                 done();
             });
         });
 
         it('Should respond by Buffer', function (done) {
-            http({}, function (req, res) {
-                res = new Res(res);
-                res.respond(201, new Buffer('test'));
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                vow.when(res.respond(201, new Buffer('test')), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
 
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/octet-stream');
-                assert.strictEqual(res.headers['content-length'], '4');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer('test'));
 
                 done();
@@ -223,22 +234,26 @@ describe('fist/res/Res', function () {
         });
 
         it('Should respond by Readable', function (done) {
-            http({}, function (req, res) {
-                res = new Res(res);
-                res.respond(201, new Parted([new Buffer('t'), 'e', 's', 't']));
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                var body = new Parted([new Buffer('t'), 'e', 's', 't']);
+                vow.when(res.respond(201, body), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/octet-stream');
-                assert.strictEqual(res.headers['content-length'], '4');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer('test'));
 
                 done();
             });
         });
 
-        it('Should rejected by Readable', function (done) {
+        it('Should be rejected by Readable', function (done) {
             http({
                 statusFilter: function () {
 
@@ -246,21 +261,24 @@ describe('fist/res/Res', function () {
                         accept: true
                     };
                 }
-            }, function (req, res) {
-                var parts = new Parted('test'.split(''));
+            }, function (req, rs) {
+                var body = new Parted('test'.split(''));
 
-                res = new Res(res);
+                var res = new Res(rs);
 
-                parts.once('data', function () {
+                body.once('data', function () {
                     this.emit('error', 'ERR');
                 });
 
-                res.respond(201, parts);
+                vow.when(res.respond(201, body), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 500);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(res.headers['content-length'], '3');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer('ERR'));
 
                 done();
@@ -277,26 +295,29 @@ describe('fist/res/Res', function () {
                         accept: true
                     };
                 }
-            }, function (req, res) {
+            }, function (req, rs) {
 
-                var parts = new Parted('test'.split(''));
+                var body = new Parted('test'.split(''));
 
-                res = new Res(res);
+                var res = new Res(rs);
 
-                parts.pause = function () {
+                body.pause = function () {
                     spy.push(42);
                 };
 
-                parts.once('data', function () {
+                body.once('data', function () {
                     this.emit('error', 'ERR');
                 });
 
-                res.respond(201, parts);
+                vow.when(res.respond(201, body), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 500);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(res.headers['content-length'], '3');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer('ERR'));
                 assert.deepEqual(spy, [42]);
                 done();
@@ -307,15 +328,17 @@ describe('fist/res/Res', function () {
 
             var error = new Error();
 
-            http({}, function (req, res) {
-                res = new Res(res);
-                res.respond(201, error);
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                vow.when(res.respond(201, error), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(res.headers['content-length'],
-                    String(res.data.length));
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer(error.stack));
 
                 done();
@@ -326,18 +349,20 @@ describe('fist/res/Res', function () {
 
             var error = new Error();
 
-            http({}, function (req, res) {
-                res = new Res(res, {
+            http({}, function (req, rs) {
+                var res = new Res(rs, {
                     hideStackTrace: true
                 });
-                res.respond(201, error);
+                vow.when(res.respond(201, error), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/json');
-                assert.strictEqual(res.headers['content-length'],
-                    String(res.data.length));
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
 
                 assert.deepEqual(res.data, new Buffer(JSON.stringify(error)));
                 assert.deepEqual(res.data, new Buffer('{}'));
@@ -347,33 +372,19 @@ describe('fist/res/Res', function () {
         });
 
         it('Should respond by Object', function (done) {
-            http({}, function (req, res) {
-                res = new Res(res);
-                res.respond(201, {a: 42});
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                vow.when(res.respond(201, {a: 42}), function (resp) {
+                    Res.end(rs, resp);
+                });
             }, function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/json');
-                assert.strictEqual(res.headers['content-length'],
-                    String(res.data.length));
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
                 assert.deepEqual(res.data, new Buffer('{"a":42}'));
-                done();
-            });
-        });
-    });
-
-    describe('.hasResponded', function () {
-        it('Should be responded after respond() call', function (done) {
-            http({}, function (req, res) {
-                var promise;
-                res = new Res(res);
-                promise = res.respond(201);
-                assert.ok(res.hasResponded());
-                assert.strictEqual(res.respond(202), promise);
-            }, function (err, res) {
-                assert.ok(!err);
-                assert.strictEqual(res.statusCode, 201);
                 done();
             });
         });

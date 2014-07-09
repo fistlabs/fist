@@ -1,6 +1,8 @@
 'use strict';
 
+var R_SET_COOKIE_HEADER = /^set-cookie$/i;
 var STATUS_CODES = require('http').STATUS_CODES;
+var RespResolver = require('../util/resp-resolver');
 
 var _ = require('lodash-node');
 var cookie = require('cookieparser');
@@ -16,16 +18,13 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @private
      * @memberOf {Res}
      * @method
+     *
+     * @constructs
+     *
+     * @param {OutgoingMessage} res
+     * @param {*} [params]
      * */
     __constructor: function (res, params) {
-
-        /**
-         * @public
-         * @memberOf {Res}
-         * @property
-         * @type {Deferred}
-         * */
-        this.defer = vow.defer();
 
         /**
          * @public
@@ -42,14 +41,6 @@ var Res = inherit(/** @lends Res.prototype */ {
          * @type {http.OutgoingMessage}
          * */
         this._res = res;
-
-        /**
-         * @private
-         * @memberOf {Res}
-         * @property
-         * @type {Boolean}
-         * */
-        this.__hasResponded = false;
     },
 
     /**
@@ -78,17 +69,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @returns {Res}
      * */
     setHeader: function (name, value, soft) {
-
-        if ( soft && this._res.getHeader(name) ) {
-
-            return this;
-        }
-
-        if ( /^set-cookie$/i.test(name) ) {
-            value = (this._res.getHeader(name) || []).concat(value);
-        }
-
-        this._res.setHeader(name, value);
+        Res.__setHeaderOn(this._res, name, value, soft);
 
         return this;
     },
@@ -104,9 +85,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @returns {Res}
      * */
     setHeaders: function (headers, soft) {
-        _.forEach(headers, function (value, name) {
-            this.setHeader(name, value, soft);
-        }, this);
+        Res.__setHeadersOn(this._res, headers, soft);
 
         return this;
     },
@@ -161,48 +140,17 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
-     * @param {*} status
-     * @param {*} [body]
-     *
      * @returns {vow.Promise}
      * */
     respond: function (status, body) {
+        this.setStatus(status);
 
-        var promise;
+        body = this.__createBody(body);
 
-        body = this.__createBody(status, body);
+        return vow.when(body, null, function (data) {
 
-        this.__hasResponded = true;
-
-        if ( _.isFunction(body.then) ) {
-            promise = vow.when(body, function (data) {
-
-                return this.__end(data);
-            }, function (err) {
-
-                return this.respond(500, err);
-            }, this);
-
-        } else {
-            //  avoid possible tick
-            promise = vow.resolve(this.__end(body));
-        }
-
-        this.defer.resolve(promise);
-
-        return this.defer.promise();
-    },
-
-    /**
-     * @public
-     * @memberOf {Res}
-     * @method
-     *
-     * @returns {Boolean}
-     * */
-    hasResponded: function () {
-
-        return this.__hasResponded;
+            return this.respond(500, data);
+        }, this);
     },
 
     /**
@@ -210,98 +158,56 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
-     * @param {Object} data
-     *
-     * @returns {?}
-     * */
-    __end: function (data) {
-        this._res.statusCode = data.status;
-        this.setHeaders(data.header, true);
-
-        return this._res.end(data.body);
-    },
-
-    /**
-     * @private
-     * @memberOf {Res}
-     * @method
-     *
-     * @param {Number} status
      * @param {*} body
      *
      * @returns {*}
      * */
-    __createBody: function (status, body) {
+    __createBody: function (body) {
 
         if ( _.isUndefined(body) ) {
-            body = Res.getStatusMessage(status);
+
+            return this.__createByUndefined();
         }
 
         if ( _.isString(body) ) {
 
-            return this.__createByString(status, body);
+            return this.__createByString(body);
         }
 
         if ( Buffer.isBuffer(body) ) {
 
-            return this.__createByBuffer(status, body);
+            return this.__createByBuffer(body);
         }
 
         if ( _.isObject(body) && _.isFunction(body.pipe) ) {
 
-            return this.__createByReadable(status, body);
+            return this.__createByReadable(body);
         }
 
         if ( body instanceof Error ) {
 
-            return this.__createByError(status, body);
+            return this.__createByError(body);
         }
 
-        return this.__createByJson(status, body);
+        return this.__createByJson(body);
     },
 
     /**
      * @private
-     * @memberOf {Res}
+     * @static
+     * @memberOf Res
      * @method
      *
-     * @param {Number} status
-     * @param {String} body
-     *
-     * @returns {*}
-     * */
-    __createByString: function (status, body) {
-
-        return {
-            status: status,
-            header: {
-                'Content-Type': 'text/plain',
-                'Content-Length': Buffer.byteLength(body)
-            },
-            body: body
-        };
-    },
-
-    /**
-     * @private
-     * @memberOf {Res}
-     * @method
-     *
-     * @param {Number} status
      * @param {Buffer} body
      *
      * @returns {*}
      * */
-    __createByBuffer: function (status, body) {
+    __createByBuffer: function (body) {
 
-        return {
-            status: status,
-            header: {
-                'Content-Type': 'application/octet-stream',
-                'Content-Length': body.length
-            },
-            body: body
-        };
+        return new RespResolver({
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': body.length
+        }, body);
     },
 
     /**
@@ -309,12 +215,48 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
-     * @param {Number} status
+     * @returns {*}
+     * */
+    __createByError: function (body) {
+
+        if ( this.params.hideStackTrace ) {
+
+            return this.__createByJson(body);
+        }
+
+        return this.__createByString(body.stack);
+    },
+
+    /**
+     * @private
+     * @static
+     * @memberOf Res
+     * @method
+     *
+     * @param {*} body
+     *
+     * @returns {*}
+     * */
+    __createByJson: function (body) {
+        body = JSON.stringify(body);
+
+        return new RespResolver({
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(body)
+        }, body);
+    },
+
+    /**
+     * @private
+     * @static
+     * @memberOf Res
+     * @method
+     *
      * @param {Readable|EventEmitter} body
      *
      * @returns {*}
      * */
-    __createByReadable: function (status, body) {
+    __createByReadable: function (body) {
 
         var buf = [];
         var def = vow.defer();
@@ -355,10 +297,7 @@ var Res = inherit(/** @lends Res.prototype */ {
         body.on('end', end);
         body.on('close', cleanup);
 
-        return def.promise().then(function (body) {
-
-            return this.__createByBuffer(status, body);
-        }, this);
+        return def.promise().then(this.__createByBuffer, this);
     },
 
     /**
@@ -366,19 +305,16 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
-     * @param {Number} status
-     * @param {Error} body
+     * @param {String} body
      *
      * @returns {*}
      * */
-    __createByError: function (status, body) {
+    __createByString: function (body) {
 
-        if ( this.params.hideStackTrace ) {
-
-            return this.__createByJson(status, body);
-        }
-
-        return this.__createByString(status, body.stack);
+        return new RespResolver({
+            'Content-Type': 'text/plain',
+            'Content-Length': Buffer.byteLength(body)
+        }, body);
     },
 
     /**
@@ -386,25 +322,29 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
-     * @param {Number} status
-     * @param {*} body
-     *
      * @returns {*}
      * */
-    __createByJson: function (status, body) {
-        body = JSON.stringify(body);
+    __createByUndefined: function (body) {
+        body = Res.getStatusMessage(this._res.statusCode);
 
-        return {
-            status: status,
-            header: {
-                'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(body)
-            },
-            body: body
-        };
+        return this.__createByString(body);
     }
 
 }, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Res
+     * @method
+     *
+     * @param {OutgoingMessage} res
+     * @param {RespResolver} resp
+     * */
+    end: function (res, resp) {
+        Res.__setHeadersOn(res, resp.header, true);
+        res.end(resp.body);
+    },
 
     /**
      * @public
@@ -419,6 +359,47 @@ var Res = inherit(/** @lends Res.prototype */ {
     getStatusMessage: function (code) {
 
         return STATUS_CODES[code] || String(code);
+    },
+
+    /**
+     * @private
+     * @static
+     * @memberOf Res
+     * @method
+     *
+     * @param {OutgoingMessage} res
+     * @param {String} name
+     * @param {*} value
+     * @param {Boolean} [soft]
+     * */
+    __setHeaderOn: function (res, name, value, soft) {
+
+        if ( soft && res.getHeader(name) ) {
+
+            return;
+        }
+
+        if ( R_SET_COOKIE_HEADER.test(name) ) {
+            value = (res.getHeader(name) || []).concat(value);
+        }
+
+        res.setHeader(name, value);
+    },
+
+    /**
+     * @private
+     * @static
+     * @memberOf Res
+     * @method
+     *
+     * @param {OutgoingMessage} res
+     * @param {Object} headers
+     * @param {Boolean} [soft]
+     * */
+    __setHeadersOn: function (res, headers, soft) {
+        _.forEach(headers, function (value, name) {
+            Res.__setHeaderOn(res, name, value, soft);
+        });
     }
 
 });

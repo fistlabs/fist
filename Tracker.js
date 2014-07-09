@@ -3,6 +3,7 @@
 var Agent = require('./Agent');
 var Ctx = /** @type Ctx */ require('./ctx/Ctx');
 var Path = require('path');
+var SkipResolver = require('./util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -111,23 +112,32 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
     },
 
     /**
-     * @private
+     * @protected
      * @memberOf {Tracker}
      * @method
      *
      * @param {Track} track
      * @param {String} path
-     * @param {Object} [params]
+     * @param {Object} params
+     *
+     * @returns {Ctx}
+     * */
+    _createCtx: function (track, path, params) {
+
+        return new Ctx(track, path, params);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Tracker}
+     * @method
      *
      * @returns {vow.Promise}
      * */
-    __resolvePath: function (track, path, params) {
+    _getReady: function () {
+        var plugins = _.map(this.__plugs, this.__invokePlugin, this);
 
-        if ( !_.has(track.tasks, path) ) {
-            track.tasks[path] = this.__executeUnit(track, path, params);
-        }
-
-        return track.tasks[path];
+        return vow.all(plugins).then(this.__base, this);
     },
 
     /**
@@ -164,42 +174,24 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         if ( 0 === _.size(unit.deps) ) {
             exec.resolve(unit.getValue(deps));
 
-        } else {
-            deps.append(unit.deps).done(function () {
-                exec.resolve(unit.getValue(deps));
-            });
+            return exec.promise();
         }
 
+        deps.append(unit.deps).done(function (promises) {
+
+            var promise = _.find(promises, function (promise) {
+
+                return promise.valueOf() instanceof SkipResolver;
+            });
+
+            if ( _.isUndefined(promise) ) {
+                promise = unit.getValue(deps);
+            }
+
+            exec.resolve(promise);
+        });
+
         return exec.promise();
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {String} path
-     * @param {Object} params
-     *
-     * @returns {Ctx}
-     * */
-    _createCtx: function (track, path, params) {
-
-        return new Ctx(track, path, params);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    _getReady: function () {
-        var plugins = _.map(this.__plugs, this.__invokePlugin, this);
-
-        return vow.all(plugins).then(this.__base, this);
     },
 
     /**
@@ -214,6 +206,26 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
     __invokePlugin: function (plug) {
 
         return vow.invoke(this.__wrapPlugin(plug));
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Track} track
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {vow.Promise}
+     * */
+    __resolvePath: function (track, path, params) {
+
+        if ( !_.has(track.tasks, path) ) {
+            track.tasks[path] = this.__executeUnit(track, path, params);
+        }
+
+        return track.tasks[path];
     },
 
     /**
