@@ -21,7 +21,7 @@ var Req = inherit(/** @lends Req.prototype */ {
      *
      * @constructs
      *
-     * @param {http.IncomingMessage} req
+     * @param {IncomingMessage} req
      * @param {Object} [params]
      * */
     __constructor: function (req, params) {
@@ -30,7 +30,7 @@ var Req = inherit(/** @lends Req.prototype */ {
          * @private
          * @memberOf {Req}
          * @property
-         * @type {http.IncomingMessage}
+         * @type {IncomingMessage}
          * */
         this._req = req;
 
