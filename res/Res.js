@@ -143,9 +143,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @returns {vow.Promise}
      * */
     respond: function (status, body) {
-        this.setStatus(status);
-
-        body = this.__createBody(body);
+        body = this.__createResp(status, body);
 
         return vow.when(body, null, function (data) {
 
@@ -158,38 +156,39 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
+     * @param {Number} status
      * @param {*} body
      *
      * @returns {*}
      * */
-    __createBody: function (body) {
+    __createResp: function (status, body) {
 
         if ( _.isUndefined(body) ) {
 
-            return this.__createByUndefined();
+            return this.__createByUndefined(status);
         }
 
         if ( _.isString(body) ) {
 
-            return this.__createByString(body);
+            return this.__createByString(status, body);
         }
 
         if ( Buffer.isBuffer(body) ) {
 
-            return this.__createByBuffer(body);
+            return this.__createByBuffer(status, body);
         }
 
         if ( _.isObject(body) && _.isFunction(body.pipe) ) {
 
-            return this.__createByReadable(body);
+            return this.__createByReadable(status, body);
         }
 
         if ( body instanceof Error ) {
 
-            return this.__createByError(body);
+            return this.__createByError(status, body);
         }
 
-        return this.__createByJson(body);
+        return this.__createByJson(status, body);
     },
 
     /**
@@ -198,13 +197,14 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf Res
      * @method
      *
+     * @param {Number} status
      * @param {Buffer} body
      *
      * @returns {*}
      * */
-    __createByBuffer: function (body) {
+    __createByBuffer: function (status, body) {
 
-        return new RespResolver({
+        return new RespResolver(status, {
             'Content-Type': 'application/octet-stream',
             'Content-Length': body.length
         }, body);
@@ -215,16 +215,19 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
+     * @param {Number} status
+     * @param {Error} body
+     *
      * @returns {*}
      * */
-    __createByError: function (body) {
+    __createByError: function (status, body) {
 
         if ( this.params.hideStackTrace ) {
 
-            return this.__createByJson(body);
+            return this.__createByJson(status, body);
         }
 
-        return this.__createByString(body.stack);
+        return this.__createByString(status, body.stack);
     },
 
     /**
@@ -233,14 +236,15 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf Res
      * @method
      *
+     * @param {Number} status
      * @param {*} body
      *
      * @returns {*}
      * */
-    __createByJson: function (body) {
+    __createByJson: function (status, body) {
         body = JSON.stringify(body);
 
-        return new RespResolver({
+        return new RespResolver(status, {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(body)
         }, body);
@@ -252,11 +256,12 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf Res
      * @method
      *
+     * @param {Number} status
      * @param {Readable|EventEmitter} body
      *
      * @returns {*}
      * */
-    __createByReadable: function (body) {
+    __createByReadable: function (status, body) {
 
         var buf = [];
         var def = vow.defer();
@@ -297,7 +302,10 @@ var Res = inherit(/** @lends Res.prototype */ {
         body.on('end', end);
         body.on('close', cleanup);
 
-        return def.promise().then(this.__createByBuffer, this);
+        return def.promise().then(function (body) {
+
+            return this.__createByBuffer(status, body);
+        }, this);
     },
 
     /**
@@ -305,13 +313,14 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf {Res}
      * @method
      *
+     * @param {Number} status
      * @param {String} body
      *
      * @returns {*}
      * */
-    __createByString: function (body) {
+    __createByString: function (status, body) {
 
-        return new RespResolver({
+        return new RespResolver(status, {
             'Content-Type': 'text/plain',
             'Content-Length': Buffer.byteLength(body)
         }, body);
@@ -324,10 +333,10 @@ var Res = inherit(/** @lends Res.prototype */ {
      *
      * @returns {*}
      * */
-    __createByUndefined: function (body) {
-        body = Res.getStatusMessage(this._res.statusCode);
+    __createByUndefined: function (status, body) {
+        body = Res.getStatusMessage(status);
 
-        return this.__createByString(body);
+        return this.__createByString(status, body);
     }
 
 }, {
@@ -342,6 +351,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @param {RespResolver} resp
      * */
     end: function (res, resp) {
+        res.statusCode = resp.status;
         Res.__setHeadersOn(res, resp.header, true);
         res.end(resp.body);
     },
