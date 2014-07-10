@@ -1,9 +1,9 @@
 'use strict';
 
-var Agent = require('./Agent');
+var Agent = /** @type Agent */ require('./Agent');
 var Ctx = /** @type Ctx */ require('./ctx/Ctx');
 var Path = require('path');
-var SkipResolver = require('./util/skip-resolver');
+var SkipResolver = /** @type SkipResolver */ require('./util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');

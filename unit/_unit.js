@@ -1,8 +1,8 @@
 'use strict';
 
 var S_SEPARATOR = '\u0000';
-var EventEmitter = require('events').EventEmitter;
-var SkipResolver = require('../util/skip-resolver');
+var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
+var SkipResolver = /** @type SkipResolver */ require('../util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');

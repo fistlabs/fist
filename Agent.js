@@ -1,8 +1,8 @@
 'use strict';
 
-var BaseUnit = require('./unit/_unit');
-var EventEmitter = require('events').EventEmitter;
-var Cache = require('./util/Cache');
+var BaseUnit = /** @type Unit */ require('./unit/_unit');
+var Cache = /** @type Cache */ require('./util/Cache');
+var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
 
 var _ = require('lodash-node');
 var inherit = require('inherit');

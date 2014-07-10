@@ -2,7 +2,7 @@
 
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 
-var Negotiator = require('negotiator');
+var Negotiator = /** @type Negotiator */ require('negotiator');
 var Req = /** @type Req */ require('../req/Req');
 var Res = /** @type Res */ require('../res/Res');
 var Track = /** @type Track */ require('./Track');
