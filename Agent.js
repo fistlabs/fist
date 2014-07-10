@@ -2,7 +2,7 @@
 
 var BaseUnit = /** @type Unit */ require('./unit/_unit');
 var Cache = /** @type Cache */ require('./util/Cache');
-var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
+var Channel = /** @type Channel */ require('./util/channel');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -10,9 +10,9 @@ var vow = require('vow');
 
 /**
  * @class Agent
- * @extends EventEmitter
+ * @extends Channel
  * */
-var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
+var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
     /**
      * @private
@@ -57,29 +57,6 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @type {Array}
          * */
         this.__decls = [];
-    },
-
-    /**
-     * Как обычный emit, но исключения в обработчиках вылетают асинхронно
-     *
-     * @public
-     * @memberOf {Agent}
-     * @method
-     * */
-    emit: function () {
-
-        try {
-
-            return this.__base.apply(this, arguments);
-
-        } catch (err) {
-            //  So lazy to write test for unhandled exceptions
-            /* istanbul ignore next */
-            setTimeout(function () {
-
-                throw err;
-            }, 0);
-        }
     },
 
     /**
