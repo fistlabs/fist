@@ -3,6 +3,7 @@
 
 var assert = require('chai').assert;
 var vow = require('vow');
+var Fs = require('fs');
 
 describe('fist/util/globs', function () {
     /*eslint max-nested-callbacks: [2, 4]*/
@@ -50,7 +51,23 @@ describe('fist/util/globs', function () {
             }).done();
         });
 
-        it('Should be rejected while pattern matching');
+        it('Should be rejected while pattern matching', function (done) {
+            Fs.mkdirSync('test/fixtures/globs/sub');
+            Fs.symlinkSync('.', 'test/fixtures/globs/sub/sub');
+            Fs.chmodSync('test/fixtures/globs/sub/sub', 438);
+
+            globs(['test/fixtures/globs/sub/**/*.js'], {
+                stat: true,
+                strict: true,
+                silent: true
+            }).done(null, function (err) {
+                assert.ok(err);
+                Fs.chmodSync('test/fixtures/globs/sub', 511);
+                Fs.unlinkSync('test/fixtures/globs/sub/sub');
+                Fs.rmdirSync('test/fixtures/globs/sub');
+                done();
+            });
+        });
 
         it('Should return list of files matched to globs', function (done) {
             globs(['test/fixtures/globs/a/*',
