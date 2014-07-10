@@ -92,7 +92,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @returns {*}
      * */
-    data: function (track, ctx) {
+    data: /* istanbul ignore next */ function (track, ctx) {
         /*eslint no-unused-vars: 0*/
     },
 
