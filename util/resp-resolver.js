@@ -17,10 +17,19 @@ var RespResolver = inherit(SkipResolver, {
      *
      * @constructs
      *
+     * @param {Number} status
      * @param {Object} header
      * @param {*} body
      * */
-    __constructor: function (header, body) {
+    __constructor: function (status, header, body) {
+
+        /**
+         * @public
+         * @memberOf {RespResolver}
+         * @property
+         * @type {Number}
+         * */
+        this.status = status;
 
         /**
          * @public

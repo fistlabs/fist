@@ -179,6 +179,25 @@ describe('fist/res/Res', function () {
     describe('.respond', function () {
         var STATUS_CODES = require('http').STATUS_CODES;
 
+        it('Should not affect if no returned', function (done) {
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                var resp;
+
+                res.setStatus(200);
+                resp = res.respond(201);
+                assert.strictEqual(res.getStatus(), 200);
+
+                vow.when(resp, function (resp) {
+                    Res.end(rs, resp);
+                });
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.statusCode, 201);
+                done();
+            });
+        });
+
         it('Should respond by Undefined', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
