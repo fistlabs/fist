@@ -38,6 +38,14 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @public
          * @memberOf {Agent}
          * @property
+         * @type {Cache}
+         * */
+        this.cache = this._createCache(this.params.cache);
+
+        /**
+         * @public
+         * @memberOf {Agent}
+         * @property
          * @type {Object}
          * */
         this.units = {};
@@ -49,17 +57,11 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
          * @type {Array}
          * */
         this.__decls = [];
-
-        /**
-         * @public
-         * @memberOf {Agent}
-         * @property
-         * @type {Cache}
-         * */
-        this.cache = this._createCache(this.params.cache);
     },
 
     /**
+     * Как обычный emit, но исключения в обработчиках вылетают асинхронно
+     *
      * @public
      * @memberOf {Agent}
      * @method
@@ -271,6 +273,19 @@ var Agent = inherit(EventEmitter, /** @lends Agent.prototype */ {
 
 });
 
+/**
+ * @private
+ * @static
+ * @memberOf Agent
+ * @method
+ *
+ * Находит конфликты зависимостей в готовом комплекте
+ * проинстанцированных узлов
+ *
+ * @param {Object} units
+ *
+ * @returns {Array}
+ * */
 function findAllConflicts (units) {
 
     var found4 = {};
@@ -281,6 +296,21 @@ function findAllConflicts (units) {
     }, []);
 }
 
+/**
+ * @private
+ * @static
+ * @memberOf Agent
+ * @method
+ *
+ * Находит конфликты зависимостей для одного узла
+ *
+ * @param {String} part
+ * @param {Object} units
+ * @param {Array} path
+ * @param {Object} found4
+ *
+ * @returns {Array}
+ * */
 function findConflicts (part, units, path, found4) {
 
     var decl = units[part];

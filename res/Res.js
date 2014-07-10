@@ -38,7 +38,7 @@ var Res = inherit(/** @lends Res.prototype */ {
          * @protected
          * @memberOF {Res}
          * @property
-         * @type {http.OutgoingMessage}
+         * @type {OutgoingMessage}
          * */
         this._res = res;
     },

@@ -1,8 +1,7 @@
 'use strict';
 
-var Http = require('http');
-
 var Connect = /** @type Connect */ require('./track/Connect');
+var Http = require('http');
 var Router = /** @type Router */ require('finger/Router');
 var Res = /** @type Res */ require('./res/Res');
 var SkipResolver = /** @type SkipResolver */ require('./util/skip-resolver');

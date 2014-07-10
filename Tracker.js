@@ -7,9 +7,8 @@ var SkipResolver = /** @type SkipResolver */ require('./util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var vow = require('vow');
-
 var plugUnits = require('./plug/units');
+var vow = require('vow');
 
 /**
  * @class Tracker
@@ -233,11 +232,11 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Function} plug
+     * @param {Function} func
      *
      * @returns {Function}
      * */
-    __wrapPlugin: function (plug) {
+    __wrapPlugin: function (func) {
 
         var self = this;
 
@@ -245,15 +244,15 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
             var defer = vow.defer();
 
-            plug.call(self, function (err) {
+            func.call(self, function (err) {
 
-                if ( 0 === arguments.length ) {
-                    defer.resolve();
+                if ( arguments.length ) {
+                    defer.reject(err);
 
                     return;
                 }
 
-                defer.reject(err);
+                defer.resolve();
             });
 
             return defer.promise();

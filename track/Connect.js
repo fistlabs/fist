@@ -23,6 +23,10 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @method
      *
      * @constructs
+     *
+     * @param {Agent} agent
+     * @param {IncomingMessage} req
+     * @param {OutgoingMessage} res
      * */
     __constructor: function (agent, req, res) {
         this.__base(agent);
@@ -310,7 +314,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {http.IncomingMessage} req
+     * @param {IncomingMessage} req
      * @param {Object} params
      *
      * @returns {Req}
@@ -325,7 +329,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Connect}
      * @method
      *
-     * @param {http.OutgoingMessage} res
+     * @param {OutgoingMessage} res
      * @param {Object} params
      *
      * @returns {Res}
