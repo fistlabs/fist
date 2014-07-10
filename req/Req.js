@@ -1,6 +1,6 @@
 'use strict';
 
-var AttachParser = require('attach-parser');
+var AttachParser = /** @type AttachParser */ require('attach-parser');
 var Url = require('fast-url-parser');
 
 var _ = require('lodash-node');

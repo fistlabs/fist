@@ -1,6 +1,6 @@
 'use strict';
 
-var LRUCache = require('lru-cache');
+var LRUCache = /** @type LRUCache */ require('lru-cache');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');

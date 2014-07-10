@@ -1,7 +1,8 @@
 'use strict';
 
-var Deque = require('double-ended-queue');
-var SkipResolver = require('../../util/skip-resolver');
+var Deque = /** @type Deque */ require('double-ended-queue');
+var SkipResolver = /** @type SkipResolver */
+    require('../../util/skip-resolver');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');

@@ -1,6 +1,6 @@
 'use strict';
 
-var Pattern = require('finger/route/Pattern');
+var Pattern = /** @type Pattern */ require('finger/route/Pattern');
 
 var _ = require('lodash-node');
 var asker = require('asker');

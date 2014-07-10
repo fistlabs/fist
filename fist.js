@@ -1,6 +1,6 @@
 'use strict';
 
-var Framework = require('./Framework');
+var Framework = /** @type Framework */ require('./Framework');
 var inherit = require('inherit');
 
 /**
