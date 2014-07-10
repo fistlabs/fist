@@ -193,8 +193,7 @@ var Res = inherit(/** @lends Res.prototype */ {
 
     /**
      * @private
-     * @static
-     * @memberOf Res
+     * @memberOf {Res}
      * @method
      *
      * @param {Number} status
@@ -232,8 +231,7 @@ var Res = inherit(/** @lends Res.prototype */ {
 
     /**
      * @private
-     * @static
-     * @memberOf Res
+     * @memberOf {Res}
      * @method
      *
      * @param {Number} status
@@ -252,8 +250,7 @@ var Res = inherit(/** @lends Res.prototype */ {
 
     /**
      * @private
-     * @static
-     * @memberOf Res
+     * @memberOf {Res}
      * @method
      *
      * @param {Number} status
