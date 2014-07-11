@@ -390,6 +390,25 @@ describe('fist/res/Res', function () {
             });
         });
 
+        it('Should not respond by RespResolver', function (done) {
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+                var resp = res.respond(500, ':)');
+                resp = res.respond(201, resp);
+                vow.when(resp, function (resp) {
+                    Res.end(rs, resp);
+                });
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.statusCode, 201);
+                assert.strictEqual(res.headers['content-type'], 'text/plain');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
+                assert.deepEqual(res.data + '', new Buffer(':)') + '');
+                done();
+            });
+        });
+
         it('Should respond by Object', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);

@@ -162,7 +162,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @returns {*}
      * */
     __createResp: function (status, body) {
-
+        /*eslint complexity: [2, 8] */
         if ( _.isUndefined(body) ) {
 
             return this.__createByUndefined(status);
@@ -186,6 +186,16 @@ var Res = inherit(/** @lends Res.prototype */ {
         if ( body instanceof Error ) {
 
             return this.__createByError(status, body);
+        }
+
+        if ( vow.isPromise(body) ) {
+
+            return this.__createByPromise(status, body);
+        }
+
+        if ( body instanceof RespResolver ) {
+
+            return this.__createByResp(status, body);
         }
 
         return this.__createByJson(status, body);
@@ -254,6 +264,24 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @method
      *
      * @param {Number} status
+     * @param {Buffer} body
+     *
+     * @returns {vow.Promise}
+     * */
+    __createByPromise: function (status, body) {
+
+        return vow.when(body, function (body) {
+
+            return this.__createResp(status, body);
+        }, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Res}
+     * @method
+     *
+     * @param {Number} status
      * @param {Readable|EventEmitter} body
      *
      * @returns {*}
@@ -303,6 +331,21 @@ var Res = inherit(/** @lends Res.prototype */ {
 
             return this.__createByBuffer(status, body);
         }, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Res}
+     * @method
+     *
+     * @param {Number} status
+     * @param {RespResolver} body
+     *
+     * @returns {RespResolver}
+     * */
+    __createByResp: function (status, body) {
+
+        return new RespResolver(status, body.header, body.body);
     },
 
     /**
