@@ -229,4 +229,33 @@ describe('fist/Agent', function () {
             done();
         });
     });
+
+    it('Should support mixins', function (done) {
+
+        function Mixin () {}
+
+        Mixin.prototype = {
+            foo: function () {
+
+                return 42;
+            }
+        };
+
+        var agent = new Agent();
+
+        agent.unit({
+            path: 'test',
+            base: ['_unit', Mixin]
+        });
+
+        agent.ready().done(function () {
+            var unit = agent.getUnit('test');
+
+            assert.instanceOf(unit, Unit);
+            assert.isFunction(unit.foo);
+            assert.strictEqual(unit.foo(), 42);
+
+            done();
+        });
+    });
 });
