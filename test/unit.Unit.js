@@ -1,7 +1,6 @@
 /*global describe, it*/
 'use strict';
 
-var Framework = require('../Framework');
 var Track = require('../track/Track');
 var Tracker = require('../Tracker');
 var SkipResolver = require('../util/skip-resolver');
