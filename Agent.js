@@ -78,17 +78,13 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
-     * @param {Object} decl
+     * @param {Object} members
+     * @param {Object} [statics]
      *
      * @returns {Agent}
      * */
-    unit: function (decl) {
-
-        if ( !_.isArray(decl) ) {
-            decl = [decl];
-        }
-
-        this.__decls.push(decl);
+    unit: function (members, statics) {
+        this.__decls.push([Object(members), statics]);
 
         return this;
     },
@@ -220,7 +216,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
             var Unit;
             var base;
-            var members = Object(decl[0]);
+            var members = decl[0];
             var unit;
             var self = this;
 

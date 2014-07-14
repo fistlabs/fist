@@ -217,11 +217,11 @@ describe('fist/Agent', function () {
 
         var agent = new Agent();
 
-        agent.unit([{
+        agent.unit({
             path: 'b'
         }, {
             st: 42
-        }]);
+        });
 
         agent.ready().then(function () {
             assert.strictEqual(agent.getUnit('b').__self.st, 42);
