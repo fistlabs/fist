@@ -5,7 +5,6 @@ var SkipResolver = /** @type SkipResolver */
     require('../../util/skip-resolver');
 
 var _ = require('lodash-node');
-var inherit = require('inherit');
 var vow = require('vow');
 
 module.exports = {

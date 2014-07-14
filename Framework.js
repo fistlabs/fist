@@ -10,7 +10,6 @@ var Tracker = /** @type Tracker */ require('./Tracker');
 var _ = require('lodash-node');
 var inherit = require('inherit');
 var plugRoutes = require('./plug/routes');
-var vow = require('vow');
 
 /**
  * @class Framework
