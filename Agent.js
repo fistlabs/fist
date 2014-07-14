@@ -229,10 +229,11 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
             //  Если не передали base, то сами добьем
             if ( !_.has(members, 'base') ) {
-                members.base = '_unit';
-            }
+                base = '_unit';
 
-            base = members.base;
+            } else {
+                base = members.base;
+            }
 
             if ( _.has(units, base) ) {
                 Unit = inherit(units[base][0], members, decl[1]);
