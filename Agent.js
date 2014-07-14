@@ -78,20 +78,17 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
-     * @param {Object} members
+     * @param {Object} decl
      *
      * @returns {Agent}
      * */
-    unit: function (members) {
+    unit: function (decl) {
 
-        var statics = void 0;
-
-        if ( _.isArray(members) ) {
-            statics = members[1];
-            members = members[0];
+        if ( !_.isArray(decl) ) {
+            decl = [decl];
         }
 
-        this.__decls.push([Object(members), statics]);
+        this.__decls.push(decl);
 
         return this;
     },
@@ -229,13 +226,19 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
             //  Если не передали base, то сами добьем
             if ( !_.has(members, 'base') ) {
-                members.base = '_unit';
+                base = '_unit';
+
+            } else {
+                base = members.base;
             }
 
-            base = members.base;
+            if ( !_.isArray(base) ) {
+                base = [base];
+            }
 
-            if ( _.has(units, base) ) {
-                Unit = inherit(units[base][0], members, decl[1]);
+            if ( _.has(units, base[0]) ) {
+                base = [units[base[0]][0]].concat(_.rest(base, 1));
+                Unit = inherit(base, members, decl[1]);
                 unit = new Unit(self.params);
                 units[unit.path] = [Unit, unit];
 
