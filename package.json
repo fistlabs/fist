@@ -27,7 +27,7 @@
     },
     "description": "nodejs application framework",
     "devDependencies": {
-        "jscs": "1.5.4",
+        "jscs": "1.5.8",
         "eslint": "0.7.4",
         "mocha": "1.20.1",
         "chai": "1.9.1",
