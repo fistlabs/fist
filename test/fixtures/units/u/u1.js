@@ -1,5 +1,7 @@
 'use strict';
 
-module.exports = {
-    path: 'u1'
-};
+module.exports = [
+    {
+        path: 'u1'
+    }
+];
