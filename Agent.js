@@ -105,6 +105,8 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             return this._fistReady;
         }
 
+        this.emit('sys:pending');
+
         this._fistReady = this._getReady();
 
         this._fistReady.then(function () {
@@ -142,17 +144,17 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         var defer = vow.defer();
         var self = this;
 
+        defer.resolve(vow.invoke(function () {
+
+            return self.__createUnits(self.__decls);
+        }));
+
         defer.promise().then(function (units) {
             this.units = _.omit(units, function (unit, path) {
 
                 return !/^[a-z]/i.test(path);
             });
         }, this);
-
-        defer.resolve(vow.invoke(function () {
-
-            return self.__createUnits(self.__decls);
-        }));
 
         return defer.promise();
     },
