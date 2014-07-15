@@ -141,13 +141,24 @@ describe('fist/Agent', function () {
         }).done();
     });
 
-    it('Should init once', function () {
+    it('Should init a twice', function (done) {
 
         var agent = new Agent();
-        var promise = agent.ready();
+        var spy = [];
+        var promise;
 
+        agent.on('sys:pending', function () {
+            spy.push(1);
+        });
+
+        promise = agent.ready();
         assert.strictEqual(promise, agent.ready());
         assert.notStrictEqual(promise, agent.ready(true));
+
+        agent.ready().done(function () {
+            assert.deepEqual(spy, [1, 1]);
+            done();
+        });
     });
 
     it('Should emit "sys:ready" on init', function (done) {
