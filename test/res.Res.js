@@ -31,17 +31,17 @@ describe('fist/res/Res', function () {
         });
     });
 
-    describe('Res.getStatusMessage', function () {
+    describe('Res.getDefaultBody', function () {
         var STATUS_CODES = require('http').STATUS_CODES;
 
         it('Should return correct status messages', function () {
             _.forOwn(STATUS_CODES, function (msg, code) {
-                assert.strictEqual(Res.getStatusMessage(code), msg);
+                assert.strictEqual(Res.getDefaultBody(code), msg);
             });
         });
 
         it('Should return stringifyed code', function () {
-            assert.strictEqual(Res.getStatusMessage(2), '2');
+            assert.strictEqual(Res.getDefaultBody(2), '2');
         });
     });
 
