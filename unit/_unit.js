@@ -52,14 +52,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @public
      * @memberOf {Unit}
      * @property
-     * @type {String}
-     * */
-    path: '_unit',
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
      * @type {Array<String>}
      * */
     deps: [],
