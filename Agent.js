@@ -150,10 +150,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         }));
 
         defer.promise().then(function (units) {
-            this.units = _.omit(units, function (unit, path) {
-
-                return !/^[a-z]/i.test(path);
-            });
+            this.units = units;
         }, this);
 
         return defer.promise();
@@ -171,12 +168,10 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     __createUnits: function (decls) {
 
         var conflicts;
-        var baseUnit = new BaseUnit(this.params);
-        var units = {};
-
-        units[baseUnit.path] = [BaseUnit, baseUnit];
-
         var remaining = decls.length;
+        var units = {
+            _unit: BaseUnit
+        };
 
         while ( _.size(decls) ) {
             decls = this.__addUnits(decls, units);
@@ -191,6 +186,15 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
                 _.map(decls, formatBaseConflictDetails).join(', '));
         }
 
+        units = _.reduce(units, function (units, Unit, path) {
+
+            if ( /^[a-z]/i.test(path) ) {
+                units[path] = [Unit, new Unit(this.params)];
+            }
+
+            return units;
+        }, {}, this);
+
         conflicts = findAllConflicts(units);
 
         if ( !_.size(conflicts) ) {
@@ -198,8 +202,9 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             return units;
         }
 
-        throw new ReferenceError('unit dependencies conflict: ' +
-            _.map(conflicts, formatDepsConflictDetails).join(', '));
+        throw new ReferenceError(
+                'unit dependencies conflict: ' +
+                _.map(conflicts, formatDepsConflictDetails).join(', '));
     },
 
     /**
@@ -220,25 +225,25 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             var base;
             var members = decl[0];
             var unit;
-            var self = this;
 
             //  Если не передали base, то сами добьем
-            if ( !_.has(members, 'base') ) {
-                base = '_unit';
+            if ( _.has(members, 'base') ) {
+                base = members.base;
 
             } else {
-                base = members.base;
+                base = '_unit';
             }
 
             if ( !_.isArray(base) ) {
                 base = [base];
             }
 
-            if ( _.has(units, base[0]) ) {
-                base = [units[base[0]][0]].concat(_.rest(base, 1));
-                Unit = inherit(base, members, decl[1]);
-                unit = new Unit(self.params);
-                units[unit.path] = [Unit, unit];
+            unit = base[0];
+
+            if ( _.has(units, unit) ) {
+                base = [units[unit]].concat(_.rest(base, 1));
+                Unit = /** @type Unit */ inherit(base, members, decl[1]);
+                units[members.path] = Unit;
 
                 return decls;
             }

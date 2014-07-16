@@ -269,4 +269,28 @@ describe('fist/Agent', function () {
             done();
         });
     });
+
+    it('Should not instantiate abstract units', function (done) {
+
+        var agent = new Agent();
+        var spy = [];
+
+        agent.unit({
+            path: '_test',
+            __constructor: function (params) {
+                this.__base(params);
+                spy.push(1);
+            }
+        });
+
+        agent.unit({
+            base: '_test',
+            path: 'x'
+        });
+
+        agent.ready().done(function () {
+            assert.deepEqual(spy, [1]);
+            done();
+        });
+    });
 });
