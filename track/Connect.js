@@ -303,7 +303,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         if ( !_.isNumber(status) ) {
             body = status;
-            status = this.res.getStatus();
+            status = void 0;
         }
 
         return this.res.respond(status, body);

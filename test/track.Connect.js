@@ -1,6 +1,7 @@
 /*global describe, it*/
 'use strict';
 
+var STATUS_CODES = require('http').STATUS_CODES;
 var Req = require('../req/Req');
 var Res = require('../res/Res');
 
@@ -110,6 +111,19 @@ describe('fist/track/Connect', function () {
     });
 
     describe('.send', function () {
+        it('Should respond with default message and status', function (done) {
+            doConnect({}, function (track, req, res) {
+                vow.when(track.send(), function (resp) {
+                    Res.end(res, resp);
+                });
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.statusCode, 200);
+                assert.deepEqual(res.data, new Buffer(STATUS_CODES[200]));
+                done();
+            });
+        });
+
         it('Should set status automatically', function (done) {
             doConnect({}, function (track, req, res) {
                 vow.when(track.send(':)'), function (resp) {
@@ -126,6 +140,19 @@ describe('fist/track/Connect', function () {
         it('Should send body with status', function (done) {
             doConnect({}, function (track, req, res) {
                 vow.when(track.send(201), function (resp) {
+                    Res.end(res, resp);
+                });
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.statusCode, 201);
+                done();
+            });
+        });
+
+        it('Should not overwrite status code', function (done) {
+            doConnect({}, function (track, req, res) {
+                var resp = track.send(201);
+                vow.when(track.send(resp), function (resp) {
                     Res.end(res, resp);
                 });
             }, function (err, res) {

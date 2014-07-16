@@ -345,6 +345,10 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     __createByResp: function (status, body) {
 
+        if ( !_.isNumber(status) ) {
+            status = body.status;
+        }
+
         return new RespResolver(status, body.header, body.body);
     },
 
@@ -374,7 +378,12 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @returns {*}
      * */
     __createByUndefined: function (status, body) {
-        body = Res.getStatusMessage(status);
+
+        if ( !_.isNumber(status) ) {
+            status = this._res.statusCode;
+        }
+
+        body = Res.getDefaultBody(status);
 
         return this.__createByString(status, body);
     }
@@ -391,7 +400,11 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @param {RespResolver} resp
      * */
     end: function (res, resp) {
-        res.statusCode = resp.status;
+
+        if ( _.isNumber(resp.status) ) {
+            res.statusCode = resp.status;
+        }
+
         Res.__setHeadersOn(res, resp.header, true);
         res.end(resp.body);
     },
@@ -402,13 +415,13 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @memberOf Res
      * @method
      *
-     * @param {Number} code
+     * @param {Number} status
      *
      * @returns {String}
      * */
-    getStatusMessage: function (code) {
+    getDefaultBody: function (status) {
 
-        return STATUS_CODES[code] || String(code);
+        return STATUS_CODES[status] || String(status);
     },
 
     /**
