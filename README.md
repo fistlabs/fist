@@ -164,13 +164,19 @@ app.route('/', {
     unit: 'indexController'
 });
 ```
-###```app.unit(decl)```
+###```app.unit(members[, statics])```
 Добавляет в приложение функциональный узел
 ```js
 app.unit({
     path: 'indexController',
     data: function () {
-        doSomething()
+        
+        return doSomething(this.__self.foo());
+    }
+}, {
+    foo: function () {
+        
+        return 42;
     }
 });
 ```
