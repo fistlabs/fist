@@ -271,8 +271,28 @@ app.unit({
         return this.__base(track, ctx).then(getUsers);
     }
 });
+```
+
+Также декларации узлов поддерживают ```mixin```-ы, которые указываются вместе с узлом, от которого неозходимо унаследовать.
+```js
+function Stringifyable () {}
+
+Stringifyable.prototype = {
+    stringify: function () {
+        return JSON.stringify(this);
+    } 
+};
+
+app.unit({
+    base: ['_unit', Stringifyable]
+    path: 'test',
+    data: function () {
+        return this.stringify();
+    }
+});
 
 ```
+
 ###```unit.addDeps(deps)```
 Добавляет зависимости в узел.
 ```js
