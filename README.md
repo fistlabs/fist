@@ -164,13 +164,19 @@ app.route('/', {
     unit: 'indexController'
 });
 ```
-###```app.unit(decl)```
+###```app.unit(members[, statics])```
 Добавляет в приложение функциональный узел
 ```js
 app.unit({
     path: 'indexController',
     data: function () {
-        doSomething()
+        
+        return doSomething(this.__self.foo());
+    }
+}, {
+    foo: function () {
+        
+        return 42;
     }
 });
 ```
@@ -189,8 +195,16 @@ _protected_
 ####```cache.set(key, value, maxAge, callback)```
 ####```cache.get(key, callback)```
 
+###```app.channel(name)```
+Создает канал событий. Канал событий для заданного ```name``` создается единожды.
+***_Предупреждение_***
+
+_На данный момент системные автоматические события распространяются через единственный канал, но чтобы их можно было группировать по смыслу, были введены префиксы. В будущем (с версии ```2.0.0```) префиксы будут исключены, события быдут распространяться через каналы, соответствующие префиксам._
+
 ##События
 Приложение обладает свойствами ```EventEmitter```, поэтому на нем можно слушать некоторые автоматические события.
+###```sys:pending```
+Приложение начинает инициализироваться
 ###```sys:ready```
 Приложение готово обрабатывать запросы
 ###```sys:eready```
@@ -257,8 +271,28 @@ app.unit({
         return this.__base(track, ctx).then(getUsers);
     }
 });
+```
+
+Также декларации узлов поддерживают ```mixin```-ы, которые указываются вместе с узлом, от которого неозходимо унаследовать.
+```js
+function Stringifyable () {}
+
+Stringifyable.prototype = {
+    stringify: function () {
+        return JSON.stringify(this);
+    } 
+};
+
+app.unit({
+    base: ['_unit', Stringifyable]
+    path: 'test',
+    data: function () {
+        return this.stringify();
+    }
+});
 
 ```
+
 ###```unit.addDeps(deps)```
 Добавляет зависимости в узел.
 ```js
