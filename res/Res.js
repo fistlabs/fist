@@ -2,7 +2,7 @@
 
 var R_SET_COOKIE_HEADER = /^set-cookie$/i;
 var STATUS_CODES = require('http').STATUS_CODES;
-var RespResolver = /** @type RespResolver */ require('../util/resp-resolver');
+var Response = /** @type Response */ require('../util/response');
 
 var _ = require('lodash-node');
 var cookie = require('cookieparser');
@@ -193,7 +193,7 @@ var Res = inherit(/** @lends Res.prototype */ {
             return this.__createByPromise(status, body);
         }
 
-        if ( body instanceof RespResolver ) {
+        if ( body instanceof Response ) {
 
             return this.__createByResp(status, body);
         }
@@ -213,7 +213,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     __createByBuffer: function (status, body) {
 
-        return new RespResolver(status, {
+        return new Response(status, {
             'Content-Type': 'application/octet-stream',
             'Content-Length': body.length
         }, body);
@@ -252,7 +252,7 @@ var Res = inherit(/** @lends Res.prototype */ {
     __createByJson: function (status, body) {
         body = JSON.stringify(body);
 
-        return new RespResolver(status, {
+        return new Response(status, {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(body)
         }, body);
@@ -339,9 +339,9 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @method
      *
      * @param {Number} status
-     * @param {RespResolver} body
+     * @param {Response} body
      *
-     * @returns {RespResolver}
+     * @returns {Response}
      * */
     __createByResp: function (status, body) {
 
@@ -349,7 +349,7 @@ var Res = inherit(/** @lends Res.prototype */ {
             status = body.status;
         }
 
-        return new RespResolver(status, body.header, body.body);
+        return new Response(status, body.header, body.body);
     },
 
     /**
@@ -364,7 +364,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * */
     __createByString: function (status, body) {
 
-        return new RespResolver(status, {
+        return new Response(status, {
             'Content-Type': 'text/plain',
             'Content-Length': Buffer.byteLength(body)
         }, body);
@@ -397,7 +397,7 @@ var Res = inherit(/** @lends Res.prototype */ {
      * @method
      *
      * @param {OutgoingMessage} res
-     * @param {RespResolver} resp
+     * @param {Response} resp
      * */
     end: function (res, resp) {
 

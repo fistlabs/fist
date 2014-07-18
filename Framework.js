@@ -4,7 +4,8 @@ var Connect = /** @type Connect */ require('./track/Connect');
 var Http = require('http');
 var Router = /** @type Router */ require('finger/Router');
 var Res = /** @type Res */ require('./res/Res');
-var SkipResolver = /** @type SkipResolver */ require('./util/skip-resolver');
+var Response = /** @type SkipResolver */ require('./util/response');
+var Rewrite = /** @type {Rewrite} */ require('./util/rewrite');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
 var _ = require('lodash-node');
@@ -201,16 +202,58 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         return this.resolve(track, result.route.data.unit).
             then(function (data) {
                 //  was sent
-                if ( data instanceof SkipResolver ) {
+                if ( data instanceof Response ) {
 
-                    return data;
+                    return this.__handleResponse(track, data);
+                }
+
+                //  rewrite
+                if ( data instanceof Rewrite ) {
+
+                    return this.__handleRewrite(track, data);
                 }
 
                 return this.__next(track);
             }, function (err) {
-                //  как быть если err instanceOf SkipResolver
+
                 return track.send(500, err);
             }, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Connect} track
+     * @param {Response} data
+     *
+     * @returns {Response}
+     * */
+    __handleResponse: function (track, data) {
+
+        return data;
+    },
+
+    /**
+     * @private
+     * @memberOf {Framework}
+     * @method
+     *
+     * @param {Connect} track
+     * @param {Rewrite} data
+     *
+     * @returns {vow.Promise}
+     * */
+    __handleRewrite: function (track, data) {
+        //  чтобы начать матчить сначала
+        delete track.route;
+        //  удаляем все кэши
+        track.tasks = {};
+        //  переписываем url
+        track.url = track.req.createUrl(data.path);
+
+        return this.__next(track);
     }
 
 });

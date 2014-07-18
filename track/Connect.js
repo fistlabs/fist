@@ -6,6 +6,7 @@ var R_URL = /^((?:[a-z0-9.+-]+:|)\/\/[^\/]+|)([\s\S]*)$/;
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Req = /** @type Req */ require('../req/Req');
 var Res = /** @type Res */ require('../res/Res');
+var Rewrite = /** @type Rewrite */ require('../util/rewrite');
 var Route = /** @type Route */ require('finger/route/Route');
 var Track = /** @type Track */ require('./Track');
 
@@ -87,7 +88,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.req.getUrl();
+        this.url = this.req.createUrl(req.url);
     },
 
     /**
@@ -268,6 +269,22 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         }
 
         return this.res.respond(status, url);
+    },
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} path
+     * @param {Object} [opts]
+     *
+     * @returns {Rewrite}
+     * */
+    rewrite: function (path, opts) {
+        path = Route.buildPath(path, opts);
+
+        return new Rewrite(path);
     },
 
     /**

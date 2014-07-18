@@ -27,20 +27,20 @@ var Req = inherit(/** @lends Req.prototype */ {
     __constructor: function (req, params) {
 
         /**
-         * @private
-         * @memberOf {Req}
-         * @property
-         * @type {IncomingMessage}
-         * */
-        this._req = req;
-
-        /**
          * @public
          * @memberOf {Req}
          * @property
          * @type {Object}
          * */
         this.params = params || {};
+
+        /**
+         * @private
+         * @memberOf {Req}
+         * @property
+         * @type {IncomingMessage}
+         * */
+        this._req = req;
     },
 
     /**
@@ -142,15 +142,17 @@ var Req = inherit(/** @lends Req.prototype */ {
      * @memberOf {Req}
      * @method
      *
+     * @param {String} url
+     *
      * @returns {Object}
      * */
-    getUrl: function () {
+    createUrl: function (url) {
         var headers = this._req.headers;
         var host = headers['x-forwarded-host'] || headers.host;
         var protocol = this._req.socket.encrypted ?
             'https' : headers['x-forwarded-proto'] || 'http';
 
-        return Url.parse(protocol + '://' + host + this._req.url, true);
+        return Url.parse(protocol + '://' + host + url, true);
     },
 
     /**

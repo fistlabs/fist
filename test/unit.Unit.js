@@ -3,7 +3,7 @@
 
 var Track = require('../track/Track');
 var Tracker = require('../Tracker');
-var SkipResolver = require('../util/skip-resolver');
+var Skip = require('../util/skip');
 
 var assert = require('chai').assert;
 var inherit = require('inherit');
@@ -197,7 +197,7 @@ describe('fist/unit/_unit', function () {
             }).done();
         });
 
-        it('Should not cache SkipResolver', function (done) {
+        it('Should not cache Skip', function (done) {
 
             var tracker = new Tracker();
             var spy = [];
@@ -208,7 +208,7 @@ describe('fist/unit/_unit', function () {
                 data: function () {
                     spy.push(1);
 
-                    return new SkipResolver();
+                    return new Skip();
                 }
             });
 

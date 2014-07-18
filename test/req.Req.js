@@ -24,13 +24,13 @@ describe('fist/req/Req', function () {
         });
     });
 
-    describe('.getUrl', function () {
+    describe('.createUrl', function () {
         it('Should correctly parse request url', function (done) {
             http({path: '/test/'}, function (rq, rs) {
 
                 var req = new Req(rq);
 
-                assert.deepEqual(req.getUrl(),
+                assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('http://localhost/test/', true));
 
                 rs.end();
@@ -49,7 +49,7 @@ describe('fist/req/Req', function () {
             }, function (rq, rs) {
                 var req = new Req(rq);
 
-                assert.deepEqual(req.getUrl(),
+                assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('http://fist.io/test/', true));
 
                 rs.end();
@@ -68,7 +68,7 @@ describe('fist/req/Req', function () {
 
                 var req = new Req(rq);
 
-                assert.deepEqual(req.getUrl(),
+                assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('https://localhost/test/', true));
 
                 rs.end();
@@ -88,7 +88,7 @@ describe('fist/req/Req', function () {
 
                 var req = new Req(rq);
 
-                assert.deepEqual(req.getUrl(),
+                assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('https://localhost/test/', true));
 
                 rs.end();
