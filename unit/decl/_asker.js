@@ -30,7 +30,7 @@ module.exports = {
         var data = Object(ctx.data);
 
         if ( _.isString(data.path) ) {
-            data.path = Pattern.buildUrl(data.path, data.vars);
+            data.path = Pattern.buildPath(data.path, data.vars);
         }
 
         return data;

@@ -202,7 +202,6 @@ describe('fist/track/Connect', function () {
                     accept: 'text/plain'
                 }
             }, function (track, req, res) {
-                track.header('content-type', 'text/plain');
                 vow.when(track.redirect(301, '/test/'), function (resp) {
                     Res.end(res, resp);
                 });
@@ -261,6 +260,29 @@ describe('fist/track/Connect', function () {
                 assert.deepEqual(res.data, new Buffer('<a href="' + url + '">' +
                     url + '</a>'));
 
+                done();
+            });
+        });
+
+        it('Should apply template to redirection url', function (done) {
+            doConnect({
+                headers: {
+                    accept: 'text/plain'
+                }
+            }, function (track, req, res) {
+                vow.when(track.redirect(301, 'http://example.com/<page>/?a=5', {
+                    page: 'test',
+                    b: 6
+                }), function (resp) {
+                    Res.end(res, resp);
+                });
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.statusCode, 301);
+                assert.strictEqual(res.headers.location,
+                    'http://example.com/test/?a=5&b=6');
+                assert.deepEqual(res.data,
+                    new Buffer('http://example.com/test/?a=5&b=6'));
                 done();
             });
         });
