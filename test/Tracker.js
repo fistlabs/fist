@@ -352,14 +352,14 @@ describe('fist/Tracker', function () {
 
     describe('skip resolving', function () {
 
-        var SkipResolver = require('../util/skip-resolver');
+        var Skip = require('../util/skip');
 
         it('Should skip resolving by returning ' +
-            '{SkipResolver}', function (done) {
+            '{Skip}', function (done) {
 
             var tracker = new Tracker();
             var track = new Track(tracker);
-            var skip = new SkipResolver();
+            var skip = new Skip();
 
             tracker.unit({
                 path: 'a',

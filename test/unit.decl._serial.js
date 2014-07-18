@@ -1,7 +1,7 @@
 /*global describe, it*/
 'use strict';
 
-var SkipResolver = require('../util/skip-resolver');
+var Skip = require('../util/skip');
 var assert = require('chai').assert;
 
 describe('fist/unit/decl/_serial', function () {
@@ -123,11 +123,11 @@ describe('fist/unit/decl/_serial', function () {
         });
     });
 
-    it('Should be resolved by SkipResolver', function (done) {
+    it('Should be resolved by Skip', function (done) {
         var tracker = new Tracker();
         var track = new Track(tracker);
         var spy = [];
-        var skip = new SkipResolver();
+        var skip = new Skip();
 
         tracker.unit({
             base: '_serial',

@@ -1,18 +1,18 @@
 'use strict';
 
-var SkipResolver = /** @type SkipResolver */ require('./skip-resolver');
+var Skip = /** @type Skip */ require('./skip');
 
 var inherit = require('inherit');
 
 /**
- * @class RespResolver
- * @extends SkipResolver
+ * @class Response
+ * @extends Skip
  * */
-var RespResolver = inherit(SkipResolver, {
+var Response = inherit(Skip, /** @lends Response.prototype */ {
 
     /**
      * @private
-     * @memberOf {RespResolver}
+     * @memberOf {Response}
      * @method
      *
      * @constructs
@@ -25,7 +25,7 @@ var RespResolver = inherit(SkipResolver, {
 
         /**
          * @public
-         * @memberOf {RespResolver}
+         * @memberOf {Response}
          * @property
          * @type {Number}
          * */
@@ -33,7 +33,7 @@ var RespResolver = inherit(SkipResolver, {
 
         /**
          * @public
-         * @memberOf {SkipResolver}
+         * @memberOf {Skip}
          * @property
          * @type {Object}
          * */
@@ -41,7 +41,7 @@ var RespResolver = inherit(SkipResolver, {
 
         /**
          * @public
-         * @memberOf {SkipResolver}
+         * @memberOf {Skip}
          * @property
          * @type {*}
          * */
@@ -50,4 +50,4 @@ var RespResolver = inherit(SkipResolver, {
 
 });
 
-module.exports = RespResolver;
+module.exports = Response;

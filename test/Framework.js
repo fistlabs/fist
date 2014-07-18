@@ -278,4 +278,51 @@ describe('fist/Framework', function () {
         });
     });
 
+    describe('rewrite', function () {
+        it('Should rewrite the url', function (done) {
+
+            var tracker = new Framework();
+
+            tracker.route('/x/y/z/', 'rewrite');
+            tracker.route('/<page>/', 'control');
+
+            tracker.unit({
+                path: 'rewrite',
+                data: function (track) {
+
+                    return track.rewrite('/<page>/', {
+                        page: 'test',
+                        a: 42
+                    });
+                }
+            });
+
+            tracker.unit({
+                path: 'control',
+                data: function (track) {
+                    assert.strictEqual(track.arg('page'), 'test');
+                    assert.strictEqual(track.url.path, '/test/?a=42');
+
+                    return track.send(201);
+                }
+            });
+
+            try {
+                Fs.unlinkSync(sock);
+
+            } catch (err) {}
+
+            tracker.listen(sock);
+
+            asker({
+                path: '/x/y/z/',
+                socketPath: sock
+            }, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.statusCode, 201);
+                done();
+            });
+        });
+    });
+
 });

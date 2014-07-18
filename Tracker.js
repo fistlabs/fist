@@ -3,7 +3,7 @@
 var Agent = /** @type Agent */ require('./Agent');
 var Ctx = /** @type Ctx */ require('./ctx/Ctx');
 var Path = require('path');
-var SkipResolver = /** @type SkipResolver */ require('./util/skip-resolver');
+var Skip = /** @type Skip */ require('./util/skip');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -180,7 +180,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
             var promise = _.find(promises, function (promise) {
 
-                return promise.valueOf() instanceof SkipResolver;
+                return promise.valueOf() instanceof Skip;
             });
 
             if ( _.isUndefined(promise) ) {

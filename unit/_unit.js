@@ -2,7 +2,7 @@
 
 var S_SEPARATOR = '\u0000';
 var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
-var SkipResolver = /** @type SkipResolver */ require('../util/skip-resolver');
+var Skip = /** @type Skip */ require('../util/skip');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -128,7 +128,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             var data = value.data;
 
             //  из кэша или резолвер
-            if ( !value.fresh || data instanceof SkipResolver ) {
+            if ( !value.fresh || data instanceof Skip ) {
 
                 return data;
             }

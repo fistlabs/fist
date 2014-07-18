@@ -1,8 +1,7 @@
 'use strict';
 
 var Deque = /** @type Deque */ require('double-ended-queue');
-var SkipResolver = /** @type SkipResolver */
-    require('../../util/skip-resolver');
+var Skip = /** @type Skip */ require('../../util/skip');
 
 var _ = require('lodash-node');
 var vow = require('vow');
@@ -26,7 +25,7 @@ module.exports = {
         var name;
         var self = this;
 
-        if ( steps.isEmpty() || ctx.data instanceof SkipResolver ) {
+        if ( steps.isEmpty() || ctx.data instanceof Skip ) {
 
             return ctx.data;
         }
