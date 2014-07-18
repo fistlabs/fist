@@ -1,10 +1,12 @@
 'use strict';
 
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
+var R_URL = /^((?:[a-z0-9.+-]+:|)\/\/[^\/]+|)([\s\S]*)$/;
 
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Req = /** @type Req */ require('../req/Req');
 var Res = /** @type Res */ require('../res/Res');
+var Route = /** @type Route */ require('finger/route/Route');
 var Track = /** @type Track */ require('./Track');
 
 var _ = require('lodash-node');
@@ -236,8 +238,11 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @param {*} [status]
      * @param {String} url
+     * @param {Object} [opts]
      * */
-    redirect: function (status, url) {
+    redirect: function (status, url, opts) {
+
+        var parts;
 
         if ( _.isNumber(status) ) {
 
@@ -246,9 +251,14 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             }
 
         } else {
+            opts = url;
             url = status;
             status = 302;
         }
+
+        parts = R_URL.exec(url);
+        parts[2] = Route.buildPath(parts[2], opts);
+        url = parts[1] + parts[2];
 
         this.res.setHeader('Location', url);
 

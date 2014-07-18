@@ -13,7 +13,7 @@
         "asker": "0.4.6",
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
-        "finger": "0.1.2",
+        "finger": "0.3.0",
         "lodash-node": "2.4.1",
         "vow": "0.4.5",
         "inherit": "2.2.2",
