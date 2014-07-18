@@ -10,7 +10,13 @@ module.exports = function (done) {
         routes = [];
 
     } else if ( !_.isArray(routes) ) {
-        routes = [routes];
+
+        if (_.isObject(routes) ) {
+            routes = [routes];
+
+        } else {
+            routes = require(routes);
+        }
     }
 
     _.forEach(routes, function (desc) {

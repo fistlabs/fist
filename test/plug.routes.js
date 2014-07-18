@@ -2,7 +2,9 @@
 'use strict';
 
 var Framework = require('../Framework');
+
 var assert = require('chai').assert;
+var path = require('path');
 
 describe('fist/plug/routes', function () {
 
@@ -42,6 +44,17 @@ describe('fist/plug/routes', function () {
         var tracker = new Framework();
 
         tracker.ready().done(function () {
+            done();
+        });
+    });
+
+    it('Should declare routes by file with routes', function (done) {
+        var tracker = new Framework({
+            routes: path.join(__dirname, 'fixtures', 'plug', 'routes')
+        });
+
+        tracker.ready().done(function () {
+            assert.ok(tracker.router.getRoute('index'));
             done();
         });
     });
