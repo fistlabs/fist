@@ -1,7 +1,6 @@
 /*global describe, it*/
 'use strict';
 
-var Path = require('path');
 var assert = require('chai').assert;
 
 describe('fist/Tracker', function () {
@@ -17,14 +16,10 @@ describe('fist/Tracker', function () {
 
     describe('Should automatically add bundled units', function () {
 
-        var bundledUnits = Path.resolve(__dirname,
-            '..', 'unit', 'decl', '**', '*.js');
-
         it('not defined', function () {
             var tracker = new Tracker();
-            assert.deepEqual(tracker.params.units, [
-                bundledUnits
-            ]);
+            assert.include(tracker.params.units, Tracker.BUNDLED_UNITS_PATH);
+            assert.include(tracker.params.units, 'units/**/*.js');
         });
 
         it('defined by no-array', function () {
@@ -32,7 +27,7 @@ describe('fist/Tracker', function () {
                 units: 'foo'
             });
             assert.deepEqual(tracker.params.units, [
-                bundledUnits,
+                Tracker.BUNDLED_UNITS_PATH,
                 'foo'
             ]);
         });
@@ -42,7 +37,7 @@ describe('fist/Tracker', function () {
                 units: ['foo']
             });
             assert.deepEqual(tracker.params.units, [
-                bundledUnits,
+                Tracker.BUNDLED_UNITS_PATH,
                 'foo'
             ]);
         });

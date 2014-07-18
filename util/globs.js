@@ -4,6 +4,7 @@ var _ = require('lodash-node');
 var glob = require('glob');
 var path = require('path');
 var vow = require('vow');
+var processCwd = process.cwd();
 
 function singleGlob (expr, opts) {
 
@@ -31,6 +32,8 @@ function singleGlob (expr, opts) {
  * */
 function globs (globs, opts) {
 
+    var cwd;
+
     if ( _.isUndefined(globs) || _.isNull(globs) ) {
         globs = [];
 
@@ -38,13 +41,19 @@ function globs (globs, opts) {
         globs = [globs];
     }
 
-    //  вдруг есть паттерны одинаковые
-    globs = _.uniq(globs);
+    if ( _.isObject(opts) && _.isString(opts.cwd) ) {
+        cwd = opts.cwd;
+
+    } else {
+        cwd = processCwd;
+    }
 
     return vow.invoke(function () {
 
         globs = _.map(globs, function (glob) {
-            glob = path.resolve(glob);
+            //  Резолвить нужно для того
+            // чтобы можно было удалить дубликаты
+            glob = path.resolve(cwd, glob);
 
             return singleGlob(glob, opts);
         });

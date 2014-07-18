@@ -32,7 +32,9 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = _.extend({}, this.params, params);
+        this.params = _.extend({
+            cwd: process.cwd()
+        }, this.params, params);
 
         /**
          * @public
