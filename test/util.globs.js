@@ -1,12 +1,14 @@
 /*global describe, it*/
 'use strict';
 
+var _ = require('lodash-node');
 var assert = require('chai').assert;
 var vow = require('vow');
+var path = require('path');
 var Fs = require('fs');
 
 describe('fist/util/globs', function () {
-    /*eslint max-nested-callbacks: [2, 4]*/
+    /*eslint max-nested-callbacks: [2, 5]*/
     var globs = require('../util/globs');
 
     it('Should return vow.Promise', function () {
@@ -73,14 +75,33 @@ describe('fist/util/globs', function () {
             globs(['test/fixtures/globs/a/*',
                 'test/fixtures/globs/b/*']).then(function (list) {
                 assert.isArray(list);
-                assert.deepEqual(list.sort(), [
+                assert.deepEqual(list.sort(), _.map([
                     'test/fixtures/globs/a/test0.txt',
                     'test/fixtures/globs/a/test1.txt',
                     'test/fixtures/globs/b/test2.txt',
                     'test/fixtures/globs/b/test3.txt'
-                ]);
+                ], function (file) {
+
+                    return path.resolve(file);
+                }));
                 done();
             }).done();
+        });
+
+        it('Should remove duplicates', function (done) {
+            globs([
+                'test/fixtures/globs/a/*',
+                'test/fixtures/globs/a/*'
+            ]).done(function (list) {
+                assert.deepEqual(list.sort(), _.map([
+                    'test/fixtures/globs/a/test0.txt',
+                    'test/fixtures/globs/a/test1.txt'
+                ], function (file) {
+
+                    return path.resolve(file);
+                }));
+                done();
+            });
         });
     });
 });
