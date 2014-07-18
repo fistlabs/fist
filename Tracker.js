@@ -2,11 +2,11 @@
 
 var Agent = /** @type Agent */ require('./Agent');
 var Ctx = /** @type Ctx */ require('./ctx/Ctx');
-var Path = require('path');
 var Skip = /** @type Skip */ require('./util/skip');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
+var path = require('path');
 var plugUnits = require('./plug/units');
 var vow = require('vow');
 
@@ -53,7 +53,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         //  Может это в сам плагин добавить?
         if ( _.isUndefined(units) || _.isNull(units) ) {
-            this.params.units = [Tracker.BUNDLED_UNITS_PATH];
+            this.params.units = [
+                Tracker.BUNDLED_UNITS_PATH,
+                //  Если совсем не сконфигурили где узлы,
+                //  то автоматом добавляю шаблон
+                'units/**/*.js'
+            ];
 
         } else if ( !_.isArray(units) ) {
             //  Добавляю в начало чтобы можно было
@@ -269,7 +274,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @property
      * @type {String}
      * */
-    BUNDLED_UNITS_PATH: Path.join(__dirname, 'unit', 'decl', '**', '*.js')
+    BUNDLED_UNITS_PATH: path.join(__dirname, 'unit', 'decl', '**', '*.js')
 });
 
 module.exports = Tracker;

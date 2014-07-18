@@ -4,8 +4,8 @@ var Connect = /** @type Connect */ require('./track/Connect');
 var Http = require('http');
 var Router = /** @type Router */ require('finger/Router');
 var Res = /** @type Res */ require('./res/Res');
-var Response = /** @type SkipResolver */ require('./util/response');
-var Rewrite = /** @type {Rewrite} */ require('./util/rewrite');
+var Response = /** @type Response */ require('./util/response');
+var Rewrite = /** @type Rewrite */ require('./util/rewrite');
 var Tracker = /** @type Tracker */ require('./Tracker');
 
 var _ = require('lodash-node');
@@ -47,6 +47,10 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
          * @type {Router}
          * */
         this.router = this._createRouter(this.params.router);
+
+        if ( !this.params.routes ) {
+            this.params.routes = 'routes';
+        }
 
         this.plug(plugRoutes);
     },

@@ -390,7 +390,7 @@ describe('fist/res/Res', function () {
             });
         });
 
-        it('Should not respond by RespResolver', function (done) {
+        it('Should not respond by Response', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
                 var resp = res.respond(500, ':)');

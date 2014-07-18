@@ -4,16 +4,20 @@ var _ = require('lodash-node');
 var globs = require('../util/globs');
 
 module.exports = function (done) {
-    globs(this.params.units).then(function (units) {
-        units = _.map(units, require);
-        _.forEach(units, function (exports) {
+    globs(this.params.units, this.params).then(function (units) {
 
-            if ( !_.isArray(exports) ) {
-                exports = [exports];
+        return _.map(units, require);
+    }).done(function (units) {
+        _.forEach(units, function (exports) {
+            //  TODO deprecate this behavior
+            if ( _.isArray(exports) ) {
+                this.unit(exports[0], exports[1]);
+
+            } else {
+                this.unit(exports);
             }
 
-            return this.unit(exports[0], exports[1]);
         }, this);
         done();
-    }, this).done(null, done);
+    }, done, this);
 };
