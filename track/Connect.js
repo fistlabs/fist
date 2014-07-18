@@ -87,7 +87,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.req.getUrl();
+        this.url = this.req.createUrl(req.url);
     },
 
     /**

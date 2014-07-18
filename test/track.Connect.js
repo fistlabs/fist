@@ -21,7 +21,7 @@ describe('fist/track/Connect', function () {
             assert.strictEqual(track.method, 'POST');
             assert.deepEqual(track.match, {});
             assert.strictEqual(track.route, null);
-            assert.deepEqual(track.req.getUrl(), track.url);
+            assert.deepEqual(track.req.createUrl(req.url), track.url);
             res.end();
         }, function (err) {
             assert.ok(!err);
