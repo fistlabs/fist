@@ -246,6 +246,33 @@ describe('fist/unit/_unit', function () {
                     }).done();
             }).done();
         });
+
+        it('Should emit ctx:cache', function (done) {
+
+            var tracker = new Tracker();
+            var spy = [];
+
+            tracker.unit({
+                path: 'test',
+                _maxAge: 10000,
+                data: 42
+            });
+
+            tracker.on('ctx:cache', function (e) {
+                assert.strictEqual(e.path, 'test');
+                assert.isNumber(e.time);
+                assert.strictEqual(e.data, 42);
+                spy.push(1);
+            });
+
+            tracker.resolve(new Track(tracker), 'test').always(function () {
+                tracker.resolve(new Track(tracker), 'test').
+                    then(function () {
+                        assert.deepEqual(spy, [1]);
+                        done();
+                    }).done();
+            }).done();
+        });
     });
 
 });

@@ -276,6 +276,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         return this.__getCache(key, ctx).then(function (res) {
 
             if ( _.isObject(res) ) {
+                ctx.trigger('ctx:cache', res.data);
 
                 return res;
             }
