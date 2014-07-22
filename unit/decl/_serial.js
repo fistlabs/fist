@@ -1,7 +1,7 @@
 'use strict';
 
 var Deque = /** @type Deque */ require('double-ended-queue');
-var Skip = /** @type Skip */ require('../../util/skip');
+var Skip = /** @type Skip */ require('../../skip/skip');
 
 var _ = require('lodash-node');
 var vow = require('vow');

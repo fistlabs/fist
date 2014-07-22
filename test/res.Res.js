@@ -390,7 +390,7 @@ describe('fist/res/Res', function () {
             });
         });
 
-        it('Should not respond by Response', function (done) {
+        it('Should not respond by SkipResponse', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
                 var resp = res.respond(500, ':)');

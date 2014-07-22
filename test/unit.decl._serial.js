@@ -1,7 +1,7 @@
 /*global describe, it*/
 'use strict';
 
-var Skip = require('../util/skip');
+var Skip = require('../skip/skip');
 var assert = require('chai').assert;
 
 describe('fist/unit/decl/_serial', function () {

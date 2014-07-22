@@ -3,7 +3,7 @@
 
 var Track = require('../track/Track');
 var Tracker = require('../Tracker');
-var Skip = require('../util/skip');
+var Skip = require('../skip/skip');
 
 var assert = require('chai').assert;
 var inherit = require('inherit');
