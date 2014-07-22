@@ -1,6 +1,6 @@
 'use strict';
 
-var Framework = /** @type Framework */ require('./Framework');
+var Server = /** @type Server */ require('./core/server');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -12,16 +12,20 @@ var dirname = path.dirname(module.parent.filename);
  * @param {Object} [members]
  * @param {Object} [statics]
  *
- * @returns {Framework}
+ * @returns {Server}
  * */
 function fist (params, members, statics) {
-    var Fist = inherit(Framework, members, statics);
+    var Fist = inherit(Server, members, statics);
+    var app = new Fist(_.extend({cwd: dirname}, params));
 
-    //  очень высока вероятность что директория в которой находится
-    // файл запуска сервера будет являться истинной cwd (by default)
-    params = _.extend({cwd: dirname}, params);
+    app.plug(fist.defaultPlugins);
 
-    return new Fist(params);
+    return app;
 }
+
+fist.defaultPlugins = [
+    require('./plugins/routes'),
+    require('./plugins/units')
+];
 
 module.exports = fist;
