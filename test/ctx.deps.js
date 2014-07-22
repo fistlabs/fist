@@ -6,13 +6,13 @@ var assert = require('chai').assert;
 var Tracker = require('../Tracker');
 var Track = require('../track/Track');
 
-describe('fist/ctx/Ctx', function () {
+describe('fist/ctx/Deps', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
-    var Ctx = require('../ctx/Ctx');
+    var Deps = require('../ctx/deps');
 
-    describe('new Ctx()', function () {
+    describe('new Deps()', function () {
 
-        var ctx = new Ctx();
+        var ctx = new Deps();
 
         var props = [
             'res', 'result',
@@ -27,16 +27,16 @@ describe('fist/ctx/Ctx', function () {
             });
         });
 
-        it('Should be an instance of Ctx', function () {
-            assert.instanceOf(ctx, Ctx);
+        it('Should be an instance of Deps', function () {
+            assert.instanceOf(ctx, Deps);
         });
 
     });
 
-    describe('new Ctx(track, path, params)', function () {
+    describe('new Deps(track, path, params)', function () {
 
         var params = {a: 42};
-        var ctx = new Ctx(null, null, params);
+        var ctx = new Deps(null, null, params);
 
         it('Should have a "params" property', function () {
             assert.property(ctx, 'params');
@@ -48,7 +48,7 @@ describe('fist/ctx/Ctx', function () {
 
     describe('.setRes(path, data)', function () {
         it('Should set data to .res object', function () {
-            var ctx = new Ctx();
+            var ctx = new Deps();
             ctx.setRes('a.b.c', 42);
             assert.deepProperty(ctx.res, 'a.b.c');
             assert.deepPropertyVal(ctx.res, 'a.b.c', 42);
@@ -57,7 +57,7 @@ describe('fist/ctx/Ctx', function () {
 
     describe('.setErr(path, data)', function () {
         it('Should set data to .ers object', function () {
-            var ctx = new Ctx();
+            var ctx = new Deps();
             ctx.setErr('a.b.c', 42);
             assert.deepProperty(ctx.ers, 'a.b.c');
             assert.deepPropertyVal(ctx.ers, 'a.b.c', 42);
@@ -66,7 +66,7 @@ describe('fist/ctx/Ctx', function () {
 
     describe('.getRes(path)', function () {
         it('Should get data from .res object', function () {
-            var ctx = new Ctx();
+            var ctx = new Deps();
             ctx.setRes('a.b.c', 42);
             assert.strictEqual(ctx.getRes('a.b.c'), 42);
         });
@@ -74,7 +74,7 @@ describe('fist/ctx/Ctx', function () {
 
     describe('.getErr(path)', function () {
         it('Should get data from .ers object', function () {
-            var ctx = new Ctx();
+            var ctx = new Deps();
             ctx.setErr('a.b.c', 42);
             assert.strictEqual(ctx.getErr('a.b.c'), 42);
         });
@@ -85,7 +85,7 @@ describe('fist/ctx/Ctx', function () {
 
             var tracker = new Tracker();
             var track = new Track(tracker);
-            var ctx = new Ctx(track, 'c');
+            var ctx = new Deps(track, 'c');
 
             tracker.unit({
                 path: 'a',
@@ -111,7 +111,7 @@ describe('fist/ctx/Ctx', function () {
         it('Should trigger the event', function (done) {
             var tracker = new Tracker();
             var track = new Track(tracker);
-            var ctx = new Ctx(track, 'c');
+            var ctx = new Deps(track, 'c');
 
             tracker.on('my-event', function (e) {
                 assert.strictEqual(e.trackId, track.id);
@@ -128,7 +128,7 @@ describe('fist/ctx/Ctx', function () {
         it('Should trigger ctx:notify event', function (done) {
             var tracker = new Tracker();
             var track = new Track(tracker);
-            var ctx = new Ctx(track, 'c');
+            var ctx = new Deps(track, 'c');
 
             tracker.on('ctx:notify', function (e) {
                 assert.strictEqual(e.trackId, track.id);
@@ -138,6 +138,19 @@ describe('fist/ctx/Ctx', function () {
             });
 
             ctx.notify(42);
+        });
+    });
+
+    describe('.arg', function () {
+        it('Should return parameter', function () {
+
+            var tracker = new Tracker();
+            var track = new Track(tracker);
+            var ctx = new Deps(track, 'c', {
+                a: 42
+            });
+
+            assert.strictEqual(ctx.arg('a'), 42);
         });
     });
 });

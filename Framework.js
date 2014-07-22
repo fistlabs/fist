@@ -1,6 +1,7 @@
 'use strict';
 
 var Connect = /** @type Connect */ require('./track/Connect');
+var Context = /** @type Context */ require('./ctx/context');
 var Http = require('http');
 var Router = /** @type Router */ require('finger/Router');
 var Res = /** @type Res */ require('./res/Res');
@@ -129,6 +130,18 @@ var Framework = inherit(Tracker, /** @lends Framework.prototype */ {
         }
 
         return this;
+    },
+
+    /**
+     * @inheritdoc
+     *
+     * @memberOf {Framework}
+     *
+     * @returns {Context}
+     * */
+    _createCtx: function (track, path, params) {
+
+        return new Context(track, path, params);
     },
 
     /**

@@ -30,26 +30,6 @@ describe('fist/track/Connect', function () {
         });
     });
 
-    describe('.arg', function () {
-        it('Should return request argument value', function (done) {
-            doConnect({
-                path: '/',
-                query: {
-                    a: '5'
-                }
-            }, function (track, req, res) {
-                assert.strictEqual(track.arg('a'), '5');
-                assert.isUndefined(track.arg('a', true));
-                track.match.a = '6';
-                assert.strictEqual(track.arg('a'), '6');
-                res.end();
-            }, function (err) {
-                assert.ok(!err);
-                done();
-            });
-        });
-    });
-
     describe('.buildPath', function () {
         it('Should build route url', function (done) {
             var tracker = /** @type Framework */ doConnect({

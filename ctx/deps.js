@@ -6,13 +6,13 @@ var ns = require('../util/ns');
 var vow = require('vow');
 
 /**
- * @class Ctx
+ * @class Deps
  * */
-var Ctx = inherit(/** @lends Ctx.prototype */ {
+var Deps = inherit(/** @lends Deps.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {Track} track
@@ -25,7 +25,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
         /**
          * @public
-         * @memberOf {Ctx}
+         * @memberOf {Deps}
          * @property
          * @type {Object}
          * */
@@ -33,7 +33,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
         /**
          * @public
-         * @memberOf {Ctx}
+         * @memberOf {Deps}
          * @property
          * @type {Object}
          * */
@@ -41,7 +41,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
         /**
          * @public
-         * @memberOf {Ctx}
+         * @memberOf {Deps}
          * @property
          * @type {Object}
          * */
@@ -49,7 +49,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
         /**
          * @public
-         * @memberOf {Ctx}
+         * @memberOf {Deps}
          * @property
          * @type {Track}
          * */
@@ -57,7 +57,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
         /**
          * @private
-         * @memberOf {Ctx}
+         * @memberOf {Deps}
          * @property
          * @type {String}
          * */
@@ -65,7 +65,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
         /**
          * @private
-         * @memberOf {Ctx}
+         * @memberOf {Deps}
          * @property
          * @type {Date}
          * */
@@ -75,7 +75,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
     /**
      * @public
      * @static
-     * @memberOf Ctx.prototype
+     * @memberOf Deps.prototype
      * @property
      * @type {Object}
      * */
@@ -83,7 +83,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {Array<String>} deps
@@ -98,7 +98,21 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
+     * @method
+     *
+     * @param {String} name
+     *
+     * @returns {*}
+     * */
+    arg: function (name) {
+
+        return this.params[name];
+    },
+
+    /**
+     * @public
+     * @memberOf {Deps}
      * @method
      *
      * @param {String} path
@@ -112,7 +126,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {String} path
@@ -126,7 +140,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {*} data
@@ -138,7 +152,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {String} event
@@ -155,7 +169,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {String} path
@@ -168,7 +182,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @public
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {String} path
@@ -181,7 +195,7 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
     /**
      * @private
-     * @memberOf {Ctx}
+     * @memberOf {Deps}
      * @method
      *
      * @param {String} path
@@ -203,4 +217,4 @@ var Ctx = inherit(/** @lends Ctx.prototype */ {
 
 });
 
-module.exports = Ctx;
+module.exports = Deps;

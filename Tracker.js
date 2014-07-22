@@ -1,7 +1,7 @@
 'use strict';
 
 var Agent = /** @type Agent */ require('./Agent');
-var Ctx = /** @type Ctx */ require('./ctx/Ctx');
+var Deps = /** @type Deps */ require('./ctx/deps');
 var Skip = /** @type Skip */ require('./util/skip');
 
 var _ = require('lodash-node');
@@ -124,11 +124,11 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {String} path
      * @param {Object} params
      *
-     * @returns {Ctx}
+     * @returns {Deps}
      * */
     _createCtx: function (track, path, params) {
 
-        return new Ctx(track, path, params);
+        return new Deps(track, path, params);
     },
 
     /**

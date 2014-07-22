@@ -299,8 +299,8 @@ describe('fist/Framework', function () {
 
             tracker.unit({
                 path: 'control',
-                data: function (track) {
-                    assert.strictEqual(track.arg('page'), 'test');
+                data: function (track, ctx) {
+                    assert.strictEqual(ctx.arg('page'), 'test');
                     assert.strictEqual(track.url.path, '/test/?a=42');
 
                     return track.send(201);

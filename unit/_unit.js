@@ -80,7 +80,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {*}
      * */
@@ -108,7 +108,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {*}
      * */
@@ -149,7 +149,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @param {String} key
      * @param {*} value
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {*}
      * */
@@ -178,7 +178,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {Array<String>}
      * */
@@ -192,7 +192,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {*}
      * */
@@ -216,7 +216,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {vow.Promise}
      * */
@@ -236,7 +236,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {*}
      *
@@ -252,7 +252,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {String}
      * */
@@ -267,7 +267,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} key
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {vow.Promise}
      * */
@@ -297,7 +297,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} cacheKey
-     * @param {Ctx} ctx
+     * @param {Deps} ctx
      *
      * @returns {vow.Promise}
      * */
