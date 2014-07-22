@@ -2,7 +2,7 @@
 'use strict';
 
 var assert = require('chai').assert;
-var Framework = require('../Framework');
+var Server = require('../core/server');
 
 describe('fist', function () {
 
@@ -12,10 +12,10 @@ describe('fist', function () {
         assert.isFunction(fist);
     });
 
-    it('Should return a Framework instance', function () {
+    it('Should return a Server instance', function () {
         var app = fist({a: 42}, {test: 'str'}, {st: 0});
 
-        assert.instanceOf(app, Framework);
+        assert.instanceOf(app, Server);
         assert.property(app, 'params');
         assert.isObject(app.params);
         assert.strictEqual(app.params.a, 42);
