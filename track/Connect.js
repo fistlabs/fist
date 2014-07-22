@@ -92,7 +92,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     },
 
     /**
-     * Возвращает аргумент запроса из pathname или query
+     * @deprecated
      *
      * @public
      * @memberOf {Connect}
@@ -103,7 +103,12 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @returns {String|void}
      * */
-    arg: function (name, only) {
+    arg: /*istanbul ignore next */ function (name, only) {
+        this.agent.channel('sys.migration').
+            emit('deprecated', [
+                'track.arg(name, only)',
+                'ctx.arg(name)'
+            ]);
 
         var result = this.match[name];
 
