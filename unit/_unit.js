@@ -2,7 +2,7 @@
 
 var S_SEPARATOR = '\u0000';
 var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
-var Skip = /** @type Skip */ require('../util/skip');
+var Skip = /** @type Skip */ require('../skip/skip');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');

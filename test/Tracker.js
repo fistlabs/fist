@@ -347,7 +347,7 @@ describe('fist/Tracker', function () {
 
     describe('skip resolving', function () {
 
-        var Skip = require('../util/skip');
+        var Skip = require('../skip/skip');
 
         it('Should skip resolving by returning ' +
             '{Skip}', function (done) {

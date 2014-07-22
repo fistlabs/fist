@@ -2,7 +2,7 @@
 
 var Agent = /** @type Agent */ require('./Agent');
 var Deps = /** @type Deps */ require('./ctx/deps');
-var Skip = /** @type Skip */ require('./util/skip');
+var Skip = /** @type Skip */ require('./skip/skip');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
