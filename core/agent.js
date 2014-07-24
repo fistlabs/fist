@@ -1,8 +1,8 @@
 'use strict';
 
-var BaseUnit = /** @type Unit */ require('./unit');
 var Cache = /** @type Cache */ require('./cache/cache');
 var Channel = /** @type Channel */ require('./channel');
+var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -81,7 +81,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * */
     getUnit: function (path) {
 
-        return (this.units[path] || [])[1];
+        return this.units[path];
     },
 
     /**
@@ -134,6 +134,18 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
+     * @returns {Function}
+     * */
+    _getBaseUnitClass: function () {
+
+        return Unit;
+    },
+
+    /**
+     * @protected
+     * @memberOf {Agent}
+     * @method
+     *
      * @param {Object} params
      *
      * @returns {Cache}
@@ -176,14 +188,15 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * */
     __createUnits: function (decls) {
 
+        var classes = {
+            _unit: this._getBaseUnitClass()
+        };
         var conflicts;
         var remaining = decls.length;
-        var units = {
-            _unit: BaseUnit
-        };
+        var units;
 
         while ( _.size(decls) ) {
-            decls = this.__addUnits(decls, units);
+            decls = this.__addUnitClasses(decls, classes);
 
             if ( _.size(decls) < remaining ) {
                 remaining = decls.length;
@@ -195,10 +208,10 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
                 _.map(decls, formatBaseConflictDetails).join(', '));
         }
 
-        units = _.reduce(units, function (units, Unit, path) {
+        units = _.reduce(classes, function (units, Unit, path) {
 
             if ( /^[a-z]/i.test(path) ) {
-                units[path] = [Unit, new Unit(this.params)];
+                units[path] = new Unit(this.params);
             }
 
             return units;
@@ -222,20 +235,18 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @method
      *
      * @param {Array} decls
-     * @param {Object} units
+     * @param {Object} classes
      *
      * @returns {Array}
      * */
-    __addUnits: function (decls, units) {
+    __addUnitClasses: function (decls, classes) {
 
         return _.reduce(decls, function (decls, decl) {
 
-            var Unit;
             var base;
             var members = decl[0];
             var unit;
 
-            //  Если не передали base, то сами добьем
             if ( _.has(members, 'base') ) {
                 base = members.base;
 
@@ -249,10 +260,9 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
             unit = base[0];
 
-            if ( _.has(units, unit) ) {
-                base = [units[unit]].concat(_.rest(base, 1));
-                Unit = /** @type Unit */ inherit(base, members, decl[1]);
-                units[members.path] = Unit;
+            if ( _.has(classes, unit) ) {
+                base = [classes[unit]].concat(_.rest(base, 1));
+                classes[members.path] = inherit(base, members, decl[1]);
 
                 return decls;
             }
@@ -319,7 +329,7 @@ function findConflicts (part, units, path, found4) {
         return paths;
     }
 
-    deps = decl[1].deps;
+    deps = decl.deps;
 
     if ( !_.size(deps) ) {
 
@@ -357,7 +367,7 @@ function findConflicts (part, units, path, found4) {
  * */
 function formatBaseConflictDetails (decl) {
 
-    return decl[0].path + ' (needs ' + decl[0].base + ')';
+    return decl[0].path + ' (required "' + decl[0].base + '")';
 }
 
 /**

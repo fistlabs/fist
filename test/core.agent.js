@@ -49,13 +49,15 @@ describe('core/agent', function () {
         });
 
         agent.unit({
-            path: 'b'
+            path: 'b',
+            x: 42
         });
 
         agent.ready().then(function () {
             assert.instanceOf(agent.getUnit('a'), Unit);
             assert.instanceOf(agent.getUnit('b'), Unit);
-            assert.instanceOf(agent.getUnit('a'), agent.units.b[0]);
+            assert.strictEqual(agent.getUnit('b').x, 42);
+            assert.strictEqual(agent.getUnit('a').x, 42);
             done();
         }).done();
     });
