@@ -51,7 +51,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @method
      * */
     plug: function () {
-        Array.prototype.push.apply(this.__plugs, _.flatten(arguments));
+        this.__plugs = this.__plugs.concat(_.flatten(arguments));
 
         return this;
     },
@@ -109,9 +109,38 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     _getReady: function () {
-        var plugins = _.map(this.__plugs, this.__invokePlugin, this);
 
-        return vow.all(plugins).then(this.__base, this);
+        var promise = vow.resolve();
+
+        _.forEach(this.__plugs, function (func) {
+            promise = promise.then(function () {
+
+                var defer;
+
+                if ( 0 === func.length ) {
+
+                    return func.call(this);
+                }
+
+                defer = vow.defer();
+
+                func.call(this, function (err) {
+
+                    if ( arguments.length ) {
+                        defer.reject(err);
+
+                        return;
+                    }
+
+                    defer.resolve();
+                });
+
+                return defer.promise();
+
+            }, this);
+        }, this);
+
+        return promise.then(this.__base, this);
     },
 
     /**
@@ -173,20 +202,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Function} func
-     *
-     * @returns {vow.Promise}
-     * */
-    __invokePlugin: function (func) {
-
-        return vow.invoke(this.__wrapPlugin(func));
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
      * @param {Track} track
      * @param {String} path
      * @param {Object} [params]
@@ -200,46 +215,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }
 
         return track.tasks[path];
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Function} func
-     *
-     * @returns {Function}
-     * */
-    __wrapPlugin: function (func) {
-
-        var self = this;
-
-        if ( !func.length ) {
-
-            return function () {
-
-                return func.call(self);
-            };
-        }
-
-        return function () {
-
-            var defer = vow.defer();
-
-            func.call(self, function (err) {
-
-                if ( arguments.length ) {
-                    defer.reject(err);
-
-                    return;
-                }
-
-                defer.resolve();
-            });
-
-            return defer.promise();
-        };
     }
 
 });
