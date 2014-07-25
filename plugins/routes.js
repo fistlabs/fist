@@ -16,7 +16,7 @@ function exists (module) {
     }
 }
 
-module.exports = function (done) {
+module.exports = function () {
 
     var routes = this.params.routes;
 
@@ -42,6 +42,4 @@ module.exports = function (done) {
     _.forEach(routes, function (desc) {
         this.route(desc.pattern, desc);
     }, this);
-
-    done();
 };

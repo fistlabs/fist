@@ -173,13 +173,13 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Function} plug
+     * @param {Function} func
      *
      * @returns {vow.Promise}
      * */
-    __invokePlugin: function (plug) {
+    __invokePlugin: function (func) {
 
-        return vow.invoke(this.__wrapPlugin(plug));
+        return vow.invoke(this.__wrapPlugin(func));
     },
 
     /**
@@ -214,6 +214,14 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
     __wrapPlugin: function (func) {
 
         var self = this;
+
+        if ( !func.length ) {
+
+            return function () {
+
+                return func.call(self);
+            };
+        }
 
         return function () {
 
