@@ -25,9 +25,9 @@ describe('units/_serial', function () {
 
                 return 40;
             },
-            _$b: function (track, ctx) {
+            _$b: function (context) {
 
-                return ctx.data + 2;
+                return context.data + 2;
             }
         });
 
@@ -146,9 +146,9 @@ describe('units/_serial', function () {
 
                 return skip;
             },
-            _$b: function (track, ctx) {
+            _$b: function (context) {
 
-                return ctx.data + 2;
+                return context.data + 2;
             }
         });
 

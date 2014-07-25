@@ -65,9 +65,9 @@ describe('core/server', function () {
 
         server.unit({
             path: 'index',
-            data: function (track) {
+            data: function (context) {
 
-                return track.send(201);
+                return context.track.send(201);
             }
         });
 
@@ -101,9 +101,9 @@ describe('core/server', function () {
 
         server.unit({
             path: 'index',
-            data: function (track) {
+            data: function (context) {
 
-                return track.send(201);
+                return context.track.send(201);
             }
         });
 
@@ -245,19 +245,19 @@ describe('core/server', function () {
 
         server.unit({
             path: 'preset',
-            data: function (track) {
-                track.url.query.role = 'admin';
+            data: function (context) {
+                context.track.url.query.role = 'admin';
             }
         });
 
         server.unit({
             path: 'index',
-            data: function (track) {
-                assert.deepEqual(track.url.query, {
+            data: function (context) {
+                assert.deepEqual(context.track.url.query, {
                     role: 'admin'
                 });
 
-                return track.send(201);
+                return context.track.send(201);
             }
         });
 
@@ -288,9 +288,9 @@ describe('core/server', function () {
 
             server.unit({
                 path: 'rewrite',
-                data: function (track) {
+                data: function (context) {
 
-                    return track.rewrite('/<page>/', {
+                    return context.track.rewrite('/<page>/', {
                         page: 'test',
                         a: 42
                     });
@@ -299,11 +299,11 @@ describe('core/server', function () {
 
             server.unit({
                 path: 'control',
-                data: function (track, ctx) {
-                    assert.strictEqual(ctx.arg('page'), 'test');
-                    assert.strictEqual(track.url.path, '/test/?a=42');
+                data: function (context) {
+                    assert.strictEqual(context.arg('page'), 'test');
+                    assert.strictEqual(context.track.url.path, '/test/?a=42');
 
-                    return track.send(201);
+                    return context.track.send(201);
                 }
             });
 

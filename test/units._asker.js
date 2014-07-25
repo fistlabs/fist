@@ -5,8 +5,16 @@ var _ = require('lodash-node');
 var assert = require('chai').assert;
 var asker = require('asker');
 var fist = require('../fist');
+var inherit = require('inherit');
 var sock = require('./util/sock');
-var Fs = require('fs');
+var fs = require('fs');
+
+var Unit = inherit(require('../core/unit'), {
+    _callMethod: function (name, context) {
+
+        return this[name](context);
+    }
+});
 
 describe('units/_asker', function () {
 
@@ -23,24 +31,26 @@ describe('units/_asker', function () {
                     name: 'back'
                 }
             ]
+        }, null, {
+            Unit: Unit
         });
 
         app.unit({
             path: 'front',
             deps: ['model'],
-            data: function (track, ctx) {
-                assert.ok(!ctx.ers.model);
+            data: function (context) {
+                assert.ok(!context.getErr('model'));
 
-                return track.send(ctx.res.model);
+                return context.track.send(context.getRes('model'));
             }
         });
 
         app.unit({
             path: 'model',
             base: '_asker',
-            _$options: function (track, ctx) {
+            _$options: function (context) {
 
-                return _.extend(this.__base(track, ctx), {
+                return _.extend(this.__base(context), {
                     path: '/backend/',
                     socketPath: sock
                 });
@@ -49,14 +59,14 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'back',
-            data: function (track) {
+            data: function (context) {
 
-                return track.send({x: 42});
+                return context.track.send({x: 42});
             }
         });
 
         try {
-            Fs.unlinkSync(sock);
+            fs.unlinkSync(sock);
         } catch (err) {}
 
         app.listen(sock);
@@ -84,24 +94,26 @@ describe('units/_asker', function () {
                     name: 'back'
                 }
             ]
+        }, null, {
+            Unit: Unit
         });
 
         app.unit({
             path: 'front',
             deps: ['model'],
-            data: function (track, ctx) {
-                assert.ok(!ctx.ers.model);
+            data: function (context) {
+                assert.ok(!context.getErr('model'));
 
-                return track.send(ctx.res.model);
+                return context.track.send(context.getRes('model'));
             }
         });
 
         app.unit({
             path: 'model',
             base: '_asker',
-            _$options: function (track, ctx) {
+            _$options: function (context) {
 
-                return _.extend(this.__base(track, ctx), {
+                return _.extend(this.__base(context), {
                     path: '/<token>/',
                     socketPath: sock,
                     vars: {
@@ -113,14 +125,14 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'back',
-            data: function (track) {
+            data: function (context) {
 
-                return track.send({x: 42});
+                return context.track.send({x: 42});
             }
         });
 
         try {
-            Fs.unlinkSync(sock);
+            fs.unlinkSync(sock);
         } catch (err) {}
 
         app.listen(sock);
@@ -144,14 +156,16 @@ describe('units/_asker', function () {
                     name: 'front'
                 }
             ]
+        }, null, {
+            Unit: Unit
         });
 
         app.unit({
             path: 'front',
             deps: ['model'],
-            data: function (track, ctx) {
+            data: function (context) {
 
-                return track.send(ctx.ers.model);
+                return context.track.send(context.getErr('model'));
             }
         });
 
@@ -165,7 +179,7 @@ describe('units/_asker', function () {
         });
 
         try {
-            Fs.unlinkSync(sock);
+            fs.unlinkSync(sock);
         } catch (err) {}
 
         app.listen(sock);
@@ -196,14 +210,16 @@ describe('units/_asker', function () {
                     name: 'front'
                 }
             ]
+        }, null, {
+            Unit: Unit
         });
 
         app.unit({
             path: 'front',
             deps: ['model'],
-            data: function (track, ctx) {
+            data: function (context) {
 
-                return track.send(ctx.ers.model);
+                return context.track.send(context.getErr('model'));
             }
         });
 
@@ -217,7 +233,7 @@ describe('units/_asker', function () {
         });
 
         try {
-            Fs.unlinkSync(sock);
+            fs.unlinkSync(sock);
         } catch (err) {}
 
         app.listen(sock);
@@ -248,15 +264,18 @@ describe('units/_asker', function () {
                     name: 'front'
                 }
             ]
+        }, null, {
+            Unit: Unit
         });
 
         app.unit({
             path: 'front',
             deps: ['model'],
-            data: function (track, ctx) {
-                assert.ok(ctx.ers.model);
+            data: function (context) {
+                assert.ok(context.getErr('model'));
 
-                throw ctx.ers.model;
+//                console.log(context.getErr('model'));
+                throw context.getErr('model');
             }
         });
 
@@ -273,7 +292,7 @@ describe('units/_asker', function () {
         });
 
         try {
-            Fs.unlinkSync(sock);
+            fs.unlinkSync(sock);
         } catch (err) {}
 
         app.listen(sock);

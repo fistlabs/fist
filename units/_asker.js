@@ -25,9 +25,9 @@ module.exports = {
         return {};
     },
 
-    _$prepare: function (track, ctx) {
+    _$prepare: function (context) {
 
-        var data = Object(ctx.data);
+        var data = Object(context.data);
 
         if ( _.isString(data.path) ) {
             data.path = Pattern.buildPath(data.path, data.vars);
@@ -36,11 +36,11 @@ module.exports = {
         return data;
     },
 
-    _$request: function (track, ctx) {
+    _$request: function (context) {
 
         var defer = vow.defer();
 
-        asker(ctx.data, function (err, res) {
+        asker(context.data, function (err, res) {
 
             if ( err ) {
                 defer.reject(err);
@@ -53,15 +53,15 @@ module.exports = {
         return defer.promise();
     },
 
-    _$compile: function (track, ctx) {
-        ctx.data.data = JSON.parse(ctx.data.data);
+    _$compile: function (context) {
+        context.data.data = JSON.parse(context.data.data);
 
-        return ctx.data;
+        return context.data;
     },
 
-    _$resolve: function (track, ctx) {
+    _$resolve: function (context) {
 
-        return ctx.data.data;
+        return context.data.data;
     }
 
 };

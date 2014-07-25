@@ -81,8 +81,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b'],
-                data: function (track, ctx) {
-                    assert.strictEqual(ctx.res.b, 'b');
+                data: function (context) {
+                    assert.strictEqual(context.getRes('b'), 'b');
 
                     return 'a';
                 }
@@ -107,8 +107,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b'],
-                data: function (track, ctx) {
-                    assert.isUndefined(ctx.ers.b);
+                data: function (context) {
+                    assert.isUndefined(context.getErr('b'));
 
                     return 'a';
                 }
@@ -128,8 +128,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['c'],
-                data: function (track, deps) {
-                    assert.strictEqual(deps.res.c, 'c');
+                data: function (context) {
+                    assert.strictEqual(context.getRes('c'), 'c');
 
                     return 'a';
                 }
@@ -138,8 +138,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'b',
                 deps: ['c'],
-                data: function (track, deps) {
-                    assert.strictEqual(deps.res.c, 'c');
+                data: function (context) {
+                    assert.strictEqual(context.getRes('c'), 'c');
 
                     return 'b';
                 }
@@ -159,9 +159,9 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'x',
                 deps: ['a', 'b'],
-                data: function (track, deps) {
-                    assert.strictEqual(deps.res.a, 'a');
-                    assert.strictEqual(deps.res.b, 'b');
+                data: function (context) {
+                    assert.strictEqual(context.getRes('a'), 'a');
+                    assert.strictEqual(context.getRes('b'), 'b');
 
                     return 'x';
                 }
@@ -271,8 +271,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b', 'c'],
-                data: function (track, ctx) {
-                    ctx.notify('a');
+                data: function (context) {
+                    context.notify('a');
 
                     return 'a';
                 }
@@ -281,8 +281,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'b',
                 deps: ['c'],
-                data: function (track, ctx) {
-                    ctx.notify('b');
+                data: function (context) {
+                    context.notify('b');
 
                     throw 'b';
                 }
@@ -290,8 +290,8 @@ describe('core/tracker', function () {
 
             tracker.unit({
                 path: 'c',
-                data: function (track, ctx) {
-                    ctx.notify('c');
+                data: function (context) {
+                    context.notify('c');
 
                     return 'c';
                 }
