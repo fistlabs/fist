@@ -5,7 +5,7 @@ var Path = require('path');
 var Tracker = require('../core/tracker');
 var assert = require('chai').assert;
 
-describe('plugins/units', function () {
+describe.skip('plugins/units', function () {
     var plugUnits = require('../plugins/units');
 
     it('Should declare units', function (done) {

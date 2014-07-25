@@ -7,7 +7,7 @@ var assert = require('chai').assert;
 var path = require('path');
 var plugRoutes = require('../plugins/routes');
 
-describe('plugins/routes', function () {
+describe.skip('plugins/routes', function () {
 
     it('Should declare routes by array', function (done) {
         var server = new Server({

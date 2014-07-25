@@ -7,7 +7,7 @@ var vow = require('vow');
 var path = require('path');
 var Fs = require('fs');
 
-describe('core/util/globs', function () {
+describe.skip('core/util/globs', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
     var globs = require('../core/util/globs');
 
@@ -27,7 +27,9 @@ describe('core/util/globs', function () {
 
     describe('globs([])', function () {
         it('Should be resolved with an empty array', function (done) {
-            globs([]).then(function (list) {
+            globs([], {
+                cwd: process.cwd()
+            }).then(function (list) {
                 assert.isArray(list);
                 assert.deepEqual(list, []);
                 done();
@@ -59,8 +61,6 @@ describe('core/util/globs', function () {
             Fs.chmodSync('test/fixtures/globs/sub/sub', 438);
 
             globs(['test/fixtures/globs/sub/**/*.js'], {
-                stat: true,
-                strict: true,
                 silent: true
             }).done(null, function (err) {
                 assert.ok(err);

@@ -5,7 +5,9 @@ var Deps = /** @type Deps */ require('./deps/deps');
 var Skip = /** @type Skip */ require('./skip/skip');
 
 var _ = require('lodash-node');
+var glob = require('glob');
 var inherit = require('inherit');
+var reduce = require('./util/reduce');
 var vow = require('vow');
 
 /**
@@ -110,37 +112,8 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     _getReady: function () {
 
-        var promise = vow.resolve();
-
-        _.forEach(this.__plugs, function (func) {
-            promise = promise.then(function () {
-
-                var defer;
-
-                if ( 0 === func.length ) {
-
-                    return func.call(this);
-                }
-
-                defer = vow.defer();
-
-                func.call(this, function (err) {
-
-                    if ( arguments.length ) {
-                        defer.reject(err);
-
-                        return;
-                    }
-
-                    defer.resolve();
-                });
-
-                return defer.promise();
-
-            }, this);
-        }, this);
-
-        return promise.then(this.__base, this);
+        return reduce(this.__plugs, this.__pluginReducer, [], this).
+            then(this.__callPlugins, this).then(this.__base, this);
     },
 
     /**
@@ -195,6 +168,83 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         });
 
         return exec.promise();
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Array<Function>} funcs
+     *
+     * @returns {*}
+     * */
+    __callPlugins: function (funcs) {
+
+        return _.reduce(funcs, function (promise, func) {
+
+            return promise.then(function () {
+
+                var defer;
+
+                if ( !func.length ) {
+
+                    return func.call(this);
+                }
+
+                defer = vow.defer();
+
+                func.call(this, function (err) {
+
+                    if ( arguments.length ) {
+                        defer.reject(err);
+
+                        return;
+                    }
+
+                    defer.resolve();
+                });
+
+                return defer.promise();
+            }, this);
+        }, vow.resolve(), this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Array<Function>} funcs
+     * @param {Function|String} func
+     *
+     * @returns {*}
+     * */
+    __pluginReducer: function (funcs, func) {
+
+        var defer;
+
+        if ( _.isFunction(func) ) {
+
+            return funcs.concat(func);
+        }
+
+        defer = vow.defer();
+
+        glob(func, {silent: true}, function (err, func) {
+
+            if ( 2 > arguments.length ) {
+                defer.reject(err);
+
+                return;
+            }
+
+            func = _.map(func, require);
+
+            defer.resolve(funcs.concat(func));
+        });
+
+        return defer.promise();
     },
 
     /**

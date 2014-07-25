@@ -6,6 +6,7 @@ var path = require('path');
 var vow = require('vow');
 var processCwd = process.cwd();
 
+/*istanbul ignore next */
 function singleGlob (expr, opts) {
 
     var defer = vow.defer();
@@ -30,6 +31,7 @@ function singleGlob (expr, opts) {
  *
  * @returns {vow.Promise}
  * */
+/*istanbul ignore next */
 function globs (globs, opts) {
 
     var cwd;

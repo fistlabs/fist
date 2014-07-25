@@ -68,8 +68,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             var track = self._createTrack(req, res);
 
             self.emit('sys:request', track);
+            self.ready().then(function () {
 
-            self.__next(track).done(function (resp) {
+                return self.__next(track);
+            }, function (err) {
+
+                return track.send(500, err);
+            }).done(function (resp) {
                 Response.end(res, resp);
                 track.time = new Date() - date;
                 self.emit('sys:response', track);

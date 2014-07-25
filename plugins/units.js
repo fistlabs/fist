@@ -2,15 +2,22 @@
 
 var _ = require('lodash-node');
 var globs = require('../core/util/globs');
-var path = require('path');
 
+/*istanbul ignore next */
 function plugUnits (done) {
 
     var units = this.params.units;
 
     if ( _.isUndefined(units) || _.isNull(units) ) {
-        units = 'units/**/*.js';
+        done();
+
+        return;
     }
+
+    this.channel('sys.migration').emit('deprecated', [
+        'params.units',
+        'plugin features as app.plug(\./units/**/*.js\')'
+    ]);
 
     units = plugUnits.unshiftPatterns.concat(units);
 
@@ -32,8 +39,6 @@ function plugUnits (done) {
     }, done, this);
 }
 
-plugUnits.unshiftPatterns = [
-    path.join(__dirname, '..', 'units', '**', '*.js')
-];
+plugUnits.unshiftPatterns = [];
 
 module.exports = plugUnits;

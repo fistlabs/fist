@@ -8,14 +8,14 @@ describe('units/_serial', function () {
 
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
-    var _serial = require('../units/_serial');
+    var _serial = require('../plugins/units/_serial');
 
     it('Should be resolved after a and b steps', function (done) {
         var tracker = new Tracker();
         var track = new Track(tracker);
         var spy = [];
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -51,7 +51,7 @@ describe('units/_serial', function () {
         var track = new Track(tracker);
         var spy = [];
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -91,7 +91,7 @@ describe('units/_serial', function () {
         var track = new Track(tracker);
         var spy = [];
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -136,7 +136,7 @@ describe('units/_serial', function () {
         var spy = [];
         var skip = new Skip();
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',

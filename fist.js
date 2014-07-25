@@ -30,21 +30,18 @@ var Unit = inherit(require('./core/unit'), {
  * @returns {Server}
  * */
 function fist (params, members, statics) {
-    var Fist = inherit(Server, members, _.extend({
-        //  FIXME костыль который позволяет использовать
-        //  старый интерфейс узлов
-        Unit: Unit
-    }, statics));
-    var app = new Fist(_.extend({cwd: dirname}, params));
+    var Fist = fist.inherit(members, statics);
 
-    app.plug(fist.defaultPlugins);
+    params = _.extend({cwd: dirname}, params);
 
-    return app;
+    return new Fist(params).
+        plug(path.join(__dirname, 'plugins', '**', '*.js'));
 }
 
-fist.defaultPlugins = [
-    require('./plugins/routes'),
-    require('./plugins/units')
-];
+fist.inherit = function (members, statics) {
+    statics = _.extend({Unit: Unit}, statics);
+
+    return inherit(Server, members, statics);
+};
 
 module.exports = fist;

@@ -1,6 +1,7 @@
 /*global describe, it*/
 'use strict';
 
+var fs = require('fs');
 var assert = require('chai').assert;
 
 describe('core/tracker', function () {
@@ -34,7 +35,7 @@ describe('core/tracker', function () {
             });
         });
 
-        it('Should be rejected coz init failed', function (done) {
+        it('Should be rejected coz init failed (0)', function (done) {
 
             var tracker = new Tracker();
             var track = new Track(tracker);
@@ -60,6 +61,27 @@ describe('core/tracker', function () {
                 });
             });
 
+        });
+
+        it('Should be rejected coz init failed (1)', function (done) {
+
+            var tracker = new Tracker();
+
+            tracker.plug('test/fixtures/globs/sub/**/*.js');
+
+            fs.mkdirSync('test/fixtures/globs/sub');
+            fs.symlinkSync('.', 'test/fixtures/globs/sub/sub');
+            fs.chmodSync('test/fixtures/globs/sub/sub', 438);
+
+            tracker.ready().fail(function (err) {
+                assert.ok(err);
+
+                fs.chmodSync('test/fixtures/globs/sub', 511);
+                fs.unlinkSync('test/fixtures/globs/sub/sub');
+                fs.rmdirSync('test/fixtures/globs/sub');
+
+                done();
+            });
         });
 
         it('Should reject undefined unit', function (done) {

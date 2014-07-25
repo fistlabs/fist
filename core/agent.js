@@ -151,15 +151,12 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * */
     _getReady: function () {
 
-        var defer = vow.defer();
         var self = this;
 
-        defer.resolve(vow.invoke(function () {
+        return vow.invoke(function () {
 
             return self.__createUnits(self.__decls);
-        }));
-
-        return defer.promise().then(function (units) {
+        }).then(function (units) {
             this.units = units;
         }, this);
     },
