@@ -2,7 +2,6 @@
 
 var Cache = /** @type Cache */ require('./cache/cache');
 var Channel = /** @type Channel */ require('./channel');
-var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -134,18 +133,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
-     * @returns {Function}
-     * */
-    _getBaseUnitClass: function () {
-
-        return Unit;
-    },
-
-    /**
-     * @protected
-     * @memberOf {Agent}
-     * @method
-     *
      * @param {Object} params
      *
      * @returns {Cache}
@@ -189,7 +176,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     __createUnits: function (decls) {
 
         var classes = {
-            _unit: this._getBaseUnitClass()
+            _unit: this.__self.Unit
         };
         var conflicts;
         var remaining = decls.length;
@@ -272,6 +259,17 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             return decls;
         }, [], this);
     }
+
+}, {
+
+    /**
+     * @public
+     * @static
+     * @memberOf Agent
+     * @property
+     * @type {Function}
+     * */
+    Unit: require('./unit')
 
 });
 

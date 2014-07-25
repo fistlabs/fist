@@ -79,12 +79,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {*}
      * */
-    data: /* istanbul ignore next */ function (track, ctx) {
+    data: /* istanbul ignore next */ function (context) {
         /*eslint no-unused-vars: 0*/
     },
 
@@ -108,22 +107,22 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {*}
      * */
-    getValue: function (ctx) {
+    getValue: function (context) {
 
         var key;
 
         if ( 0 >= this._maxAge ) {
 
-            return this.__call(ctx);
+            return this.__call(context);
         }
 
-        key = this.__getCacheKey(ctx);
+        key = this.__getCacheKey(context);
 
-        return this.__callThroughCache(key, ctx).then(function (value) {
+        return this.__callThroughCache(key, context).then(function (value) {
 
             var data = value.data;
 
@@ -136,7 +135,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             //  только что загружено
             delete value.fresh;
 
-            this.__setCache(key, value, ctx).fail(ctx.notify, ctx);
+            this.__setCache(key, value, context).fail(context.notify, context);
 
             return data;
         }, this);
@@ -149,16 +148,16 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @param {String} key
      * @param {*} value
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {*}
      * */
-    __setCache: function (key, value, ctx) {
+    __setCache: function (key, value, context) {
 
         var defer = vow.defer();
 
         //  если запрос выполнен успешно то сохраняем в кэш
-        ctx.track.agent.cache.set(key, value, this._maxAge, function (err) {
+        context.track.agent.cache.set(key, value, this._maxAge, function (err) {
 
             if ( err ) {
                 defer.reject(err);
@@ -177,12 +176,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Track} track
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {Array<String>}
      * */
-    _getCacheKeyParts: function (track, ctx) {
+    _getCacheKeyParts: function (context) {
         /*eslint no-unused-vars: 0*/
         return [];
     },
@@ -192,11 +190,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {*}
      * */
-    __call: function (ctx) {
+    __call: function (context) {
 
         var self = this;
 
@@ -204,7 +202,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
             return vow.invoke(function () {
 
-                return self._callData(ctx);
+                return self._callMethod('data', context);
             });
         }
 
@@ -216,13 +214,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {vow.Promise}
      * */
-    __callAndWrap: function (ctx) {
+    __callAndWrap: function (context) {
 
-        return this.__call(ctx).then(function (data) {
+        return this.__call(context).then(function (data) {
 
             return {
                 data: data,
@@ -236,15 +234,16 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} ctx
+     * @param {String} name
+     * @param {Deps} context
      *
      * @returns {*}
      *
      * @throws {*}
      * */
-    _callData: function (ctx) {
+    _callMethod: function (name, context) {
 
-        return this.data(ctx.track, ctx);
+        return this[name](context);
     },
 
     /**
@@ -252,13 +251,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {String}
      * */
-    __getCacheKey: function (ctx) {
+    __getCacheKey: function (context) {
 
-        return this._getCacheKeyParts(ctx.track, ctx).join(S_SEPARATOR);
+        return this._callMethod('_getCacheKeyParts', context).join(S_SEPARATOR);
     },
 
     /**
@@ -267,27 +266,27 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} key
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {vow.Promise}
      * */
-    __callThroughCache: function (key, ctx) {
+    __callThroughCache: function (key, context) {
 
-        return this.__getCache(key, ctx).then(function (res) {
+        return this.__getCache(key, context).then(function (res) {
 
             if ( _.isObject(res) ) {
-                ctx.trigger('ctx:cache', res.data);
+                context.trigger('ctx:cache', res.data);
 
                 return res;
             }
 
-            return this.__callAndWrap(ctx);
+            return this.__callAndWrap(context);
 
         }, function (err) {
             //  ошибка забора из кэша
-            ctx.notify(err);
+            context.notify(err);
 
-            return this.__callAndWrap(ctx);
+            return this.__callAndWrap(context);
         }, this);
     },
 
@@ -297,15 +296,15 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} cacheKey
-     * @param {Deps} ctx
+     * @param {Deps} context
      *
      * @returns {vow.Promise}
      * */
-    __getCache: function (cacheKey, ctx) {
+    __getCache: function (cacheKey, context) {
 
         var defer = vow.defer();
 
-        ctx.track.agent.cache.get(cacheKey, function (err, res) {
+        context.track.agent.cache.get(cacheKey, function (err, res) {
 
             if ( err ) {
                 defer.reject(err);

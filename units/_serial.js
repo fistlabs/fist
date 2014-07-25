@@ -12,36 +12,34 @@ module.exports = {
 
     path: '_serial',
 
-    data: function (track, deps) {
+    data: function (context) {
 
-        return this.__next(track, deps, new Deque(this._steps), false);
+        return this.__next(context, new Deque(this._steps), false);
     },
 
     _steps: [],
 
-    __next: function (track, ctx, steps, isError) {
+    __next: function (context, steps, isError) {
 
-        var func;
         var name;
         var self = this;
 
-        if ( steps.isEmpty() || ctx.data instanceof Skip ) {
+        if ( steps.isEmpty() || context.data instanceof Skip ) {
 
-            return ctx.data;
+            return context.data;
         }
 
         name = steps.shift();
-        ctx.trigger('ctx:' + name, ctx.data);
-        func = this['_$' + name];
+        context.trigger('ctx:' + name, context.data);
 
-        if ( isError && !_.isFunction(func) ) {
+        if ( isError && !_.isFunction(this['_$' + name]) ) {
 
-            return vow.reject(ctx.data);
+            return vow.reject(context.data);
         }
 
         return vow.invoke(function () {
 
-            return func.call(self, track, ctx);
+            return self._callMethod('_$' + name, context);
         }).always(function (promise) {
 
             if ( isError ) {
@@ -49,14 +47,14 @@ module.exports = {
                 return promise;
             }
 
-            ctx.data = promise.valueOf();
+            context.data = promise.valueOf();
             isError = promise.isRejected();
 
             if ( isError ) {
                 steps = new Deque(['e' + name]);
             }
 
-            return this.__next(track, ctx, steps, isError);
+            return this.__next(context, steps, isError);
         }, this);
     }
 
