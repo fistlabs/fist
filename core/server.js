@@ -73,7 +73,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
                 return self.__next(track);
             }, function (err) {
 
-                return track.send(500, err);
+                return track.res.respond(500, err);
             }).done(function (resp) {
                 Response.end(res, resp);
                 track.time = new Date() - date;
@@ -186,7 +186,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         if ( _.isNull(result) ) {
             this.emit('sys:ematch', track);
             //  Not Found
-            return track.send(404);
+            return track.res.respond(404);
         }
 
         //  возвращен массив
@@ -198,7 +198,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             //  маршрута отвечающего по такому методу запроса
             if ( 0 === _.size(result) ) {
                 //  Not Implemented
-                return track.send(501);
+                return track.res.respond(501);
             }
 
             //  Иначе есть такие маршруты, но для них не
@@ -206,7 +206,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             track.header('Allow', result.join(', '));
 
             //  Method Not Allowed
-            return track.send(405);
+            return track.res.respond(405);
         }
 
         track.match = result.match;
@@ -231,7 +231,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
                 return this.__next(track);
             }, function (err) {
 
-                return track.send(500, err);
+                return track.res.respond(500, err);
             }, this);
     },
 

@@ -136,7 +136,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             return this.req.getBody();
         }
 
-        return this.send(body);
+        return this.res.respond(void 0, body);
     },
 
     /**
