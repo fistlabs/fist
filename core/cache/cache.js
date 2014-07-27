@@ -19,7 +19,6 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
      * @param {Object} [params]
      * */
     __constructor: function (params) {
-
         params = _.extend({}, this.params, params, {
             maxAge: Infinity
         });
@@ -56,7 +55,6 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
      * @param {Function} done
      * */
     set: function (k, v, cacheMaxAge, done) {
-
         var lastUpdated = +new Date();
 
         cacheMaxAge = +cacheMaxAge;

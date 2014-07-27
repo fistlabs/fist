@@ -287,7 +287,6 @@ var Response = inherit(/** @lends Response.prototype */ {
      * @returns {*}
      * */
     __createByReadable: function (status, body) {
-
         var buf = [];
         var def = vow.defer();
 

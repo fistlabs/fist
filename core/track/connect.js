@@ -247,7 +247,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @param {Object} [opts]
      * */
     redirect: function (status, url, opts) {
-
         var parts;
 
         if ( _.isNumber(status) ) {

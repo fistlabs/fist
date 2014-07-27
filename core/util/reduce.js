@@ -3,7 +3,6 @@
 var vow = require('vow');
 
 module.exports = function (o, func, result, thisp) {
-
     var i = 0;
     var l = o.length;
 

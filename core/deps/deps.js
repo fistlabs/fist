@@ -203,7 +203,6 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @returns {vow.Promise}
      * */
     __resolveAndSet: function (path) {
-
         var promise = this.track.invoke(path, this.params);
 
         promise.done(function (data) {

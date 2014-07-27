@@ -26,7 +26,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {Object} [params]
      * */
     __constructor: function (params) {
-
         this.__base(params);
 
         /**
@@ -121,7 +120,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     __executeUnit: function (track, path, params) {
-
         var deps = this._createCtx(track, path, params);
         var exec = vow.defer();
         var unit = track.agent.getUnit(path);
@@ -147,7 +145,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }
 
         deps.append(unit.deps).done(function (promises) {
-
             var promise = _.find(promises, function (promise) {
 
                 return promise.valueOf() instanceof Skip;
@@ -177,7 +174,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         return _.reduce(funcs, function (promise, func) {
 
             return promise.then(function () {
-
                 var defer;
 
                 if ( !func.length ) {
@@ -214,7 +210,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {*}
      * */
     __pluginReducer: function (funcs, func) {
-
         var defer;
 
         if ( _.isFunction(func) ) {

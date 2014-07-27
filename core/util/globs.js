@@ -8,7 +8,6 @@ var processCwd = process.cwd();
 
 /*istanbul ignore next */
 function singleGlob (expr, opts) {
-
     var defer = vow.defer();
 
     glob(expr, opts, function (err, res) {
@@ -33,7 +32,6 @@ function singleGlob (expr, opts) {
  * */
 /*istanbul ignore next */
 function globs (globs, opts) {
-
     var cwd;
 
     if ( _.isUndefined(globs) || _.isNull(globs) ) {
@@ -51,7 +49,6 @@ function globs (globs, opts) {
     }
 
     return vow.invoke(function () {
-
         globs = _.map(globs, function (glob) {
             //  Резолвить нужно для того
             // чтобы можно было удалить дубликаты
@@ -61,7 +58,6 @@ function globs (globs, opts) {
         });
 
         return vow.all(globs).then(function (results) {
-
             results = _.reduce(results, function (results, result) {
 
                 return results.concat(result);

@@ -22,7 +22,6 @@ module.exports = function () {
         _steps: [],
 
         __next: function (context, steps, isError) {
-
             var name;
             var self = this;
 

@@ -59,11 +59,9 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {Function}
      * */
     getHandler: function () {
-
         var self = this;
 
         return function (req, res) {
-
             var date = new Date();
             var track = self._createTrack(req, res);
 
@@ -90,7 +88,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @method
      * */
     listen: function () {
-
         var server = http.createServer(this.getHandler());
 
         server.listen.apply(server, arguments);
@@ -114,7 +111,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {Server}
      * */
     route: function (pattern, data) {
-
         var route;
 
         if ( !_.isObject(data) ) {

@@ -28,7 +28,6 @@ module.exports = function () {
         },
 
         _$prepare: function (context) {
-
             var data = Object(context.data);
 
             if ( _.isString(data.path) ) {
@@ -39,7 +38,6 @@ module.exports = function () {
         },
 
         _$request: function (context) {
-
             var defer = vow.defer();
 
             asker(context.data, function (err, res) {

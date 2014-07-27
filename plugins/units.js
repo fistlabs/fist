@@ -5,7 +5,6 @@ var globs = require('../core/util/globs');
 
 /*istanbul ignore next */
 function plugUnits (done) {
-
     var units = this.params.units;
 
     if ( _.isUndefined(units) || _.isNull(units) ) {
@@ -16,7 +15,7 @@ function plugUnits (done) {
 
     this.channel('sys.migration').emit('deprecated', [
         'params.units',
-        'plugin features as app.plug(\./units/**/*.js\')'
+        'plugin features as app.plug(\'/units/**/*.js\')'
     ]);
 
     units = plugUnits.unshiftPatterns.concat(units);
@@ -26,7 +25,7 @@ function plugUnits (done) {
         return _.map(units, require);
     }).done(function (units) {
         _.forEach(units, function (exports) {
-            //  TODO deprecate this behavior
+
             if ( _.isArray(exports) ) {
                 this.unit(exports[0], exports[1]);
 

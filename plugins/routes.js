@@ -19,7 +19,6 @@ function exists (module) {
 
 /*istanbul ignore next */
 function plugRoutes () {
-
     var routes = this.params.routes;
 
     if ( _.isUndefined(routes) || _.isNull(routes) ) {
@@ -29,7 +28,7 @@ function plugRoutes () {
 
     this.channel('sys.migration').emit('deprecated', [
         'params.routes',
-        'plugin features as app.plug(\./path/to/router.js\')'
+        'plugin features as app.plug(\'/path/to/router.js\')'
     ]);
 
     if ( !_.isObject(routes) ) {
