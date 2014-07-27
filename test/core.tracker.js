@@ -29,33 +29,8 @@ describe('core/tracker', function () {
                 }
             });
 
-            tracker.resolve(track, 'a').done(function (res) {
-                assert.strictEqual(res, 42);
-                done();
-            });
-        });
-
-        it('Should be rejected coz init failed (0)', function (done) {
-
-            var tracker = new Tracker();
-            var track = new Track(tracker);
-
-            tracker.plug(function () {
-
-                throw 42;
-            });
-
-            tracker.unit({
-                path: 'a',
-                data: function () {
-
-                    return 42;
-                }
-            });
-
             tracker.ready().always(function () {
-
-                tracker.resolve(track, 'a').done(null, function (res) {
+                tracker.resolve(track, 'a').done(function (res) {
                     assert.strictEqual(res, 42);
                     done();
                 });
@@ -63,7 +38,7 @@ describe('core/tracker', function () {
 
         });
 
-        it('Should be rejected coz init failed (1)', function (done) {
+        it('Should fail on init', function (done) {
 
             var tracker = new Tracker();
 
@@ -89,13 +64,15 @@ describe('core/tracker', function () {
             var tracker = new Tracker();
             var track = new Track(tracker);
 
-            tracker.resolve(track, 'a').fail(function (err) {
-                assert.isUndefined(err);
-                done();
-            }).done();
+            tracker.ready().always(function () {
+                tracker.resolve(track, 'a').fail(function (err) {
+                    assert.isUndefined(err);
+                    done();
+                }).done();
+            });
         });
 
-        it('Should resolve unit deps before call', function (done) {
+        it('Should resolve unit deps before call (0)', function (done) {
 
             var tracker = new Tracker();
             var track = new Track(tracker);
@@ -115,13 +92,15 @@ describe('core/tracker', function () {
                 data: 'b'
             });
 
-            tracker.resolve(track, 'a').done(function (res) {
-                assert.strictEqual(res, 'a');
-                done();
+            tracker.ready().always(function () {
+                tracker.resolve(track, 'a').done(function (res) {
+                    assert.strictEqual(res, 'a');
+                    done();
+                });
             });
         });
 
-        it('Should resolve unit deps before call', function (done) {
+        it('Should resolve unit deps before call (1)', function (done) {
 
             var tracker = new Tracker();
             var track = new Track(tracker);
@@ -136,9 +115,11 @@ describe('core/tracker', function () {
                 }
             });
 
-            tracker.resolve(track, 'a').done(function (res) {
-                assert.strictEqual(res, 'a');
-                done();
+            tracker.ready().always(function () {
+                tracker.resolve(track, 'a').done(function (res) {
+                    assert.strictEqual(res, 'a');
+                    done();
+                });
             });
         });
 
@@ -189,11 +170,13 @@ describe('core/tracker', function () {
                 }
             });
 
-            tracker.resolve(track, 'x').done(function (res) {
-                assert.strictEqual(res, 'x');
-                assert.strictEqual(this.getUnit('c').i, 1);
-                done();
-            }, tracker);
+            tracker.ready().always(function () {
+                tracker.resolve(track, 'x').done(function (res) {
+                    assert.strictEqual(res, 'x');
+                    assert.strictEqual(this.getUnit('c').i, 1);
+                    done();
+                }, tracker);
+            });
         });
 
     });
@@ -319,21 +302,23 @@ describe('core/tracker', function () {
                 }
             });
 
-            tracker.resolve(track, 'a').done(function (res) {
-                assert.strictEqual(res, 'a');
-                assert.deepEqual(spy, [
-                    [-1, 'a'],
-                    [-1, 'b'],
-                    [-1, 'c'],
-                    [2, 'c'],
-                    [0, 'c'],
-                    [2, 'b'],
-                    [1, 'b'],
-                    [2, 'a'],
-                    [0, 'a']
-                ]);
+            tracker.ready().always(function () {
+                tracker.resolve(track, 'a').done(function (res) {
+                    assert.strictEqual(res, 'a');
+                    assert.deepEqual(spy, [
+                        [-1, 'a'],
+                        [-1, 'b'],
+                        [-1, 'c'],
+                        [2, 'c'],
+                        [0, 'c'],
+                        [2, 'b'],
+                        [1, 'b'],
+                        [2, 'a'],
+                        [0, 'a']
+                    ]);
 
-                done();
+                    done();
+                });
             });
         });
     });
@@ -374,9 +359,11 @@ describe('core/tracker', function () {
                 data: 'd'
             });
 
-            tracker.resolve(track, 'd').done(function (res) {
-                assert.strictEqual(res, skip);
-                done();
+            tracker.ready().always(function () {
+                tracker.resolve(track, 'd').done(function (res) {
+                    assert.strictEqual(res, skip);
+                    done();
+                });
             });
 
         });

@@ -73,18 +73,11 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     resolve: function (track, path, params) {
 
-        var ready = this.ready();
-
-//        -1 possible tick
-        if ( ready.isFulfilled() ) {
-
-            return this.__resolvePath(track, path, params);
+        if ( !_.has(track.tasks, path) ) {
+            track.tasks[path] = this.__executeUnit(track, path, params);
         }
 
-        return ready.then(function () {
-
-            return this.__resolvePath(track, path, params);
-        }, this);
+        return track.tasks[path];
     },
 
     /**
@@ -245,26 +238,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         });
 
         return defer.promise();
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {String} path
-     * @param {Object} [params]
-     *
-     * @returns {vow.Promise}
-     * */
-    __resolvePath: function (track, path, params) {
-
-        if ( !_.has(track.tasks, path) ) {
-            track.tasks[path] = this.__executeUnit(track, path, params);
-        }
-
-        return track.tasks[path];
     }
 
 });

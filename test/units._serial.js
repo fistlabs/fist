@@ -39,10 +39,12 @@ describe('units/_serial', function () {
             spy.push('b');
         });
 
-        tracker.resolve(track, 'test').done(function (res) {
-            assert.strictEqual(res, 42);
-            assert.deepEqual(spy, ['a', 'b']);
-            done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').done(function (res) {
+                assert.strictEqual(res, 42);
+                assert.deepEqual(spy, ['a', 'b']);
+                done();
+            });
         });
     });
 
@@ -79,11 +81,13 @@ describe('units/_serial', function () {
             spy.push('eb');
         });
 
-        tracker.resolve(track, 'test').fail(function (res) {
-            assert.strictEqual(res, 'ERR');
-            assert.deepEqual(spy, ['a', 'b', 'eb']);
-            done();
-        }).done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').fail(function (res) {
+                assert.strictEqual(res, 'ERR');
+                assert.deepEqual(spy, ['a', 'b', 'eb']);
+                done();
+            }).done();
+        });
     });
 
     it('Should be rejected', function (done) {
@@ -123,10 +127,12 @@ describe('units/_serial', function () {
             spy.push('b');
         });
 
-        tracker.resolve(track, 'test').done(function (res) {
-            assert.strictEqual(res, 'RES');
-            assert.deepEqual(spy, ['a', 'ea']);
-            done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').done(function (res) {
+                assert.strictEqual(res, 'RES');
+                assert.deepEqual(spy, ['a', 'ea']);
+                done();
+            });
         });
     });
 
@@ -160,10 +166,12 @@ describe('units/_serial', function () {
             spy.push('b');
         });
 
-        tracker.resolve(track, 'test').done(function (res) {
-            assert.strictEqual(res, skip);
-            assert.deepEqual(spy, ['a']);
-            done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').done(function (res) {
+                assert.strictEqual(res, skip);
+                assert.deepEqual(spy, ['a']);
+                done();
+            });
         });
     });
 });

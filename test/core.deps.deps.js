@@ -92,16 +92,18 @@ describe('core/deps/deps', function () {
                 data: 42
             });
 
-            ctx.append(['a', 'b']).then(function () {
-                assert.deepEqual(ctx.res, {
-                    a: 42
-                });
+            tracker.ready().then(function () {
+                ctx.append(['a', 'b']).then(function () {
+                    assert.deepEqual(ctx.res, {
+                        a: 42
+                    });
 
-                assert.deepEqual(ctx.ers, {
-                    b: void 0
-                });
+                    assert.deepEqual(ctx.ers, {
+                        b: void 0
+                    });
 
-                done();
+                    done();
+                });
             });
 
         });

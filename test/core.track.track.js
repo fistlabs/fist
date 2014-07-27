@@ -4,7 +4,7 @@
 var assert = require('chai').assert;
 
 describe('core/track/track', function () {
-    /*eslint max-nested-callbacks: [2, 4]*/
+    /*eslint max-nested-callbacks: [2, 5]*/
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
 
@@ -19,10 +19,12 @@ describe('core/track/track', function () {
                 data: 42
             });
 
-            track.invoke('a').done(function (res) {
-                assert.strictEqual(res, 42);
+            tracker.ready().always(function () {
+                track.invoke('a').done(function (res) {
+                    assert.strictEqual(res, 42);
 
-                done();
+                    done();
+                });
             });
         });
     });

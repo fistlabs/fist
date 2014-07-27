@@ -9,6 +9,7 @@ var assert = require('chai').assert;
 var inherit = require('inherit');
 
 describe('core/unit', function () {
+    /*eslint max-nested-callbacks: [2, 4]*/
     var Unit = require('../core/unit');
 
     it('Should be an instance of core/unit', function () {
@@ -93,9 +94,11 @@ describe('core/unit', function () {
                 data: 42
             });
 
-            tracker.resolve(new Track(tracker), 'x').done(function (res) {
-                assert.strictEqual(res, 42);
-                done();
+            tracker.ready().always(function () {
+                tracker.resolve(new Track(tracker), 'x').done(function (res) {
+                    assert.strictEqual(res, 42);
+                    done();
+                });
             });
         });
     });
@@ -118,13 +121,16 @@ describe('core/unit', function () {
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
-                assert.deepEqual(spy, [1]);
-            }).always(function () {
+            tracker.ready().always(function () {
                 tracker.resolve(new Track(tracker), 'test').
-                    done(function (spy) {
-                        assert.deepEqual(spy, [1, 1]);
-                        done();
+                    then(function (spy) {
+                        assert.deepEqual(spy, [1]);
+                    }).always(function () {
+                        tracker.resolve(new Track(tracker), 'test').
+                            done(function (spy) {
+                                assert.deepEqual(spy, [1, 1]);
+                                done();
+                            });
                     });
             });
         });
@@ -143,14 +149,17 @@ describe('core/unit', function () {
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').fail(function (spy) {
-                assert.deepEqual(spy, [1]);
-            }).always(function () {
+            tracker.ready().always(function () {
                 tracker.resolve(new Track(tracker), 'test').
                     fail(function (spy) {
-                        assert.deepEqual(spy, [1, 1]);
-                        done();
-                    }).done();
+                        assert.deepEqual(spy, [1]);
+                    }).always(function () {
+                        tracker.resolve(new Track(tracker), 'test').
+                            fail(function (spy) {
+                                assert.deepEqual(spy, [1, 1]);
+                                done();
+                            }).done();
+                    });
             });
         });
 
@@ -183,18 +192,21 @@ describe('core/unit', function () {
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').then(function (spy) {
-                assert.deepEqual(spy, [1]);
-                assert.deepEqual(e, [42, 42]);
-            }).always(function () {
+            tracker.ready().always(function () {
                 tracker.resolve(new Track(tracker), 'test').
                     then(function (spy) {
-                        assert.deepEqual(spy, [1, 1]);
-                        assert.deepEqual(e, [42, 42, 42, 42]);
+                        assert.deepEqual(spy, [1]);
+                        assert.deepEqual(e, [42, 42]);
+                    }).always(function () {
+                        tracker.resolve(new Track(tracker), 'test').
+                            then(function (spy) {
+                                assert.deepEqual(spy, [1, 1]);
+                                assert.deepEqual(e, [42, 42, 42, 42]);
 
-                        done();
+                                done();
+                            }).done();
                     }).done();
-            }).done();
+            });
         });
 
         it('Should not cache Skip', function (done) {
@@ -212,15 +224,17 @@ describe('core/unit', function () {
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').then(function () {
-                assert.deepEqual(spy, [1]);
-            }).always(function () {
-                tracker.resolve(new Track(tracker), 'test').
-                    then(function () {
-                        assert.deepEqual(spy, [1, 1]);
-                        done();
-                    }).done();
-            }).done();
+            tracker.ready().always(function () {
+                tracker.resolve(new Track(tracker), 'test').then(function () {
+                    assert.deepEqual(spy, [1]);
+                }).always(function () {
+                    tracker.resolve(new Track(tracker), 'test').
+                        then(function () {
+                            assert.deepEqual(spy, [1, 1]);
+                            done();
+                        }).done();
+                }).done();
+            });
         });
 
         it('Should cache result', function (done) {
@@ -236,15 +250,17 @@ describe('core/unit', function () {
                 }
             });
 
-            tracker.resolve(new Track(tracker), 'test').then(function () {
-                assert.deepEqual(spy, [1]);
-            }).always(function () {
-                tracker.resolve(new Track(tracker), 'test').
-                    then(function () {
-                        assert.deepEqual(spy, [1]);
-                        done();
-                    }).done();
-            }).done();
+            tracker.ready().always(function () {
+                tracker.resolve(new Track(tracker), 'test').then(function () {
+                    assert.deepEqual(spy, [1]);
+                }).always(function () {
+                    tracker.resolve(new Track(tracker), 'test').
+                        then(function () {
+                            assert.deepEqual(spy, [1]);
+                            done();
+                        }).done();
+                }).done();
+            });
         });
 
         it('Should emit ctx:cache', function (done) {
@@ -265,13 +281,15 @@ describe('core/unit', function () {
                 spy.push(1);
             });
 
-            tracker.resolve(new Track(tracker), 'test').always(function () {
-                tracker.resolve(new Track(tracker), 'test').
-                    then(function () {
-                        assert.deepEqual(spy, [1]);
-                        done();
-                    }).done();
-            }).done();
+            tracker.ready().always(function () {
+                tracker.resolve(new Track(tracker), 'test').always(function () {
+                    tracker.resolve(new Track(tracker), 'test').
+                        then(function () {
+                            assert.deepEqual(spy, [1]);
+                            done();
+                        }).done();
+                }).done();
+            });
         });
     });
 
