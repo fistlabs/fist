@@ -2,7 +2,7 @@
 
 var R_SET_COOKIE_HEADER = /^set-cookie$/i;
 var STATUS_CODES = require('http').STATUS_CODES;
-var SkipResponse = /** @type SkipResponse */ require('../skip/skip-response');
+var Respond = /** @type Respond */ require('../skip/respond');
 
 var _ = require('lodash-node');
 var cookie = require('cookieparser');
@@ -193,7 +193,7 @@ var Response = inherit(/** @lends Response.prototype */ {
             return this.__createByPromise(status, body);
         }
 
-        if ( body instanceof SkipResponse ) {
+        if ( body instanceof Respond ) {
 
             return this.__createByResp(status, body);
         }
@@ -213,7 +213,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __createByBuffer: function (status, body) {
 
-        return new SkipResponse(status, {
+        return new Respond(status, {
             'Content-Type': 'application/octet-stream',
             'Content-Length': body.length
         }, body);
@@ -252,7 +252,7 @@ var Response = inherit(/** @lends Response.prototype */ {
     __createByJson: function (status, body) {
         body = JSON.stringify(body);
 
-        return new SkipResponse(status, {
+        return new Respond(status, {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(body)
         }, body);
@@ -339,9 +339,9 @@ var Response = inherit(/** @lends Response.prototype */ {
      * @method
      *
      * @param {Number} status
-     * @param {SkipResponse} body
+     * @param {Respond} body
      *
-     * @returns {SkipResponse}
+     * @returns {Respond}
      * */
     __createByResp: function (status, body) {
 
@@ -349,7 +349,7 @@ var Response = inherit(/** @lends Response.prototype */ {
             status = body.status;
         }
 
-        return new SkipResponse(status, body.header, body.body);
+        return new Respond(status, body.header, body.body);
     },
 
     /**
@@ -364,7 +364,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __createByString: function (status, body) {
 
-        return new SkipResponse(status, {
+        return new Respond(status, {
             'Content-Type': 'text/plain',
             'Content-Length': Buffer.byteLength(body)
         }, body);
@@ -397,7 +397,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * @method
      *
      * @param {OutgoingMessage} res
-     * @param {SkipResponse} resp
+     * @param {Respond} resp
      * */
     end: function (res, resp) {
 

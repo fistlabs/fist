@@ -5,14 +5,14 @@ var Skip = /** @type Skip */ require('./skip');
 var inherit = require('inherit');
 
 /**
- * @class SkipResponse
+ * @class Respond
  * @extends Skip
  * */
-var SkipResponse = inherit(Skip, /** @lends SkipResponse.prototype */ {
+var Respond = inherit(Skip, /** @lends Respond.prototype */ {
 
     /**
      * @private
-     * @memberOf {SkipResponse}
+     * @memberOf {Respond}
      * @method
      *
      * @constructs
@@ -25,7 +25,7 @@ var SkipResponse = inherit(Skip, /** @lends SkipResponse.prototype */ {
 
         /**
          * @public
-         * @memberOf {SkipResponse}
+         * @memberOf {Respond}
          * @property
          * @type {Number}
          * */
@@ -50,4 +50,4 @@ var SkipResponse = inherit(Skip, /** @lends SkipResponse.prototype */ {
 
 });
 
-module.exports = SkipResponse;
+module.exports = Respond;

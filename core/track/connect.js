@@ -6,8 +6,8 @@ var R_URL = /^((?:[a-z0-9.+-]+:|)\/\/[^\/]+|)([\s\S]*)$/;
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Request = /** @type Request */ require('./request');
 var Response = /** @type Response */ require('./response');
+var Rewrite = /** @type Rewrite */ require('../skip/rewrite');
 var Route = /** @type Route */ require('finger/route/Route');
-var SkipRewrite = /** @type SkipRewrite */ require('../skip/skip-rewrite');
 var Track = /** @type Track */ require('./track');
 
 var _ = require('lodash-node');
@@ -284,12 +284,12 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @param {String} path
      * @param {Object} [opts]
      *
-     * @returns {SkipRewrite}
+     * @returns {Rewrite}
      * */
     rewrite: function (path, opts) {
         path = Route.buildPath(path, opts);
 
-        return new SkipRewrite(path);
+        return new Rewrite(path);
     },
 
     /**

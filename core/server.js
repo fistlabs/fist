@@ -4,8 +4,8 @@ var Connect = /** @type Connect */ require('./track/connect');
 var Context = /** @type Context */ require('./deps/context');
 var Router = /** @type Router */ require('finger/Router');
 var Response = /** @type Response */ require('./track/response');
-var SkipResponse = /** @type SkipResponse */ require('./skip/skip-response');
-var SkipRewrite = /** @type SkipRewrite */ require('./skip/skip-rewrite');
+var Respond = /** @type Respond */ require('./skip/respond');
+var Rewrite = /** @type Rewrite */ require('./skip/rewrite');
 var Tracker = /** @type Tracker */ require('./tracker');
 
 var _ = require('lodash-node');
@@ -217,13 +217,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         return this.resolve(track, result.route.data.unit).
             then(function (data) {
                 //  was sent
-                if ( data instanceof SkipResponse ) {
+                if ( data instanceof Respond ) {
 
-                    return this.__handleResponse(track, data);
+                    return this.__handleRespond(track, data);
                 }
 
                 //  rewrite
-                if ( data instanceof SkipRewrite ) {
+                if ( data instanceof Rewrite ) {
 
                     return this.__handleRewrite(track, data);
                 }
@@ -241,11 +241,11 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @method
      *
      * @param {Connect} track
-     * @param {SkipResponse} data
+     * @param {Respond} data
      *
-     * @returns {SkipResponse}
+     * @returns {Respond}
      * */
-    __handleResponse: function (track, data) {
+    __handleRespond: function (track, data) {
 
         return data;
     },
@@ -256,7 +256,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @method
      *
      * @param {Connect} track
-     * @param {SkipRewrite} data
+     * @param {Rewrite} data
      *
      * @returns {vow.Promise}
      * */
