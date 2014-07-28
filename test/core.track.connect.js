@@ -16,12 +16,12 @@ describe('core/track/connect', function () {
         doConnect({
             method: 'POST'
         }, function (track, req, res) {
-            assert.instanceOf(track.req, Request);
-            assert.instanceOf(track.res, Response);
+            assert.instanceOf(track.request, Request);
+            assert.instanceOf(track.response, Response);
             assert.strictEqual(track.method, 'POST');
             assert.deepEqual(track.match, {});
             assert.strictEqual(track.route, null);
-            assert.deepEqual(track.req.createUrl(req.url), track.url);
+            assert.deepEqual(track.request.createUrl(req.url), track.url);
             res.end();
         }, function (err) {
             assert.ok(!err);

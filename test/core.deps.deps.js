@@ -18,8 +18,7 @@ describe('core/deps/deps', function () {
 
         var props = [
             'result',
-            'errors',
-            'params'
+            'errors'
         ];
 
         _.forEach(props, function (prop) {

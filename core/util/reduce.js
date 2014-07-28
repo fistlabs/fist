@@ -2,7 +2,10 @@
 
 var vow = require('vow');
 
-module.exports = function (o, func, result, thisp) {
+/**
+ * @returns {vow.Promise}
+ * */
+function reduce (o, func, result, thisp) {
     var i = 0;
     var l = o.length;
 
@@ -28,4 +31,6 @@ module.exports = function (o, func, result, thisp) {
     }
 
     return iter(result, i);
-};
+}
+
+module.exports = reduce;

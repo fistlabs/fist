@@ -3,6 +3,7 @@
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 var R_URL = /^((?:[a-z0-9.+-]+:|)\/\/[^\/]+|)([\s\S]*)$/;
 
+var Context = /** @type Context */ require('../deps/context');
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Request = /** @type Request */ require('./request');
 var Response = /** @type Response */ require('./response');
@@ -65,7 +66,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Request}
          * */
-        this.req = this._createReq(req, agent.params.req);
+        this.request = new Request(req, agent.params.req);
 
         /**
          * @public
@@ -73,7 +74,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Response}
          * */
-        this.res = this._createRes(res, agent.params.res);
+        this.response = new Response(res, agent.params.res);
 
         /**
          * @public
@@ -89,7 +90,27 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.req.createUrl(req.url);
+        this.url = this.request.createUrl(req.url);
+
+        Object.defineProperty(this, 'req', {
+            get: /* istanbul ignore next */ function () {
+                this.agent.channel('sys.migration').emit('deprecated', [
+                    'connect.req',
+                    'connect.request'
+                ]);
+                return this.request;
+            }
+        });
+
+        Object.defineProperty(this, 'res', {
+            get: /* istanbul ignore next */ function () {
+                this.agent.channel('sys.migration').emit('deprecated', [
+                    'connect.res',
+                    'connect.response'
+                ]);
+                return this.response;
+            }
+        });
     },
 
     /**
@@ -136,7 +157,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             'connect.req.getBody()'
         ]);
 
-        return this.req.getBody();
+        return this.request.getBody();
     },
 
     /**
@@ -188,21 +209,21 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         if ( 0 === arguments.length ) {
 
-            return this.req.getHeaders();
+            return this.request.getHeaders();
         }
 
         if ( _.isObject(name) ) {
-            this.res.setHeaders(name, value);
+            this.response.setHeaders(name, value);
 
             return this;
         }
 
         if ( 1 === arguments.length ) {
 
-            return this.req.getHeader(name);
+            return this.request.getHeader(name);
         }
 
-        this.res.setHeader(name, value, soft);
+        this.response.setHeader(name, value, soft);
 
         return this;
     },
@@ -222,15 +243,15 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         if ( 0 === arguments.length ) {
 
-            return this.req.getCookies();
+            return this.request.getCookies();
         }
 
         if ( 1 === arguments.length ) {
 
-            return this.req.getCookie(name);
+            return this.request.getCookie(name);
         }
 
-        this.res.setCookie(name, value, opts);
+        this.response.setCookie(name, value, opts);
 
         return this;
     },
@@ -294,14 +315,15 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             return this._render(status, id, _.rest(arguments, 2));
         }
 
-        return this._render(this.res.getStatus(), status, _.rest(arguments, 1));
+        return this._render(this.response.getStatus(),
+            status, _.rest(arguments, 1));
     },
 
     /**
      * @tmp
      * */
     _redirect: function (status, url) {
-        this.res.setHeader('Location', url);
+        this.response.setHeader('Location', url);
 
         if ( !_.contains(REDIRECT_CODES, status) ) {
             status = 302;
@@ -311,7 +333,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             url = hyperLinkTpl({href: _.escape(url)});
         }
 
-        return this.res.respond(status, url);
+        return this.response.respond(status, url);
     },
 
     /**
@@ -327,7 +349,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     _render: /* istanbul ignore next */ function (status, id, args) {
 
-        return this.res.respond(status,
+        return this.response.respond(status,
             this.agent.renderers[id].apply(this, args));
     },
 
@@ -345,37 +367,22 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
             status = void 0;
         }
 
-        return this.res.respond(status, body);
+        return this.response.respond(status, body);
     },
 
     /**
      * @protected
-     * @memberOf {Connect}
+     * @memberOf {Track}
      * @method
      *
-     * @param {IncomingMessage} req
+     * @param {String} path
      * @param {Object} params
      *
-     * @returns {Request}
+     * @returns {Deps}
      * */
-    _createReq: function (req, params) {
+    _createContext: function (path, params) {
 
-        return new Request(req, params);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {OutgoingMessage} res
-     * @param {Object} params
-     *
-     * @returns {Response}
-     * */
-    _createRes: function (res, params) {
-
-        return new Response(res, params);
+        return new Context(this, path, params);
     }
 
 });

@@ -1,5 +1,8 @@
 'use strict';
 
+var Deps = require('../deps/deps');
+
+var _ = require('lodash-node');
 var inherit = require('inherit');
 var uniqueId = require('unique-id');
 
@@ -45,15 +48,57 @@ var Track = inherit(/** @lends Track.prototype */{
     },
 
     /**
-     * @deprecated
+     * @public
+     * @memberOf {Track}
+     * @method
+     *
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {vow.Promise}
      *  */
-    invoke: /* istanbul ignore next */ function (path, params) {
-        this.agent.channel('sys.migration').emit('deprecated', [
-            'track.invoke(\'path, params\')',
-            'context.invoke(\'path, params\')'
-        ]);
+    invoke: function (path, params) {
 
-        return this.agent.resolve(this, path, params);
+        if ( _.isObject(params) ) {
+
+            return this.__executeUnit(path, params);
+        }
+
+        if ( !_.has(this.tasks, path) ) {
+            this.tasks[path] = this.__executeUnit(path, params);
+        }
+
+        return this.tasks[path];
+    },
+
+    /**
+     * @protected
+     * @memberOf {Track}
+     * @method
+     *
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {Deps}
+     * */
+    _createContext: function (path, params) {
+
+        return new Deps(this, path, params);
+    },
+
+    /**
+     * @private
+     * @memberOf {Track}
+     * @method
+     *
+     * @param {String} path
+     * @param {Object} [params]
+     *
+     * @returns {vow.Promise}
+     * */
+    __executeUnit: function (path, params) {
+
+        return this._createContext(path, params).execute();
     }
 
 });
