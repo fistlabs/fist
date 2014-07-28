@@ -68,24 +68,9 @@ describe('core/deps/context', function () {
         it('Should render template', function (done) {
 
             var context = new Context({
-                agent: {
-                    renderers: {
-                        test: function (locals) {
-                            assert.deepEqual(locals, {
-                                errors: {},
-                                result: {}
-                            });
-                            return 'TEST';
-                        }
-                    }
-                },
-                header: function () {},
-                res: {
-                    respond: function (status, body) {
-                        assert.isUndefined(status);
-                        assert.strictEqual(body, 'TEST');
-                        done();
-                    }
+                render: function (renderer) {
+                    assert.deepEqual(renderer, 'test');
+                    done();
                 }
             });
 

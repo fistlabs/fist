@@ -40,16 +40,12 @@ var Context = inherit(Deps, /** @lends Context.prototype */ {
      * @method
      *
      * @param {String} renderer
-     * @param {Object} [header]
      *
      * @returns {vow.Promise}
      * */
-    render: function (renderer, header) {
-        var result = this.track.agent.renderers[renderer](this.toJSON());
+    render: function (renderer) {
 
-        this.track.header(header);
-
-        return this.track.res.respond(void 0, result);
+        return this.track.render(renderer, this.toJSON());
     },
 
     /**

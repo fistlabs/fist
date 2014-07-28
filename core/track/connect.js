@@ -280,7 +280,17 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         parts[2] = Route.buildPath(parts[2], opts);
         url = parts[1] + parts[2];
 
-        return this._redirect(status, url);
+        this.response.setHeader('Location', url);
+
+        if ( !_.contains(REDIRECT_CODES, status) ) {
+            status = 302;
+        }
+
+        if ( this.neg.mediaTypes(['text/html']).length ) {
+            url = hyperLinkTpl({href: _.escape(url)});
+        }
+
+        return this.response.respond(status, url);
     },
 
     /**
@@ -296,61 +306,22 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     rewrite: function (path, opts) {
         path = Route.buildPath(path, opts);
 
-        return this._rewrite(path);
-    },
-
-    /**
-     * @deprecated
-     * */
-    render: /* istanbul ignore next */ function (status, id, arg) {
-        /*eslint no-unused-vars: 0*/
-
-        this.agent.channel('sys.migration').emit('deprecated', [
-            'connect.render([status], id[, arg...])',
-            'context.render(id)'
-        ]);
-
-        if ( _.isNumber(status) ) {
-
-            return this._render(status, id, _.rest(arguments, 2));
-        }
-
-        return this._render(this.response.getStatus(),
-            status, _.rest(arguments, 1));
-    },
-
-    /**
-     * @tmp
-     * */
-    _redirect: function (status, url) {
-        this.response.setHeader('Location', url);
-
-        if ( !_.contains(REDIRECT_CODES, status) ) {
-            status = 302;
-        }
-
-        if ( this.neg.mediaTypes(['text/html']).length ) {
-            url = hyperLinkTpl({href: _.escape(url)});
-        }
-
-        return this.response.respond(status, url);
-    },
-
-    /**
-     * @tmp
-     * */
-    _rewrite: function (path) {
-
         return new Rewrite(path);
     },
 
     /**
-     * @tmp
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} id
+     * @param {*} [locals]
+     *
+     * @returns {vow.Promise}
      * */
-    _render: /* istanbul ignore next */ function (status, id, args) {
+    render: function (id, locals) {
 
-        return this.response.respond(status,
-            this.agent.renderers[id].apply(this, args));
+        return this.response.respond(void 0, this.agent.renderers[id](locals));
     },
 
     /**
