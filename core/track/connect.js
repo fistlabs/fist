@@ -66,7 +66,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Request}
          * */
-        this.request = new Request(req, agent.params.req);
+        this.request = new Request(req, agent.params.request);
 
         /**
          * @public
@@ -74,7 +74,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Response}
          * */
-        this.response = new Response(res, agent.params.res);
+        this.response = new Response(res, agent.params.response);
 
         /**
          * @public
@@ -91,73 +91,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @type {Object}
          * */
         this.url = this.request.createUrl(req.url);
-
-        Object.defineProperty(this, 'req', {
-            get: /* istanbul ignore next */ function () {
-                this.agent.channel('sys.migration').emit('deprecated', [
-                    'connect.req',
-                    'connect.request'
-                ]);
-                return this.request;
-            }
-        });
-
-        Object.defineProperty(this, 'res', {
-            get: /* istanbul ignore next */ function () {
-                this.agent.channel('sys.migration').emit('deprecated', [
-                    'connect.res',
-                    'connect.response'
-                ]);
-                return this.response;
-            }
-        });
-    },
-
-    /**
-     * @deprecated
-     *
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {String} name
-     * @param {Boolean} [only]
-     *
-     * @returns {String|void}
-     * */
-    arg: /*istanbul ignore next */ function (name, only) {
-        this.agent.channel('sys.migration').
-            emit('deprecated', [
-                'track.arg(name, only)',
-                'ctx.arg(name)'
-            ]);
-
-        var result = this.match[name];
-
-        if ( only ) {
-
-            return result;
-        }
-
-        return result || this.url.query[name];
-    },
-
-    /**
-     * Возвращает body в разобранном виде
-     *
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    body: /* istanbul ignore next */ function () {
-        this.agent.channel('sys.migration').emit('deprecated', [
-            'connect.body()',
-            'connect.req.getBody()'
-        ]);
-
-        return this.request.getBody();
     },
 
     /**

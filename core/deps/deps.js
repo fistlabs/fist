@@ -73,29 +73,6 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @type {Date}
          * */
         this.__creationDate = new Date();
-
-        //  TODO remove in 2.0.0
-        Object.defineProperty(this, 'ers', {
-            get: /* istanbul ignore next */ function () {
-                self.track.agent.channel('sys.migration').emit('deprecated', [
-                    'context.ers',
-                    'context.getErr'
-                ]);
-
-                return self.errors;
-            }
-        });
-
-        Object.defineProperty(this, 'res', {
-            get: /* istanbul ignore next */ function () {
-                self.track.agent.channel('sys.migration').emit('deprecated', [
-                    'context.res',
-                    'context.getRes'
-                ]);
-
-                return self.result;
-            }
-        });
     },
 
     /**
@@ -206,18 +183,6 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         }, this));
 
         return defer.promise();
-    },
-
-    /**
-     * @deprecated
-     * */
-    notify: /* istanbul ignore next */ function (data) {
-        this.track.agent.channel('sys.migration').emit('deprecated', [
-            'context.notify(data)',
-            'context.trigger(\'ctx:notify\', data)'
-        ]);
-
-        return this.trigger('ctx:notify', data);
     },
 
     /**
