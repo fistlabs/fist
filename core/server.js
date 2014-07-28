@@ -66,18 +66,30 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             var track = self._createTrack(req, res);
 
             self.emit('sys:request', track);
-            self.ready().then(function () {
-
-                return self.__next(track);
-            }, function (err) {
-
-                return track.res.respond(500, err);
-            }).done(function (resp) {
+            self.handle(track).done(function (resp) {
                 Response.end(res, resp);
                 track.time = new Date() - date;
                 self.emit('sys:response', track);
             });
         };
+    },
+
+    /**
+     * @public
+     * @memberOf {Server}
+     * @method
+     *
+     * @returns {vow.Promise}
+     * */
+    handle: function (track) {
+
+        return this.ready().then(function () {
+
+            return this.__next(track);
+        }, function (err) {
+
+            return track.res.respond(500, err);
+        }, this);
     },
 
     /**
