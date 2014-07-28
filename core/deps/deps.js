@@ -22,6 +22,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @constructs
      * */
     __constructor: function (track, path, params) {
+        var self = this;
 
         /**
          * @public
@@ -29,7 +30,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.ers = this.errors = {};
+        this.errors = {};
 
         /**
          * @public
@@ -37,7 +38,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.res = this.result = {};
+        this.result = {};
 
         /**
          * @public
@@ -70,6 +71,29 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @type {Date}
          * */
         this.__creationDate = new Date();
+
+        //  TODO remove in 2.0.0
+        Object.defineProperty(this, 'ers', {
+            get: function () {
+                self.track.agent.channel('sys.migration').emit('deprecated', [
+                    'context.ers',
+                    'context.getErr'
+                ]);
+
+                return self.errors;
+            }
+        });
+
+        Object.defineProperty(this, 'res', {
+            get: function () {
+                self.track.agent.channel('sys.migration').emit('deprecated', [
+                    'context.res',
+                    'context.getRes'
+                ]);
+
+                return self.result;
+            }
+        });
     },
 
     /**
@@ -121,7 +145,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     getRes: function (path) {
 
-        return ns.use(this.res, path);
+        return ns.use(this.result, path);
     },
 
     /**
@@ -135,7 +159,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     getErr: function (path) {
 
-        return ns.use(this.ers, path);
+        return ns.use(this.errors, path);
     },
 
     /**
@@ -193,7 +217,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     setRes: function (path, data) {
 
-        return ns.add(this.res, path, data);
+        return ns.add(this.result, path, data);
     },
 
     /**
@@ -206,7 +230,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     setErr: function (path, data) {
 
-        return ns.add(this.ers, path, data);
+        return ns.add(this.errors, path, data);
     },
 
     /**
