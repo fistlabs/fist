@@ -74,7 +74,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         //  TODO remove in 2.0.0
         Object.defineProperty(this, 'ers', {
-            get: function () {
+            get: /* istanbul ignore next */ function () {
                 self.track.agent.channel('sys.migration').emit('deprecated', [
                     'context.ers',
                     'context.getErr'
@@ -85,7 +85,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         });
 
         Object.defineProperty(this, 'res', {
-            get: function () {
+            get: /* istanbul ignore next */ function () {
                 self.track.agent.channel('sys.migration').emit('deprecated', [
                     'context.res',
                     'context.getRes'

@@ -279,19 +279,15 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     },
 
     /**
-     * Выполняет шаблонизацию переданных данных и
-     * выполняет ответ приложения
-     *
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {*} [status]
-     * @param {String} id
-     * @param {*} [arg...]
+     * @deprecated
      * */
-    render: function (status, id, arg) {
+    render: /* istanbul ignore next */ function (status, id, arg) {
         /*eslint no-unused-vars: 0*/
+
+        this.agent.channel('sys.migration').emit('deprecated', [
+            'connect.render([status], id[, arg...])',
+            'context.render(id)'
+        ]);
 
         if ( _.isNumber(status) ) {
 
@@ -329,7 +325,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     /**
      * @tmp
      * */
-    _render: function (status, id, args) {
+    _render: /* istanbul ignore next */ function (status, id, args) {
 
         return this.res.respond(status,
             this.agent.renderers[id].apply(this, args));

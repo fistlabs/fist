@@ -255,7 +255,7 @@ describe('core/track/connect', function () {
         });
     });
 
-    describe('.render', function () {
+    describe.skip('.render', function () {
 
         it('Should render response by template', function (done) {
             var tracker = /** @type {Server} */ doConnect({
