@@ -143,26 +143,6 @@ describe('core/track/connect', function () {
         });
     });
 
-    describe.skip('.body', function () {
-        it('Should download body', function (done) {
-            doConnect({
-                path: '/',
-                body: 'TEST',
-                method: 'POST'
-            }, function (track, req, res) {
-
-                track.body().then(function (body) {
-                    assert.deepEqual(body.input, new Buffer('TEST'));
-                    res.end();
-                });
-
-            }, function (err) {
-                assert.ok(!err);
-                done();
-            });
-        });
-    });
-
     describe('.redirect', function () {
         it('Should redirect with code', function (done) {
             doConnect({

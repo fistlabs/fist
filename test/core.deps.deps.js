@@ -126,23 +126,6 @@ describe('core/deps/deps', function () {
         });
     });
 
-    describe.skip('.notify', function () {
-        it('Should trigger ctx:notify event', function (done) {
-            var tracker = new Tracker();
-            var track = new Track(tracker);
-            var ctx = new Deps(track, 'c');
-
-            tracker.on('ctx:notify', function (e) {
-                assert.strictEqual(e.trackId, track.id);
-                assert.strictEqual(e.path, 'c');
-                assert.strictEqual(e.data, 42);
-                done();
-            });
-
-            ctx.notify(42);
-        });
-    });
-
     describe('.arg', function () {
         it('Should return parameter', function () {
 
