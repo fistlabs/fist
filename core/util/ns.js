@@ -13,7 +13,6 @@ var cache = Object.create(null);
  * @returns {*}
  * */
 exports.add = function (root, path, data) {
-
     var existing = exports.use(root, path);
 
     if ( _.isObject(existing) ) {
@@ -32,7 +31,6 @@ exports.add = function (root, path, data) {
  * @returns {*}
  * */
 exports.link = function (root, path, data) {
-
     var i;
     var l;
     var part;
@@ -86,7 +84,6 @@ exports.parse = function (path) {
  * @returns {*}
  * */
 exports.use = function (root, path) {
-
     var i;
     var l;
     var parts = exports.parse(path);

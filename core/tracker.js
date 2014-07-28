@@ -5,7 +5,9 @@ var Deps = /** @type Deps */ require('./deps/deps');
 var Skip = /** @type Skip */ require('./skip/skip');
 
 var _ = require('lodash-node');
+var glob = require('glob');
 var inherit = require('inherit');
+var reduce = require('./util/reduce');
 var vow = require('vow');
 
 /**
@@ -24,7 +26,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @param {Object} [params]
      * */
     __constructor: function (params) {
-
         this.__base(params);
 
         /**
@@ -51,7 +52,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @method
      * */
     plug: function () {
-        Array.prototype.push.apply(this.__plugs, _.flatten(arguments));
+        this.__plugs = this.__plugs.concat(_.flatten(arguments));
 
         return this;
     },
@@ -71,18 +72,11 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     resolve: function (track, path, params) {
 
-        var ready = this.ready();
-
-//        -1 possible tick
-        if ( ready.isFulfilled() ) {
-
-            return this.__resolvePath(track, path, params);
+        if ( !_.has(track.tasks, path) ) {
+            track.tasks[path] = this.__executeUnit(track, path, params);
         }
 
-        return ready.then(function () {
-
-            return this.__resolvePath(track, path, params);
-        }, this);
+        return track.tasks[path];
     },
 
     /**
@@ -109,9 +103,9 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     _getReady: function () {
-        var plugins = _.map(this.__plugs, this.__invokePlugin, this);
 
-        return vow.all(plugins).then(this.__base, this);
+        return reduce(this.__plugs, this.__pluginReducer, [], this).
+            then(this.__callPlugins, this).then(this.__base, this);
     },
 
     /**
@@ -126,7 +120,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     __executeUnit: function (track, path, params) {
-
         var deps = this._createCtx(track, path, params);
         var exec = vow.defer();
         var unit = track.agent.getUnit(path);
@@ -152,7 +145,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         }
 
         deps.append(unit.deps).done(function (promises) {
-
             var promise = _.find(promises, function (promise) {
 
                 return promise.valueOf() instanceof Skip;
@@ -173,73 +165,74 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Function} func
+     * @param {Array<Function>} funcs
      *
-     * @returns {vow.Promise}
+     * @returns {*}
      * */
-    __invokePlugin: function (func) {
+    __callPlugins: function (funcs) {
 
-        return vow.invoke(this.__wrapPlugin(func));
-    },
+        return _.reduce(funcs, function (promise, func) {
 
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {String} path
-     * @param {Object} [params]
-     *
-     * @returns {vow.Promise}
-     * */
-    __resolvePath: function (track, path, params) {
+            return promise.then(function () {
+                var defer;
 
-        if ( !_.has(track.tasks, path) ) {
-            track.tasks[path] = this.__executeUnit(track, path, params);
-        }
+                if ( !func.length ) {
 
-        return track.tasks[path];
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Function} func
-     *
-     * @returns {Function}
-     * */
-    __wrapPlugin: function (func) {
-
-        var self = this;
-
-        if ( !func.length ) {
-
-            return function () {
-
-                return func.call(self);
-            };
-        }
-
-        return function () {
-
-            var defer = vow.defer();
-
-            func.call(self, function (err) {
-
-                if ( arguments.length ) {
-                    defer.reject(err);
-
-                    return;
+                    return func.call(this);
                 }
 
-                defer.resolve();
-            });
+                defer = vow.defer();
 
-            return defer.promise();
-        };
+                func.call(this, function (err) {
+
+                    if ( arguments.length ) {
+                        defer.reject(err);
+
+                        return;
+                    }
+
+                    defer.resolve();
+                });
+
+                return defer.promise();
+            }, this);
+        }, vow.resolve(), this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Array<Function>} funcs
+     * @param {Function|String} func
+     *
+     * @returns {*}
+     * */
+    __pluginReducer: function (funcs, func) {
+        var defer;
+
+        if ( _.isFunction(func) ) {
+
+            return funcs.concat(func);
+        }
+
+        defer = vow.defer();
+
+        glob(func, {silent: true}, function (err, func) {
+
+            if ( 2 > arguments.length ) {
+                defer.reject(err);
+
+                return;
+            }
+
+            func = _.map(func, require);
+
+            defer.resolve(funcs.concat(func));
+        });
+
+        return defer.promise();
     }
 
 });

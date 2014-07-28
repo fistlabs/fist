@@ -20,20 +20,12 @@ describe('units/_asker', function () {
 
     it('Should respond with expected value', function (done) {
 
-        var app = fist({
-            routes: [
-                {
-                    pattern: '/',
-                    name: 'front'
-                },
-                {
-                    pattern: '/backend/',
-                    name: 'back'
-                }
-            ]
-        }, null, {
+        var app = fist(null, null, {
             Unit: Unit
         });
+
+        app.route('/', 'front');
+        app.route('/backend/', 'back');
 
         app.unit({
             path: 'front',
@@ -83,20 +75,12 @@ describe('units/_asker', function () {
 
     it('Should respond with expected value', function (done) {
 
-        var app = fist({
-            routes: [
-                {
-                    pattern: '/',
-                    name: 'front'
-                },
-                {
-                    pattern: '/backend/',
-                    name: 'back'
-                }
-            ]
-        }, null, {
+        var app = fist(null, null, {
             Unit: Unit
         });
+
+        app.route('/', 'front');
+        app.route('/backend/', 'back');
 
         app.unit({
             path: 'front',
@@ -149,16 +133,11 @@ describe('units/_asker', function () {
 
     it('Should respond with expected value', function (done) {
 
-        var app = fist({
-            routes: [
-                {
-                    pattern: '/',
-                    name: 'front'
-                }
-            ]
-        }, null, {
+        var app = fist(null, null, {
             Unit: Unit
         });
+
+        app.route('/', 'front');
 
         app.unit({
             path: 'front',
@@ -203,16 +182,11 @@ describe('units/_asker', function () {
 
     it('Should respond with expected value', function (done) {
 
-        var app = fist({
-            routes: [
-                {
-                    pattern: '/',
-                    name: 'front'
-                }
-            ]
-        }, null, {
+        var app = fist(null, null, {
             Unit: Unit
         });
+
+        app.route('/', 'front');
 
         app.unit({
             path: 'front',
@@ -257,16 +231,11 @@ describe('units/_asker', function () {
 
     it('Should respond with expected value', function (done) {
 
-        var app = fist({
-            routes: [
-                {
-                    pattern: '/',
-                    name: 'front'
-                }
-            ]
-        }, null, {
+        var app = fist(null, null, {
             Unit: Unit
         });
+
+        app.route('/', 'front');
 
         app.unit({
             path: 'front',

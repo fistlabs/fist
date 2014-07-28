@@ -5,14 +5,14 @@ var Skip = /** @type Skip */ require('./skip');
 var inherit = require('inherit');
 
 /**
- * @class SkipRewrite
+ * @class Rewrite
  * @extends Skip
  * */
-var SkipRewrite = inherit(Skip, /** @Lends SkipRewrite */ {
+var Rewrite = inherit(Skip, /** @Lends Rewrite */ {
 
     /**
      * @private
-     * @memberOf {SkipRewrite}
+     * @memberOf {Rewrite}
      * @method
      *
      * @constructs
@@ -23,7 +23,7 @@ var SkipRewrite = inherit(Skip, /** @Lends SkipRewrite */ {
 
         /**
          * @public
-         * @memberOf {SkipRewrite}
+         * @memberOf {Rewrite}
          * @property
          * @type {String}
          * */
@@ -32,4 +32,4 @@ var SkipRewrite = inherit(Skip, /** @Lends SkipRewrite */ {
 
 });
 
-module.exports = SkipRewrite;
+module.exports = Rewrite;

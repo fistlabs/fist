@@ -4,8 +4,8 @@ var Connect = /** @type Connect */ require('./track/connect');
 var Context = /** @type Context */ require('./deps/context');
 var Router = /** @type Router */ require('finger/Router');
 var Response = /** @type Response */ require('./track/response');
-var SkipResponse = /** @type SkipResponse */ require('./skip/skip-response');
-var SkipRewrite = /** @type SkipRewrite */ require('./skip/skip-rewrite');
+var Respond = /** @type Respond */ require('./skip/respond');
+var Rewrite = /** @type Rewrite */ require('./skip/rewrite');
 var Tracker = /** @type Tracker */ require('./tracker');
 
 var _ = require('lodash-node');
@@ -59,17 +59,20 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {Function}
      * */
     getHandler: function () {
-
         var self = this;
 
         return function (req, res) {
-
             var date = new Date();
             var track = self._createTrack(req, res);
 
             self.emit('sys:request', track);
+            self.ready().then(function () {
 
-            self.__next(track).done(function (resp) {
+                return self.__next(track);
+            }, function (err) {
+
+                return track.res.respond(500, err);
+            }).done(function (resp) {
                 Response.end(res, resp);
                 track.time = new Date() - date;
                 self.emit('sys:response', track);
@@ -85,7 +88,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @method
      * */
     listen: function () {
-
         var server = http.createServer(this.getHandler());
 
         server.listen.apply(server, arguments);
@@ -109,7 +111,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {Server}
      * */
     route: function (pattern, data) {
-
         var route;
 
         if ( !_.isObject(data) ) {
@@ -181,7 +182,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         if ( _.isNull(result) ) {
             this.emit('sys:ematch', track);
             //  Not Found
-            return track.send(404);
+            return track.res.respond(404);
         }
 
         //  возвращен массив
@@ -193,7 +194,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             //  маршрута отвечающего по такому методу запроса
             if ( 0 === _.size(result) ) {
                 //  Not Implemented
-                return track.send(501);
+                return track.res.respond(501);
             }
 
             //  Иначе есть такие маршруты, но для них не
@@ -201,7 +202,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             track.header('Allow', result.join(', '));
 
             //  Method Not Allowed
-            return track.send(405);
+            return track.res.respond(405);
         }
 
         track.match = result.match;
@@ -212,13 +213,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         return this.resolve(track, result.route.data.unit).
             then(function (data) {
                 //  was sent
-                if ( data instanceof SkipResponse ) {
+                if ( data instanceof Respond ) {
 
-                    return this.__handleResponse(track, data);
+                    return this.__handleRespond(track, data);
                 }
 
                 //  rewrite
-                if ( data instanceof SkipRewrite ) {
+                if ( data instanceof Rewrite ) {
 
                     return this.__handleRewrite(track, data);
                 }
@@ -226,7 +227,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
                 return this.__next(track);
             }, function (err) {
 
-                return track.send(500, err);
+                return track.res.respond(500, err);
             }, this);
     },
 
@@ -236,11 +237,11 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @method
      *
      * @param {Connect} track
-     * @param {SkipResponse} data
+     * @param {Respond} data
      *
-     * @returns {SkipResponse}
+     * @returns {Respond}
      * */
-    __handleResponse: function (track, data) {
+    __handleRespond: function (track, data) {
 
         return data;
     },
@@ -251,7 +252,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @method
      *
      * @param {Connect} track
-     * @param {SkipRewrite} data
+     * @param {Rewrite} data
      *
      * @returns {vow.Promise}
      * */

@@ -109,7 +109,6 @@ var Request = inherit(/** @lends Request.prototype */ {
      * @returns {vow.Promise}
      * */
     getBody: function () {
-
         var self = this;
 
         if ( !vow.isPromise(this.__body) ) {

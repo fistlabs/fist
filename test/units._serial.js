@@ -8,14 +8,14 @@ describe('units/_serial', function () {
 
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
-    var _serial = require('../units/_serial');
+    var _serial = require('../plugins/units/_serial');
 
     it('Should be resolved after a and b steps', function (done) {
         var tracker = new Tracker();
         var track = new Track(tracker);
         var spy = [];
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -39,10 +39,12 @@ describe('units/_serial', function () {
             spy.push('b');
         });
 
-        tracker.resolve(track, 'test').done(function (res) {
-            assert.strictEqual(res, 42);
-            assert.deepEqual(spy, ['a', 'b']);
-            done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').done(function (res) {
+                assert.strictEqual(res, 42);
+                assert.deepEqual(spy, ['a', 'b']);
+                done();
+            });
         });
     });
 
@@ -51,7 +53,7 @@ describe('units/_serial', function () {
         var track = new Track(tracker);
         var spy = [];
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -79,11 +81,13 @@ describe('units/_serial', function () {
             spy.push('eb');
         });
 
-        tracker.resolve(track, 'test').fail(function (res) {
-            assert.strictEqual(res, 'ERR');
-            assert.deepEqual(spy, ['a', 'b', 'eb']);
-            done();
-        }).done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').fail(function (res) {
+                assert.strictEqual(res, 'ERR');
+                assert.deepEqual(spy, ['a', 'b', 'eb']);
+                done();
+            }).done();
+        });
     });
 
     it('Should be rejected', function (done) {
@@ -91,7 +95,7 @@ describe('units/_serial', function () {
         var track = new Track(tracker);
         var spy = [];
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -123,10 +127,12 @@ describe('units/_serial', function () {
             spy.push('b');
         });
 
-        tracker.resolve(track, 'test').done(function (res) {
-            assert.strictEqual(res, 'RES');
-            assert.deepEqual(spy, ['a', 'ea']);
-            done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').done(function (res) {
+                assert.strictEqual(res, 'RES');
+                assert.deepEqual(spy, ['a', 'ea']);
+                done();
+            });
         });
     });
 
@@ -136,7 +142,7 @@ describe('units/_serial', function () {
         var spy = [];
         var skip = new Skip();
 
-        tracker.unit(_serial);
+        tracker.plug(_serial);
 
         tracker.unit({
             base: '_serial',
@@ -160,10 +166,12 @@ describe('units/_serial', function () {
             spy.push('b');
         });
 
-        tracker.resolve(track, 'test').done(function (res) {
-            assert.strictEqual(res, skip);
-            assert.deepEqual(spy, ['a']);
-            done();
+        tracker.ready().always(function () {
+            tracker.resolve(track, 'test').done(function (res) {
+                assert.strictEqual(res, skip);
+                assert.deepEqual(spy, ['a']);
+                done();
+            });
         });
     });
 });

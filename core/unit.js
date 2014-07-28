@@ -21,7 +21,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @constructs
      * */
     __constructor: function (params) {
-
         var maxAge = +this._maxAge;
 
         if ( _.isNaN(maxAge) ) {
@@ -93,7 +92,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      * */
     delDeps: function () {
-
         var args = _.flatten(arguments);
 
         this.deps = _.reject(this.deps, function (path) {
@@ -112,7 +110,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @returns {*}
      * */
     getValue: function (context) {
-
         var key;
 
         if ( 0 >= this._maxAge ) {
@@ -123,7 +120,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         key = this.__getCacheKey(context);
 
         return this.__callThroughCache(key, context).then(function (value) {
-
             var data = value.data;
 
             //  из кэша или резолвер
@@ -153,7 +149,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @returns {*}
      * */
     __setCache: function (key, value, context) {
-
         var defer = vow.defer();
 
         //  если запрос выполнен успешно то сохраняем в кэш
@@ -195,7 +190,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @returns {*}
      * */
     __call: function (context) {
-
         var self = this;
 
         if ( _.isFunction(self.data) ) {
@@ -301,7 +295,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @returns {vow.Promise}
      * */
     __getCache: function (cacheKey, context) {
-
         var defer = vow.defer();
 
         context.track.agent.cache.get(cacheKey, function (err, res) {

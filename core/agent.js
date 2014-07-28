@@ -150,16 +150,12 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {vow.Promise}
      * */
     _getReady: function () {
-
-        var defer = vow.defer();
         var self = this;
 
-        defer.resolve(vow.invoke(function () {
+        return vow.invoke(function () {
 
             return self.__createUnits(self.__decls);
-        }));
-
-        return defer.promise().then(function (units) {
+        }).then(function (units) {
             this.units = units;
         }, this);
     },
@@ -174,10 +170,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {Object}
      * */
     __createUnits: function (decls) {
-
-        var classes = {
-            _unit: this.__self.Unit
-        };
+        var classes = {_unit: this.__self.Unit};
         var conflicts;
         var remaining = decls.length;
         var units;
@@ -229,7 +222,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     __addUnitClasses: function (decls, classes) {
 
         return _.reduce(decls, function (decls, decl) {
-
             var base;
             var members = decl[0];
             var unit;
@@ -287,7 +279,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
  * @returns {Array}
  * */
 function findAllConflicts (units) {
-
     var found4 = {};
 
     return _.reduce(units, function (conflicts, unit, path) {
@@ -312,7 +303,6 @@ function findAllConflicts (units) {
  * @returns {Array}
  * */
 function findConflicts (part, units, path, found4) {
-
     var decl = units[part];
     var deps;
     var paths = [];

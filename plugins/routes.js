@@ -3,6 +3,7 @@
 var _ = require('lodash-node');
 var path = require('path');
 
+/*istanbul ignore next */
 function exists (module) {
 
     try {
@@ -16,13 +17,19 @@ function exists (module) {
     }
 }
 
-module.exports = function () {
-
+/*istanbul ignore next */
+function plugRoutes () {
     var routes = this.params.routes;
 
     if ( _.isUndefined(routes) || _.isNull(routes) ) {
-        routes = 'routes';
+
+        return;
     }
+
+    this.channel('sys.migration').emit('deprecated', [
+        'params.routes',
+        'plugin features as app.plug(\'/path/to/router.js\')'
+    ]);
 
     if ( !_.isObject(routes) ) {
         routes = path.resolve(this.params.cwd, routes);
@@ -42,4 +49,6 @@ module.exports = function () {
     _.forEach(routes, function (desc) {
         this.route(desc.pattern, desc);
     }, this);
-};
+}
+
+module.exports = plugRoutes;
