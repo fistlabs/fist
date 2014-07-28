@@ -130,14 +130,9 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    body: function (body) {
+    body: function () {
 
-        if ( 0 === arguments.length ) {
-
-            return this.req.getBody();
-        }
-
-        return this.res.respond(void 0, body);
+        return this.req.getBody();
     },
 
     /**

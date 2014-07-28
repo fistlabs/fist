@@ -161,18 +161,6 @@ describe('core/track/connect', function () {
                 done();
             });
         });
-
-        it('Should send body', function (done) {
-            doConnect({}, function (track, req, res) {
-                vow.when(track.body(':)'), function (resp) {
-                    Response.end(res, resp);
-                });
-            }, function (err, res) {
-                assert.ok(!err);
-                assert.deepEqual(res.data, new Buffer(':)'));
-                done();
-            });
-        });
     });
 
     describe('.redirect', function () {
