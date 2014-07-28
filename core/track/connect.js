@@ -249,13 +249,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     redirect: function (status, url, opts) {
         var parts;
 
-        if ( _.isNumber(status) ) {
-
-            if ( !_.contains(REDIRECT_CODES, status) ) {
-                status = 302;
-            }
-
-        } else {
+        if ( !_.isNumber(status) ) {
             opts = url;
             url = status;
             status = 302;
@@ -265,13 +259,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         parts[2] = Route.buildPath(parts[2], opts);
         url = parts[1] + parts[2];
 
-        this.res.setHeader('Location', url);
-
-        if ( this.neg.mediaTypes(['text/html']).length ) {
-            url = hyperLinkTpl({href: _.escape(url)});
-        }
-
-        return this.res.respond(status, url);
+        return this._redirect(status, url);
     },
 
     /**
@@ -287,7 +275,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     rewrite: function (path, opts) {
         path = Route.buildPath(path, opts);
 
-        return new Rewrite(path);
+        return this._rewrite(path);
     },
 
     /**
@@ -304,19 +292,44 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     render: function (status, id, arg) {
         /*eslint no-unused-vars: 0*/
-        var args;
-        var i;
 
         if ( _.isNumber(status) ) {
-            i = 2;
 
-        } else {
-            i = 1;
-            id = status;
-            status = this.res.getStatus();
+            return this._render(status, id, _.rest(arguments, 2));
         }
 
-        args = _.rest(arguments, i);
+        return this._render(this.res.getStatus(), status, _.rest(arguments, 1));
+    },
+
+    /**
+     * @tmp
+     * */
+    _redirect: function (status, url) {
+        this.res.setHeader('Location', url);
+
+        if ( !_.contains(REDIRECT_CODES, status) ) {
+            status = 302;
+        }
+
+        if ( this.neg.mediaTypes(['text/html']).length ) {
+            url = hyperLinkTpl({href: _.escape(url)});
+        }
+
+        return this.res.respond(status, url);
+    },
+
+    /**
+     * @tmp
+     * */
+    _rewrite: function (path) {
+
+        return new Rewrite(path);
+    },
+
+    /**
+     * @tmp
+     * */
+    _render: function (status, id, args) {
 
         return this.res.respond(status,
             this.agent.renderers[id].apply(this, args));
