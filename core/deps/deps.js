@@ -143,6 +143,22 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @memberOf {Deps}
      * @method
      *
+     * @param {String} path
+     * @param {*} [params]
+     *
+     * @returns {vow.Promise}
+     * */
+    invoke: function (path, params) {
+        var track = this.track;
+
+        return track.agent.resolve(track, path, params);
+    },
+
+    /**
+     * @public
+     * @memberOf {Deps}
+     * @method
+     *
      * @param {*} data
      * */
     notify: function (data) {
@@ -203,7 +219,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @returns {vow.Promise}
      * */
     __resolveAndSet: function (path) {
-        var promise = this.track.invoke(path, this.params);
+        var promise = this.invoke(path, this.params);
 
         promise.done(function (data) {
             this.setRes(path, data);

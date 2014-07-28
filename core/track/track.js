@@ -45,16 +45,13 @@ var Track = inherit(/** @lends Track.prototype */{
     },
 
     /**
-     * @public
-     * @memberOf {Track}
-     * @method
-     *
-     * @param {String} path
-     * @param {*} [params]
-     *
-     * @returns {vow.Promise}
-     * */
-    invoke: function (path, params) {
+     * @deprecated
+     *  */
+    invoke: /* istanbul ignore next */ function (path, params) {
+        this.agent.channel('sys.migration').emit('deprecated', [
+            'track.invoke(\'path, params\')',
+            'context.invoke(\'path, params\')'
+        ]);
 
         return this.agent.resolve(this, path, params);
     }
