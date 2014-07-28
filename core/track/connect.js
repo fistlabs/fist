@@ -13,6 +13,7 @@ var Track = /** @type Track */ require('./track');
 var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
+var hyperLinkTpl = _.template('<a href="\<%= href %\>">\<%= href %\></a>');
 
 /**
  * @class Connect
@@ -268,8 +269,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         this.res.setHeader('Location', url);
 
         if ( this.neg.mediaTypes(['text/html']).length ) {
-            url = _.escape(url);
-            url = '<a href="' + url + '">' + url + '</a>';
+            url = hyperLinkTpl({href: _.escape(url)});
         }
 
         return this.res.respond(status, url);
