@@ -4,7 +4,7 @@
 var Fs = require('fs');
 var Router = require('finger/Router');
 
-var asker = require('asker');
+var vowAsker = require('vow-asker');
 var assert = require('chai').assert;
 var sock = require('./util/sock');
 
@@ -77,11 +77,10 @@ describe('core/server', function () {
 
         server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 201);
 
             done();
@@ -113,7 +112,7 @@ describe('core/server', function () {
 
         server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -122,8 +121,7 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 500);
             assert.deepEqual(res.data, new Buffer('ERR'));
 
@@ -147,7 +145,7 @@ describe('core/server', function () {
 
         server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -156,8 +154,7 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 404);
             assert.deepEqual(spy, [1]);
 
@@ -180,7 +177,7 @@ describe('core/server', function () {
 
         server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -189,8 +186,7 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 501);
             assert.deepEqual(spy, [1]);
 
@@ -217,7 +213,7 @@ describe('core/server', function () {
 
         server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -226,8 +222,7 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 405);
             assert.strictEqual(res.headers.allow, 'POST');
             assert.deepEqual(spy, [1]);
@@ -268,11 +263,10 @@ describe('core/server', function () {
 
         server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 201);
             done();
         });
@@ -314,11 +308,10 @@ describe('core/server', function () {
 
             server.listen(sock);
 
-            asker({
+            vowAsker({
                 path: '/x/y/z/',
                 socketPath: sock
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 done();
             });

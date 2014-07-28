@@ -9,6 +9,8 @@ module.exports = function (opts, handle, receive, trackerOpts) {
     http(opts, function (req, res) {
         var track = new Connect(tracker, req, res);
         handle.call(this, track, req, res);
+    }).done(function (res) {
+        receive(null, res);
     }, receive);
     return tracker;
 };

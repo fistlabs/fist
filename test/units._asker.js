@@ -3,7 +3,7 @@
 
 var _ = require('lodash-node');
 var assert = require('chai').assert;
-var asker = require('asker');
+var vowAsker = require('vow-asker');
 var fist = require('../fist');
 var inherit = require('inherit');
 var sock = require('./util/sock');
@@ -63,11 +63,10 @@ describe('units/_asker', function () {
 
         app.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('{"x":42}'));
             done();
         });
@@ -121,11 +120,10 @@ describe('units/_asker', function () {
 
         app.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('{"x":42}'));
             done();
         });
@@ -163,7 +161,7 @@ describe('units/_asker', function () {
 
         app.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -173,8 +171,7 @@ describe('units/_asker', function () {
                 };
             }
 
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('42'));
             done();
         });
@@ -212,7 +209,7 @@ describe('units/_asker', function () {
 
         app.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -222,8 +219,7 @@ describe('units/_asker', function () {
                 };
             }
 
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('42'));
             done();
         });
@@ -266,10 +262,10 @@ describe('units/_asker', function () {
 
         app.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err) {
+        }).done(null, function (err) {
             assert.ok(err);
             done();
         });

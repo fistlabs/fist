@@ -10,7 +10,7 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
-        "asker": "0.4.6",
+        "vow-asker": "0.6.6",
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
         "finger": "0.3.0",

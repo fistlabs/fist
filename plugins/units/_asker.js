@@ -3,8 +3,7 @@
 var Pattern = /** @type Pattern */ require('finger/route/Pattern');
 
 var _ = require('lodash-node');
-var asker = require('asker');
-var vow = require('vow');
+var vowAsker = require('vow-asker');
 
 module.exports = function () {
 
@@ -38,19 +37,8 @@ module.exports = function () {
         },
 
         _$request: function (context) {
-            var defer = vow.defer();
 
-            asker(context.data, function (err, res) {
-
-                if ( err ) {
-                    defer.reject(err);
-
-                } else {
-                    defer.resolve(res);
-                }
-            });
-
-            return defer.promise();
+            return vowAsker(context.data);
         },
 
         _$compile: function (context) {

@@ -25,8 +25,7 @@ describe('core/track/response', function () {
             });
 
             rs.end();
-        }, function (err) {
-            assert.ok(!err);
+        }).done(function () {
             done();
         });
     });
@@ -51,8 +50,7 @@ describe('core/track/response', function () {
                 var res = new Res(rs);
                 res.setHeader('x-test', 'ok');
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.headers['x-test'], 'ok');
                 done();
             });
@@ -66,8 +64,7 @@ describe('core/track/response', function () {
                 res.setHeader('x-test', 'foo', true);
 
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.headers['x-test'], 'ok');
                 done();
             });
@@ -81,8 +78,7 @@ describe('core/track/response', function () {
                 res.setHeader('Set-Cookie', 'name2=value2');
 
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.deepEqual(res.headers['set-cookie'], [
                     'name=value', 'name2=value2']);
                 done();
@@ -101,9 +97,7 @@ describe('core/track/response', function () {
                 });
 
                 rs.end();
-            }, function (err, res) {
-
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.headers.foo, 'bar');
                 assert.strictEqual(res.headers.baz, 'zot');
 
@@ -119,8 +113,7 @@ describe('core/track/response', function () {
                 res.setHeader('test', 'ok');
                 assert.strictEqual(res.getHeader('Test'), 'ok');
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.headers.test, 'ok');
                 done();
             });
@@ -135,8 +128,7 @@ describe('core/track/response', function () {
                 var res = new Res(rs);
                 res.setStatus(201);
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
 
                 done();
@@ -153,8 +145,7 @@ describe('core/track/response', function () {
                 res.setStatus(201);
                 assert.strictEqual(res.getStatus(), 201);
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
 
                 done();
@@ -168,8 +159,7 @@ describe('core/track/response', function () {
                 var res = new Res(rs);
                 res.setCookie('name', 'value');
                 rs.end();
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.deepEqual(res.headers['set-cookie'], ['name=value']);
                 done();
             });
@@ -191,8 +181,7 @@ describe('core/track/response', function () {
                 vow.when(resp, function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 done();
             });
@@ -204,8 +193,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
                 assert.strictEqual(+res.headers['content-length'],
@@ -221,8 +209,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, 'test'), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
                 assert.strictEqual(+res.headers['content-length'],
@@ -238,9 +225,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, new Buffer('test')), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/octet-stream');
@@ -259,8 +244,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, body), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/octet-stream');
@@ -292,8 +276,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, body), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 500);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
                 assert.strictEqual(+res.headers['content-length'],
@@ -331,8 +314,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, body), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 500);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
                 assert.strictEqual(+res.headers['content-length'],
@@ -352,8 +334,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, error), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
                 assert.strictEqual(+res.headers['content-length'],
@@ -375,8 +356,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, error), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/json');
@@ -398,8 +378,7 @@ describe('core/track/response', function () {
                 vow.when(resp, function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
                 assert.strictEqual(+res.headers['content-length'],
@@ -415,8 +394,7 @@ describe('core/track/response', function () {
                 vow.when(res.respond(201, {a: 42}), function (resp) {
                     Res.end(rs, resp);
                 });
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/json');
