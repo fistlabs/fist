@@ -155,13 +155,13 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     },
 
     /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {*} data
+     * @deprecated
      * */
-    notify: function (data) {
+    notify: /* istanbul ignore next */ function (data) {
+        this.track.agent.channel('sys.migration').emit('deprecated', [
+            'context.notify(data)',
+            'context.trigger(\'ctx:notify\', data)'
+        ]);
 
         return this.trigger('ctx:notify', data);
     },

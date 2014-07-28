@@ -126,7 +126,7 @@ describe('core/deps/deps', function () {
         });
     });
 
-    describe('.notify', function () {
+    describe.skip('.notify', function () {
         it('Should trigger ctx:notify event', function (done) {
             var tracker = new Tracker();
             var track = new Track(tracker);

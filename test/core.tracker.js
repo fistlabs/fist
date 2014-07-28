@@ -277,7 +277,7 @@ describe('core/tracker', function () {
                 path: 'a',
                 deps: ['b', 'c'],
                 data: function (context) {
-                    context.notify('a');
+                    context.trigger('ctx:notify', 'a');
 
                     return 'a';
                 }
@@ -287,7 +287,7 @@ describe('core/tracker', function () {
                 path: 'b',
                 deps: ['c'],
                 data: function (context) {
-                    context.notify('b');
+                    context.trigger('ctx:notify', 'b');
 
                     throw 'b';
                 }
@@ -296,7 +296,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'c',
                 data: function (context) {
-                    context.notify('c');
+                    context.trigger('ctx:notify', 'c');
 
                     return 'c';
                 }

@@ -131,7 +131,9 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             //  только что загружено
             delete value.fresh;
 
-            this.__setCache(key, value, context).fail(context.notify, context);
+            this.__setCache(key, value, context).fail(function (err) {
+                context.trigger('ctx:notify', err);
+            });
 
             return data;
         }, this);
@@ -278,7 +280,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
         }, function (err) {
             //  ошибка забора из кэша
-            context.notify(err);
+            context.trigger('ctx:notify', err);
 
             return this.__callAndWrap(context);
         }, this);

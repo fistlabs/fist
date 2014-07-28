@@ -174,6 +174,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {vow.Promise}
      * */
     __next: function (track) {
+        //  TODO move match logic in track.__constructor?
         //  выбирается маршрут
         var result = this.router.
             find(track.method, track.url.pathname, track.route);
