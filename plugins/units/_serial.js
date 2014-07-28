@@ -14,7 +14,7 @@ module.exports = function () {
 
         path: '_serial',
 
-        data: function (context) {
+        data: function (track, context) {
 
             return this.__next(context, new Deque(this._steps), false);
         },
@@ -23,6 +23,7 @@ module.exports = function () {
 
         __next: function (context, steps, isError) {
             var name;
+            var func;
             var self = this;
 
             if ( steps.isEmpty() || context.data instanceof Skip ) {
@@ -31,16 +32,17 @@ module.exports = function () {
             }
 
             name = steps.shift();
+            func = this['_$' + name];
             context.trigger('ctx:' + name, context.data);
 
-            if ( isError && !_.isFunction(this['_$' + name]) ) {
+            if ( isError && !_.isFunction(func) ) {
 
                 return vow.reject(context.data);
             }
 
             return vow.invoke(function () {
 
-                return self._callMethod('_$' + name, context);
+                return func.call(self, context.track, context);
             }).always(function (promise) {
 
                 if ( isError ) {

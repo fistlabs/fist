@@ -7,21 +7,6 @@ var inherit = require('inherit');
 var path = require('path');
 var dirname = path.dirname(module.parent.filename);
 
-var Unit = inherit(require('./core/unit'), {
-
-    /**
-     * @inheritDoc
-     *
-     * @param {String} name
-     * @param {Context} context
-     * */
-    _callMethod: /* istanbul ignore next */ function (name, context) {
-
-        return this[name](context.track, context);
-    }
-
-});
-
 /**
  * @param {Object} [params]
  * @param {Object} [members]
@@ -39,7 +24,6 @@ function fist (params, members, statics) {
 }
 
 fist.inherit = function (members, statics) {
-    statics = _.extend({Unit: Unit}, statics);
 
     return inherit(Server, members, statics);
 };

@@ -26,7 +26,7 @@ module.exports = function () {
             return {};
         },
 
-        _$prepare: function (context) {
+        _$prepare: function (track, context) {
             var data = Object(context.data);
 
             if ( _.isString(data.path) ) {
@@ -36,18 +36,18 @@ module.exports = function () {
             return data;
         },
 
-        _$request: function (context) {
+        _$request: function (track, context) {
 
             return vowAsker(context.data);
         },
 
-        _$compile: function (context) {
+        _$compile: function (track, context) {
             context.data.data = JSON.parse(context.data.data);
 
             return context.data;
         },
 
-        _$resolve: function (context) {
+        _$resolve: function (track, context) {
 
             return context.data.data;
         }

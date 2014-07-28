@@ -51,7 +51,7 @@ describe('core/track/track', function () {
 
         tracker.unit({
             path: 'a',
-            data: function (context) {
+            data: function (track, context) {
                 assert.deepEqual(context.params, {
                     x: 42
                 });
