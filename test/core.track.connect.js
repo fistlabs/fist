@@ -143,7 +143,7 @@ describe('core/track/connect', function () {
         });
     });
 
-    describe('.body', function () {
+    describe.skip('.body', function () {
         it('Should download body', function (done) {
             doConnect({
                 path: '/',

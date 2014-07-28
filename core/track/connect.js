@@ -130,7 +130,11 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @returns {vow.Promise}
      * */
-    body: function () {
+    body: /* istanbul ignore next */ function () {
+        this.agent.channel('sys.migration').emit('deprecated', [
+            'connect.body()',
+            'connect.req.getBody()'
+        ]);
 
         return this.req.getBody();
     },
