@@ -30,8 +30,11 @@
         "gulp": "3.8.6",
         "gulp-mocha": "0.5.2",
         "gulp-istanbul": "0.2.1",
+        "gulp-eslint": "0.1.8",
+        "gulp-util": "3.0.0",
+        "through2": "0.5.1",
+        "minimatch": "1.0.0",
         "gulp-jscs": "1.0.0",
-        "eslint": "0.7.4",
         "chai": "1.9.1",
         "express": "4.6.1"
     },
@@ -43,9 +46,6 @@
         "url": "git://github.com/fistlabs/fist.git"
     },
     "scripts": {
-        "eslint": "eslint .",
-        "lint": "gulp jscs && npm run eslint",
-        "test": "npm run lint && gulp unit",
         "benchmark": "benchmark/runner.sh benchmark/express.js && benchmark/runner.sh benchmark/fist.js"
     },
     "engines": {
