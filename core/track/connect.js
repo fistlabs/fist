@@ -13,7 +13,6 @@ var Track = /** @type Track */ require('./track');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var vow = require('vow');
 var hyperLinkTpl = _.template('<a href="\<%= href %\>">\<%= href %\></a>');
 
 /**

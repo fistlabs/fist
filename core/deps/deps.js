@@ -24,7 +24,6 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @constructs
      * */
     __constructor: function (track, path, params) {
-        var self = this;
 
         /**
          * @public
