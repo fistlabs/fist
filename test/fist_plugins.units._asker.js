@@ -5,24 +5,15 @@ var _ = require('lodash-node');
 var assert = require('chai').assert;
 var vowAsker = require('vow-asker');
 var fist = require('../fist');
-var inherit = require('inherit');
 var sock = require('./util/sock');
 var fs = require('fs');
 
-var Unit = inherit(require('../core/unit'), {
-    _callMethod: function (name, context) {
-
-        return this[name](context);
-    }
-});
-
 describe('units/_asker', function () {
 
-    it('Should respond with expected value', function (done) {
+    it('Should respond with expected value (0)', function (done) {
 
-        var app = fist(null, null, {
-            Unit: Unit
-        });
+        var app = fist();
+        var origServer;
 
         app.route('/', 'front');
         app.route('/backend/', 'back');
@@ -61,22 +52,22 @@ describe('units/_asker', function () {
             fs.unlinkSync(sock);
         } catch (err) {}
 
-        app.listen(sock);
+        origServer = app.listen(sock);
 
         vowAsker({
             path: '/',
             socketPath: sock
         }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('{"x":42}'));
+            origServer.close();
             done();
         });
     });
 
-    it('Should respond with expected value', function (done) {
+    it('Should respond with expected value (1)', function (done) {
 
-        var app = fist(null, null, {
-            Unit: Unit
-        });
+        var app = fist();
+        var origServer;
 
         app.route('/', 'front');
         app.route('/backend/', 'back');
@@ -118,22 +109,22 @@ describe('units/_asker', function () {
             fs.unlinkSync(sock);
         } catch (err) {}
 
-        app.listen(sock);
+        origServer = app.listen(sock);
 
         vowAsker({
             path: '/',
             socketPath: sock
         }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('{"x":42}'));
+            origServer.close();
             done();
         });
     });
 
-    it('Should respond with expected value', function (done) {
+    it('Should respond with expected value (2)', function (done) {
 
-        var app = fist(null, null, {
-            Unit: Unit
-        });
+        var app = fist();
+        var origServer;
 
         app.route('/', 'front');
 
@@ -159,7 +150,7 @@ describe('units/_asker', function () {
             fs.unlinkSync(sock);
         } catch (err) {}
 
-        app.listen(sock);
+        origServer = app.listen(sock);
 
         vowAsker({
             path: '/',
@@ -173,15 +164,15 @@ describe('units/_asker', function () {
 
         }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('42'));
+            origServer.close();
             done();
         });
     });
 
-    it('Should respond with expected value', function (done) {
+    it('Should respond with expected value (3)', function (done) {
 
-        var app = fist(null, null, {
-            Unit: Unit
-        });
+        var app = fist();
+        var origServer;
 
         app.route('/', 'front');
 
@@ -207,7 +198,7 @@ describe('units/_asker', function () {
             fs.unlinkSync(sock);
         } catch (err) {}
 
-        app.listen(sock);
+        origServer = app.listen(sock);
 
         vowAsker({
             path: '/',
@@ -221,15 +212,15 @@ describe('units/_asker', function () {
 
         }).done(function (res) {
             assert.deepEqual(res.data, new Buffer('42'));
+            origServer.close();
             done();
         });
     });
 
-    it('Should respond with expected value', function (done) {
+    it('Should respond with expected value (4)', function (done) {
 
-        var app = fist(null, null, {
-            Unit: Unit
-        });
+        var app = fist();
+        var origServer;
 
         app.route('/', 'front');
 
@@ -259,13 +250,14 @@ describe('units/_asker', function () {
             fs.unlinkSync(sock);
         } catch (err) {}
 
-        app.listen(sock);
+        origServer = app.listen(sock);
 
         vowAsker({
             path: '/',
             socketPath: sock
         }).done(null, function (err) {
             assert.ok(err);
+            origServer.close();
             done();
         });
     });

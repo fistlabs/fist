@@ -42,8 +42,8 @@
         "url": "git://github.com/fistlabs/fist.git"
     },
     "scripts": {
-        "unit": "mocha",
-        "cover": "istanbul cover node_modules/.bin/_mocha",
+        "unit": "mocha --no-exit",
+        "cover": "istanbul cover node_modules/.bin/_mocha --no-exit",
         "jscs": "jscs .",
         "eslint": "eslint .",
         "lint": "npm run jscs && npm run eslint",
