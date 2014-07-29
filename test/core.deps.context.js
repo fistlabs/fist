@@ -63,14 +63,36 @@ describe('core/deps/context', function () {
         });
     });
 
+    describe('.toJSON', function () {
+        it('Should serialize to JSON', function () {
+            var context = new Context();
+            assert.deepEqual(context.toJSON(), {
+                result: {},
+                errors: {}
+            });
+        });
+    });
+
     describe('.render', function () {
 
         it('Should render template', function (done) {
 
             var context = new Context({
-                render: function (renderer) {
-                    assert.deepEqual(renderer, 'test');
-                    done();
+                response: {
+                    respond: function (status, body) {
+                        assert.isUndefined(status);
+                        assert.strictEqual(body, 'test!');
+                        done();
+                    }
+                },
+                agent: {
+                    renderers: {
+                        test: function (_context) {
+                            assert.strictEqual(_context, context);
+
+                            return 'test!';
+                        }
+                    }
                 }
             });
 
