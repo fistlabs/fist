@@ -56,25 +56,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
     },
 
     /**
-     * Запускает операцию разрешения узла
-     *
-     * @public
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {String} path
-     * @param {*} [params]
-     *
-     * @returns {vow.Promise}
-     * */
-    resolve: function (track, path, params) {
-        //  TODO создавать track прямо тут
-
-        return track.invoke(path, params);
-    },
-
-    /**
      * @protected
      * @memberOf {Tracker}
      * @method

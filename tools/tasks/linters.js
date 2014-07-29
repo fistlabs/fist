@@ -62,6 +62,7 @@ function runEslint (done) {
             }
         });
 }
+
 module.exports = function () {
     this.task('jscs', [], runJscs);
     this.task('eslint', [], runEslint);

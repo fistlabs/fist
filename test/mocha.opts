@@ -1,3 +1,0 @@
---reporter spec
---check-leaks
---slow=100000

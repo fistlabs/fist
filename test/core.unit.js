@@ -95,7 +95,7 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'x').done(function (res) {
+                new Track(tracker).invoke('x').done(function (res) {
                     assert.strictEqual(res, 42);
                     done();
                 });
@@ -122,11 +122,11 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'test').
+                new Track(tracker).invoke('test').
                     then(function (spy) {
                         assert.deepEqual(spy, [1]);
                     }).always(function () {
-                        tracker.resolve(new Track(tracker), 'test').
+                        new Track(tracker).invoke('test').
                             done(function (spy) {
                                 assert.deepEqual(spy, [1, 1]);
                                 done();
@@ -150,11 +150,11 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'test').
+                new Track(tracker).invoke('test').
                     fail(function (spy) {
                         assert.deepEqual(spy, [1]);
                     }).always(function () {
-                        tracker.resolve(new Track(tracker), 'test').
+                        new Track(tracker).invoke('test').
                             fail(function (spy) {
                                 assert.deepEqual(spy, [1, 1]);
                                 done();
@@ -193,12 +193,12 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'test').
+                new Track(tracker).invoke('test').
                     then(function (spy) {
                         assert.deepEqual(spy, [1]);
                         assert.deepEqual(e, [42, 42]);
                     }).always(function () {
-                        tracker.resolve(new Track(tracker), 'test').
+                        new Track(tracker).invoke('test').
                             then(function (spy) {
                                 assert.deepEqual(spy, [1, 1]);
                                 assert.deepEqual(e, [42, 42, 42, 42]);
@@ -225,10 +225,10 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'test').then(function () {
+                new Track(tracker).invoke('test').then(function () {
                     assert.deepEqual(spy, [1]);
                 }).always(function () {
-                    tracker.resolve(new Track(tracker), 'test').
+                    new Track(tracker).invoke('test').
                         then(function () {
                             assert.deepEqual(spy, [1, 1]);
                             done();
@@ -251,10 +251,10 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'test').then(function () {
+                new Track(tracker).invoke('test').then(function () {
                     assert.deepEqual(spy, [1]);
                 }).always(function () {
-                    tracker.resolve(new Track(tracker), 'test').
+                    new Track(tracker).invoke('test').
                         then(function () {
                             assert.deepEqual(spy, [1]);
                             done();
@@ -282,8 +282,8 @@ describe('core/unit', function () {
             });
 
             tracker.ready().always(function () {
-                tracker.resolve(new Track(tracker), 'test').always(function () {
-                    tracker.resolve(new Track(tracker), 'test').
+                new Track(tracker).invoke('test').always(function () {
+                    new Track(tracker).invoke('test').
                         then(function () {
                             assert.deepEqual(spy, [1]);
                             done();
