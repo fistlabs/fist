@@ -255,28 +255,4 @@ describe('core/track/connect', function () {
         });
     });
 
-    describe('.render', function () {
-        it('Should render response by template provided', function (done) {
-            var tracker = /** @type {Server}*/ doConnect({
-
-            }, function (track, req, res) {
-                vow.when(track.render('test', {
-                    page: 'test'
-                }), function (resp) {
-                    Response.end(res, resp);
-                });
-            }, function (err, res) {
-                assert.ok(!err);
-                assert.deepEqual(res.data, new Buffer('foo'));
-                done();
-            });
-            tracker.renderers.test = function (locals) {
-                assert.deepEqual(locals, {
-                    page: 'test'
-                });
-                return 'foo';
-            };
-        });
-    });
-
 });

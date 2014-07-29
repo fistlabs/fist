@@ -242,21 +242,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     },
 
     /**
-     * @public
-     * @memberOf {Connect}
-     * @method
-     *
-     * @param {String} id
-     * @param {*} [locals]
-     *
-     * @returns {vow.Promise}
-     * */
-    render: function (id, locals) {
-
-        return this.response.respond(void 0, this.agent.renderers[id](locals));
-    },
-
-    /**
      * Выполняет ответ приложения
      *
      * @public
