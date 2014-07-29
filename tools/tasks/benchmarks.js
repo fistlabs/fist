@@ -6,11 +6,10 @@ module.exports = function () {
 
     this.task('benchmark', ['test'], function (done) {
         var benchmark = childProcess.spawn('benchmark/runner.sh',
-            ['benchmark/express.js', 'benchmark/fist.js']);
+            ['benchmark/*.js']);
         benchmark.stdout.pipe(process.stdout);
         benchmark.stderr.pipe(process.stderr);
-        benchmark.on('exit', function () {
-            done();
-        });
+        benchmark.on('exit', done);
+        benchmark.on('error', done);
     });
 };
