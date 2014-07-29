@@ -45,9 +45,6 @@
         "type": "git",
         "url": "git://github.com/fistlabs/fist.git"
     },
-    "scripts": {
-        "benchmark": "benchmark/runner.sh benchmark/express.js && benchmark/runner.sh benchmark/fist.js"
-    },
     "engines": {
         "node": ">= 0.10.0"
     },
