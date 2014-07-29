@@ -62,15 +62,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
          * @type {Array}
          * */
         this.__decls = [];
-
-        /*istanbul ignore next */
-        //  TODO remove in 2.0.0
-        this.channel('sys.migration').
-            on('deprecated', function (details) {
-                /*eslint no-console: 0*/
-                console.warn('Note that "%s" is deprecated. Use "%s" instead.',
-                    details[0], details[1]);
-            });
     },
 
     /**
