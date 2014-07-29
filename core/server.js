@@ -81,8 +81,15 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {vow.Promise}
      * */
     handle: function (track) {
+        var promise = this.ready();
 
-        return this.ready().then(function () {
+        //  -1 possible tick
+        if ( promise.isFulfilled() ) {
+
+            return this.__next(track);
+        }
+
+        return promise.then(function () {
 
             return this.__next(track);
         }, function (err) {
