@@ -224,7 +224,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         return _.reduce(decls, function (decls, decl) {
             var base;
             var members = decl[0];
-            var unit;
 
             if ( _.has(members, 'base') ) {
                 base = members.base;
@@ -233,14 +232,19 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
                 base = '_unit';
             }
 
-            if ( !_.isArray(base) ) {
-                base = [base];
-            }
+            if ( _.has(classes, base) ) {
 
-            unit = base[0];
+                if ( _.isUndefined(members.mix) || _.isNull(members.mix) ) {
+                    base = [base];
 
-            if ( _.has(classes, unit) ) {
-                base = [classes[unit]].concat(_.rest(base, 1));
+                } else if ( !_.isArray(members.mix) ) {
+                    base = [base, members.mix];
+
+                } else {
+                    base = [base].concat(members.mix);
+                }
+
+                base = [classes[base[0]]].concat(_.rest(base, 1));
                 classes[members.path] = inherit(base, members, decl[1]);
 
                 return decls;

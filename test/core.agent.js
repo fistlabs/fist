@@ -243,7 +243,7 @@ describe('core/agent', function () {
         });
     });
 
-    it('Should support mixins', function (done) {
+    it('Should support mixins (0)', function (done) {
 
         function Mixin () {}
 
@@ -258,7 +258,36 @@ describe('core/agent', function () {
 
         agent.unit({
             path: 'test',
-            base: ['_unit', Mixin]
+            mix: [Mixin]
+        });
+
+        agent.ready().done(function () {
+            var unit = agent.getUnit('test');
+
+            assert.instanceOf(unit, Unit);
+            assert.isFunction(unit.foo);
+            assert.strictEqual(unit.foo(), 42);
+
+            done();
+        });
+    });
+
+    it('Should support mixins (0)', function (done) {
+
+        function Mixin () {}
+
+        Mixin.prototype = {
+            foo: function () {
+
+                return 42;
+            }
+        };
+
+        var agent = new Agent();
+
+        agent.unit({
+            path: 'test',
+            mix: Mixin
         });
 
         agent.ready().done(function () {
