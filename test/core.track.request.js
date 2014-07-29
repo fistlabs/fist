@@ -18,8 +18,7 @@ describe('core/track/request', function () {
             assert.isObject(req.params);
             assert.deepEqual(req.params, {a: 5});
             rs.end();
-        }, function (err) {
-            assert.ok(!err);
+        }).done(function () {
             done();
         });
     });
@@ -34,8 +33,7 @@ describe('core/track/request', function () {
                     Url.parse('http://localhost/test/', true));
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -53,8 +51,7 @@ describe('core/track/request', function () {
                     Url.parse('http://fist.io/test/', true));
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -72,8 +69,7 @@ describe('core/track/request', function () {
                     Url.parse('https://localhost/test/', true));
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -92,8 +88,7 @@ describe('core/track/request', function () {
                     Url.parse('https://localhost/test/', true));
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -115,8 +110,7 @@ describe('core/track/request', function () {
 
                 rs.end();
 
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -138,8 +132,7 @@ describe('core/track/request', function () {
 
                 rs.end();
 
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -158,8 +151,7 @@ describe('core/track/request', function () {
                 assert.ok(_.isEmpty(cookies));
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -178,8 +170,7 @@ describe('core/track/request', function () {
                 assert.strictEqual(cookies, req.getCookies());
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -202,8 +193,7 @@ describe('core/track/request', function () {
                 });
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -225,8 +215,7 @@ describe('core/track/request', function () {
                 assert.isUndefined(req.getCookie('z'));
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -248,8 +237,7 @@ describe('core/track/request', function () {
                     rs.end();
                 });
 
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -266,8 +254,7 @@ describe('core/track/request', function () {
                 assert.strictEqual(body, req.getBody());
 
                 rs.end();
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -287,8 +274,7 @@ describe('core/track/request', function () {
                     rs.end();
                 });
 
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });
@@ -308,8 +294,7 @@ describe('core/track/request', function () {
                     rs.end();
                 });
 
-            }, function (err) {
-                assert.ok(!err);
+            }).done(function () {
                 done();
             });
         });

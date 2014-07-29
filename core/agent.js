@@ -1,7 +1,11 @@
 'use strict';
 
+var uniqueId = require('unique-id');
+var S_BASE_NAME = '_' + uniqueId();
+
 var Cache = /** @type Cache */ require('./cache/cache');
 var Channel = /** @type Channel */ require('./channel');
+var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -170,10 +174,12 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {Object}
      * */
     __createUnits: function (decls) {
-        var classes = {_unit: this.__self.Unit};
+        var classes = {};
         var conflicts;
         var remaining = decls.length;
         var units;
+
+        classes[S_BASE_NAME] = Unit;
 
         while ( _.size(decls) ) {
             decls = this.__addUnitClasses(decls, classes);
@@ -224,23 +230,27 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         return _.reduce(decls, function (decls, decl) {
             var base;
             var members = decl[0];
-            var unit;
 
             if ( _.has(members, 'base') ) {
                 base = members.base;
 
             } else {
-                base = '_unit';
+                base = S_BASE_NAME;
             }
 
-            if ( !_.isArray(base) ) {
-                base = [base];
-            }
+            if ( _.has(classes, base) ) {
 
-            unit = base[0];
+                if ( _.isUndefined(members.mix) || _.isNull(members.mix) ) {
+                    base = [base];
 
-            if ( _.has(classes, unit) ) {
-                base = [classes[unit]].concat(_.rest(base, 1));
+                } else if ( !_.isArray(members.mix) ) {
+                    base = [base, members.mix];
+
+                } else {
+                    base = [base].concat(members.mix);
+                }
+
+                base = [classes[base[0]]].concat(_.rest(base, 1));
                 classes[members.path] = inherit(base, members, decl[1]);
 
                 return decls;
@@ -251,17 +261,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             return decls;
         }, [], this);
     }
-
-}, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf Agent
-     * @property
-     * @type {Function}
-     * */
-    Unit: require('./unit')
 
 });
 

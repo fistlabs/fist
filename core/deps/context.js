@@ -32,6 +32,35 @@ var Context = inherit(Deps, /** @lends Context.prototype */ {
         }
 
         return result;
+    },
+
+    /**
+     * @public
+     * @memberOf {Context}
+     * @method
+     *
+     * @param {String} renderer
+     *
+     * @returns {vow.Promise}
+     * */
+    render: function (renderer) {
+
+        return this.track.render(renderer, this.toJSON());
+    },
+
+    /**
+     * @public
+     * @memberOf {Context}
+     * @method
+     *
+     * @returns {Object}
+     * */
+    toJSON: function () {
+
+        return {
+            errors: this.errors,
+            result: this.result
+        };
     }
 
 });

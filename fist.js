@@ -7,20 +7,7 @@ var inherit = require('inherit');
 var path = require('path');
 var dirname = path.dirname(module.parent.filename);
 
-var Unit = inherit(require('./core/unit'), {
-
-    /**
-     * @inheritDoc
-     *
-     * @param {String} name
-     * @param {Context} context
-     * */
-    _callMethod: /* istanbul ignore next */ function (name, context) {
-
-        return this[name](context.track, context);
-    }
-
-});
+var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
 
 /**
  * @param {Object} [params]
@@ -30,18 +17,23 @@ var Unit = inherit(require('./core/unit'), {
  * @returns {Server}
  * */
 function fist (params, members, statics) {
+    var app = fist.create(params, members, statics);
+
+    return app.plug(path.join(__dirname, S_FIST_PLUGINS),
+        path.join(app.params.cwd, S_FIST_PLUGINS));
+}
+
+fist.inherit = function (members, statics) {
+
+    return inherit(Server, members, statics);
+};
+
+fist.create = function (params, members, statics) {
     var Fist = fist.inherit(members, statics);
 
     params = _.extend({cwd: dirname}, params);
 
-    return new Fist(params).
-        plug(path.join(__dirname, 'plugins', '**', '*.js'));
-}
-
-fist.inherit = function (members, statics) {
-    statics = _.extend({Unit: Unit}, statics);
-
-    return inherit(Server, members, statics);
+    return new Fist(params);
 };
 
 module.exports = fist;

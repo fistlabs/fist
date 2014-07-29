@@ -1,7 +1,6 @@
 'use strict';
 
 var Connect = /** @type Connect */ require('./track/connect');
-var Context = /** @type Context */ require('./deps/context');
 var Router = /** @type Router */ require('finger/Router');
 var Response = /** @type Response */ require('./track/response');
 var Respond = /** @type Respond */ require('./skip/respond');
@@ -66,18 +65,30 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             var track = self._createTrack(req, res);
 
             self.emit('sys:request', track);
-            self.ready().then(function () {
-
-                return self.__next(track);
-            }, function (err) {
-
-                return track.res.respond(500, err);
-            }).done(function (resp) {
+            self.handle(track).done(function (resp) {
                 Response.end(res, resp);
                 track.time = new Date() - date;
                 self.emit('sys:response', track);
             });
         };
+    },
+
+    /**
+     * @public
+     * @memberOf {Server}
+     * @method
+     *
+     * @returns {vow.Promise}
+     * */
+    handle: function (track) {
+
+        return this.ready().then(function () {
+
+            return this.__next(track);
+        }, function (err) {
+
+            return track.response.respond(500, err);
+        }, this);
     },
 
     /**
@@ -127,18 +138,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
     },
 
     /**
-     * @inheritdoc
-     *
-     * @memberOf {Server}
-     *
-     * @returns {Context}
-     * */
-    _createCtx: function (track, path, params) {
-
-        return new Context(track, path, params);
-    },
-
-    /**
      * @protected
      * @memberOf {Server}
      * @method
@@ -174,6 +173,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {vow.Promise}
      * */
     __next: function (track) {
+        //  TODO move match logic in track.__constructor?
         //  выбирается маршрут
         var result = this.router.
             find(track.method, track.url.pathname, track.route);
@@ -182,7 +182,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         if ( _.isNull(result) ) {
             this.emit('sys:ematch', track);
             //  Not Found
-            return track.res.respond(404);
+            return track.response.respond(404);
         }
 
         //  возвращен массив
@@ -194,7 +194,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             //  маршрута отвечающего по такому методу запроса
             if ( 0 === _.size(result) ) {
                 //  Not Implemented
-                return track.res.respond(501);
+                return track.response.respond(501);
             }
 
             //  Иначе есть такие маршруты, но для них не
@@ -202,7 +202,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
             track.header('Allow', result.join(', '));
 
             //  Method Not Allowed
-            return track.res.respond(405);
+            return track.response.respond(405);
         }
 
         track.match = result.match;
@@ -210,7 +210,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
 
         this.emit('sys:match', track);
 
-        return this.resolve(track, result.route.data.unit).
+        return track.invoke(result.route.data.unit).
             then(function (data) {
                 //  was sent
                 if ( data instanceof Respond ) {
@@ -227,7 +227,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
                 return this.__next(track);
             }, function (err) {
 
-                return track.res.respond(500, err);
+                return track.response.respond(500, err);
             }, this);
     },
 
@@ -262,7 +262,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         //  удаляем все кэши
         track.tasks = {};
         //  переписываем url
-        track.url = track.req.createUrl(data.path);
+        track.url = track.request.createUrl(data.path);
 
         return this.__next(track);
     }

@@ -80,7 +80,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b'],
-                data: function (context) {
+                data: function (track, context) {
                     assert.strictEqual(context.getRes('b'), 'b');
 
                     return 'a';
@@ -108,7 +108,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b'],
-                data: function (context) {
+                data: function (track, context) {
                     assert.isUndefined(context.getErr('b'));
 
                     return 'a';
@@ -131,7 +131,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['c'],
-                data: function (context) {
+                data: function (track, context) {
                     assert.strictEqual(context.getRes('c'), 'c');
 
                     return 'a';
@@ -141,7 +141,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'b',
                 deps: ['c'],
-                data: function (context) {
+                data: function (track, context) {
                     assert.strictEqual(context.getRes('c'), 'c');
 
                     return 'b';
@@ -162,7 +162,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'x',
                 deps: ['a', 'b'],
-                data: function (context) {
+                data: function (track, context) {
                     assert.strictEqual(context.getRes('a'), 'a');
                     assert.strictEqual(context.getRes('b'), 'b');
 
@@ -276,8 +276,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b', 'c'],
-                data: function (context) {
-                    context.notify('a');
+                data: function (track, context) {
+                    context.trigger('ctx:notify', 'a');
 
                     return 'a';
                 }
@@ -286,8 +286,8 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'b',
                 deps: ['c'],
-                data: function (context) {
-                    context.notify('b');
+                data: function (track, context) {
+                    context.trigger('ctx:notify', 'b');
 
                     throw 'b';
                 }
@@ -295,8 +295,8 @@ describe('core/tracker', function () {
 
             tracker.unit({
                 path: 'c',
-                data: function (context) {
-                    context.notify('c');
+                data: function (track, context) {
+                    context.trigger('ctx:notify', 'c');
 
                     return 'c';
                 }

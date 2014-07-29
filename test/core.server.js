@@ -4,7 +4,7 @@
 var Fs = require('fs');
 var Router = require('finger/Router');
 
-var asker = require('asker');
+var vowAsker = require('vow-asker');
 var assert = require('chai').assert;
 var sock = require('./util/sock');
 
@@ -60,12 +60,13 @@ describe('core/server', function () {
 
     it('Should respond after matching', function (done) {
         var server = new Server();
+        var origServer;
 
         server.route('/', 'index');
 
         server.unit({
             path: 'index',
-            data: function (context) {
+            data: function (track, context) {
 
                 return context.track.send(201);
             }
@@ -75,15 +76,14 @@ describe('core/server', function () {
             Fs.unlinkSync(sock);
         } catch (err) {}
 
-        server.listen(sock);
+        origServer = server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 201);
-
+            origServer.close();
             done();
         });
     });
@@ -91,6 +91,7 @@ describe('core/server', function () {
     it('Should respond 500 if init failed', function (done) {
 
         var server = new Server();
+        var origServer;
 
         server.plug(function () {
 
@@ -101,7 +102,7 @@ describe('core/server', function () {
 
         server.unit({
             path: 'index',
-            data: function (context) {
+            data: function (track, context) {
 
                 return context.track.send(201);
             }
@@ -111,9 +112,9 @@ describe('core/server', function () {
             Fs.unlinkSync(sock);
         } catch (err) {}
 
-        server.listen(sock);
+        origServer = server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -122,11 +123,10 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 500);
             assert.deepEqual(res.data, new Buffer('ERR'));
-
+            origServer.close();
             done();
         });
     });
@@ -134,6 +134,7 @@ describe('core/server', function () {
     it('Should respond 404 if match failed', function (done) {
         var spy = [];
         var server = new Server();
+        var origServer;
 
         server.route('/foo/');
 
@@ -145,9 +146,9 @@ describe('core/server', function () {
             Fs.unlinkSync(sock);
         } catch (err) {}
 
-        server.listen(sock);
+        origServer = server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -156,11 +157,10 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 404);
             assert.deepEqual(spy, [1]);
-
+            origServer.close();
             done();
         });
     });
@@ -169,6 +169,7 @@ describe('core/server', function () {
 
         var spy = [];
         var server = new Server();
+        var origServer;
 
         server.on('sys:ematch', function () {
             spy.push(1);
@@ -178,9 +179,9 @@ describe('core/server', function () {
             Fs.unlinkSync(sock);
         } catch (err) {}
 
-        server.listen(sock);
+        origServer = server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -189,11 +190,10 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 501);
             assert.deepEqual(spy, [1]);
-
+            origServer.close();
             done();
         });
     });
@@ -203,6 +203,7 @@ describe('core/server', function () {
 
         var spy = [];
         var server = new Server();
+        var origServer;
 
         server.route('GET /foo/', 'foo');
         server.route('POST /', 'upload');
@@ -215,9 +216,9 @@ describe('core/server', function () {
             Fs.unlinkSync(sock);
         } catch (err) {}
 
-        server.listen(sock);
+        origServer = server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock,
             statusFilter: function () {
@@ -226,12 +227,11 @@ describe('core/server', function () {
                     accept: true
                 };
             }
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 405);
             assert.strictEqual(res.headers.allow, 'POST');
             assert.deepEqual(spy, [1]);
-
+            origServer.close();
             done();
         });
     });
@@ -239,20 +239,21 @@ describe('core/server', function () {
     it('Should continue routing if controller has not sent', function (done) {
 
         var server = new Server();
+        var origServer;
 
         server.route('/', 'preset');
         server.route('/', 'index');
 
         server.unit({
             path: 'preset',
-            data: function (context) {
+            data: function (track, context) {
                 context.track.url.query.role = 'admin';
             }
         });
 
         server.unit({
             path: 'index',
-            data: function (context) {
+            data: function (track, context) {
                 assert.deepEqual(context.track.url.query, {
                     role: 'admin'
                 });
@@ -266,14 +267,14 @@ describe('core/server', function () {
 
         } catch (err) {}
 
-        server.listen(sock);
+        origServer = server.listen(sock);
 
-        asker({
+        vowAsker({
             path: '/',
             socketPath: sock
-        }, function (err, res) {
-            assert.ok(!err);
+        }).done(function (res) {
             assert.strictEqual(res.statusCode, 201);
+            origServer.close();
             done();
         });
     });
@@ -282,13 +283,14 @@ describe('core/server', function () {
         it('Should rewrite the url', function (done) {
 
             var server = new Server();
+            var origServer;
 
             server.route('/x/y/z/', 'rewrite');
             server.route('/<page>/', 'control');
 
             server.unit({
                 path: 'rewrite',
-                data: function (context) {
+                data: function (track, context) {
 
                     return context.track.rewrite('/<page>/', {
                         page: 'test',
@@ -299,7 +301,7 @@ describe('core/server', function () {
 
             server.unit({
                 path: 'control',
-                data: function (context) {
+                data: function (track, context) {
                     assert.strictEqual(context.arg('page'), 'test');
                     assert.strictEqual(context.track.url.path, '/test/?a=42');
 
@@ -312,14 +314,14 @@ describe('core/server', function () {
 
             } catch (err) {}
 
-            server.listen(sock);
+            origServer = server.listen(sock);
 
-            asker({
+            vowAsker({
                 path: '/x/y/z/',
                 socketPath: sock
-            }, function (err, res) {
-                assert.ok(!err);
+            }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
+                origServer.close();
                 done();
             });
         });

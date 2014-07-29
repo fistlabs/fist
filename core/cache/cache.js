@@ -56,6 +56,8 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
      * */
     set: function (k, v, cacheMaxAge, done) {
         var lastUpdated = +new Date();
+        var base = this.__base;
+        var self = this;
 
         cacheMaxAge = +cacheMaxAge;
 
@@ -71,7 +73,9 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
             return new Date() - lastUpdated >= cacheMaxAge;
         };
 
-        done(null, this.__base(k, v));
+        process.nextTick(function () {
+            done(null, base.call(self, k, v));
+        });
     },
 
     /**
@@ -85,12 +89,18 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
      * @returns {*}
      * */
     get: function (k, done) {
+        var base = this.__base;
+        var self = this;
 
         if ( this.has(k) && this.__checker[k]() ) {
+
+            delete this.__checker[k];
             this.del(k);
         }
 
-        done(null, this.__base(k));
+        process.nextTick(function () {
+            done(null, base.call(self, k));
+        });
     }
 
 });

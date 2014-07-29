@@ -62,4 +62,20 @@ describe('core/deps/context', function () {
             assert.strictEqual(ctx.arg('a'), 43);
         });
     });
+
+    describe('.render', function () {
+
+        it('Should render template', function (done) {
+
+            var context = new Context({
+                render: function (renderer) {
+                    assert.deepEqual(renderer, 'test');
+                    done();
+                }
+            });
+
+            context.render('test');
+        });
+    });
+
 });

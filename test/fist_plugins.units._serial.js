@@ -8,7 +8,7 @@ describe('units/_serial', function () {
 
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
-    var _serial = require('../plugins/units/_serial');
+    var _serial = require('../fist_plugins/units/_serial');
 
     it('Should be resolved after a and b steps', function (done) {
         var tracker = new Tracker();
@@ -25,7 +25,7 @@ describe('units/_serial', function () {
 
                 return 40;
             },
-            _$b: function (context) {
+            _$b: function (track, context) {
 
                 return context.data + 2;
             }
@@ -152,7 +152,7 @@ describe('units/_serial', function () {
 
                 return skip;
             },
-            _$b: function (context) {
+            _$b: function (track, context) {
 
                 return context.data + 2;
             }

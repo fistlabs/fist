@@ -16,12 +16,12 @@ describe('core/track/connect', function () {
         doConnect({
             method: 'POST'
         }, function (track, req, res) {
-            assert.instanceOf(track.req, Request);
-            assert.instanceOf(track.res, Response);
+            assert.instanceOf(track.request, Request);
+            assert.instanceOf(track.response, Response);
             assert.strictEqual(track.method, 'POST');
             assert.deepEqual(track.match, {});
             assert.strictEqual(track.route, null);
-            assert.deepEqual(track.req.createUrl(req.url), track.url);
+            assert.deepEqual(track.request.createUrl(req.url), track.url);
             res.end();
         }, function (err) {
             assert.ok(!err);
@@ -143,38 +143,6 @@ describe('core/track/connect', function () {
         });
     });
 
-    describe('.body', function () {
-        it('Should download body', function (done) {
-            doConnect({
-                path: '/',
-                body: 'TEST',
-                method: 'POST'
-            }, function (track, req, res) {
-
-                track.body().then(function (body) {
-                    assert.deepEqual(body.input, new Buffer('TEST'));
-                    res.end();
-                });
-
-            }, function (err) {
-                assert.ok(!err);
-                done();
-            });
-        });
-
-        it('Should send body', function (done) {
-            doConnect({}, function (track, req, res) {
-                vow.when(track.body(':)'), function (resp) {
-                    Response.end(res, resp);
-                });
-            }, function (err, res) {
-                assert.ok(!err);
-                assert.deepEqual(res.data, new Buffer(':)'));
-                done();
-            });
-        });
-    });
-
     describe('.redirect', function () {
         it('Should redirect with code', function (done) {
             doConnect({
@@ -288,49 +256,27 @@ describe('core/track/connect', function () {
     });
 
     describe('.render', function () {
-
-        it('Should render response by template', function (done) {
-            var tracker = /** @type {Server} */ doConnect({
+        it('Should render response by template provided', function (done) {
+            var tracker = /** @type {Server}*/ doConnect({
 
             }, function (track, req, res) {
                 vow.when(track.render('test', {
-                    name: 'spacy'
+                    page: 'test'
                 }), function (resp) {
                     Response.end(res, resp);
                 });
             }, function (err, res) {
                 assert.ok(!err);
-                assert.deepEqual(res.data, new Buffer('Name spacy'));
-                assert.strictEqual(res.statusCode, 200);
-
+                assert.deepEqual(res.data, new Buffer('foo'));
                 done();
             });
-            tracker.renderers.test = function (data) {
-
-                return 'Name ' + data.name;
-            };
-        });
-
-        it('Should render response by template with code', function (done) {
-            var tracker = /** @type {Server} */ doConnect({
-
-            }, function (track, req, res) {
-                vow.when(track.render(201, 'test', {
-                    name: 'spacy'
-                }), function (resp) {
-                    Response.end(res, resp);
+            tracker.renderers.test = function (locals) {
+                assert.deepEqual(locals, {
+                    page: 'test'
                 });
-            }, function (err, res) {
-                assert.ok(!err);
-                assert.deepEqual(res.data, new Buffer('Name spacy'));
-                assert.strictEqual(res.statusCode, 201);
-
-                done();
-            });
-            tracker.renderers.test = function (data) {
-
-                return 'Name ' + data.name;
+                return 'foo';
             };
         });
     });
+
 });

@@ -78,11 +78,12 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
+     * @param {Track} track
      * @param {Deps} context
      *
      * @returns {*}
      * */
-    data: /* istanbul ignore next */ function (context) {
+    data: /* istanbul ignore next */ function (track, context) {
         /*eslint no-unused-vars: 0*/
     },
 
@@ -131,7 +132,9 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             //  только что загружено
             delete value.fresh;
 
-            this.__setCache(key, value, context).fail(context.notify, context);
+            this.__setCache(key, value, context).fail(function (err) {
+                context.trigger('ctx:notify', err);
+            });
 
             return data;
         }, this);
@@ -171,11 +174,12 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
+     * @param {Track} track
      * @param {Deps} context
      *
      * @returns {Array<String>}
      * */
-    _getCacheKeyParts: function (context) {
+    _getCacheKeyParts: function (track, context) {
         /*eslint no-unused-vars: 0*/
         return [];
     },
@@ -196,7 +200,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
             return vow.invoke(function () {
 
-                return self._callMethod('data', context);
+                return self.data(context.track, context);
             });
         }
 
@@ -224,23 +228,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     },
 
     /**
-     * @protected
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {String} name
-     * @param {Deps} context
-     *
-     * @returns {*}
-     *
-     * @throws {*}
-     * */
-    _callMethod: function (name, context) {
-
-        return this[name](context);
-    },
-
-    /**
      * @private
      * @memberOf {Unit}
      * @method
@@ -251,7 +238,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     __getCacheKey: function (context) {
 
-        return this._callMethod('_getCacheKeyParts', context).join(S_SEPARATOR);
+        return this._getCacheKeyParts(context.track, context).join(S_SEPARATOR);
     },
 
     /**
@@ -278,7 +265,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
         }, function (err) {
             //  ошибка забора из кэша
-            context.notify(err);
+            context.trigger('ctx:notify', err);
 
             return this.__callAndWrap(context);
         }, this);

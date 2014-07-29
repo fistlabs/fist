@@ -3,8 +3,7 @@
 var Pattern = /** @type Pattern */ require('finger/route/Pattern');
 
 var _ = require('lodash-node');
-var asker = require('asker');
-var vow = require('vow');
+var vowAsker = require('vow-asker');
 
 module.exports = function () {
 
@@ -27,7 +26,7 @@ module.exports = function () {
             return {};
         },
 
-        _$prepare: function (context) {
+        _$prepare: function (track, context) {
             var data = Object(context.data);
 
             if ( _.isString(data.path) ) {
@@ -37,29 +36,18 @@ module.exports = function () {
             return data;
         },
 
-        _$request: function (context) {
-            var defer = vow.defer();
+        _$request: function (track, context) {
 
-            asker(context.data, function (err, res) {
-
-                if ( err ) {
-                    defer.reject(err);
-
-                } else {
-                    defer.resolve(res);
-                }
-            });
-
-            return defer.promise();
+            return vowAsker(context.data);
         },
 
-        _$compile: function (context) {
+        _$compile: function (track, context) {
             context.data.data = JSON.parse(context.data.data);
 
             return context.data;
         },
 
-        _$resolve: function (context) {
+        _$resolve: function (track, context) {
 
             return context.data.data;
         }

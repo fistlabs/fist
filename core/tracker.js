@@ -1,8 +1,6 @@
 'use strict';
 
 var Agent = /** @type Agent */ require('./agent');
-var Deps = /** @type Deps */ require('./deps/deps');
-var Skip = /** @type Skip */ require('./skip/skip');
 
 var _ = require('lodash-node');
 var glob = require('glob');
@@ -71,28 +69,9 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {vow.Promise}
      * */
     resolve: function (track, path, params) {
+        //  TODO создавать track прямо тут
 
-        if ( !_.has(track.tasks, path) ) {
-            track.tasks[path] = this.__executeUnit(track, path, params);
-        }
-
-        return track.tasks[path];
-    },
-
-    /**
-     * @protected
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {String} path
-     * @param {Object} params
-     *
-     * @returns {Deps}
-     * */
-    _createCtx: function (track, path, params) {
-
-        return new Deps(track, path, params);
+        return track.invoke(path, params);
     },
 
     /**
@@ -106,58 +85,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         return reduce(this.__plugs, this.__pluginReducer, [], this).
             then(this.__callPlugins, this).then(this.__base, this);
-    },
-
-    /**
-     * @private
-     * @memberOf {Tracker}
-     * @method
-     *
-     * @param {Track} track
-     * @param {String} path
-     * @param {Object} [params]
-     *
-     * @returns {vow.Promise}
-     * */
-    __executeUnit: function (track, path, params) {
-        var deps = this._createCtx(track, path, params);
-        var exec = vow.defer();
-        var unit = track.agent.getUnit(path);
-
-        deps.trigger('ctx:pending');
-
-        exec.promise().then(function (data) {
-            deps.trigger('ctx:accept', data);
-        }, function (data) {
-            deps.trigger('ctx:reject', data);
-        });
-
-        if ( _.isUndefined(unit) ) {
-            exec.reject();
-
-            return exec.promise();
-        }
-
-        if ( 0 === _.size(unit.deps) ) {
-            exec.resolve(unit.getValue(deps));
-
-            return exec.promise();
-        }
-
-        deps.append(unit.deps).done(function (promises) {
-            var promise = _.find(promises, function (promise) {
-
-                return promise.valueOf() instanceof Skip;
-            });
-
-            if ( _.isUndefined(promise) ) {
-                promise = unit.getValue(deps);
-            }
-
-            exec.resolve(promise);
-        });
-
-        return exec.promise();
     },
 
     /**
