@@ -44,10 +44,10 @@ var Channel = inherit(EventEmitter, /** @lends Channel.prototype */ {
             return this.__base.apply(this, arguments);
 
         } catch (err) {
-            setTimeout(function () {
+            process.nextTick(function () {
 
                 throw err;
-            }, 0);
+            });
         }
     },
 

@@ -27,8 +27,8 @@ describe('core/channel', function () {
 
         it('Should throw an async exception', function () {
             var channel = new Channel();
-            var st = global.setTimeout;
-            global.setTimeout = function (fn) {
+            var st = process.nextTick;
+            process.nextTick = function (fn) {
                 fn();
             };
 
@@ -41,7 +41,7 @@ describe('core/channel', function () {
                 channel.emit('x');
             }, Error);
 
-            global.setTimeout = st;
+            process.nextTick = st;
         });
     });
 
