@@ -39,7 +39,7 @@ describe('core/agent', function () {
         }).done();
     });
 
-    it('Should inherit units form units', function (done) {
+    it('Should inherit units from units', function (done) {
 
         var agent = new Agent();
 
@@ -220,7 +220,6 @@ describe('core/agent', function () {
             assert.strictEqual(agent.getUnit('a').prop, 42);
             assert.instanceOf(agent.getUnit('b'), Unit);
             assert.isUndefined(agent.getUnit('_x'));
-            assert.isUndefined(agent.getUnit('_unit'));
 
             done();
         });

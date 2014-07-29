@@ -1,7 +1,11 @@
 'use strict';
 
+var uniqueId = require('unique-id');
+var S_BASE_NAME = '_' + uniqueId();
+
 var Cache = /** @type Cache */ require('./cache/cache');
 var Channel = /** @type Channel */ require('./channel');
+var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -170,10 +174,12 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {Object}
      * */
     __createUnits: function (decls) {
-        var classes = {_unit: this.__self.Unit};
+        var classes = {};
         var conflicts;
         var remaining = decls.length;
         var units;
+
+        classes[S_BASE_NAME] = Unit;
 
         while ( _.size(decls) ) {
             decls = this.__addUnitClasses(decls, classes);
@@ -229,7 +235,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
                 base = members.base;
 
             } else {
-                base = '_unit';
+                base = S_BASE_NAME;
             }
 
             if ( _.has(classes, base) ) {
@@ -255,17 +261,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             return decls;
         }, [], this);
     }
-
-}, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf Agent
-     * @property
-     * @type {Function}
-     * */
-    Unit: require('./unit')
 
 });
 

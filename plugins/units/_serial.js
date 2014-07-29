@@ -10,8 +10,6 @@ module.exports = function () {
 
     this.unit({
 
-        base: '_unit',
-
         path: '_serial',
 
         data: function (track, context) {
