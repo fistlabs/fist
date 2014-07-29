@@ -7,6 +7,8 @@ var inherit = require('inherit');
 var path = require('path');
 var dirname = path.dirname(module.parent.filename);
 
+var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
+
 /**
  * @param {Object} [params]
  * @param {Object} [members]
@@ -17,13 +19,8 @@ var dirname = path.dirname(module.parent.filename);
 function fist (params, members, statics) {
     var app = fist.create(params, members, statics);
 
-    return app.
-        plug(path.join(__dirname, 'plugins', '**', '*.js')
-
-    //  TODO add user default directories (2.0.0)
-//       , path.join(app.params.cwd, 'units', '**', '*.js'),
-//        path.join(app.params.cwd, 'plugins', '**', '*.js')
-    );
+    return app.plug(path.join(__dirname, S_FIST_PLUGINS),
+        path.join(app.params.cwd, S_FIST_PLUGINS));
 }
 
 fist.inherit = function (members, statics) {
@@ -34,7 +31,9 @@ fist.inherit = function (members, statics) {
 fist.create = function (params, members, statics) {
     var Fist = fist.inherit(members, statics);
 
-    return new Fist(_.extend({cwd: dirname}, params));
+    params = _.extend({cwd: dirname}, params);
+
+    return new Fist(params);
 };
 
 module.exports = fist;

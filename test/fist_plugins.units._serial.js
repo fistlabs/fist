@@ -8,7 +8,7 @@ describe('units/_serial', function () {
 
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
-    var _serial = require('../plugins/units/_serial');
+    var _serial = require('../fist_plugins/units/_serial');
 
     it('Should be resolved after a and b steps', function (done) {
         var tracker = new Tracker();
