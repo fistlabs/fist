@@ -27,11 +27,15 @@
     },
     "description": "nodejs application framework",
     "devDependencies": {
-        "jscs": "1.5.8",
-        "eslint": "0.7.4",
-        "mocha": "1.20.1",
+        "gulp": "3.8.6",
+        "gulp-mocha": "0.5.2",
+        "gulp-istanbul": "0.2.1",
+        "gulp-eslint": "0.1.8",
+        "gulp-util": "3.0.0",
+        "through2": "0.5.1",
+        "minimatch": "1.0.0",
+        "gulp-jscs": "1.0.0",
         "chai": "1.9.1",
-        "istanbul": "0.3.0",
         "express": "4.6.1"
     },
     "license": "MIT",
@@ -40,15 +44,6 @@
     "repository": {
         "type": "git",
         "url": "git://github.com/fistlabs/fist.git"
-    },
-    "scripts": {
-        "unit": "mocha --no-exit",
-        "cover": "istanbul cover node_modules/.bin/_mocha --no-exit",
-        "jscs": "jscs .",
-        "eslint": "eslint .",
-        "lint": "npm run jscs && npm run eslint",
-        "test": "npm run lint && npm run unit",
-        "benchmark": "benchmark/runner.sh benchmark/express.js && benchmark/runner.sh benchmark/fist.js"
     },
     "engines": {
         "node": ">= 0.10.0"

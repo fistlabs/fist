@@ -1,13 +1,17 @@
 #!/bin/sh
 
-node $1 &
-pid=$!;
+for benchmark in $*; do
 
-echo running $1;
+    node ${benchmark} &
+    pid=$!;
 
-sleep 2;
+    echo running ${benchmark};
 
-wrk "http://localhost:1337/index/?foo=bar&baz=zot" -d 10 -c 50 -t 8 | grep "/sec";
+    sleep 2;
 
-kill ${pid};
-echo;
+    wrk "http://localhost:1337/index/?foo=bar&baz=zot" -d 10 -c 50 -t 8 | grep "/sec";
+
+    kill ${pid};
+    echo;
+
+done;
