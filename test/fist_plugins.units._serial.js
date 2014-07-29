@@ -40,7 +40,7 @@ describe('units/_serial', function () {
         });
 
         tracker.ready().always(function () {
-            tracker.resolve(track, 'test').done(function (res) {
+            track.invoke('test').done(function (res) {
                 assert.strictEqual(res, 42);
                 assert.deepEqual(spy, ['a', 'b']);
                 done();
@@ -82,7 +82,7 @@ describe('units/_serial', function () {
         });
 
         tracker.ready().always(function () {
-            tracker.resolve(track, 'test').fail(function (res) {
+            track.invoke('test').fail(function (res) {
                 assert.strictEqual(res, 'ERR');
                 assert.deepEqual(spy, ['a', 'b', 'eb']);
                 done();
@@ -128,7 +128,7 @@ describe('units/_serial', function () {
         });
 
         tracker.ready().always(function () {
-            tracker.resolve(track, 'test').done(function (res) {
+            track.invoke('test').done(function (res) {
                 assert.strictEqual(res, 'RES');
                 assert.deepEqual(spy, ['a', 'ea']);
                 done();
@@ -167,7 +167,7 @@ describe('units/_serial', function () {
         });
 
         tracker.ready().always(function () {
-            tracker.resolve(track, 'test').done(function (res) {
+            track.invoke('test').done(function (res) {
                 assert.strictEqual(res, skip);
                 assert.deepEqual(spy, ['a']);
                 done();
