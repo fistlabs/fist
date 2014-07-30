@@ -104,21 +104,22 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {vow.Promise}
      * */
     ready: function (force) {
+        var sys = this.channel('sys');
 
         if ( this._fistReady && !force ) {
 
             return this._fistReady;
         }
 
-        this.emit('sys:pending');
+        sys.emit('pending');
 
         this._fistReady = this._getReady();
 
         this._fistReady.then(function () {
-            this.emit('sys:ready');
+            sys.emit('ready');
         }, function (err) {
-            this.emit('sys:eready', err);
-        }, this);
+            sys.emit('eready', err);
+        });
 
         return this._fistReady;
     },

@@ -147,12 +147,12 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         var defer = vow.defer();
         var unit = this.track.agent.getUnit(this.unit);
 
-        this.trigger('ctx:pending');
+        this.trigger('pending');
 
         defer.promise().then(function (data) {
-            this.trigger('ctx:accept', data);
+            this.trigger('accept', data);
         }, function (data) {
-            this.trigger('ctx:reject', data);
+            this.trigger('reject', data);
         }, this);
 
         if ( _.isUndefined(unit) ) {
@@ -193,7 +193,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @param {*} [data]
      * */
     trigger: function (event, data) {
-        this.track.agent.emit(event, {
+        this.track.agent.channel('ctx').emit(event, {
             path: this.unit,
             data: data,
             time: new Date() - this.__creationDate,

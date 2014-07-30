@@ -59,16 +59,17 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * */
     getHandler: function () {
         var self = this;
+        var sys = this.channel('sys');
 
         return function (req, res) {
             var date = new Date();
             var track = self._createTrack(req, res);
 
-            self.emit('sys:request', track);
+            sys.emit('request', track);
             self.handle(track).done(function (resp) {
                 Response.end(res, resp);
                 track.time = new Date() - date;
-                self.emit('sys:response', track);
+                sys.emit('response', track);
             });
         };
     },
@@ -183,10 +184,11 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         //  выбирается маршрут
         var result = this.router.
             find(track.method, track.url.pathname, track.route);
+        var sys = this.channel('sys');
 
         //  однозначно нет такого маршрута
         if ( _.isNull(result) ) {
-            this.emit('sys:ematch', track);
+            sys.emit('ematch', track);
             //  Not Found
             return track.response.respond(404);
         }
@@ -194,7 +196,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         //  возвращен массив
         if ( _.isArray(result) ) {
             //  это тоже значит что нет такого роута
-            this.emit('sys:ematch', track);
+            sys.emit('ematch', track);
 
             //  если массив пустой, то на сервере совсем нет ни одного
             //  маршрута отвечающего по такому методу запроса
@@ -214,7 +216,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         track.match = result.match;
         track.route = result.route.data.name;
 
-        this.emit('sys:match', track);
+        sys.emit('match', track);
 
         return track.invoke(result.route.data.unit).
             then(function (data) {

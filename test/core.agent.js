@@ -149,7 +149,7 @@ describe('core/agent', function () {
         var spy = [];
         var promise;
 
-        agent.on('sys:pending', function () {
+        agent.channel('sys').on('pending', function () {
             spy.push(1);
         });
 
@@ -163,7 +163,7 @@ describe('core/agent', function () {
         });
     });
 
-    it('Should emit "sys:ready" on init', function (done) {
+    it('Should emit sys@ready on init', function (done) {
 
         var agent = new Agent();
 
@@ -171,15 +171,15 @@ describe('core/agent', function () {
             path: 'a'
         });
 
-        agent.on('sys:ready', function () {
-            assert.instanceOf(this.getUnit('a'), Unit);
+        agent.channel('sys').on('ready', function () {
+            assert.instanceOf(agent.getUnit('a'), Unit);
             done();
         });
 
         agent.ready();
     });
 
-    it('Should emit "sys:eready" on init error', function (done) {
+    it('Should emit sys@eready on init error', function (done) {
 
         var agent = new Agent();
 
@@ -188,7 +188,7 @@ describe('core/agent', function () {
             deps: ['a']
         });
 
-        agent.on('sys:eready', function (err) {
+        agent.channel('sys').on('eready', function (err) {
             assert.instanceOf(err, ReferenceError);
             done();
         });

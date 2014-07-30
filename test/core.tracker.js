@@ -87,22 +87,16 @@ describe('core/tracker', function () {
             var track = new Track(tracker);
             var spy = [];
 
-            tracker.on('ctx:pending', function (e) {
+            tracker.channel('ctx').on('pending', function (e) {
                 assert.strictEqual(e.trackId, track.id);
                 spy.push([-1, e.path]);
-            });
-
-            tracker.on('ctx:notify', function (e) {
+            }).on('notify', function (e) {
                 assert.strictEqual(e.trackId, track.id);
                 spy.push([2, e.path]);
-            });
-
-            tracker.on('ctx:accept', function (e) {
+            }).on('accept', function (e) {
                 assert.strictEqual(e.trackId, track.id);
                 spy.push([0, e.path]);
-            });
-
-            tracker.on('ctx:reject', function (e) {
+            }).on('reject', function (e) {
                 assert.strictEqual(e.trackId, track.id);
                 spy.push([1, e.path]);
             });
@@ -111,7 +105,7 @@ describe('core/tracker', function () {
                 path: 'a',
                 deps: ['b', 'c'],
                 data: function (track, context) {
-                    context.trigger('ctx:notify', 'a');
+                    context.trigger('notify', 'a');
 
                     return 'a';
                 }
@@ -121,7 +115,7 @@ describe('core/tracker', function () {
                 path: 'b',
                 deps: ['c'],
                 data: function (track, context) {
-                    context.trigger('ctx:notify', 'b');
+                    context.trigger('notify', 'b');
 
                     throw 'b';
                 }
@@ -130,7 +124,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 path: 'c',
                 data: function (track, context) {
-                    context.trigger('ctx:notify', 'c');
+                    context.trigger('notify', 'c');
 
                     return 'c';
                 }
