@@ -31,7 +31,7 @@ module.exports = function () {
 
             name = steps.shift();
             func = this['_$' + name];
-            context.trigger('ctx:' + name, context.data);
+            context.trigger(name, context.data);
 
             if ( isError && !_.isFunction(func) ) {
 

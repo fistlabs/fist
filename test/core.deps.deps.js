@@ -90,8 +90,8 @@ describe('core/deps/deps', function () {
                 data: 42
             });
 
-            tracker.ready().then(function () {
-                ctx.append(['a', 'b']).then(function () {
+            tracker.ready().done(function () {
+                ctx.append(['a', 'b']).done(function () {
                     assert.deepEqual(ctx.result, {
                         a: 42
                     });
@@ -111,7 +111,7 @@ describe('core/deps/deps', function () {
         it('Should trigger the event', function (done) {
             var ctx = new Deps(track, 'c');
 
-            tracker.on('my-event', function (e) {
+            tracker.channel('ctx').on('my-event', function (e) {
                 assert.strictEqual(e.trackId, track.id);
                 assert.strictEqual(e.path, 'c');
                 assert.strictEqual(e.data, 42);

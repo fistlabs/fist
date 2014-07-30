@@ -177,7 +177,7 @@ describe('core/unit', function () {
 
             var tracker = new SlyTracker();
 
-            tracker.on('ctx:notify', function (event) {
+            tracker.channel('ctx').on('ecache', function (event) {
                 e.push(event.data);
             });
 
@@ -263,7 +263,7 @@ describe('core/unit', function () {
             });
         });
 
-        it('Should emit ctx:cache', function (done) {
+        it('Should emit ctx@cache', function (done) {
 
             var tracker = new Tracker();
             var spy = [];
@@ -274,7 +274,7 @@ describe('core/unit', function () {
                 data: 42
             });
 
-            tracker.on('ctx:cache', function (e) {
+            tracker.channel('ctx').on('cache', function (e) {
                 assert.strictEqual(e.path, 'test');
                 assert.isNumber(e.time);
                 assert.strictEqual(e.data, 42);

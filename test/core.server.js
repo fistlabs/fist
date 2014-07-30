@@ -138,7 +138,7 @@ describe('core/server', function () {
 
         server.route('/foo/');
 
-        server.on('sys:ematch', function () {
+        server.channel('sys').on('ematch', function () {
             spy.push(1);
         });
 
@@ -171,7 +171,7 @@ describe('core/server', function () {
         var server = new Server();
         var origServer;
 
-        server.on('sys:ematch', function () {
+        server.channel('sys').on('ematch', function () {
             spy.push(1);
         });
 
@@ -208,7 +208,7 @@ describe('core/server', function () {
         server.route('GET /foo/', 'foo');
         server.route('POST /', 'upload');
 
-        server.on('sys:ematch', function () {
+        server.channel('sys').on('ematch', function () {
             spy.push(1);
         });
 

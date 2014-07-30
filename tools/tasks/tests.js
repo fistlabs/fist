@@ -2,6 +2,7 @@
 
 var gulpMocha = require('gulp-mocha');
 var gulpIstanbul = require('gulp-istanbul');
+var gutil = require('gulp-util');
 
 function gulpMochaPipe () {
 
@@ -14,7 +15,13 @@ function gulpMochaPipe () {
 
 function runUnit () {
 
-    return this.src('test/*.js').pipe(gulpMochaPipe());
+    var stream = this.src('test/*.js').pipe(gulpMochaPipe());
+
+    stream.on('error', function (e) {
+        gutil.log(e.stack);
+    });
+
+    return stream;
 }
 
 function runCover (done) {

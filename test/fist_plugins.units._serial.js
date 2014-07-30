@@ -31,11 +31,9 @@ describe('units/_serial', function () {
             }
         });
 
-        tracker.on('ctx:a', function () {
+        tracker.channel('ctx').on('a', function () {
             spy.push('a');
-        });
-
-        tracker.on('ctx:b', function () {
+        }).on('b', function () {
             spy.push('b');
         });
 
@@ -69,15 +67,11 @@ describe('units/_serial', function () {
             }
         });
 
-        tracker.on('ctx:a', function () {
+        tracker.channel('ctx').on('a', function () {
             spy.push('a');
-        });
-
-        tracker.on('ctx:b', function () {
+        }).on('b', function () {
             spy.push('b');
-        });
-
-        tracker.on('ctx:eb', function () {
+        }).on('eb', function () {
             spy.push('eb');
         });
 
@@ -115,15 +109,11 @@ describe('units/_serial', function () {
             }
         });
 
-        tracker.on('ctx:a', function () {
+        tracker.channel('ctx').on('a', function () {
             spy.push('a');
-        });
-
-        tracker.on('ctx:ea', function () {
+        }).on('ea', function () {
             spy.push('ea');
-        });
-
-        tracker.on('ctx:b', function () {
+        }).on('b', function () {
             spy.push('b');
         });
 
@@ -158,11 +148,9 @@ describe('units/_serial', function () {
             }
         });
 
-        tracker.on('ctx:a', function () {
+        tracker.channel('ctx').on('a', function () {
             spy.push('a');
-        });
-
-        tracker.on('ctx:b', function () {
+        }).on('b', function () {
             spy.push('b');
         });
 
