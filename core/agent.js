@@ -69,6 +69,37 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
+     * @param {String} [base]
+     * @param {Object|String} path
+     *
+     * @returns {Agent}
+     * */
+    alias: function (base, path) {
+
+        if ( _.isObject(base) ) {
+            _.forOwn(base, function (path, base) {
+                this.__unit({
+                    base: base,
+                    path: path
+                });
+            }, this);
+
+            return this;
+        }
+
+        this.__unit({
+            base: base,
+            path: path
+        });
+
+        return this;
+    },
+
+    /**
+     * @public
+     * @memberOf {Agent}
+     * @method
+     *
      * @param {String} path
      *
      * @returns {Unit}
@@ -89,9 +120,23 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {Agent}
      * */
     unit: function (members, statics) {
-        this.__decls.push([Object(members), statics]);
-
+        this.channel('sys').emit('unit', members, statics);
+        this.__unit(members, statics);
         return this;
+    },
+
+    /**
+     * @private
+     * @memberOf {Agent}
+     * @method
+     *
+     * @param {Object} members
+     * @param {Object} [statics]
+     *
+     * @returns {Agent}
+     * */
+    __unit: function (members, statics) {
+        this.__decls.push([members, statics]);
     },
 
     /**

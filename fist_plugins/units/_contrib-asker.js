@@ -9,9 +9,9 @@ module.exports = function () {
 
     this.unit({
 
-        base: '_serial',
+        base: '_contrib-serial',
 
-        path: '_asker',
+        path: '_contrib-asker',
 
         _steps: [
             'options',

@@ -4,11 +4,11 @@
 var Skip = require('../core/skip/skip');
 var assert = require('chai').assert;
 
-describe('units/_serial', function () {
+describe('fist_plugins/units/_contrib-serial', function () {
 
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
-    var _serial = require('../fist_plugins/units/_serial');
+    var _serial = require('../fist_plugins/units/_contrib-serial');
 
     it('Should be resolved after a and b steps', function (done) {
         var tracker = new Tracker();
@@ -18,7 +18,7 @@ describe('units/_serial', function () {
         tracker.plug(_serial);
 
         tracker.unit({
-            base: '_serial',
+            base: '_contrib-serial',
             path: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
@@ -43,7 +43,7 @@ describe('units/_serial', function () {
                 assert.deepEqual(spy, ['a', 'b']);
                 done();
             });
-        });
+        }).done();
     });
 
     it('Should be rejected after "b" step', function (done) {
@@ -54,7 +54,7 @@ describe('units/_serial', function () {
         tracker.plug(_serial);
 
         tracker.unit({
-            base: '_serial',
+            base: '_contrib-serial',
             path: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
@@ -92,7 +92,7 @@ describe('units/_serial', function () {
         tracker.plug(_serial);
 
         tracker.unit({
-            base: '_serial',
+            base: '_contrib-serial',
             path: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
@@ -135,7 +135,7 @@ describe('units/_serial', function () {
         tracker.plug(_serial);
 
         tracker.unit({
-            base: '_serial',
+            base: '_contrib-serial',
             path: 'test',
             _steps: ['a', 'b'],
             _$a: function () {

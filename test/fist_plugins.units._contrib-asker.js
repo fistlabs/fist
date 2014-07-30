@@ -8,7 +8,7 @@ var fist = require('../fist');
 var sock = require('./util/sock');
 var fs = require('fs');
 
-describe('units/_asker', function () {
+describe('fist_plugins/units/_contrib-asker', function () {
 
     it('Should respond with expected value (0)', function (done) {
 
@@ -30,7 +30,7 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'model',
-            base: '_asker',
+            base: '_contrib-asker',
             _$options: function (context) {
 
                 return _.extend(this.__base(context), {
@@ -84,7 +84,7 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'model',
-            base: '_asker',
+            base: '_contrib-asker',
             _$options: function (context) {
 
                 return _.extend(this.__base(context), {
@@ -139,7 +139,7 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'model',
-            base: '_asker',
+            base: '_contrib-asker',
             _$request: function () {
 
                 throw 42;
@@ -187,7 +187,7 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'model',
-            base: '_asker',
+            base: '_contrib-asker',
             _$request: function () {
 
                 throw 42;
@@ -236,7 +236,7 @@ describe('units/_asker', function () {
 
         app.unit({
             path: 'model',
-            base: '_asker',
+            base: '_contrib-asker',
             _$options: function () {
 
                 return {
