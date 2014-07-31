@@ -144,14 +144,12 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
-     * @param {Boolean} [force]
-     *
      * @returns {vow.Promise}
      * */
-    ready: function (force) {
+    ready: function () {
         var sys = this.channel('sys');
 
-        if ( this._fistReady && !force ) {
+        if ( this._fistReady ) {
 
             return this._fistReady;
         }

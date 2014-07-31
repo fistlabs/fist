@@ -18,9 +18,14 @@ var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
  * */
 function fist (params, members, statics) {
     var app = fist.create(params, members, statics);
+    var patterns = [__dirname, app.params.cwd];
 
-    return app.plug(path.join(__dirname, S_FIST_PLUGINS),
-        path.join(app.params.cwd, S_FIST_PLUGINS));
+    patterns = _.map(patterns, function (dirname) {
+
+        return path.join(dirname, S_FIST_PLUGINS);
+    });
+
+    return app.plug(patterns);
 }
 
 fist.inherit = function (members, statics) {
