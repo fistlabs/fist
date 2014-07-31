@@ -4,6 +4,7 @@
 var assert = require('chai').assert;
 
 describe('core/agent', function () {
+    /*eslint max-nested-callbacks: [2, 4]*/
     var Agent = require('../core/agent');
     var Unit = require('../core/unit');
 
@@ -17,6 +18,40 @@ describe('core/agent', function () {
         assert.instanceOf(agent, EventEmitter);
         assert.instanceOf(agent, Agent);
         assert.isObject(agent.units);
+    });
+
+    describe('.alias', function () {
+        it('Should create alias', function (done) {
+            var agent = new Agent();
+            agent.unit({
+                path: 'foo'
+            });
+
+            agent.alias('foo', 'bar');
+
+            agent.ready().done(function () {
+                assert.ok(agent.getUnit('foo'));
+                assert.ok(agent.getUnit('bar'));
+                done();
+            });
+        });
+
+        it('Should create aliases by map', function (done) {
+            var agent = new Agent();
+            agent.unit({
+                path: 'foo'
+            });
+
+            agent.alias({
+                foo: 'bar'
+            });
+
+            agent.ready().done(function () {
+                assert.ok(agent.getUnit('foo'));
+                assert.ok(agent.getUnit('bar'));
+                done();
+            });
+        });
     });
 
     it('Should initialize units before ready', function (done) {
