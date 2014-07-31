@@ -112,7 +112,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         server.listen.apply(server, arguments);
 
         //  автоматически запускаю инициализацию
-        this.ready(true);
+        this.ready();
 
         return server;
     },

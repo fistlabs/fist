@@ -178,26 +178,6 @@ describe('core/agent', function () {
         }).done();
     });
 
-    it('Should init a twice', function (done) {
-
-        var agent = new Agent();
-        var spy = [];
-        var promise;
-
-        agent.channel('sys').on('pending', function () {
-            spy.push(1);
-        });
-
-        promise = agent.ready();
-        assert.strictEqual(promise, agent.ready());
-        assert.notStrictEqual(promise, agent.ready(true));
-
-        agent.ready().done(function () {
-            assert.deepEqual(spy, [1, 1]);
-            done();
-        });
-    });
-
     it('Should emit sys@ready on init', function (done) {
 
         var agent = new Agent();
