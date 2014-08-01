@@ -172,6 +172,16 @@ describe('core/agent', function () {
             deps: ['b']
         });
 
+        agent.unit({
+            path: 'z',
+            deps: ['x']
+        });
+
+        agent.unit({
+            path: 'x',
+            deps: ['z']
+        });
+
         agent.ready().fail(function (err) {
             assert.instanceOf(err, ReferenceError);
             done();
