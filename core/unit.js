@@ -1,5 +1,6 @@
 'use strict';
 
+var uniqueId = require('unique-id');
 var S_SEPARATOR = '\u0000';
 var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
 var Skip = /** @type Skip */ require('./skip/skip');
@@ -62,6 +63,14 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @type {Object}
      * */
     params: {},
+
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {String}
+     * */
+    path: '_' + uniqueId(),
 
     /**
      * @public
