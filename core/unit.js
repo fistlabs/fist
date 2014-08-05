@@ -1,7 +1,7 @@
 'use strict';
 
 var uniqueId = require('unique-id');
-var S_SEPARATOR = '\u0000';
+var S_SEPARATOR = '-';
 var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
 var Skip = /** @type Skip */ require('./skip/skip');
 
