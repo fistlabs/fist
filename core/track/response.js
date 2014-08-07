@@ -236,7 +236,12 @@ var Response = inherit(/** @lends Response.prototype */ {
             return this.__createByJson(status, body);
         }
 
-        return this.__createByString(status, body.stack);
+        if ( _.isString(body.stack) ) {
+
+            return this.__createByString(status, body.stack);
+        }
+
+        return this.__createByString(status, String(body));
     },
 
     /**

@@ -169,6 +169,11 @@ describe('core/track/response', function () {
     describe('.respond', function () {
         var STATUS_CODES = require('http').STATUS_CODES;
 
+        function getMaximumCallStackError () {
+
+            return getMaximumCallStackError();
+        }
+
         it('Should not affect if no returned', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
@@ -340,6 +345,35 @@ describe('core/track/response', function () {
                 assert.strictEqual(+res.headers['content-length'],
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer(error.stack));
+
+                done();
+            });
+        });
+
+        it('Should correctly handle MaximumCallStackError', function (done) {
+
+            var error;
+
+            try {
+                error = getMaximumCallStackError();
+            } catch (err) {
+                error = err;
+            }
+
+            http({}, function (req, rs) {
+                var res = new Res(rs);
+
+                assert.doesNotThrow(function () {
+                    vow.when(res.respond(201, error), function (resp) {
+                        Res.end(rs, resp);
+                    });
+                });
+
+            }).done(function (res) {
+                assert.strictEqual(res.statusCode, 201);
+                assert.strictEqual(res.headers['content-type'], 'text/plain');
+                assert.strictEqual(+res.headers['content-length'],
+                    res.data.length);
 
                 done();
             });
