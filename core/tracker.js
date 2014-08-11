@@ -3,10 +3,10 @@
 var Agent = /** @type Agent */ require('./agent');
 
 var _ = require('lodash-node');
-var glob = require('glob');
 var inherit = require('inherit');
 var reduce = require('./util/reduce');
 var vow = require('vow');
+var vowGlob = require('./util/vow-glob');
 
 /**
  * @class Tracker
@@ -118,29 +118,16 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @returns {*}
      * */
     __pluginReducer: function (funcs, func) {
-        var defer;
 
         if ( _.isFunction(func) ) {
 
             return funcs.concat(func);
         }
 
-        defer = vow.defer();
+        return vowGlob(func, {silent: true}).then(function (func) {
 
-        glob(func, {silent: true}, function (err, func) {
-
-            if ( 2 > arguments.length ) {
-                defer.reject(err);
-
-                return;
-            }
-
-            func = _.map(func, require);
-
-            defer.resolve(funcs.concat(func));
+            return funcs.concat(_.map(func, require));
         });
-
-        return defer.promise();
     }
 
 });
