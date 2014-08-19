@@ -1,7 +1,6 @@
 /*global describe, it*/
 'use strict';
 
-var fs = require('fs');
 var assert = require('chai').assert;
 
 describe('core/tracker', function () {
@@ -13,6 +12,31 @@ describe('core/tracker', function () {
         var tracker = new Tracker();
         assert.instanceOf(tracker, Tracker);
         assert.isObject(tracker.tasks);
+    });
+
+    describe('.include', function () {
+        it('Should include plugins', function (done) {
+            var tracker = new Tracker();
+
+            tracker.include('test/fixtures/plug/*.js');
+
+            tracker.ready().done(function () {
+                assert.strictEqual(tracker.sync, 42);
+                assert.strictEqual(tracker.async, 42);
+                done();
+            });
+        });
+
+        it('Should be rejected on init', function (done) {
+            var tracker = new Tracker();
+
+            tracker.include('test/fixtures/plug/e/*.js');
+
+            tracker.ready().fail(function (err) {
+                assert.strictEqual(err, 42);
+                done();
+            }).done();
+        });
     });
 
     describe('.plug', function () {
@@ -147,27 +171,6 @@ describe('core/tracker', function () {
 
                     done();
                 });
-            });
-        });
-
-        it('Should fail on init', function (done) {
-
-            var tracker = new Tracker();
-
-            tracker.plug('test/fixtures/globs/sub/**/*.js');
-
-            fs.mkdirSync('test/fixtures/globs/sub');
-            fs.symlinkSync('.', 'test/fixtures/globs/sub/sub');
-            fs.chmodSync('test/fixtures/globs/sub/sub', 438);
-
-            tracker.ready().fail(function (err) {
-                assert.ok(err);
-
-                fs.chmodSync('test/fixtures/globs/sub', 511);
-                fs.unlinkSync('test/fixtures/globs/sub/sub');
-                fs.rmdirSync('test/fixtures/globs/sub');
-
-                done();
             });
         });
     });
