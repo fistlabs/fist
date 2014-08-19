@@ -3,10 +3,10 @@
 var Agent = /** @type Agent */ require('./agent');
 
 var _ = require('lodash-node');
-var glob = require('glob');
 var inherit = require('inherit');
-var reduce = require('./util/reduce');
+var path = require('path');
 var vow = require('vow');
+var vowGlob = require('./util/vow-glob');
 
 /**
  * @class Tracker
@@ -48,9 +48,28 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @public
      * @memberOf {Tracker}
      * @method
+     *
+     * @param {String|Array<String>...} plugins
+     *
+     * @returns {Tracker}
      * */
-    plug: function () {
-        this.__plugs = this.__plugs.concat(_.flatten(arguments));
+    include: function (plugins) {
+        plugins = _.flatten(arguments);
+        plugins = _.map(plugins, this.__createInclude, this);
+
+        return this.plug(plugins);
+    },
+
+    /**
+     * @public
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @returns {Tracker}
+     * */
+    plug: function (plugins) {
+        plugins = _.flatten(arguments);
+        Array.prototype.push.apply(this.__plugs, plugins);
 
         return this;
     },
@@ -64,8 +83,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     _getReady: function () {
 
-        return reduce(this.__plugs, this.__pluginReducer, [], this).
-            then(this.__callPlugins, this).then(this.__base, this);
+        return this.__callPlugins(this.__plugs).then(this.__base, this);
     },
 
     /**
@@ -75,34 +93,15 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      *
      * @param {Array<Function>} funcs
      *
-     * @returns {*}
+     * @returns {vow.Promise}
      * */
     __callPlugins: function (funcs) {
 
         return _.reduce(funcs, function (promise, func) {
 
             return promise.then(function () {
-                var defer;
 
-                if ( !func.length ) {
-
-                    return func.call(this);
-                }
-
-                defer = vow.defer();
-
-                func.call(this, function (err) {
-
-                    if ( arguments.length ) {
-                        defer.reject(err);
-
-                        return;
-                    }
-
-                    defer.resolve();
-                });
-
-                return defer.promise();
+                return this.__callPlugin(func);
             }, this);
         }, vow.resolve(), this);
     },
@@ -112,35 +111,102 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * @memberOf {Tracker}
      * @method
      *
-     * @param {Array<Function>} funcs
-     * @param {Function|String} func
+     * @param {*} plugin
      *
-     * @returns {*}
+     * @returns {vow.Promise}
      * */
-    __pluginReducer: function (funcs, func) {
-        var defer;
+    __callPlugin: function (plugin) {
 
-        if ( _.isFunction(func) ) {
+        if ( !_.isFunction(plugin) ) {
 
-            return funcs.concat(func);
+            return vow.resolve(plugin);
         }
 
-        defer = vow.defer();
+        if ( 0 === plugin.length ) {
 
-        glob(func, {silent: true}, function (err, func) {
+            return vow.invoke(function (thisp) {
 
-            if ( 2 > arguments.length ) {
-                defer.reject(err);
+                return plugin.call(thisp);
+            }, this);
+        }
 
-                return;
-            }
+        return vow.invoke(function (thisp) {
+            var defer = vow.defer();
 
-            func = _.map(func, require);
+            plugin.call(thisp, function (err) {
 
-            defer.resolve(funcs.concat(func));
-        });
+                if ( 0 === arguments.length ) {
+                    defer.resolve();
 
-        return defer.promise();
+                } else {
+                    defer.reject(err);
+                }
+            });
+
+            return defer.promise();
+        }, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {String} pattern
+     *
+     * @returns {Function}
+     * */
+    __createInclude: function (pattern) {
+
+        return function () {
+
+            return this.__findPlugins(pattern).
+                then(this.__callPlugins, this);
+        };
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {String} pattern
+     *
+     * @returns {vow.Promise}
+     * */
+    __findPlugins: function (pattern) {
+
+        return vowGlob(pattern, {silent: true}).
+            then(this.__requirePlugins, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {Array<String>} paths
+     *
+     * @returns {vow.Promise}
+     * */
+    __requirePlugins: function (paths) {
+
+        return _.map(paths, this.__requirePlugin, this);
+    },
+
+    /**
+     * @private
+     * @memberOf {Tracker}
+     * @method
+     *
+     * @param {String} fileName
+     *
+     * @returns {vow.Promise}
+     * */
+    __requirePlugin: function (fileName) {
+        fileName = path.resolve(this.params.cwd, fileName);
+
+        return require(fileName);
     }
 
 });

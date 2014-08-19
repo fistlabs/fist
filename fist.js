@@ -25,7 +25,7 @@ function fist (params, members, statics) {
         return path.join(dirname, S_FIST_PLUGINS);
     });
 
-    return app.plug(patterns);
+    return app.include(patterns);
 }
 
 fist.inherit = function (members, statics) {
