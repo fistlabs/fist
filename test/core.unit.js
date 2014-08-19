@@ -163,6 +163,43 @@ describe('core/unit', function () {
             });
         });
 
+        it('Should use separate keys for cache', function (done) {
+            var tracker = new Tracker();
+
+            tracker.unit({
+                path: 'test-42',
+                _maxAge: 10000,
+                data: function () {
+
+                    return 42;
+                },
+                _getCacheKeyParts: function () {
+
+                    return [];
+                }
+            });
+
+            tracker.unit({
+                path: 'test-43',
+                base: 'test-42',
+                data: function () {
+
+                    return 43;
+                }
+            });
+
+            tracker.ready().done(function () {
+                new Track(tracker).invoke('test-42').done(function (res) {
+                    assert.strictEqual(res, 42);
+
+                    new Track(tracker).invoke('test-43').done(function (res) {
+                        assert.strictEqual(res, 43);
+                        done();
+                    });
+                });
+            });
+        });
+
         it('Should not cache coz of error', function (done) {
 
             var e = [];
