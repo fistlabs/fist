@@ -246,8 +246,11 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @returns {String}
      * */
     __getCacheKey: function (context) {
+        var parts = this._getCacheKeyParts(context.track, context);
 
-        return this._getCacheKeyParts(context.track, context).join(S_SEPARATOR);
+        parts = parts.concat(this.path);
+
+        return parts.join(S_SEPARATOR);
     },
 
     /**
