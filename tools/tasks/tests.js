@@ -9,7 +9,8 @@ function gulpMochaPipe () {
     return gulpMocha({
         ui: 'bdd',
         reporter: 'spec',
-        checkLeaks: true
+        checkLeaks: true,
+        slow: Infinity
     });
 }
 

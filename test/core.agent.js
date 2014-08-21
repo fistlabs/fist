@@ -20,6 +20,20 @@ describe('core/agent', function () {
         assert.isObject(agent.units);
     });
 
+    describe('.getUnit', function () {
+        it('Should return unit', function () {
+            var agent = new Agent();
+
+            agent.unit({
+                path: 'foo'
+            });
+
+            agent.ready().done(function () {
+                assert.instanceOf(agent.getUnit('foo'), Unit);
+            });
+        });
+    });
+
     describe('.alias', function () {
         it('Should create alias', function (done) {
             var agent = new Agent();

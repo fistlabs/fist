@@ -2,7 +2,7 @@
 
 var BaseConflictError = require('./error/base-conflict-error');
 var DepsConflictError = require('./error/deps-conflict-error');
-var R_ABSTRACT_UNIT = /^[a-z]/i;
+var R_PUBLIC_UNIT = /^[a-z]/i;
 
 var Cache = /** @type Cache */ require('./cache/cache');
 var Channel = /** @type Channel */ require('./channel');
@@ -60,9 +60,9 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
          * @private
          * @memberOf {Agent}
          * @property
-         * @type {Object}
+         * @type {Array}
          * */
-        this.__decls = {};
+        this.__decls = [];
     },
 
     /**
@@ -79,7 +79,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
         if ( _.isObject(base) ) {
             _.forOwn(base, function (path, base) {
-                this.__unit({
+                this.unit({
                     base: base,
                     path: path
                 });
@@ -88,7 +88,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             return this;
         }
 
-        this.__unit({
+        this.unit({
             base: base,
             path: path
         });
@@ -121,27 +121,19 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {Agent}
      * */
     unit: function (members, statics) {
-        this.__unit(members, statics);
+        members = Object(members);
 
-        return this;
-    },
+        _.remove(this.__decls, function (decl) {
 
-    /**
-     * @private
-     * @memberOf {Agent}
-     * @method
-     *
-     * @param {Object} members
-     * @param {Object} [statics]
-     *
-     * @returns {Agent}
-     * */
-    __unit: function (members, statics) {
+            return decl.members.path === members.path;
+        });
 
-        this.__decls[members.path] = {
+        this.__decls.push({
             members: members,
             statics: statics
-        };
+        });
+
+        return this;
     },
 
     /**
@@ -219,14 +211,29 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     __instUnits: function () {
         var units = Agent.__transform(this.__decls);
 
-        return _.reduce(units, function (units, Unit, path) {
+        return _.reduce(units, function (units, Unit) {
+            var path = Unit.prototype.path;
 
-            if ( R_ABSTRACT_UNIT.test(path) ) {
-                units[path] = new Unit(this.params);
+            if ( R_PUBLIC_UNIT.test(path) ) {
+                units[path] = this._instUnit(Unit);
             }
 
             return units;
         }, {}, this);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Agent}
+     * @method
+     *
+     * @param {Function} Unit
+     *
+     * @returns {Unit}
+     * */
+    _instUnit: function (Unit) {
+
+        return new Unit(this.params);
     }
 
 }, {
@@ -242,16 +249,77 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {Object<Function>}
      * */
     __transform: function (decls) {
-        var classes = {};
+        var Base;
+        var classes = [Unit];
+        var count;
+        var decl;
+        var i;
+        var l;
         var remaining = _.size(decls);
 
-        classes[Unit.prototype.path] = Unit;
+        function findBase (decl) {
+            var base = decl.members.base;
+
+            if ( Agent.__isFalsy(base) ) {
+                base = Unit.prototype.path;
+            }
+
+            return _.find(classes, function (Class) {
+
+                if ( _.isFunction(Class) ) {
+
+                    return Class.prototype.path === base;
+                }
+
+                return false;
+            });
+        }
+
+        function getUnitMixes (decl) {
+            var mixes = decl.members.mix;
+
+            if ( Agent.__isFalsy(mixes) ) {
+
+                return [];
+            }
+
+            if ( _.isArray(mixes) ) {
+
+                return mixes;
+            }
+
+            return [mixes];
+        }
+
+        decls = _.clone(decls);
 
         while ( remaining ) {
-            decls = Agent.__transfuse(decls, classes);
 
-            if ( _.size(decls) < remaining ) {
-                remaining = _.size(decls);
+            for ( i = 0, l = decls.length; i < l; i += 1 ) {
+                decl = decls[i];
+
+                if ( !decl ) {
+
+                    continue;
+                }
+
+                Base = findBase(decl);
+
+                if ( !_.isFunction(Base) ) {
+
+                    continue;
+                }
+
+                Base = [Base].concat(getUnitMixes(decl));
+                classes[i + 1] = inherit(Base, decl.members, decl.statics);
+
+                delete decls[i];
+            }
+
+            count = Agent.__count(decls);
+
+            if ( count < remaining ) {
+                remaining = count;
 
                 continue;
             }
@@ -260,54 +328,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         }
 
         return classes;
-    },
-
-    /**
-     * @private
-     * @static
-     * @memberOf Agent
-     * @method
-     *
-     * @param {Array} decls
-     * @param {Object} classes
-     *
-     * @returns {Array}
-     * */
-    __transfuse: function (decls, classes) {
-
-        return _.reduce(decls, function (decls, decl, path) {
-            var base;
-            var members = decl.members;
-
-            if ( _.has(members, 'base') ) {
-                base = members.base;
-
-            } else {
-                base = Unit.prototype.path;
-            }
-
-            //  postpone
-            if ( !_.has(classes, base) ) {
-                decls[path] = decl;
-
-                return decls;
-            }
-
-            if ( _.isUndefined(members.mix) || _.isNull(members.mix) ) {
-                base = [base];
-
-            } else if ( !_.isArray(members.mix) ) {
-                base = [base, members.mix];
-
-            } else {
-                base = [base].concat(members.mix);
-            }
-
-            base = [classes[base[0]]].concat(_.rest(base, 1));
-            classes[path] = inherit(base, members, decl.statics);
-
-            return decls;
-        }, {}, this);
     },
 
     /**
@@ -387,6 +407,42 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         found[path] = true;
 
         return paths;
+    },
+
+    /**
+     * @private
+     * @static
+     * @memberOf {Agent}
+     *
+     * @param {*} items
+     *
+     * @returns {Number}
+     * */
+    __count: function (items) {
+
+        return _.reduce(items, function (count, v) {
+
+            if ( v ) {
+
+                return count + 1;
+            }
+
+            return count;
+        }, 0);
+    },
+
+    /**
+     * @private
+     * @static
+     * @memberOf {Agent}
+     *
+     * @param {*} v
+     *
+     * @returns {Boolean}
+     * */
+    __isFalsy: function (v) {
+
+        return _.isUndefined(v) || _.isNull(v) || '' === v;
     }
 
 });

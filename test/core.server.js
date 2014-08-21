@@ -279,6 +279,44 @@ describe('core/server', function () {
         });
     });
 
+    it('Should auto declare units with .pattern', function (done) {
+        var server = new Server();
+
+        server.unit({
+            path: 'index',
+            pattern: '/'
+        });
+
+        server.ready().done(function () {
+            assert.ok(server.router.getRoute('index'));
+            done();
+        });
+    });
+
+    it.skip('Should decl routes according to unit decl order', function (done) {
+        var server = new Server();
+
+        server.unit({
+            path: 'index',
+            base: 'any',
+            pattern: '/'
+        });
+
+        server.unit({
+            path: 'any',
+            pattern: '/'
+        });
+
+        server.ready().done(function () {
+            var router = server.router;
+            var m = router.find('GET', '/');
+            assert.isObject(m);
+            assert.strictEqual(m.route.data.name, 'index');
+            done();
+        });
+
+    });
+
     describe('rewrite', function () {
         it('Should rewrite the url', function (done) {
 
