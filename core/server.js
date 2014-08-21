@@ -172,6 +172,25 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
     },
 
     /**
+     * @protected
+     * @memberOf {Server}
+     * @method
+     *
+     * @param {Function} Unit
+     *
+     * @returns {Unit}
+     * */
+    _instUnit: function (Unit) {
+        var unit = this.__base(Unit);
+
+        if ( _.isString(unit.pattern) ) {
+            this.route(unit.pattern, unit.path);
+        }
+
+        return unit;
+    },
+
+    /**
      * @private
      * @memberOf {Server}
      * @method
