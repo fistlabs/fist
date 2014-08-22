@@ -1,6 +1,7 @@
 /*global describe, it*/
 'use strict';
 
+var _ = require('lodash-node');
 var assert = require('chai').assert;
 
 describe('core/agent', function () {
@@ -200,6 +201,19 @@ describe('core/agent', function () {
             assert.instanceOf(err, ReferenceError);
             done();
         }).done();
+    });
+
+    it('Should not require members.path specified', function (done) {
+        var agent = new Agent();
+
+        agent.unit({
+            sign: 42
+        });
+
+        agent.ready().done(function () {
+            assert.ok(!_.isEmpty(agent.units));
+            done();
+        });
     });
 
     it('Should emit sys@ready on init', function (done) {

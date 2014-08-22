@@ -10,6 +10,7 @@ var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
+var uniqueId = require('unique-id');
 var vow = require('vow');
 
 /**
@@ -122,6 +123,10 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * */
     unit: function (members, statics) {
         members = Object(members);
+
+        if ( !_.has(members, 'path') ) {
+            members.path = 'unit-' + uniqueId();
+        }
 
         _.remove(this.__decls, function (decl) {
 
