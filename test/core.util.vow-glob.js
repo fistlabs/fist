@@ -24,7 +24,6 @@ describe('core/util/vow-glob', function () {
     });
 
     it('Should be rejected', function (done) {
-
         fs.mkdirSync('test/fixtures/globs/sub');
         fs.symlinkSync('.', 'test/fixtures/globs/sub/sub');
         fs.chmodSync('test/fixtures/globs/sub/sub', 438);
@@ -41,5 +40,4 @@ describe('core/util/vow-glob', function () {
             done();
         }).done();
     });
-
 });

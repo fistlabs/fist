@@ -1,11 +1,11 @@
 /*global describe, it*/
 'use strict';
 
-var Skip = require('../core/skip/skip');
+var Control = require('../core/control/control');
+
 var assert = require('chai').assert;
 
 describe('fist_plugins/units/_contrib-serial', function () {
-
     var Track = require('../core/track/track');
     var Tracker = require('../core/tracker');
     var _serial = require('../fist_plugins/units/_contrib-serial');
@@ -126,11 +126,11 @@ describe('fist_plugins/units/_contrib-serial', function () {
         });
     });
 
-    it('Should be resolved by Skip', function (done) {
+    it('Should be resolved by Control', function (done) {
         var tracker = new Tracker();
         var track = new Track(tracker);
         var spy = [];
-        var skip = new Skip();
+        var skip = new Control();
 
         tracker.plug(_serial);
 

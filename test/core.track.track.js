@@ -10,7 +10,6 @@ describe('core/track/track', function () {
 
     describe('.invoke', function () {
         it('Should resolve unit', function (done) {
-
             var tracker = new Tracker();
             var track = new Track(tracker);
 
@@ -28,11 +27,9 @@ describe('core/track/track', function () {
                     done();
                 });
             });
-
         });
 
         it('Should reject undefined unit', function (done) {
-
             var tracker = new Tracker();
             var track = new Track(tracker);
 
@@ -45,7 +42,6 @@ describe('core/track/track', function () {
         });
 
         it('Should resolve unit deps before call (0)', function (done) {
-
             var tracker = new Tracker();
             var track = new Track(tracker);
 
@@ -73,7 +69,6 @@ describe('core/track/track', function () {
         });
 
         it('Should resolve unit deps before call (1)', function (done) {
-
             var tracker = new Tracker();
             var track = new Track(tracker);
 
@@ -96,7 +91,6 @@ describe('core/track/track', function () {
         });
 
         it('Should not resolve unit a twice', function (done) {
-
             var tracker = new Tracker();
             var track = new Track(tracker);
 
@@ -183,7 +177,6 @@ describe('core/track/track', function () {
                     done();
                 });
             });
-
         });
 
         it('Should not cache calling', function (done) {
@@ -224,9 +217,6 @@ describe('core/track/track', function () {
                     done();
                 });
             });
-
         });
-
     });
-
 });

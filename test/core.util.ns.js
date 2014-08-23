@@ -32,7 +32,6 @@ describe('core/util/ns', function () {
         });
 
         it('Should parse path to an array of tokens', function () {
-
             var tests = 100;
             var path;
             var parsed;
@@ -91,6 +90,7 @@ describe('core/util/ns', function () {
 
         it('Should cache parsing result', function () {
             var result = ns.parse('a');
+
             assert.strictEqual(result, ns.parse('a'));
         });
     });
@@ -104,7 +104,6 @@ describe('core/util/ns', function () {
 
     describe('ns.link(root, path, data)', function () {
         it('Should link the data to the root according to path', function () {
-
             var o = {};
             var tests = [
                 ['a.b.c', 42],
@@ -124,7 +123,6 @@ describe('core/util/ns', function () {
 
     describe('ns.add(root, path, data)', function () {
         it('Should extend existing data', function () {
-
             var o = {};
             var res;
 
@@ -132,7 +130,6 @@ describe('core/util/ns', function () {
             assert.strictEqual(res, 42);
             assert.deepProperty(o, 'a.b.c');
             assert.deepPropertyVal(o, 'a.b.c', 42);
-
             res = ns.add(o, 'a.b', {
                 x: 15
             });
@@ -144,5 +141,4 @@ describe('core/util/ns', function () {
             assert.deepPropertyVal(o, 'a.b.x', 15);
         });
     });
-
 });

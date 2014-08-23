@@ -1,12 +1,12 @@
 'use strict';
 
 var AttachParser = /** @type AttachParser */ require('attach-parser');
-var url = require('fast-url-parser');
 
 var _ = require('lodash-node');
 var cookie = require('cookieparser');
 var inherit = require('inherit');
 var mediaTyper = require('media-typer');
+var url = require('fast-url-parser');
 var vow = require('vow');
 
 /**

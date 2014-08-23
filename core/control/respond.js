@@ -1,14 +1,14 @@
 'use strict';
 
-var Skip = /** @type Skip */ require('./skip');
+var Control = /** @type Control */ require('./control');
 
 var inherit = require('inherit');
 
 /**
  * @class Respond
- * @extends Skip
+ * @extends Control
  * */
-var Respond = inherit(Skip, /** @lends Respond.prototype */ {
+var Respond = inherit(Control, /** @lends Respond.prototype */ {
 
     /**
      * @private
@@ -33,7 +33,7 @@ var Respond = inherit(Skip, /** @lends Respond.prototype */ {
 
         /**
          * @public
-         * @memberOf {Skip}
+         * @memberOf {Control}
          * @property
          * @type {Object}
          * */
@@ -41,7 +41,7 @@ var Respond = inherit(Skip, /** @lends Respond.prototype */ {
 
         /**
          * @public
-         * @memberOf {Skip}
+         * @memberOf {Control}
          * @property
          * @type {*}
          * */

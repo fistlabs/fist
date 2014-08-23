@@ -9,11 +9,12 @@ var http = require('./util/http');
 
 describe('core/track/request', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
-    var Req = require('../core/track/request');
+    var Request = require('../core/track/request');
 
     it('Should be an instance of core/track/request', function (done) {
         http({}, function (rq, rs) {
-            var req = new Req(rq, {a: 5});
+            var req = new Request(rq, {a: 5});
+
             assert.property(req, 'params');
             assert.isObject(req.params);
             assert.deepEqual(req.params, {a: 5});
@@ -26,8 +27,7 @@ describe('core/track/request', function () {
     describe('.createUrl', function () {
         it('Should correctly parse request url', function (done) {
             http({path: '/test/'}, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('http://localhost/test/', true));
@@ -45,7 +45,7 @@ describe('core/track/request', function () {
                     'x-forwarded-host': 'fist.io'
                 }
             }, function (rq, rs) {
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('http://fist.io/test/', true));
@@ -63,7 +63,7 @@ describe('core/track/request', function () {
                 //  test hack
                 rq.socket.encrypted = true;
 
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('https://localhost/test/', true));
@@ -81,8 +81,7 @@ describe('core/track/request', function () {
                     'x-forwarded-proto': 'https'
                 }
             }, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 assert.deepEqual(req.createUrl(rq.url),
                     Url.parse('https://localhost/test/', true));
@@ -103,9 +102,9 @@ describe('core/track/request', function () {
                 },
                 path: '/test/'
             }, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
                 var headers = req.getHeaders();
+
                 assert.strictEqual(headers.test, 'ok');
 
                 rs.end();
@@ -123,8 +122,7 @@ describe('core/track/request', function () {
                 },
                 path: '/test/'
             }, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 assert.strictEqual(req.getHeader('TEST'), 'ok');
                 assert.strictEqual(req.getHeader('Test'), 'ok');
@@ -143,9 +141,8 @@ describe('core/track/request', function () {
             http({
                 Cookies: null
             }, function (rq, rs) {
-
                 var cookies;
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 cookies = req.getCookies();
                 assert.ok(_.isEmpty(cookies));
@@ -162,9 +159,8 @@ describe('core/track/request', function () {
                     Cookie: 'name=value; x=5'
                 }
             }, function (rq, rs) {
-
                 var cookies;
-                var req = new Req(rq);
+                var req = new Request(rq);
                 cookies = req.getCookies();
 
                 assert.strictEqual(cookies, req.getCookies());
@@ -181,9 +177,8 @@ describe('core/track/request', function () {
                     Cookie: 'name=value; x=5'
                 }
             }, function (rq, rs) {
-
                 var cookies;
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 cookies = req.getCookies();
 
@@ -207,8 +202,7 @@ describe('core/track/request', function () {
                     Cookie: 'name=value; x=5'
                 }
             }, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 assert.strictEqual(req.getCookie('name'), 'value');
                 assert.strictEqual(req.getCookie('x'), '5');
@@ -229,8 +223,7 @@ describe('core/track/request', function () {
                 method: 'POST',
                 body: 'TEST'
             }, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 req.getBody().done(function (body) {
                     assert.deepEqual(body.input, new Buffer('TEST'));
@@ -247,8 +240,7 @@ describe('core/track/request', function () {
                 method: 'POST',
                 body: 'TEST'
             }, function (rq, rs) {
-
-                var req = new Req(rq);
+                var req = new Request(rq);
                 var body = req.getBody();
 
                 assert.strictEqual(body, req.getBody());
@@ -267,7 +259,7 @@ describe('core/track/request', function () {
 
                 rq.headers['content-type'] = 'wrong';
 
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 req.getBody().done(null, function (err) {
                     assert.instanceOf(err, Error);
@@ -287,7 +279,7 @@ describe('core/track/request', function () {
 
                 delete rq.headers['content-type'];
 
-                var req = new Req(rq);
+                var req = new Request(rq);
 
                 req.getBody().done(function (body) {
                     assert.deepEqual(body.input, new Buffer('TEST'));

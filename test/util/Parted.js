@@ -1,9 +1,9 @@
 'use strict';
 
-var Emitter = require('events').EventEmitter;
+var EventEmitter = require('events').EventEmitter;
 
 function Parted (parts) {
-    Emitter.apply(this, arguments);
+    EventEmitter.apply(this, arguments);
 
     function call () {
 
@@ -32,7 +32,7 @@ function Parted (parts) {
     });
 }
 
-Parted.prototype = Object.create(Emitter.prototype);
+Parted.prototype = Object.create(EventEmitter.prototype);
 
 Parted.prototype.pipe = function (w) {
     this.on('data', function (c) {

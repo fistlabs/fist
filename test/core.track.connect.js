@@ -2,6 +2,7 @@
 'use strict';
 
 var STATUS_CODES = require('http').STATUS_CODES;
+
 var Request = require('../core/track/request');
 var Response = require('../core/track/response');
 
@@ -25,7 +26,6 @@ describe('core/track/connect', function () {
             res.end();
         }, function (err) {
             assert.ok(!err);
-
             done();
         });
     });
@@ -198,13 +198,11 @@ describe('core/track/connect', function () {
                     Response.end(res, resp);
                 });
             }, function (err, res) {
-
-                var url;
+                var url = _.escape('/test/');
 
                 assert.ok(!err);
                 assert.strictEqual(res.statusCode, 302);
                 assert.strictEqual(res.headers.location, '/test/');
-                url = _.escape('/test/');
                 assert.deepEqual(res.data, new Buffer('<a href="' + url + '">' +
                     url + '</a>'));
 
@@ -254,5 +252,4 @@ describe('core/track/connect', function () {
             tracker.route('/<page>/', 'page');
         });
     });
-
 });

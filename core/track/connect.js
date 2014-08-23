@@ -7,7 +7,7 @@ var Context = /** @type Context */ require('../deps/context');
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Request = /** @type Request */ require('./request');
 var Response = /** @type Response */ require('./response');
-var Rewrite = /** @type Rewrite */ require('../skip/rewrite');
+var Rewrite = /** @type Rewrite */ require('../control/rewrite');
 var Route = /** @type Route */ require('finger/route/Route');
 var Track = /** @type Track */ require('./track');
 

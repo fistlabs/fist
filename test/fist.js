@@ -5,7 +5,6 @@ var assert = require('chai').assert;
 var Server = require('../core/server');
 
 describe('fist', function () {
-
     var fist = require('../fist');
 
     it('Should be a function', function () {

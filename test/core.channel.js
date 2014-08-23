@@ -18,6 +18,7 @@ describe('core/channel', function () {
 
         it('Should should just emit event', function (done) {
             var channel = new Channel();
+
             channel.on('x', function () {
                 done();
             });
@@ -27,7 +28,8 @@ describe('core/channel', function () {
 
         it('Should throw an async exception', function () {
             var channel = new Channel();
-            var st = process.nextTick;
+            var nt = process.nextTick;
+
             process.nextTick = function (fn) {
                 fn();
             };
@@ -41,12 +43,11 @@ describe('core/channel', function () {
                 channel.emit('x');
             }, Error);
 
-            process.nextTick = st;
+            process.nextTick = nt;
         });
     });
 
     describe('.channel', function () {
-
         var channel = new Channel();
 
         it('Should create channel', function () {
@@ -57,7 +58,5 @@ describe('core/channel', function () {
             var c = channel.channel('c');
             assert.strictEqual(c, channel.channel('c'));
         });
-
     });
-
 });

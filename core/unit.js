@@ -1,12 +1,12 @@
 'use strict';
 
-var uniqueId = require('unique-id');
 var S_SEPARATOR = '-';
-var EventEmitter = /** @type EventEmitter */ require('events').EventEmitter;
-var Skip = /** @type Skip */ require('./skip/skip');
+
+var Control = /** @type Control */ require('./control/control');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
+var uniqueId = require('unique-id');
 var vow = require('vow');
 
 /**
@@ -133,7 +133,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             var data = value.data;
 
             //  из кэша или резолвер
-            if ( !value.fresh || data instanceof Skip ) {
+            if ( !value.fresh || data instanceof Control ) {
 
                 return data;
             }

@@ -1,7 +1,7 @@
 'use strict';
 
+var Control = /** @type Control */ require('../../core/control/control');
 var Deque = /** @type Deque */ require('double-ended-queue');
-var Skip = /** @type Skip */ require('../../core/skip/skip');
 
 var _ = require('lodash-node');
 var vow = require('vow');
@@ -24,7 +24,7 @@ module.exports = function () {
             var func;
             var self = this;
 
-            if ( steps.isEmpty() || context.data instanceof Skip ) {
+            if ( steps.isEmpty() || context.data instanceof Control ) {
 
                 return context.data;
             }

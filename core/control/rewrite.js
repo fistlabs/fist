@@ -1,14 +1,14 @@
 'use strict';
 
-var Skip = /** @type Skip */ require('./skip');
+var Control = /** @type Control */ require('./control');
 
 var inherit = require('inherit');
 
 /**
  * @class Rewrite
- * @extends Skip
+ * @extends Control
  * */
-var Rewrite = inherit(Skip, /** @Lends Rewrite */ {
+var Rewrite = inherit(Control, /** @Lends Rewrite */ {
 
     /**
      * @private

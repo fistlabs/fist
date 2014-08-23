@@ -1,9 +1,9 @@
 /*global describe, it*/
 'use strict';
 
+var Control = require('../core/control/control');
 var Track = require('../core/track/track');
 var Tracker = require('../core/tracker');
-var Skip = require('../core/skip/skip');
 
 var assert = require('chai').assert;
 var inherit = require('inherit');
@@ -63,7 +63,6 @@ describe('core/unit', function () {
 
     describe('.addDeps', function () {
         it('Should add unique deps', function () {
-
             var unit = new Unit();
 
             unit.addDeps([1, 2, 3]);
@@ -75,7 +74,6 @@ describe('core/unit', function () {
 
     describe('.delDeps', function () {
         it('Should del deps', function () {
-
             var unit = new Unit();
 
             unit.addDeps(1, 2, 3, 4, 5, 6);
@@ -201,7 +199,6 @@ describe('core/unit', function () {
         });
 
         it('Should not cache coz of error', function (done) {
-
             var e = [];
             var SlyTracker = inherit(Tracker, {
                 _createCache: function (p) {
@@ -246,8 +243,7 @@ describe('core/unit', function () {
             });
         });
 
-        it('Should not cache Skip', function (done) {
-
+        it('Should not cache Control', function (done) {
             var tracker = new Tracker();
             var spy = [];
 
@@ -257,7 +253,7 @@ describe('core/unit', function () {
                 data: function () {
                     spy.push(1);
 
-                    return new Skip();
+                    return new Control();
                 }
             });
 
@@ -275,7 +271,6 @@ describe('core/unit', function () {
         });
 
         it('Should cache result', function (done) {
-
             var tracker = new Tracker();
             var spy = [];
 
@@ -301,7 +296,6 @@ describe('core/unit', function () {
         });
 
         it('Should emit ctx@cache', function (done) {
-
             var tracker = new Tracker();
             var spy = [];
 
@@ -329,5 +323,4 @@ describe('core/unit', function () {
             });
         });
     });
-
 });

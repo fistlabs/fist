@@ -1,9 +1,9 @@
 'use strict';
 
-var BaseConflictError = require('./error/base-conflict-error');
-var DepsConflictError = require('./error/deps-conflict-error');
 var R_PUBLIC_UNIT = /^[a-z]/i;
 
+var BaseConflictError = require('./error/base-conflict-error');
+var DepsConflictError = require('./error/deps-conflict-error');
 var Cache = /** @type Cache */ require('./cache/cache');
 var Channel = /** @type Channel */ require('./channel');
 var Unit = /** @type Unit */ require('./unit');

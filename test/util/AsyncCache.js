@@ -1,6 +1,7 @@
 'use strict';
 
 var Cache = require('../../core/cache/cache');
+
 var inherit = require('inherit');
 
 var AsyncCache = inherit(Cache, {
