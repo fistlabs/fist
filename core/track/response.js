@@ -2,7 +2,8 @@
 
 var R_SET_COOKIE_HEADER = /^set-cookie$/i;
 var STATUS_CODES = require('http').STATUS_CODES;
-var Respond = /** @type Respond */ require('../skip/respond');
+
+var Respond = /** @type Respond */ require('../control/respond');
 
 var _ = require('lodash-node');
 var cookie = require('cookieparser');

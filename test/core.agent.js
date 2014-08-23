@@ -12,6 +12,7 @@ describe('core/agent', function () {
     it('Should be an instance of core/agent', function () {
         var EventEmitter = require('events').EventEmitter;
         var agent = new Agent({x: 42});
+
         assert.property(agent, 'params');
         assert.isObject(agent.params);
         assert.property(agent.params, 'x');
@@ -38,6 +39,7 @@ describe('core/agent', function () {
     describe('.alias', function () {
         it('Should create alias', function (done) {
             var agent = new Agent();
+
             agent.unit({
                 path: 'foo'
             });
@@ -53,6 +55,7 @@ describe('core/agent', function () {
 
         it('Should create aliases by map', function (done) {
             var agent = new Agent();
+
             agent.unit({
                 path: 'foo'
             });
@@ -70,7 +73,6 @@ describe('core/agent', function () {
     });
 
     it('Should initialize units before ready', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -90,7 +92,6 @@ describe('core/agent', function () {
     });
 
     it('Should inherit units from units', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -113,7 +114,6 @@ describe('core/agent', function () {
     });
 
     it('Should failed while init coz base not found', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -129,7 +129,6 @@ describe('core/agent', function () {
     });
 
     it('Should check dependencies and be ready', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -149,7 +148,6 @@ describe('core/agent', function () {
     });
 
     it('Should not fail if dependency not found', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -164,7 +162,6 @@ describe('core/agent', function () {
     });
 
     it('Should find deps conflict', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -217,7 +214,6 @@ describe('core/agent', function () {
     });
 
     it('Should emit sys@ready on init', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -233,7 +229,6 @@ describe('core/agent', function () {
     });
 
     it('Should emit sys@eready on init error', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -250,7 +245,6 @@ describe('core/agent', function () {
     });
 
     it('Should not share abstract units', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -279,7 +273,6 @@ describe('core/agent', function () {
     });
 
     it('Should support static members declaration', function (done) {
-
         var agent = new Agent();
 
         agent.unit({
@@ -325,6 +318,7 @@ describe('core/agent', function () {
     });
 
     it('Should support mixins (0)', function (done) {
+        var agent = new Agent();
 
         function Mixin () {}
 
@@ -334,8 +328,6 @@ describe('core/agent', function () {
                 return 42;
             }
         };
-
-        var agent = new Agent();
 
         agent.unit({
             path: 'test',
@@ -354,7 +346,6 @@ describe('core/agent', function () {
     });
 
     it('Should not instantiate abstract units', function (done) {
-
         var agent = new Agent();
         var spy = [];
 

@@ -1,6 +1,6 @@
 'use strict';
 
-var Skip = /** @type Skip */ require('../skip/skip');
+var Control = /** @type Control */ require('../control/control');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -170,7 +170,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         defer.resolve(this.append(unit.deps).then(function (promises) {
             var promise = _.find(promises, function (promise) {
 
-                return promise.valueOf() instanceof Skip;
+                return promise.valueOf() instanceof Control;
             });
 
             if ( _.isUndefined(promise) ) {

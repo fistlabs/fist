@@ -99,5 +99,4 @@ describe('core/deps/context', function () {
             context.render('test');
         });
     });
-
 });

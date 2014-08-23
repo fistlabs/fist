@@ -1,8 +1,9 @@
 'use strict';
 
-var http = require('./http');
-var Server = require('../../core/server');
 var Connect = require('../../core/track/connect');
+var Server = require('../../core/server');
+
+var http = require('./http');
 
 module.exports = function (opts, handle, receive, trackerOpts) {
     var tracker = new Server(trackerOpts);

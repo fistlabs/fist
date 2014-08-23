@@ -65,7 +65,6 @@ describe('core/tracker', function () {
         });
 
         it('Should be failed coz plugin rejected', function (done) {
-
             var tracker = new Tracker();
 
             tracker.plug(function (done) {
@@ -175,16 +174,15 @@ describe('core/tracker', function () {
         });
     });
 
-    describe('skip resolving', function () {
+    describe('control resolving', function () {
+        var Control = require('../core/control/control');
 
-        var Skip = require('../core/skip/skip');
-
-        it('Should skip resolving by returning ' +
-            '{Skip}', function (done) {
+        it('Should stop resolving by returning ' +
+            '{Control}', function (done) {
 
             var tracker = new Tracker();
             var track = new Track(tracker);
-            var skip = new Skip();
+            var skip = new Control();
 
             tracker.unit({
                 path: 'a',
@@ -217,9 +215,6 @@ describe('core/tracker', function () {
                     done();
                 });
             });
-
         });
-
     });
-
 });

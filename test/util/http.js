@@ -1,19 +1,19 @@
 'use strict';
 
-var Fs = require('fs');
-var Http = require('http');
-var vowAsker = require('vow-asker');
+var fs = require('fs');
+var http = require('http');
 var sock = require('./sock');
+var vowAsker = require('vow-asker');
 
 module.exports = function (params, handle) {
     var promise;
     var server;
 
     try {
-        Fs.unlinkSync(sock);
+        fs.unlinkSync(sock);
     } catch (e) {}
 
-    server = Http.createServer(handle).listen(sock);
+    server = http.createServer(handle).listen(sock);
 
     params.socketPath = sock;
 

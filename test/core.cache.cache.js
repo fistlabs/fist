@@ -12,7 +12,6 @@ describe('core/cache/cache', function () {
     });
 
     describe('.set/.get', function () {
-
         var cache = new Cache();
 
         it('Should cache value', function (done) {
@@ -47,7 +46,5 @@ describe('core/cache/cache', function () {
                 });
             });
         });
-
     });
-
 });

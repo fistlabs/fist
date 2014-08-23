@@ -15,14 +15,9 @@ describe('core/track/response', function () {
 
     it('Should be an instance of core/track/response', function (done) {
         http({}, function (rq, rs) {
+            var res = new Res(rs, {a: 5});
 
-            var res = new Res(rs, {
-                a: 5
-            });
-
-            assert.deepEqual(res.params, {
-                a: 5
-            });
+            assert.deepEqual(res.params, {a: 5});
 
             rs.end();
         }).done(function () {
@@ -110,6 +105,7 @@ describe('core/track/response', function () {
         it('Should get header by name', function (done) {
             http({}, function (rq, rs) {
                 var res = new Res(rs);
+
                 res.setHeader('test', 'ok');
                 assert.strictEqual(res.getHeader('Test'), 'ok');
                 rs.end();
@@ -126,6 +122,7 @@ describe('core/track/response', function () {
 
             }, function (rq, rs) {
                 var res = new Res(rs);
+
                 res.setStatus(201);
                 rs.end();
             }).done(function (res) {
@@ -142,6 +139,7 @@ describe('core/track/response', function () {
 
             }, function (rq, rs) {
                 var res = new Res(rs);
+
                 res.setStatus(201);
                 assert.strictEqual(res.getStatus(), 201);
                 rs.end();
@@ -157,6 +155,7 @@ describe('core/track/response', function () {
         it('Should set cookie', function (done) {
             http({}, function (rq, rs) {
                 var res = new Res(rs);
+
                 res.setCookie('name', 'value');
                 rs.end();
             }).done(function (res) {
@@ -195,6 +194,7 @@ describe('core/track/response', function () {
         it('Should respond by Undefined', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
+
                 vow.when(res.respond(201), function (resp) {
                     Res.end(rs, resp);
                 });
@@ -211,6 +211,7 @@ describe('core/track/response', function () {
         it('Should respond by String', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
+
                 vow.when(res.respond(201, 'test'), function (resp) {
                     Res.end(rs, resp);
                 });
@@ -227,6 +228,7 @@ describe('core/track/response', function () {
         it('Should respond by Buffer', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
+
                 vow.when(res.respond(201, new Buffer('test')), function (resp) {
                     Res.end(rs, resp);
                 });
@@ -246,6 +248,7 @@ describe('core/track/response', function () {
             http({}, function (req, rs) {
                 var res = new Res(rs);
                 var body = new Parted([new Buffer('t'), 'e', 's', 't']);
+
                 vow.when(res.respond(201, body), function (resp) {
                     Res.end(rs, resp);
                 });
@@ -271,7 +274,6 @@ describe('core/track/response', function () {
                 }
             }, function (req, rs) {
                 var body = new Parted('test'.split(''));
-
                 var res = new Res(rs);
 
                 body.once('data', function () {
@@ -303,9 +305,7 @@ describe('core/track/response', function () {
                     };
                 }
             }, function (req, rs) {
-
                 var body = new Parted('test'.split(''));
-
                 var res = new Res(rs);
 
                 body.pause = function () {
@@ -331,11 +331,11 @@ describe('core/track/response', function () {
         });
 
         it('Should respond by Error', function (done) {
-
             var error = new Error();
 
             http({}, function (req, rs) {
                 var res = new Res(rs);
+
                 vow.when(res.respond(201, error), function (resp) {
                     Res.end(rs, resp);
                 });
@@ -351,7 +351,6 @@ describe('core/track/response', function () {
         });
 
         it('Should correctly handle MaximumCallStackError', function (done) {
-
             var error;
 
             try {
@@ -380,7 +379,6 @@ describe('core/track/response', function () {
         });
 
         it('Should show json instead of Error-trace', function (done) {
-
             var error = new Error();
 
             http({}, function (req, rs) {
@@ -408,6 +406,7 @@ describe('core/track/response', function () {
             http({}, function (req, rs) {
                 var res = new Res(rs);
                 var resp = res.respond(500, ':)');
+
                 resp = res.respond(201, resp);
                 vow.when(resp, function (resp) {
                     Res.end(rs, resp);
@@ -425,6 +424,7 @@ describe('core/track/response', function () {
         it('Should respond by Object', function (done) {
             http({}, function (req, rs) {
                 var res = new Res(rs);
+
                 vow.when(res.respond(201, {a: 42}), function (resp) {
                     Res.end(rs, resp);
                 });
@@ -439,5 +439,4 @@ describe('core/track/response', function () {
             });
         });
     });
-
 });

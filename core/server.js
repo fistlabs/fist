@@ -3,8 +3,8 @@
 var Connect = /** @type Connect */ require('./track/connect');
 var Router = /** @type Router */ require('finger/Router');
 var Response = /** @type Response */ require('./track/response');
-var Respond = /** @type Respond */ require('./skip/respond');
-var Rewrite = /** @type Rewrite */ require('./skip/rewrite');
+var Respond = /** @type Respond */ require('./control/respond');
+var Rewrite = /** @type Rewrite */ require('./control/rewrite');
 var Tracker = /** @type Tracker */ require('./tracker');
 
 var _ = require('lodash-node');

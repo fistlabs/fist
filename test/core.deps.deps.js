@@ -1,10 +1,11 @@
 /*global describe, it*/
 'use strict';
 
+var Track = require('../core/track/track');
+var Tracker = require('../core/tracker');
+
 var _ = require('lodash-node');
 var assert = require('chai').assert;
-var Tracker = require('../core/tracker');
-var Track = require('../core/track/track');
 
 describe('core/deps/deps', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
@@ -13,7 +14,6 @@ describe('core/deps/deps', function () {
     var track = new Track(tracker);
 
     describe('new Deps()', function () {
-
         var ctx = new Deps(track);
 
         var props = [
@@ -35,7 +35,6 @@ describe('core/deps/deps', function () {
     });
 
     describe('new Deps(track, path, params)', function () {
-
         var params = {a: 42};
         var ctx = new Deps(null, null, params);
 
@@ -50,6 +49,7 @@ describe('core/deps/deps', function () {
     describe('.setRes(path, data)', function () {
         it('Should set data to .res object', function () {
             var ctx = new Deps(track);
+
             ctx.setRes('a.b.c', 42);
             assert.deepProperty(ctx.result, 'a.b.c');
             assert.deepPropertyVal(ctx.result, 'a.b.c', 42);
@@ -59,6 +59,7 @@ describe('core/deps/deps', function () {
     describe('.setErr(path, data)', function () {
         it('Should set data to .ers object', function () {
             var ctx = new Deps(track);
+
             ctx.setErr('a.b.c', 42);
             assert.deepProperty(ctx.errors, 'a.b.c');
             assert.deepPropertyVal(ctx.errors, 'a.b.c', 42);
@@ -68,6 +69,7 @@ describe('core/deps/deps', function () {
     describe('.getRes(path)', function () {
         it('Should get data from .res object', function () {
             var ctx = new Deps(track);
+
             ctx.setRes('a.b.c', 42);
             assert.strictEqual(ctx.getRes('a.b.c'), 42);
         });
@@ -76,6 +78,7 @@ describe('core/deps/deps', function () {
     describe('.getErr(path)', function () {
         it('Should get data from .ers object', function () {
             var ctx = new Deps(track);
+
             ctx.setErr('a.b.c', 42);
             assert.strictEqual(ctx.getErr('a.b.c'), 42);
         });

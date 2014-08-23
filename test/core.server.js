@@ -1,19 +1,32 @@
 /*global describe, it*/
 'use strict';
 
-var Fs = require('fs');
 var Router = require('finger/Router');
 
-var vowAsker = require('vow-asker');
 var assert = require('chai').assert;
+var fs = require('fs');
 var sock = require('./util/sock');
+var vowAsker = require('vow-asker');
+
+function unlink () {
+
+    try {
+        fs.unlinkSync(sock);
+
+        return true;
+
+    } catch (err) {
+
+        return false;
+    }
+}
 
 describe('core/server', function () {
-
     var Server = require('../core/server');
 
     it('Should be an instance of core/server', function () {
         var server = new Server();
+
         assert.deepEqual(server.renderers, {});
         assert.instanceOf(server.router, Router);
     });
@@ -72,9 +85,7 @@ describe('core/server', function () {
             }
         });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = server.listen(sock);
 
@@ -89,7 +100,6 @@ describe('core/server', function () {
     });
 
     it('Should respond 500 if init failed', function (done) {
-
         var server = new Server();
         var origServer;
 
@@ -108,9 +118,7 @@ describe('core/server', function () {
             }
         });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = server.listen(sock);
 
@@ -142,9 +150,7 @@ describe('core/server', function () {
             spy.push(1);
         });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = server.listen(sock);
 
@@ -166,7 +172,6 @@ describe('core/server', function () {
     });
 
     it('Should return 501 if method handler not implemented', function (done) {
-
         var spy = [];
         var server = new Server();
         var origServer;
@@ -175,9 +180,7 @@ describe('core/server', function () {
             spy.push(1);
         });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = server.listen(sock);
 
@@ -198,8 +201,8 @@ describe('core/server', function () {
         });
     });
 
-    it('Should return 405 if request method is not implemented for matched ' +
-        'resource', function (done) {
+    it('Should return 405 if request method ' +
+       'is not implemented', function (done) {
 
         var spy = [];
         var server = new Server();
@@ -212,9 +215,7 @@ describe('core/server', function () {
             spy.push(1);
         });
 
-        try {
-            Fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = server.listen(sock);
 
@@ -237,7 +238,6 @@ describe('core/server', function () {
     });
 
     it('Should continue routing if controller has not sent', function (done) {
-
         var server = new Server();
         var origServer;
 
@@ -262,10 +262,7 @@ describe('core/server', function () {
             }
         });
 
-        try {
-            Fs.unlinkSync(sock);
-
-        } catch (err) {}
+        unlink();
 
         origServer = server.listen(sock);
 
@@ -310,6 +307,7 @@ describe('core/server', function () {
         server.ready().done(function () {
             var router = server.router;
             var m = router.find('GET', '/');
+
             assert.isObject(m);
             assert.strictEqual(m.route.data.name, 'index');
             done();
@@ -319,7 +317,6 @@ describe('core/server', function () {
 
     describe('rewrite', function () {
         it('Should rewrite the url', function (done) {
-
             var server = new Server();
             var origServer;
 
@@ -347,10 +344,7 @@ describe('core/server', function () {
                 }
             });
 
-            try {
-                Fs.unlinkSync(sock);
-
-            } catch (err) {}
+            unlink();
 
             origServer = server.listen(sock);
 
@@ -364,5 +358,4 @@ describe('core/server', function () {
             });
         });
     });
-
 });

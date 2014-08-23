@@ -8,10 +8,21 @@ var fist = require('../fist');
 var sock = require('./util/sock');
 var fs = require('fs');
 
+function unlink () {
+
+    try {
+        fs.unlinkSync(sock);
+
+        return true;
+    } catch (err) {
+
+        return false;
+    }
+}
+
 describe('fist_plugins/units/_contrib-asker', function () {
 
     it('Should respond with expected value (0)', function (done) {
-
         var app = fist();
         var origServer;
 
@@ -48,9 +59,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             }
         });
 
-        try {
-            fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = app.listen(sock);
 
@@ -105,9 +114,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             }
         });
 
-        try {
-            fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = app.listen(sock);
 
@@ -122,7 +129,6 @@ describe('fist_plugins/units/_contrib-asker', function () {
     });
 
     it('Should respond with expected value (2)', function (done) {
-
         var app = fist();
         var origServer;
 
@@ -146,9 +152,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             }
         });
 
-        try {
-            fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = app.listen(sock);
 
@@ -194,9 +198,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             }
         });
 
-        try {
-            fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = app.listen(sock);
 
@@ -246,9 +248,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             }
         });
 
-        try {
-            fs.unlinkSync(sock);
-        } catch (err) {}
+        unlink();
 
         origServer = app.listen(sock);
 
