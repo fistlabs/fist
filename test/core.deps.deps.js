@@ -66,21 +66,61 @@ describe('core/deps/deps', function () {
         });
     });
 
-    describe('.getRes(path)', function () {
+    describe('.getRes', function () {
         it('Should get data from .res object', function () {
             var ctx = new Deps(track);
 
             ctx.setRes('a.b.c', 42);
             assert.strictEqual(ctx.getRes('a.b.c'), 42);
         });
+
+        it('Should support default value', function () {
+            var ctx = new Deps(track);
+
+            assert.strictEqual(ctx.getRes('a.b.c', 42), 42);
+        });
+
+        it('Should support no arguments', function () {
+            var ctx = new Deps(track);
+
+            ctx.setRes('a.b.c', 42);
+
+            assert.deepEqual(ctx.getRes(), {
+                a: {
+                    b: {
+                        c: 42
+                    }
+                }
+            });
+        });
     });
 
-    describe('.getErr(path)', function () {
+    describe('.getErr', function () {
         it('Should get data from .ers object', function () {
             var ctx = new Deps(track);
 
             ctx.setErr('a.b.c', 42);
             assert.strictEqual(ctx.getErr('a.b.c'), 42);
+        });
+
+        it('Should support default value', function () {
+            var ctx = new Deps(track);
+
+            assert.strictEqual(ctx.getErr('a.b.c', 42), 42);
+        });
+
+        it('Should support no arguments', function () {
+            var ctx = new Deps(track);
+
+            ctx.setErr('a.b.c', 42);
+
+            assert.deepEqual(ctx.getErr(), {
+                a: {
+                    b: {
+                        c: 42
+                    }
+                }
+            });
         });
     });
 
@@ -125,6 +165,22 @@ describe('core/deps/deps', function () {
         });
     });
 
+    describe('.args', function () {
+
+        it('Should return args', function () {
+            var ctx = new Deps(track, 'c', {
+                a: 42
+            });
+            var args = ctx.args();
+
+            assert.deepEqual(args, {
+                a: 42
+            });
+
+            assert.strictEqual(args, ctx.args());
+        });
+    });
+
     describe('.arg', function () {
         it('Should return parameter', function () {
             var ctx = new Deps(track, 'c', {
@@ -132,6 +188,40 @@ describe('core/deps/deps', function () {
             });
 
             assert.strictEqual(ctx.arg('a'), 42);
+        });
+
+        it('Should support paths', function () {
+            var ctx = new Deps(track, 'c', {
+                a: {
+                    b: 42
+                }
+            });
+
+            assert.strictEqual(ctx.arg('a.b'), 42);
+        });
+
+        it('Should not fail if no params', function () {
+            var ctx = new Deps(track, 'c');
+
+            assert.strictEqual(ctx.arg('a.b'), void 0);
+        });
+
+        it('Should support default value', function () {
+            var ctx = new Deps(track, 'c');
+            var def = {};
+
+            assert.strictEqual(ctx.arg('a.b', def), def);
+        });
+    });
+
+    describe('.toJSON', function () {
+        it('Should serialize to JSON', function () {
+            var context = new Deps();
+            assert.deepEqual(context.toJSON(), {
+                params: {},
+                result: {},
+                errors: {}
+            });
         });
     });
 });

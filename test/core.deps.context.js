@@ -7,6 +7,31 @@ describe('core/deps/context', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
     var Context = require('../core/deps/context');
 
+    describe('.args', function () {
+        it('Should correctly dump args', function () {
+            var ctx = new Context({
+                match: {
+                    a: 42
+                },
+                url: {
+                    query: {
+                        a: 43
+                    }
+                }
+            }, null, {
+                a: 41
+            });
+
+            var args = ctx.args();
+
+            assert.deepEqual(args, {
+                a: 41
+            });
+
+            assert.strictEqual(args, ctx.args());
+        });
+    });
+
     describe('.arg', function () {
         it('Should return instance parameter', function () {
 
@@ -61,15 +86,31 @@ describe('core/deps/context', function () {
 
             assert.strictEqual(ctx.arg('a'), 43);
         });
-    });
 
-    describe('.toJSON', function () {
-        it('Should serialize to JSON', function () {
-            var context = new Context();
-            assert.deepEqual(context.toJSON(), {
-                result: {},
-                errors: {}
+        it('Should support paths', function () {
+
+            var ctx = new Context({
+                match: {},
+                url: {
+                    query: {
+                        sort: {
+                            type: 'asc'
+                        }
+                    }
+                }
             });
+
+            assert.strictEqual(ctx.arg('sort.type'), 'asc');
+        });
+
+        it('Should support defaultValues', function () {
+
+            var ctx = new Context({
+                match: {},
+                url: {query: {}}
+            });
+
+            assert.strictEqual(ctx.arg('sort.type', 'asc'), 'asc');
         });
     });
 

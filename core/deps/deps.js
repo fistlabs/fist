@@ -94,18 +94,19 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @memberOf {Deps}
      * @method
      *
-     * @param {String} name
+     * @param {String} path
+     * @param {*} [defaultValue]
      *
      * @returns {*}
      * */
-    arg: function (name) {
+    arg: function (path, defaultValue) {
+        var result = ns.use(this.args(), path);
 
-        if ( _.has(this.params, name) ) {
-
-            return this.params[name];
+        if ( this._isFalsy(result) ) {
+            result = defaultValue;
         }
 
-        return void 0;
+        return result;
     },
 
     /**
@@ -113,13 +114,15 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @memberOf {Deps}
      * @method
      *
-     * @param {String} path
-     *
      * @returns {*}
      * */
-    getRes: function (path) {
+    args: function () {
 
-        return ns.use(this.result, path);
+        if ( !this.__args ) {
+            this.__args  = this._dumpArgs();
+        }
+
+        return this.__args;
     },
 
     /**
@@ -127,13 +130,29 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @memberOf {Deps}
      * @method
      *
-     * @param {String} path
+     * @param {String} [path]
+     * @param {*} [defaultValue]
      *
      * @returns {*}
      * */
-    getErr: function (path) {
+    getRes: function (path, defaultValue) {
+        /*eslint no-unused-vars: 0*/
+        return this.__get(this.result, arguments);
+    },
 
-        return ns.use(this.errors, path);
+    /**
+     * @public
+     * @memberOf {Deps}
+     * @method
+     *
+     * @param {String} [path]
+     * @param {*} [defaultValue]
+     *
+     * @returns {*}
+     * */
+    getErr: function (path, defaultValue) {
+        /*eslint no-unused-vars: 0*/
+        return this.__get(this.errors, arguments);
     },
 
     /**
@@ -225,6 +244,75 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     setErr: function (path, data) {
 
         return ns.add(this.errors, path, data);
+    },
+
+    /**
+     * @public
+     * @memberOf {Deps}
+     * @method
+     *
+     * @returns {Object}
+     * */
+    toJSON: function () {
+
+        return {
+            params: this.args(),
+            errors: this.getErr(),
+            result: this.getRes()
+        };
+    },
+
+    /**
+     * @protected
+     * @memberOf {Deps}
+     * @method
+     *
+     * @returns {Object}
+     * */
+    _dumpArgs: function () {
+
+        return Object(this.params);
+    },
+
+    /**
+     * @protected
+     * @memberOf {Deps}
+     * @method
+     *
+     * @param {*} v
+     *
+     * @returns {Boolean}
+     * */
+    _isFalsy: function (v) {
+
+        return _.isUndefined(v) || _.isNull(v) || '' === v;
+    },
+
+    /**
+     * @private
+     * @memberOf {Deps}
+     * @method
+     *
+     * @param {*} root
+     * @param {Arguments} args
+     *
+     * @returns {*}
+     * */
+    __get: function (root, args) {
+        var result;
+
+        if ( 0 === args.length ) {
+
+            return root;
+        }
+
+        result = ns.use(root, args[0]);
+
+        if ( this._isFalsy(result) ) {
+            result = args[1];
+        }
+
+        return result;
     },
 
     /**
