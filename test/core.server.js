@@ -290,7 +290,7 @@ describe('core/server', function () {
         });
     });
 
-    it.skip('Should decl routes according to unit decl order', function (done) {
+    it('Should decl routes according to unit decl order', function (done) {
         var server = new Server();
 
         server.unit({
@@ -312,7 +312,6 @@ describe('core/server', function () {
             assert.strictEqual(m.route.data.name, 'index');
             done();
         });
-
     });
 
     describe('rewrite', function () {

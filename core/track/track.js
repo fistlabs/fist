@@ -53,19 +53,19 @@ var Track = inherit(/** @lends Track.prototype */{
      * @method
      *
      * @param {String} path
-     * @param {Object} [params]
+     * @param {Object} [locals]
      *
      * @returns {vow.Promise}
      *  */
-    invoke: function (path, params) {
+    invoke: function (path, locals) {
 
-        if ( _.isObject(params) ) {
+        if ( 1 < arguments.length ) {
 
-            return this.__executeUnit(path, params);
+            return this.__executeUnit(path, locals);
         }
 
         if ( !_.has(this.tasks, path) ) {
-            this.tasks[path] = this.__executeUnit(path, params);
+            this.tasks[path] = this.__executeUnit(path, locals);
         }
 
         return this.tasks[path];
