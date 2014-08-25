@@ -144,6 +144,7 @@ describe('core/track/track', function () {
                 }, tracker);
             });
         });
+
         it('Should invoke unit', function (done) {
             var tracker = new Tracker();
             var track = new Track(tracker);
@@ -186,10 +187,7 @@ describe('core/track/track', function () {
 
             tracker.unit({
                 path: 'a',
-                data: function (track, context) {
-                    assert.deepEqual(context.params, {
-                        x: 42
-                    });
+                data: function () {
                     spy.push(1);
                 }
             });
@@ -206,15 +204,26 @@ describe('core/track/track', function () {
 
             tracker.unit({
                 path: 'd',
-                deps: ['b', 'c']
+                deps: ['b', 'c'],
+                data: function (track, context) {
+                    return context.arg('x');
+                }
             });
 
             tracker.ready().done(function () {
                 track.invoke('d', {
                     x: 42
-                }).done(function () {
-                    assert.deepEqual(spy, [1, 1]);
-                    done();
+                }).done(function (data) {
+                    assert.strictEqual(data, 42);
+                    assert.deepEqual(spy, [1]);
+                    track.invoke('d', {
+                        x: 43
+                    }).done(function (data) {
+                        assert.strictEqual(data, 43);
+                        assert.deepEqual(spy, [1]);
+
+                        done();
+                    });
                 });
             });
         });
