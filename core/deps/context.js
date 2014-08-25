@@ -16,29 +16,6 @@ var Context = inherit(Deps, /** @lends Context.prototype */ {
      * @memberOf {Context}
      * @method
      *
-     * @param {String} name
-     *
-     * @returns {*}
-     * */
-    arg: function (name) {
-        var result = this.__base(name);
-
-        if ( _.isUndefined(result) || _.isNull(result) ) {
-            result = this.track.match[name];
-
-            if ( _.isUndefined(result) || _.isNull(result) ) {
-                result = this.track.url.query[name];
-            }
-        }
-
-        return result;
-    },
-
-    /**
-     * @public
-     * @memberOf {Context}
-     * @method
-     *
      * @param {String} renderer
      *
      * @returns {vow.Promise}
@@ -50,18 +27,16 @@ var Context = inherit(Deps, /** @lends Context.prototype */ {
     },
 
     /**
-     * @public
+     * @protected
      * @memberOf {Context}
      * @method
      *
      * @returns {Object}
      * */
-    toJSON: function () {
+    _dumpArgs: function () {
 
-        return {
-            errors: this.errors,
-            result: this.result
-        };
+        return _.extend({}, this.track.url.query,
+            this.track.match, this.__base());
     }
 
 });
