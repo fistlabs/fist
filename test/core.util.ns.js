@@ -141,4 +141,21 @@ describe('core/util/ns', function () {
             assert.deepPropertyVal(o, 'a.b.x', 15);
         });
     });
+
+    describe('ns.has(root, path)', function () {
+        it('Should check property existing', function () {
+            var o = {
+                a: {
+                    b: {
+                        c: 42
+                    }
+                }
+            };
+
+            assert.ok(ns.has(o, 'a'));
+            assert.ok(ns.has(o, 'a.b'));
+            assert.ok(ns.has(o, 'a.b.c'));
+            assert.ok(!ns.has(o, 'a.b.c.d'));
+        });
+    });
 });

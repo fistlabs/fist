@@ -124,6 +124,30 @@ describe('core/deps/deps', function () {
         });
     });
 
+    describe('.hasRes', function () {
+        it('Should check if result exists', function () {
+            var ctx = new Deps(track);
+
+            ctx.setRes('a.b.c', 42);
+            assert.ok(ctx.hasRes('a'));
+            assert.ok(ctx.hasRes('a.b'));
+            assert.ok(ctx.hasRes('a.b.c'));
+            assert.ok(!ctx.hasRes('a.b.c.d'));
+        });
+    });
+
+    describe('.hasErr', function () {
+        it('Should check if error exists', function () {
+            var ctx = new Deps(track);
+
+            ctx.setErr('a.b.c', 42);
+            assert.ok(ctx.hasErr('a'));
+            assert.ok(ctx.hasErr('a.b'));
+            assert.ok(ctx.hasErr('a.b.c'));
+            assert.ok(!ctx.hasErr('a.b.c.d'));
+        });
+    });
+
     describe('.append', function () {
         it('Should append deps', function (done) {
             var ctx = new Deps(track, 'c');

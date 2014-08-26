@@ -160,6 +160,34 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @memberOf {Deps}
      * @method
      *
+     * @param {String} path
+     *
+     * @returns {Boolean}
+     * */
+    hasRes: function (path) {
+
+        return ns.has(this.result, path);
+    },
+
+    /**
+     * @public
+     * @memberOf {Deps}
+     * @method
+     *
+     * @param {String} path
+     *
+     * @returns {Boolean}
+     * */
+    hasErr: function (path) {
+
+        return ns.has(this.errors, path);
+    },
+
+    /**
+     * @public
+     * @memberOf {Deps}
+     * @method
+     *
      * @returns {vow.Promise}
      * */
     execute: function () {
