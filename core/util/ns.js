@@ -26,6 +26,33 @@ exports.add = function (root, path, data) {
 /**
  * @param {Object} root
  * @param {String} path
+ *
+ * @returns {*}
+ * */
+exports.has = function (root, path) {
+    var i;
+    var l;
+    var part;
+    var parts = exports.parse(path);
+
+    for ( i = 0, l = parts.length; i < l; i += 1 ) {
+        part = parts[i];
+
+        if ( _.has(root, part) ) {
+            root = root[part];
+
+            continue;
+        }
+
+        return false;
+    }
+
+    return true;
+};
+
+/**
+ * @param {Object} root
+ * @param {String} path
  * @param {*} data
  *
  * @returns {*}
