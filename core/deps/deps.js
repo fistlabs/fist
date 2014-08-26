@@ -47,7 +47,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.params = params;
+        this.params = Object(params);
 
         /**
          * @public
@@ -271,7 +271,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     _dumpArgs: function () {
 
-        return Object(this.params);
+        return this.params;
     },
 
     /**

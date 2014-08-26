@@ -1,6 +1,7 @@
 'use strict';
 
-var Deps = require('../deps/deps');
+var Deps = /** @type Deps */ require('../deps/deps');
+var TaskCache = /** @type TaskCache */ require('../util/task-cache');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -39,12 +40,12 @@ var Track = inherit(/** @lends Track.prototype */{
         this.id = uniqueId();
 
         /**
-         * @public
+         * @private
          * @memberOf {Track}
          * @property
          * @type {Object}
          * */
-        this.tasks = {};
+        this.__tasks = {};
     },
 
     /**
@@ -58,17 +59,24 @@ var Track = inherit(/** @lends Track.prototype */{
      * @returns {vow.Promise}
      *  */
     invoke: function (path, locals) {
+        var result;
 
-        if ( 1 < arguments.length ) {
-
-            return this.__executeUnit(path, locals);
+        if ( !_.has(this.__tasks, path) ) {
+            this.__tasks[path] = new TaskCache();
         }
 
-        if ( !_.has(this.tasks, path) ) {
-            this.tasks[path] = this.__executeUnit(path, locals);
+        result = this.__tasks[path].get(locals);
+
+        if ( result ) {
+
+            return result;
         }
 
-        return this.tasks[path];
+        result = this.__executeUnit(path, locals);
+
+        this.__tasks[path].set(locals, result);
+
+        return result;
     },
 
     /**
