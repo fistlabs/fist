@@ -2,5 +2,4 @@ language: node_js
 node_js:
   - "0.10"
   - "0.11"
-before_install: "npm install gulp -g"
-script: "gulp test"
+script: "node_modules/.bin/gulp test"
