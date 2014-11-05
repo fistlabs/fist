@@ -6,7 +6,7 @@ var _ = require('lodash-node');
 var inherit = require('inherit');
 var path = require('path');
 var vow = require('vow');
-var vowGlob = require('./util/vow-glob');
+var vowFs = require('vow-fs');
 
 /**
  * @class Tracker
@@ -176,8 +176,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     __findPlugins: function (pattern) {
 
-        return vowGlob(pattern, {silent: true}).
-            then(this.__requirePlugins, this);
+        return vowFs.glob(pattern, {silent: true}).then(this.__requirePlugins, this);
     },
 
     /**
