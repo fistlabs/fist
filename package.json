@@ -27,10 +27,11 @@
     },
     "description": "nodejs application framework",
     "devDependencies": {
+        "vow-fs": "0.3.3",
         "gulp": "3.8.7",
         "gulp-mocha": "1.0.0",
         "gulp-istanbul": "0.2.2",
-        "gulp-eslint": "0.1.8",
+        "eslint": "0.9.2",
         "gulp-util": "3.0.0",
         "through2": "0.6.1",
         "minimatch": "1.0.0",

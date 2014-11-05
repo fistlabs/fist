@@ -1,11 +1,14 @@
 'use strict';
 
-var _ = require('lodash-node');
+var EslintConfig = require('eslint/lib/config');
 var gulpJscs = require('gulp-jscs');
-var gulpEslint = require('gulp-eslint');
-var gulpExclude = require('../gulp-plugins/exclude');
+
+var _ = require('lodash-node');
+var eslintLinter = require('eslint').linter;
+var eslintStylishFormatter = require('eslint/lib/formatters/stylish');
+var glob = require('glob');
 var gutil = require('gulp-util');
-var lintPatterns = [
+var linterPaths = [
     'benchmark/**/*.js',
     'core/**/*.js',
     'fist_plugins/**/*.js',
@@ -13,58 +16,74 @@ var lintPatterns = [
     'tools/**/*.js',
     '*.js'
 ];
-var excludePatterns = [];
-var through2 = require('through2');
+var vow = require('vow');
+var vowFs = require('vow-fs');
 
-function runJscs () {
+function readFiles(paths) {
+    var sources = _.map(paths, function (path) {
 
-    return this.src(lintPatterns).pipe(gulpJscs());
+        return vowFs.read(path, 'utf-8').then(function (data) {
+
+            return {
+                data: data,
+                path: path
+            };
+        });
+    });
+
+    return vow.all(sources);
 }
 
-function runEslint (done) {
-    var error;
-    var noErrors = true;
+function eslintPromise(paths, configPath) {
+    var config = new EslintConfig({
+        configFile: configPath
+    });
 
-    this.src(lintPatterns).
-        pipe(gulpExclude(excludePatterns)).
-        pipe(gulpEslint()).
-        pipe(through2.obj(function (file, enc, cb) {
+    config = config.useSpecificConfig;
 
-            if ( file.eslint ) {
-                noErrors = true === noErrors &&
-                           !_.find(file.eslint.messages, {
-                               severity: 2
-                           });
-            }
+    return readFiles(paths).then(function (sources) {
 
-            this.push(file);
+        return _.map(sources, function (source) {
 
-            cb();
-        })).
-        pipe(gulpEslint.format(null, function (message) {
-            error = new gutil.PluginError('gulp-eslint', message, {
-                showStack: false
-            });
-        })).once('end', function () {
-
-            if ( noErrors ) {
-
-                if ( error instanceof gutil.PluginError ) {
-                    /*eslint no-console: 0*/
-                    console.error(error.toString());
-                }
-
-                done();
-
-            } else {
-
-                done(error);
-            }
+            return {
+                filePath: source.path,
+                messages: eslintLinter.verify(source.data, config, source.path)
+            };
         });
+    });
+}
+
+function runEslint(done) {
+    /*eslint no-console: 0*/
+    var paths = _.reduce(linterPaths, function (paths, globPattern) {
+        return paths.concat(glob.sync(globPattern));
+    }, []);
+
+    eslintPromise(paths, '.eslintrc')
+        .done(function (results) {
+            var message;
+
+            if (_.isEmpty(results)) {
+                return done();
+            }
+
+            message = eslintStylishFormatter(results);
+
+            //  среди сообщений есть ОШИБКИ (там могут быть просто ворнинги)
+            if (_.find(results, {messages: [{severity: 2}]})) {
+                return done(new gutil.PluginError('eslint-linter', message));
+            }
+
+            console.log(message);
+
+            done();
+        }, done);
 }
 
 module.exports = function () {
-    this.task('jscs', [], runJscs);
+    this.task('jscs', [], function () {
+        return this.src(linterPaths).pipe(gulpJscs());
+    });
     this.task('eslint', [], runEslint);
     this.task('lint', ['jscs'], runEslint);
 };
