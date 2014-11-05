@@ -10,6 +10,7 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "vow-fs": "0.3.3",
         "vow-asker": "0.7.0",
         "lru-cache": "2.5.0",
         "unique-id": "0.0.1",
@@ -27,7 +28,6 @@
     },
     "description": "nodejs application framework",
     "devDependencies": {
-        "vow-fs": "0.3.3",
         "gulp": "3.8.10",
         "gulp-mocha": "1.1.1",
         "gulp-istanbul": "0.3.1",
