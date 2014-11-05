@@ -61,13 +61,13 @@ var Track = inherit(/** @lends Track.prototype */{
     invoke: function (path, locals) {
         var result;
 
-        if ( !_.has(this.__tasks, path) ) {
+        if (!_.has(this.__tasks, path)) {
             this.__tasks[path] = new TaskCache();
         }
 
         result = this.__tasks[path].get(locals);
 
-        if ( result ) {
+        if (result) {
 
             return result;
         }

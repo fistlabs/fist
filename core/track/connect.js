@@ -139,18 +139,18 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     header: function (name, value, soft) {
 
-        if ( 0 === arguments.length ) {
+        if (!arguments.length) {
 
             return this.request.getHeaders();
         }
 
-        if ( _.isObject(name) ) {
+        if (_.isObject(name)) {
             this.response.setHeaders(name, value);
 
             return this;
         }
 
-        if ( 1 === arguments.length ) {
+        if (arguments.length === 1) {
 
             return this.request.getHeader(name);
         }
@@ -173,12 +173,12 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     cookie: function (name, value, opts) {
 
-        if ( 0 === arguments.length ) {
+        if (!arguments.length) {
 
             return this.request.getCookies();
         }
 
-        if ( 1 === arguments.length ) {
+        if (arguments.length === 1) {
 
             return this.request.getCookie(name);
         }
@@ -202,7 +202,8 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
     redirect: function (status, url, opts) {
         var parts;
 
-        if ( !_.isNumber(status) ) {
+        //  TODO remove url templating
+        if (!_.isNumber(status)) {
             opts = url;
             url = status;
             status = 302;
@@ -214,11 +215,11 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         this.response.setHeader('Location', url);
 
-        if ( !_.contains(REDIRECT_CODES, status) ) {
+        if (!_.contains(REDIRECT_CODES, status)) {
             status = 302;
         }
 
-        if ( this.neg.mediaTypes(['text/html']).length ) {
+        if (this.neg.mediaTypes(['text/html']).length) {
             url = hyperLinkTpl({href: _.escape(url)});
         }
 
@@ -250,7 +251,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     send: function (status, body) {
 
-        if ( !_.isNumber(status) ) {
+        if (!_.isNumber(status)) {
             body = status;
             status = void 0;
         }

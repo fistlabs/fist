@@ -9,15 +9,15 @@ var AsyncCache = inherit(Cache, {
     broken: null,
 
     set: function (k, v, a, done) {
-        if ( this.broken ) {
-            done(this.broken );
+        if (this.broken) {
+            done(this.broken);
         } else {
             this.__base(k, v, a, done);
         }
     },
 
     get: function (k, done) {
-        if ( this.broken ) {
+        if (this.broken) {
             done(this.broken);
         } else {
             this.__base(k, done);

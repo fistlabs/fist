@@ -17,7 +17,7 @@ module.exports = function (params, handle) {
 
     params.socketPath = sock;
 
-    params.statusFilter = function filter () {
+    params.statusFilter = function () {
 
         return {
             accept: true,
@@ -27,7 +27,7 @@ module.exports = function (params, handle) {
 
     promise = vowAsker(params).then(function (res) {
 
-        if ( null === res.data ) {
+        if (res.data === null) {
             res.data = new Buffer(0);
         }
 

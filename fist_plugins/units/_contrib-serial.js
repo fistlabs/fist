@@ -24,7 +24,7 @@ module.exports = function () {
             var func;
             var self = this;
 
-            if ( steps.isEmpty() || context.data instanceof Control ) {
+            if (steps.isEmpty() || context.data instanceof Control) {
 
                 return context.data;
             }
@@ -33,7 +33,7 @@ module.exports = function () {
             func = this['_$' + name];
             context.trigger(name, context.data);
 
-            if ( isError && !_.isFunction(func) ) {
+            if (isError && !_.isFunction(func)) {
 
                 return vow.reject(context.data);
             }
@@ -43,7 +43,7 @@ module.exports = function () {
                 return func.call(self, context.track, context);
             }).always(function (promise) {
 
-                if ( isError ) {
+                if (isError) {
 
                     return promise;
                 }
@@ -51,7 +51,7 @@ module.exports = function () {
                 context.data = promise.valueOf();
                 isError = promise.isRejected();
 
-                if ( isError ) {
+                if (isError) {
                     steps = new Deque(['e' + name]);
                 }
 

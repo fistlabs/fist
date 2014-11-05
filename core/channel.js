@@ -62,7 +62,7 @@ var Channel = inherit(EventEmitter, /** @lends Channel.prototype */ {
      * */
     channel: function (name) {
 
-        if ( !_.has(this.__channels, name) ) {
+        if (!_.has(this.__channels, name)) {
             this.__channels[name] = new Channel();
         }
 

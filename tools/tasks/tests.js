@@ -4,7 +4,7 @@ var gulpMocha = require('gulp-mocha');
 var gulpIstanbul = require('gulp-istanbul');
 var gutil = require('gulp-util');
 
-function gulpMochaPipe () {
+function gulpMochaPipe() {
 
     return gulpMocha({
         ui: 'bdd',
@@ -14,7 +14,7 @@ function gulpMochaPipe () {
     });
 }
 
-function runUnit () {
+function runUnit() {
 
     var stream = this.src('test/*.js').pipe(gulpMochaPipe());
 
@@ -25,7 +25,7 @@ function runUnit () {
     return stream;
 }
 
-function runCover (done) {
+function runCover(done) {
     var self = this;
     this.src([
         'fist.js',

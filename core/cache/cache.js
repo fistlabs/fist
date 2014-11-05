@@ -55,13 +55,13 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
      * @param {Function} done
      * */
     set: function (k, v, cacheMaxAge, done) {
-        var lastUpdated = +new Date();
+        var lastUpdated = Date.now();
         var base = this.__base;
         var self = this;
 
-        cacheMaxAge = +cacheMaxAge;
+        cacheMaxAge *= 1;
 
-        if ( _.isNaN(cacheMaxAge) ) {
+        if (_.isNaN(cacheMaxAge)) {
             cacheMaxAge = 0;
 
         } else if (cacheMaxAge) {
@@ -92,7 +92,7 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
         var base = this.__base;
         var self = this;
 
-        if ( this.has(k) && this.__checker[k]() ) {
+        if (this.has(k) && this.__checker[k]()) {
 
             delete this.__checker[k];
             this.del(k);

@@ -78,7 +78,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * */
     alias: function (base, path) {
 
-        if ( _.isObject(base) ) {
+        if (_.isObject(base)) {
             _.forOwn(base, function (path, base) {
                 this.unit({
                     base: base,
@@ -124,7 +124,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     unit: function (members, statics) {
         members = Object(members);
 
-        if ( !_.has(members, 'path') ) {
+        if (!_.has(members, 'path')) {
             members.path = 'unit-' + uniqueId();
         }
 
@@ -151,7 +151,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     ready: function () {
         var sys = this.channel('sys');
 
-        if ( this.__ready ) {
+        if (this.__ready) {
 
             return this.__ready;
         }
@@ -197,7 +197,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             then(function (units) {
                 var paths = Agent.__findDepsConflicts(units);
 
-                if ( _.size(paths) ) {
+                if (_.size(paths)) {
 
                     throw new DepsConflictError(paths);
                 }
@@ -219,7 +219,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         return _.reduce(units, function (units, Unit) {
             var path = Unit.prototype.path;
 
-            if ( R_PUBLIC_UNIT.test(path) ) {
+            if (R_PUBLIC_UNIT.test(path)) {
                 units[path] = this._instUnit(Unit);
             }
 
@@ -262,16 +262,16 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         var l;
         var remaining = _.size(decls);
 
-        function findBase (decl) {
+        function findBase(decl) {
             var base = decl.members.base;
 
-            if ( Agent.__isFalsy(base) ) {
+            if (Agent.__isFalsy(base)) {
                 base = Unit.prototype.path;
             }
 
             return _.find(classes, function (Class) {
 
-                if ( _.isFunction(Class) ) {
+                if (_.isFunction(Class)) {
 
                     return Class.prototype.path === base;
                 }
@@ -280,15 +280,15 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             });
         }
 
-        function getUnitMixes (decl) {
+        function getUnitMixes(decl) {
             var mixes = decl.members.mix;
 
-            if ( Agent.__isFalsy(mixes) ) {
+            if (Agent.__isFalsy(mixes)) {
 
                 return [];
             }
 
-            if ( _.isArray(mixes) ) {
+            if (_.isArray(mixes)) {
 
                 return mixes;
             }
@@ -298,19 +298,19 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
         decls = _.clone(decls);
 
-        while ( remaining ) {
+        while (remaining) {
 
-            for ( i = 0, l = decls.length; i < l; i += 1 ) {
+            for (i = 0, l = decls.length; i < l; i += 1) {
                 decl = decls[i];
 
-                if ( !decl ) {
+                if (!decl) {
 
                     continue;
                 }
 
                 Base = findBase(decl);
 
-                if ( !_.isFunction(Base) ) {
+                if (!_.isFunction(Base)) {
 
                     continue;
                 }
@@ -323,7 +323,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
             count = Agent.__count(decls);
 
-            if ( count < remaining ) {
+            if (count < remaining) {
                 remaining = count;
 
                 continue;
@@ -373,21 +373,21 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         var unit;
         var paths = [];
 
-        if ( _.has(found, path) ) {
+        if (_.has(found, path)) {
 
             return paths;
         }
 
         unit = units[path];
 
-        if ( _.isUndefined(unit) ) {
+        if (_.isUndefined(unit)) {
 
             return paths;
         }
 
         deps = unit.deps;
 
-        if ( !_.size(deps) ) {
+        if (!_.size(deps)) {
 
             return paths;
         }
@@ -398,7 +398,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
             branch.push(path);
 
-            if ( _.contains(trunk, path) ) {
+            if (_.contains(trunk, path)) {
                 paths.push(branch);
 
                 return paths;
@@ -427,7 +427,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
         return _.reduce(items, function (count, v) {
 
-            if ( v ) {
+            if (v) {
 
                 return count + 1;
             }
@@ -447,7 +447,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * */
     __isFalsy: function (v) {
 
-        return _.isUndefined(v) || _.isNull(v) || '' === v;
+        return _.isUndefined(v) || _.isNull(v) || v === '';
     }
 
 });

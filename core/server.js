@@ -85,11 +85,12 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         var promise = this.ready();
 
         //  -1 possible tick
-        if ( promise.isFulfilled() ) {
+        if (promise.isFulfilled()) {
 
             return this.__next(track);
         }
 
+        /** @this {Server} */
         return promise.then(function () {
 
             return this.__next(track);
@@ -132,13 +133,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
     route: function (pattern, data) {
         var route;
 
-        if ( !_.isObject(data) ) {
+        if (!_.isObject(data)) {
             data = {name: data};
         }
 
         route = this.router.addRoute(pattern, data);
 
-        if ( _.isUndefined(route.data.unit) || _.isNull(route.data.unit) ) {
+        if (_.isUndefined(route.data.unit) || _.isNull(route.data.unit)) {
             route.data.unit = route.data.name;
         }
 
@@ -183,7 +184,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
     _instUnit: function (Unit) {
         var unit = this.__base(Unit);
 
-        if ( _.isString(unit.pattern) ) {
+        if (_.isString(unit.pattern)) {
             this.route(unit.pattern, unit.path);
         }
 
@@ -206,20 +207,20 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         var sys = this.channel('sys');
 
         //  однозначно нет такого маршрута
-        if ( _.isNull(result) ) {
+        if (_.isNull(result)) {
             sys.emit('ematch', track);
             //  Not Found
             return track.response.respond(404);
         }
 
         //  возвращен массив
-        if ( _.isArray(result) ) {
+        if (_.isArray(result)) {
             //  это тоже значит что нет такого роута
             sys.emit('ematch', track);
 
             //  если массив пустой, то на сервере совсем нет ни одного
             //  маршрута отвечающего по такому методу запроса
-            if ( 0 === _.size(result) ) {
+            if (!_.size(result)) {
                 //  Not Implemented
                 return track.response.respond(501);
             }
@@ -240,13 +241,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         return track.invoke(result.route.data.unit).
             then(function (data) {
                 //  was sent
-                if ( data instanceof Respond ) {
+                if (data instanceof Respond) {
 
                     return this.__handleRespond(track, data);
                 }
 
                 //  rewrite
-                if ( data instanceof Rewrite ) {
+                if (data instanceof Rewrite) {
 
                     return this.__handleRewrite(track, data);
                 }

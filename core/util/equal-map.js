@@ -1,4 +1,5 @@
 'use strict';
+//  TODO avoid this mechanism
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -41,10 +42,10 @@ var EqualMap = inherit(/** @lends EqualMap.prototype */ {
         var i;
         var l;
 
-        for ( i = 0, l = this.__complex.length; i < l; i += 1 ) {
+        for (i = 0, l = this.__complex.length; i < l; i += 1) {
             e = this.__complex[i];
 
-            if ( _.isEqual(e.key, k) ) {
+            if (_.isEqual(e.key, k)) {
                 e.val = v;
 
                 return this;
@@ -70,10 +71,10 @@ var EqualMap = inherit(/** @lends EqualMap.prototype */ {
         var i;
         var l;
 
-        for ( i = 0, l = this.__complex.length; i < l; i += 1 ) {
+        for (i = 0, l = this.__complex.length; i < l; i += 1) {
             e = this.__complex[i];
 
-            if ( _.isEqual(e.key, k) ) {
+            if (_.isEqual(e.key, k)) {
 
                 return e.val;
             }

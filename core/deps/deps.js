@@ -102,7 +102,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     arg: function (path, defaultValue) {
         var result = ns.use(this.args(), path);
 
-        if ( this._isFalsy(result) ) {
+        if (this._isFalsy(result)) {
             result = defaultValue;
         }
 
@@ -118,7 +118,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     args: function () {
 
-        if ( !this.__args ) {
+        if (!this.__args) {
             this.__args  = this._dumpArgs();
         }
 
@@ -196,19 +196,21 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         this.trigger('pending');
 
+        /** @this {Deps} */
         defer.promise().then(function (data) {
             this.trigger('accept', data);
         }, function (data) {
             this.trigger('reject', data);
         }, this);
 
-        if ( _.isUndefined(unit) ) {
+        if (_.isUndefined(unit)) {
+            //  TODO 500!
             defer.reject();
 
             return defer.promise();
         }
 
-        if ( 0 === _.size(unit.deps) ) {
+        if (!_.size(unit.deps)) {
             defer.resolve(unit.getValue(this));
 
             return defer.promise();
@@ -220,7 +222,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
                 return promise.valueOf() instanceof Control;
             });
 
-            if ( _.isUndefined(promise) ) {
+            if (_.isUndefined(promise)) {
 
                 return unit.getValue(this);
             }
@@ -313,7 +315,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     _isFalsy: function (v) {
 
-        return _.isUndefined(v) || _.isNull(v) || '' === v;
+        return _.isUndefined(v) || _.isNull(v) ||  v === '';
     },
 
     /**
@@ -329,14 +331,14 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     __get: function (root, args) {
         var result;
 
-        if ( 0 === args.length ) {
+        if (!args.length) {
 
             return root;
         }
 
         result = ns.use(root, args[0]);
 
-        if ( this._isFalsy(result) ) {
+        if (this._isFalsy(result)) {
             result = args[1];
         }
 

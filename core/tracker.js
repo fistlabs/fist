@@ -117,12 +117,12 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     __callPlugin: function (plugin) {
 
-        if ( !_.isFunction(plugin) ) {
+        if (!_.isFunction(plugin)) {
 
             return vow.resolve(plugin);
         }
 
-        if ( 0 === plugin.length ) {
+        if (!plugin.length) {
 
             return vow.invoke(function (thisp) {
 
@@ -135,7 +135,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
             plugin.call(thisp, function (err) {
 
-                if ( 0 === arguments.length ) {
+                if (!arguments.length) {
                     defer.resolve();
 
                 } else {
