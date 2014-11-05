@@ -22,9 +22,9 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @constructs
      * */
     __constructor: function (params) {
-        var maxAge = +this._maxAge;
+        var maxAge = Number(this._maxAge);
 
-        if ( _.isNaN(maxAge) ) {
+        if (_.isNaN(maxAge)) {
             maxAge = 0;
         }
 
@@ -122,7 +122,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     getValue: function (context) {
         var key;
 
-        if ( 0 >= this._maxAge ) {
+        if (this._maxAge <= 0) {
 
             return this.__call(context);
         }
@@ -133,7 +133,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             var data = value.data;
 
             //  из кэша или резолвер
-            if ( !value.fresh || data instanceof Control ) {
+            if (!value.fresh || data instanceof Control) {
 
                 return data;
             }
@@ -166,7 +166,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         //  если запрос выполнен успешно то сохраняем в кэш
         context.track.agent.cache.set(key, value, this._maxAge, function (err) {
 
-            if ( err ) {
+            if (err) {
                 defer.reject(err);
 
                 return;
@@ -205,7 +205,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     __call: function (context) {
         var self = this;
 
-        if ( _.isFunction(self.data) ) {
+        if (_.isFunction(self.data)) {
 
             return vow.invoke(function () {
 
@@ -267,7 +267,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
         return this.__getCache(key, context).then(function (res) {
 
-            if ( _.isObject(res) ) {
+            if (_.isObject(res)) {
                 context.trigger('cache', res.data);
 
                 return res;
@@ -298,7 +298,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
         context.track.agent.cache.get(cacheKey, function (err, res) {
 
-            if ( err ) {
+            if (err) {
                 defer.reject(err);
 
                 return;

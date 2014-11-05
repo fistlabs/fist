@@ -42,7 +42,7 @@ var TaskCache = inherit(EqualMap, /** @lends TaskCache */ {
      * */
     set: function (locals, promise) {
 
-        if ( _.isObject(locals) ) {
+        if (_.isObject(locals)) {
 
             return this.__base(locals, promise);
         }
@@ -63,7 +63,7 @@ var TaskCache = inherit(EqualMap, /** @lends TaskCache */ {
      * */
     get: function (locals) {
 
-        if ( _.isObject(locals) ) {
+        if (_.isObject(locals)) {
 
             return this.__base(locals);
         }

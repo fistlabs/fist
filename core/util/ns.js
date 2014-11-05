@@ -1,5 +1,5 @@
 'use strict';
-
+//  TODO avoid this, use Obus
 var R_WHITESPACE = /^\s+$/;
 
 var _ = require('lodash-node');
@@ -15,7 +15,7 @@ var cache = Object.create(null);
 exports.add = function (root, path, data) {
     var existing = exports.use(root, path);
 
-    if ( _.isObject(existing) ) {
+    if (_.isObject(existing)) {
 
         return _.extend(existing, data);
     }
@@ -35,10 +35,10 @@ exports.has = function (root, path) {
     var part;
     var parts = exports.parse(path);
 
-    for ( i = 0, l = parts.length; i < l; i += 1 ) {
+    for (i = 0, l = parts.length; i < l; i += 1) {
         part = parts[i];
 
-        if ( _.has(root, part) ) {
+        if (_.has(root, part)) {
             root = root[part];
 
             continue;
@@ -63,12 +63,12 @@ exports.link = function (root, path, data) {
     var part;
     var parts = exports.parse(path);
 
-    for ( i = 0, l = parts.length - 1; i < l; i += 1 ) {
+    for (i = 0, l = parts.length - 1; i < l; i += 1) {
         part = parts[i];
 
-        if ( _.has(root, part) ) {
+        if (_.has(root, part)) {
 
-            if ( !_.isObject(root[part]) ) {
+            if (!_.isObject(root[part])) {
                 root[part] = {};
             }
 
@@ -94,7 +94,7 @@ exports.link = function (root, path, data) {
  * */
 exports.parse = function (path) {
 
-    if ( path in cache ) {
+    if (path in cache) {
 
         return cache[path];
     }
@@ -115,9 +115,9 @@ exports.use = function (root, path) {
     var l;
     var parts = exports.parse(path);
 
-    for ( i = 0, l = parts.length; i < l; i += 1 ) {
+    for (i = 0, l = parts.length; i < l; i += 1) {
 
-        if ( _.isObject(root) ) {
+        if (_.isObject(root)) {
             root = root[parts[i]];
 
             continue;
@@ -134,7 +134,7 @@ exports.use = function (root, path) {
  *
  * @returns {Array<String>}
  * */
-function parse (path) {
+function parse(path) {
     /*eslint complexity: [2, 13] */
     var cur;
     var index;
@@ -144,17 +144,17 @@ function parse (path) {
     var parts = [];
 
     /* eslint no-cond-assign: 0 */
-    for ( index = 0; cur = path.charAt(index); index += 1 ) {
+    for (index = 0; cur = path.charAt(index); index += 1) {
 
-        if ( '\\' === cur && !isEscape ) {
+        if (cur === '\\' && !isEscape) {
             isEscape = true;
 
             continue;
         }
 
-        if ( isEscape ) {
+        if (isEscape) {
 
-            if ( !isChunk ) {
+            if (!isChunk) {
 
                 throw new SyntaxError(path);
             }
@@ -165,14 +165,14 @@ function parse (path) {
             continue;
         }
 
-        if ( !isChunk ) {
+        if (!isChunk) {
 
-            if ( isSpace(cur) ) {
+            if (isSpace(cur)) {
 
                 continue;
             }
 
-            if ( '.' === cur ) {
+            if (cur === '.') {
                 chunk = '';
                 isChunk = true;
 
@@ -182,9 +182,9 @@ function parse (path) {
             throw new SyntaxError(path);
         }
 
-        if ( isSpace(cur) ) {
+        if (isSpace(cur)) {
 
-            if ( chunk.length ) {
+            if (chunk.length) {
                 parts.push(chunk);
                 isChunk = false;
             }
@@ -192,7 +192,7 @@ function parse (path) {
             continue;
         }
 
-        if ( '.' === cur ) {
+        if (cur === '.') {
             parts.push(chunk);
             isChunk = false;
             index -= 1;
@@ -203,12 +203,12 @@ function parse (path) {
         chunk += cur;
     }
 
-    if ( isEscape ) {
+    if (isEscape) {
 
         throw new SyntaxError(path);
     }
 
-    if ( isChunk ) {
+    if (isChunk) {
         parts.push(chunk);
     }
 
@@ -220,7 +220,7 @@ function parse (path) {
  *
  * @returns {Boolean}
  * */
-function isSpace (str) {
+function isSpace(str) {
 
     return R_WHITESPACE.test(str);
 }

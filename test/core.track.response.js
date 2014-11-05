@@ -168,7 +168,7 @@ describe('core/track/response', function () {
     describe('.respond', function () {
         var STATUS_CODES = require('http').STATUS_CODES;
 
-        function getMaximumCallStackError () {
+        function getMaximumCallStackError() {
 
             return getMaximumCallStackError();
         }
@@ -201,7 +201,7 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer(STATUS_CODES[201]));
                 done();
@@ -218,7 +218,7 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer('test'));
                 done();
@@ -236,7 +236,7 @@ describe('core/track/response', function () {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/octet-stream');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer('test'));
 
@@ -256,7 +256,7 @@ describe('core/track/response', function () {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/octet-stream');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer('test'));
 
@@ -286,7 +286,7 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 500);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer('ERR'));
 
@@ -322,7 +322,7 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 500);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer('ERR'));
                 assert.deepEqual(spy, [42]);
@@ -342,7 +342,7 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer(error.stack));
 
@@ -371,7 +371,7 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
 
                 done();
@@ -392,7 +392,7 @@ describe('core/track/response', function () {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/json');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
 
                 assert.deepEqual(res.data, new Buffer(JSON.stringify(error)));
@@ -414,9 +414,9 @@ describe('core/track/response', function () {
             }).done(function (res) {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'], 'text/plain');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
-                assert.deepEqual(res.data + '', new Buffer(':)') + '');
+                assert.deepEqual(String(res.data), String(new Buffer(':)')));
                 done();
             });
         });
@@ -432,7 +432,7 @@ describe('core/track/response', function () {
                 assert.strictEqual(res.statusCode, 201);
                 assert.strictEqual(res.headers['content-type'],
                     'application/json');
-                assert.strictEqual(+res.headers['content-length'],
+                assert.strictEqual(Number(res.headers['content-length']),
                     res.data.length);
                 assert.deepEqual(res.data, new Buffer('{"a":42}'));
                 done();

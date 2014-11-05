@@ -92,7 +92,7 @@ var Request = inherit(/** @lends Request.prototype */ {
      * */
     getCookies: function () {
 
-        if ( !this.__cookie ) {
+        if (!this.__cookie) {
             this.__cookie = cookie.parse(this.getHeader('Cookie') || '');
         }
 
@@ -112,11 +112,11 @@ var Request = inherit(/** @lends Request.prototype */ {
         var header;
         var params;
 
-        if ( !this.__body ) {
+        if (!this.__body) {
             header = this._req.headers;
             params = header['content-type'];
 
-            if ( params ) {
+            if (params) {
 
                 try {
                     //  may throw a parse-error exception

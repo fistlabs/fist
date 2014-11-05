@@ -29,7 +29,8 @@ module.exports = function () {
         _$prepare: function (track, context) {
             var data = Object(context.data);
 
-            if ( _.isString(data.path) ) {
+            if (_.isString(data.path)) {
+                //  TODO! refactor this!
                 data.path = Pattern.buildPath(data.path, data.vars);
             }
 

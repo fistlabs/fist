@@ -290,7 +290,7 @@ describe('core/agent', function () {
 
     it('Should support mixins (0)', function (done) {
 
-        function Mixin () {}
+        function Mixin() {}
 
         Mixin.prototype = {
             foo: function () {
@@ -320,7 +320,7 @@ describe('core/agent', function () {
     it('Should support mixins (0)', function (done) {
         var agent = new Agent();
 
-        function Mixin () {}
+        function Mixin() {}
 
         Mixin.prototype = {
             foo: function () {

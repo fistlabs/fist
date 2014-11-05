@@ -4,10 +4,10 @@
 var _ = require('lodash-node');
 var assert = require('chai').assert;
 
-function generateTokens (len) {
+function generateTokens(len) {
     var path = [];
 
-    while ( len ) {
+    while (len) {
         len -= 1;
         path[path.length] = String(Math.floor(Math.random() * 10));
     }
@@ -15,7 +15,7 @@ function generateTokens (len) {
     return path;
 }
 
-function generateRandomTokens () {
+function generateRandomTokens() {
     var len = Math.round(Math.random() * 10) + 1;
 
     return generateTokens(len);
@@ -36,7 +36,7 @@ describe('core/util/ns', function () {
             var path;
             var parsed;
 
-            while ( tests ) {
+            while (tests) {
 
                 tests -= 1;
                 path = generateRandomTokens();

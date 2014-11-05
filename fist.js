@@ -16,7 +16,7 @@ var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
  *
  * @returns {Server}
  * */
-function fist (params, members, statics) {
+function fist(params, members, statics) {
     var app = fist.create(params, members, statics);
     var patterns = [__dirname, app.params.cwd];
 

@@ -8,7 +8,7 @@ var fist = require('../fist');
 var sock = require('./util/sock');
 var fs = require('fs');
 
-function unlink () {
+function unlink() {
 
     try {
         fs.unlinkSync(sock);

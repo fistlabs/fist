@@ -2,14 +2,14 @@
 
 var EventEmitter = require('events').EventEmitter;
 
-function Parted (parts) {
+function Parted(parts) {
     EventEmitter.apply(this, arguments);
 
-    function call () {
+    function call() {
 
         var part;
 
-        if ( 0 === parts.length ) {
+        if (parts.length === 0) {
             this.emit('end');
 
             return;
@@ -23,9 +23,9 @@ function Parted (parts) {
         }.bind(this), 0);
     }
 
-    this.on('newListener', function newListener (type) {
+    this.on('newListener', function newListener(type) {
 
-        if ( 'data' === type ) {
+        if (type === 'data') {
             call.call(this);
             this.removeListener('newListener', newListener);
         }

@@ -8,7 +8,7 @@ var fs = require('fs');
 var sock = require('./util/sock');
 var vowAsker = require('vow-asker');
 
-function unlink () {
+function unlink() {
 
     try {
         fs.unlinkSync(sock);

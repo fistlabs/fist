@@ -1,25 +1,10 @@
 'use strict';
 
-var glob = require('glob');
-var vow = require('vow');
+var vowFs = require('vow-fs');
 
-function vowGlob (pattern, options) {
-
-    return vow.invoke(function () {
-        var defer = vow.defer();
-
-        glob(pattern, options, function (err, res) {
-
-            if ( err ) {
-                defer.reject(err);
-
-            } else {
-                defer.resolve(res);
-            }
-        });
-
-        return defer.promise();
-    });
+//  TODO remove this module
+function vowGlob(pattern, options) {
+    return vowFs.glob(pattern, options);
 }
 
 module.exports = vowGlob;

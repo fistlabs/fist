@@ -164,37 +164,37 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __createResp: function (status, body) {
         /*eslint complexity: [2, 8] */
-        if ( _.isUndefined(body) ) {
+        if (_.isUndefined(body)) {
 
             return this.__createByUndefined(status);
         }
 
-        if ( _.isString(body) ) {
+        if (_.isString(body)) {
 
             return this.__createByString(status, body);
         }
 
-        if ( Buffer.isBuffer(body) ) {
+        if (Buffer.isBuffer(body)) {
 
             return this.__createByBuffer(status, body);
         }
 
-        if ( _.isObject(body) && _.isFunction(body.pipe) ) {
+        if (_.isObject(body) && _.isFunction(body.pipe)) {
 
             return this.__createByReadable(status, body);
         }
 
-        if ( body instanceof Error ) {
+        if (body instanceof Error) {
 
             return this.__createByError(status, body);
         }
 
-        if ( vow.isPromise(body) ) {
+        if (vow.isPromise(body)) {
 
             return this.__createByPromise(status, body);
         }
 
-        if ( body instanceof Respond ) {
+        if (body instanceof Respond) {
 
             return this.__createByResp(status, body);
         }
@@ -232,12 +232,12 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __createByError: function (status, body) {
 
-        if ( this.params.hideStackTrace ) {
+        if (this.params.hideStackTrace) {
 
             return this.__createByJson(status, body);
         }
 
-        if ( _.isString(body.stack) ) {
+        if (_.isString(body.stack)) {
 
             return this.__createByString(status, body.stack);
         }
@@ -296,25 +296,25 @@ var Response = inherit(/** @lends Response.prototype */ {
         var buf = [];
         var def = vow.defer();
 
-        function cleanup () {
+        function cleanup() {
             body.removeListener('data', data);
             body.removeListener('error', error);
             body.removeListener('end', end);
             body.removeListener('close', cleanup);
         }
 
-        function data (chunk) {
+        function data(chunk) {
 
-            if ( !Buffer.isBuffer(chunk) ) {
+            if (!Buffer.isBuffer(chunk)) {
                 chunk = new Buffer(String(chunk));
             }
 
             buf[buf.length] = chunk;
         }
 
-        function error (err) {
+        function error(err) {
 
-            if ( 'function' === typeof body.pause ) {
+            if (_.isFunction(body.pause)) {
                 body.pause();
             }
 
@@ -322,7 +322,7 @@ var Response = inherit(/** @lends Response.prototype */ {
             def.reject(err);
         }
 
-        function end () {
+        function end() {
             cleanup();
             def.resolve(Buffer.concat(buf));
         }
@@ -350,7 +350,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __createByResp: function (status, body) {
 
-        if ( !_.isNumber(status) ) {
+        if (!_.isNumber(status)) {
             status = body.status;
         }
 
@@ -384,7 +384,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __createByUndefined: function (status, body) {
 
-        if ( !_.isNumber(status) ) {
+        if (!_.isNumber(status)) {
             status = this._res.statusCode;
         }
 
@@ -406,7 +406,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     end: function (res, resp) {
 
-        if ( _.isNumber(resp.status) ) {
+        if (_.isNumber(resp.status)) {
             res.statusCode = resp.status;
         }
 
@@ -442,12 +442,12 @@ var Response = inherit(/** @lends Response.prototype */ {
      * */
     __setHeaderOn: function (res, name, value, soft) {
 
-        if ( soft && res.getHeader(name) ) {
+        if (soft && res.getHeader(name)) {
 
             return;
         }
 
-        if ( R_SET_COOKIE_HEADER.test(name) ) {
+        if (R_SET_COOKIE_HEADER.test(name)) {
             value = (res.getHeader(name) || []).concat(value);
         }
 
