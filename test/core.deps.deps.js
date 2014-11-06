@@ -158,13 +158,9 @@ describe('core/deps/deps', function () {
             });
 
             tracker.ready().done(function () {
-                ctx.append(['a', 'b']).done(function () {
+                ctx.append(['a']).done(function () {
                     assert.deepEqual(ctx.result, {
                         a: 42
-                    });
-
-                    assert.deepEqual(ctx.errors, {
-                        b: void 0
                     });
 
                     done();

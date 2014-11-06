@@ -34,8 +34,7 @@ describe('core/track/track', function () {
             var track = new Track(tracker);
 
             tracker.ready().always(function () {
-                track.invoke('a').fail(function (err) {
-                    assert.isUndefined(err);
+                track.invoke('a').fail(function () {
                     done();
                 }).done();
             });
@@ -75,18 +74,18 @@ describe('core/track/track', function () {
             tracker.unit({
                 path: 'a',
                 deps: ['b'],
-                data: function (track, context) {
-                    assert.isUndefined(context.getErr('b'));
+                data: function () {
+                    //  should not be called
+                    assert.ok(false);
 
                     return 'a';
                 }
             });
 
             tracker.ready().always(function () {
-                track.invoke('a').done(function (res) {
-                    assert.strictEqual(res, 'a');
+                track.invoke('a').fail(function () {
                     done();
-                });
+                }).done();
             });
         });
 

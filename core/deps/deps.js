@@ -204,8 +204,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         }, this);
 
         if (_.isUndefined(unit)) {
-            //  TODO 500!
-            defer.reject();
+            defer.reject(new Control());
 
             return defer.promise();
         }
@@ -218,15 +217,17 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         defer.resolve(this.append(unit.deps).then(function (promises) {
             var promise = _.find(promises, function (promise) {
-
+                //  Both rejects and accepts
                 return promise.valueOf() instanceof Control;
             });
 
+            //  No controls
             if (_.isUndefined(promise)) {
 
                 return unit.getValue(this);
             }
 
+            //  Has control
             return promise;
         }, this));
 

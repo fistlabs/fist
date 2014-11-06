@@ -354,4 +354,35 @@ describe('core/server', function () {
             });
         });
     });
+
+    it('Should send error if unit is undefined', function (done) {
+        var server = new Server();
+        var origServer;
+
+        server.route('/', {name: 'index', unit: 'foo'});
+
+        server.unit({
+            path: 'foo',
+            deps: ['bar']
+        });
+
+        unlink();
+
+        origServer = server.listen(sock);
+
+        vowAsker({
+            path: '',
+            socketPath: sock,
+            statusFilter: function () {
+                return {
+                    accept: true
+                };
+            }
+        }).done(function (res) {
+            assert.strictEqual(res.statusCode, 500);
+            origServer.close();
+            done();
+        });
+
+    });
 });
