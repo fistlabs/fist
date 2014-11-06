@@ -152,8 +152,7 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
 
         return function () {
 
-            return this.__findPlugins(pattern).
-                then(this.__callPlugins, this);
+            return this.__findPlugins(pattern).then(this.__callPlugins, this);
         };
     },
 

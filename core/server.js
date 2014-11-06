@@ -3,8 +3,6 @@
 var Connect = /** @type Connect */ require('./track/connect');
 var Router = /** @type Router */ require('finger/core/router');
 var Response = /** @type Response */ require('./track/response');
-var Respond = /** @type Respond */ require('./control/respond');
-var Rewrite = /** @type Rewrite */ require('./control/rewrite');
 var Tracker = /** @type Tracker */ require('./tracker');
 
 var _ = require('lodash-node');
@@ -30,6 +28,8 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         this.__base(params);
 
         /**
+         * TODO remove this behaviour
+         *
          * Шаблоны для track.render()
          *
          * @public
@@ -59,7 +59,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * */
     getHandler: function () {
         var self = this;
-        var sys = this.channel('sys');
+        var sys = self.channel('sys');
 
         return function (req, res) {
             var date = new Date();
@@ -86,18 +86,11 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
 
         //  -1 possible tick
         if (promise.isFulfilled()) {
-
-            return this.__next(track);
+            return track.run();
         }
 
-        /** @this {Server} */
-        return promise.then(function () {
-
-            return this.__next(track);
-        }, function (err) {
-
-            return track.response.respond(500, err);
-        }, this);
+        //  wait for init
+        return promise.then(track.run, track.handleReject, track);
     },
 
     /**
@@ -169,7 +162,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * */
     _createTrack: function (req, res) {
 
-        return new Connect(this, req, res);
+        return new Connect(this, null, req, res);
     },
 
     /**
@@ -189,111 +182,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         }
 
         return unit;
-    },
-
-    /**
-     * @private
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {Connect} track
-     *
-     * @returns {vow.Promise}
-     * */
-    __next: function (track) {
-        var match;
-        var matches;
-        var sys = this.channel('sys');
-
-        if (!track.route) {
-
-            if (!this.router.isImplemented(track.method)) {
-                sys.emit('ematch', track);
-                //  Not Implemented
-                return track.response.respond(501);
-            }
-
-            matches = this.router.matchAll(track.method, track.url.path);
-
-            if (!_.size(matches)) {
-                sys.emit('ematch', track);
-                matches = this.router.matchVerbs(track.url.path);
-
-                if (_.size(matches)) {
-                    //  Method Not Allowed
-                    track.header('Allow', matches.join(', '));
-
-                    return track.response.respond(405);
-                }
-
-                //  Not Found
-                return track.response.respond(404);
-            }
-
-            track.route = matches;
-        }
-
-        match = track.route.shift();
-
-        track.args = match.args;
-
-        sys.emit('match', track);
-
-        return track.invoke(match.data.unit).
-            then(function (data) {
-                //  was sent
-                if (data instanceof Respond) {
-
-                    return this.__handleRespond(track, data);
-                }
-
-                //  rewrite
-                if (data instanceof Rewrite) {
-
-                    return this.__handleRewrite(track, data);
-                }
-
-                return this.__next(track);
-            }, function (err) {
-
-                return track.response.respond(500, err);
-            }, this);
-    },
-
-    /**
-     * @private
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {Connect} track
-     * @param {Respond} data
-     *
-     * @returns {Respond}
-     * */
-    __handleRespond: function (track, data) {
-
-        return data;
-    },
-
-    /**
-     * @private
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {Connect} track
-     * @param {Rewrite} data
-     *
-     * @returns {vow.Promise}
-     * */
-    __handleRewrite: function (track, data) {
-        //  чтобы начать матчить сначала
-        delete track.route;
-        //  удаляем все кэши
-        track.tasks = {};
-        //  переписываем url
-        track.url = track.request.createUrl(data.path);
-
-        return this.__next(track);
     }
 
 });

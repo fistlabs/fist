@@ -5,6 +5,7 @@ var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 var Context = /** @type Context */ require('../deps/context');
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Request = /** @type Request */ require('./request');
+var Respond = require('../control/respond');
 var Response = /** @type Response */ require('./response');
 var Rewrite = /** @type Rewrite */ require('../control/rewrite');
 var Track = /** @type Track */ require('./track');
@@ -26,28 +27,13 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @constructs
      *
-     * @param {Agent} agent
+     * @param {Server} agent
+     * @param {*} args
      * @param {IncomingMessage} req
      * @param {OutgoingMessage} res
      * */
-    __constructor: function (agent, req, res) {
-        this.__base(agent);
-
-        /**
-         * @public
-         * @memberOf {Connect}
-         * @property
-         * @type {*}
-         * */
-        this.args = {};
-
-        /**
-         * @public
-         * @memberOf {Connect}
-         * @property
-         * @type {String}
-         * */
-        this.method = req.method.toUpperCase();
+    __constructor: function (agent, args, req, res) {
+        this.__base(agent, args);
 
         /**
          * @public
@@ -56,6 +42,14 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @type {Negotiator}
          * */
         this.neg = new Negotiator(req);
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property
+         * @type {String}
+         * */
+        this.method = req.method.toUpperCase();
 
         /**
          * @public
@@ -77,9 +71,22 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @public
          * @memberOf {Connect}
          * @property
-         * @type {Array}
+         * @type {String}
          * */
         this.route = null;
+
+        this.__setUrl(req.url);
+    },
+
+    /**
+     * @private
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {String} url
+     * */
+    __setUrl: function (url) {
+        this.args = {};
 
         /**
          * @public
@@ -87,7 +94,102 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {Object}
          * */
-        this.url = this.request.createUrl(req.url);
+        this.url = this.request.createUrl(url);
+
+        /**
+         * @public
+         * @memberOf {Connect}
+         * @property
+         * @type {Array<Object>}
+         * */
+        this.matches = null;
+
+        if (this.agent.router.isImplemented(this.method)) {
+            this.matches = this.agent.router.matchAll(this.method, url);
+        }
+    },
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @returns {vow.Promise}
+     * */
+    run: function () {
+        var sys = this.agent.channel('sys');
+        var match;
+        var matches = this.matches;
+
+        if (!matches) {
+            sys.emit('ematch', this);
+            return this.response.respond(501);
+        }
+
+        if (!_.size(matches)) {
+            sys.emit('ematch', this);
+            matches = this.agent.router.matchVerbs(this.url.path);
+            if (_.size(matches)) {
+                this.header('Allow', matches.join(', '));
+                return this.response.respond(405);
+            }
+
+            return this.response.respond(404);
+        }
+
+        match = matches.shift();
+
+        this.args = match.args;
+
+        this.route = match.data.name;
+
+        sys.emit('match', this);
+
+        /** @this {Connect} */
+        return this.invoke(match.data.unit).then(this.handleAccept, this.handleReject, this);
+    },
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {*} err
+     *
+     * @returns {vow.Promise}
+     * */
+    handleReject: function (err) {
+
+        return this.response.respond(500, err);
+    },
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @method
+     *
+     * @param {*} data
+     *
+     * @returns {*}
+     * */
+    handleAccept: function (data) {
+        //  was sent
+        if (data instanceof Respond) {
+
+            return data;
+        }
+
+        //  rewrite
+        if (data instanceof Rewrite) {
+            //  удаляем все кэши
+            this._tasks = {};
+
+            this.__setUrl(data.path);
+
+            return this.run();
+        }
+
+        return this.run();
     },
 
     /**

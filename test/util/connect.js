@@ -8,7 +8,7 @@ var http = require('./http');
 module.exports = function (opts, handle, receive, trackerOpts) {
     var tracker = new Server(trackerOpts);
     http(opts, function (req, res) {
-        var track = new Connect(tracker, req, res);
+        var track = new Connect(tracker, null, req, res);
         handle.call(this, track, req, res);
     }).done(function (res) {
         receive(null, res);

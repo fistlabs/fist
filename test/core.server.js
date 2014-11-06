@@ -276,7 +276,7 @@ describe('core/server', function () {
         });
     });
 
-    it('Should auto declare units with .pattern', function (done) {
+    it('Should auto declare units with .rule', function (done) {
         var server = new Server();
 
         server.unit({
