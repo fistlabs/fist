@@ -1,7 +1,7 @@
 'use strict';
 
 var Connect = /** @type Connect */ require('./track/connect');
-var Router = /** @type Router */ require('finger/Router');
+var Router = /** @type Router */ require('finger/core/router');
 var Response = /** @type Response */ require('./track/response');
 var Respond = /** @type Respond */ require('./control/respond');
 var Rewrite = /** @type Rewrite */ require('./control/rewrite');
@@ -125,19 +125,19 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @memberOf {Server}
      * @method
      *
-     * @param {String} pattern
+     * @param {String} rule
      * @param {{unit?:String, name?:String}|String} [data]
      *
      * @returns {Server}
      * */
-    route: function (pattern, data) {
+    route: function (rule, data) {
         var route;
 
         if (!_.isObject(data)) {
             data = {name: data};
         }
 
-        route = this.router.addRoute(pattern, data);
+        route = this.router.addRule(rule, data);
 
         if (_.isUndefined(route.data.unit) || _.isNull(route.data.unit)) {
             route.data.unit = route.data.name;
@@ -184,8 +184,8 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
     _instUnit: function (Unit) {
         var unit = this.__base(Unit);
 
-        if (_.isString(unit.pattern)) {
-            this.route(unit.pattern, unit.path);
+        if (_.isString(unit.rule)) {
+            this.route(unit.rule, unit.path);
         }
 
         return unit;
@@ -201,44 +201,45 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {vow.Promise}
      * */
     __next: function (track) {
-        //  выбирается маршрут
-        var result = this.router.
-            find(track.method, track.url.pathname, track.route);
+        var match;
+        var matches;
         var sys = this.channel('sys');
 
-        //  однозначно нет такого маршрута
-        if (_.isNull(result)) {
-            sys.emit('ematch', track);
-            //  Not Found
-            return track.response.respond(404);
-        }
+        if (!track.route) {
 
-        //  возвращен массив
-        if (_.isArray(result)) {
-            //  это тоже значит что нет такого роута
-            sys.emit('ematch', track);
-
-            //  если массив пустой, то на сервере совсем нет ни одного
-            //  маршрута отвечающего по такому методу запроса
-            if (!_.size(result)) {
+            if (!this.router.isImplemented(track.method)) {
+                sys.emit('ematch', track);
                 //  Not Implemented
                 return track.response.respond(501);
             }
 
-            //  Иначе есть такие маршруты, но для них не
-            // поддерживается такой метод
-            track.header('Allow', result.join(', '));
+            matches = this.router.matchAll(track.method, track.url.path);
 
-            //  Method Not Allowed
-            return track.response.respond(405);
+            if (!_.size(matches)) {
+                sys.emit('ematch', track);
+                matches = this.router.matchVerbs(track.url.path);
+
+                if (_.size(matches)) {
+                    //  Method Not Allowed
+                    track.header('Allow', matches.join(', '));
+
+                    return track.response.respond(405);
+                }
+
+                //  Not Found
+                return track.response.respond(404);
+            }
+
+            track.route = matches;
         }
 
-        track.match = result.match;
-        track.route = result.route.data.name;
+        match = track.route.shift();
+
+        track.args = match.args;
 
         sys.emit('match', track);
 
-        return track.invoke(result.route.data.unit).
+        return track.invoke(match.data.unit).
             then(function (data) {
                 //  was sent
                 if (data instanceof Respond) {

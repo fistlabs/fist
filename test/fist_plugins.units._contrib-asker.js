@@ -7,6 +7,7 @@ var vowAsker = require('vow-asker');
 var fist = require('../fist');
 var sock = require('./util/sock');
 var fs = require('fs');
+var Rule = require('finger/core/rule');
 
 function unlink() {
 
@@ -97,7 +98,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             _$options: function (context) {
 
                 return _.extend(this.__base(context), {
-                    path: '/<token>/',
+                    path: new Rule('/<token>/'),
                     socketPath: sock,
                     vars: {
                         token: 'backend'

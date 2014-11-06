@@ -1,14 +1,12 @@
 'use strict';
 
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
-var R_URL = /^((?:[a-z0-9.+-]+:|)\/\/[^\/]+|)([\s\S]*)$/;
 
 var Context = /** @type Context */ require('../deps/context');
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Request = /** @type Request */ require('./request');
 var Response = /** @type Response */ require('./response');
 var Rewrite = /** @type Rewrite */ require('../control/rewrite');
-var Route = /** @type Route */ require('finger/route/Route');
 var Track = /** @type Track */ require('./track');
 
 var _ = require('lodash-node');
@@ -41,7 +39,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @property
          * @type {*}
          * */
-        this.match = {};
+        this.args = {};
 
         /**
          * @public
@@ -79,7 +77,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
          * @public
          * @memberOf {Connect}
          * @property
-         * @type {String}
+         * @type {Array}
          * */
         this.route = null;
 
@@ -106,7 +104,7 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     buildPath: function (name, params) {
 
-        return this.agent.router.getRoute(name).build(params);
+        return this.agent.router.getRule(name).build(params);
     },
 
     /**
@@ -197,21 +195,13 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      *
      * @param {*} [status]
      * @param {String} url
-     * @param {Object} [opts]
      * */
-    redirect: function (status, url, opts) {
-        var parts;
+    redirect: function (status, url) {
 
-        //  TODO remove url templating
         if (!_.isNumber(status)) {
-            opts = url;
             url = status;
             status = 302;
         }
-
-        parts = R_URL.exec(url);
-        parts[2] = Route.buildPath(parts[2], opts);
-        url = parts[1] + parts[2];
 
         this.response.setHeader('Location', url);
 
@@ -232,12 +222,10 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @method
      *
      * @param {String} path
-     * @param {Object} [opts]
      *
      * @returns {Rewrite}
      * */
-    rewrite: function (path, opts) {
-        path = Route.buildPath(path, opts);
+    rewrite: function (path) {
 
         return new Rewrite(path);
     },

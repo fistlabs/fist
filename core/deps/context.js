@@ -35,8 +35,7 @@ var Context = inherit(Deps, /** @lends Context.prototype */ {
      * */
     _dumpArgs: function () {
 
-        return _.extend({}, this.track.url.query,
-            this.track.match, this.__base());
+        return _.extend({}, this.track.args, this.__base());
     }
 
 });

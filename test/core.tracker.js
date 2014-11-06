@@ -11,7 +11,6 @@ describe('core/tracker', function () {
     it('Should be an instance of core/tracker', function () {
         var tracker = new Tracker();
         assert.instanceOf(tracker, Tracker);
-        assert.isObject(tracker.tasks);
     });
 
     describe('.include', function () {

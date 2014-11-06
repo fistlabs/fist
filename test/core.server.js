@@ -1,7 +1,7 @@
 /*global describe, it*/
 'use strict';
 
-var Router = require('finger/Router');
+var Router = require('finger/core/router');
 
 var assert = require('chai').assert;
 var fs = require('fs');
@@ -36,7 +36,7 @@ describe('core/server', function () {
 
         server.route('/', 'index');
 
-        assert.deepEqual(server.router.getRoute('index').data, {
+        assert.deepEqual(server.router.getRule('index').data, {
             name: 'index',
             unit: 'index'
         });
@@ -45,7 +45,7 @@ describe('core/server', function () {
             name: 'index'
         });
 
-        assert.deepEqual(server.router.getRoute('index').data, {
+        assert.deepEqual(server.router.getRule('index').data, {
             name: 'index',
             unit: 'index'
         });
@@ -55,7 +55,7 @@ describe('core/server', function () {
             unit: null
         });
 
-        assert.deepEqual(server.router.getRoute('index').data, {
+        assert.deepEqual(server.router.getRule('index').data, {
             name: 'index',
             unit: 'index'
         });
@@ -65,7 +65,7 @@ describe('core/server', function () {
             unit: 'unit'
         });
 
-        assert.deepEqual(server.router.getRoute('index').data, {
+        assert.deepEqual(server.router.getRule('index').data, {
             name: 'index',
             unit: 'unit'
         });
@@ -281,11 +281,11 @@ describe('core/server', function () {
 
         server.unit({
             path: 'index',
-            pattern: '/'
+            rule: '/'
         });
 
         server.ready().done(function () {
-            assert.ok(server.router.getRoute('index'));
+            assert.ok(server.router.getRule('index'));
             done();
         });
     });
@@ -296,20 +296,20 @@ describe('core/server', function () {
         server.unit({
             path: 'index',
             base: 'any',
-            pattern: '/'
+            rule: '/'
         });
 
         server.unit({
             path: 'any',
-            pattern: '/'
+            rule: '/'
         });
 
         server.ready().done(function () {
             var router = server.router;
-            var m = router.find('GET', '/');
+            var m = router.matchAll('GET', '/')[0];
 
             assert.isObject(m);
-            assert.strictEqual(m.route.data.name, 'index');
+            assert.strictEqual(m.data.name, 'index');
             done();
         });
     });
@@ -326,10 +326,7 @@ describe('core/server', function () {
                 path: 'rewrite',
                 data: function (track, context) {
 
-                    return context.track.rewrite('/<page>/', {
-                        page: 'test',
-                        a: 42
-                    });
+                    return context.track.rewrite('/test/?a=42');
                 }
             });
 
