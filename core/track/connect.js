@@ -118,7 +118,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     run: function () {
         var sys = this.agent.channel('sys');
-        var match;
         var matches = this.matches;
 
         if (!matches) {
@@ -127,17 +126,34 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         }
 
         if (!_.size(matches)) {
-            sys.emit('ematch', this);
             matches = this.agent.router.matchVerbs(this.url.path);
             if (_.size(matches)) {
+                sys.emit('ematch', this);
                 this.header('Allow', matches.join(', '));
                 return this.response.respond(405);
             }
+        }
+
+        return this.__next();
+    },
+
+    /**
+     * @private
+     * @memberOf {Connect}
+     * @method
+     *
+     * @returns {vow.Promise}
+     * */
+    __next: function () {
+        var sys = this.agent.channel('sys');
+        var matches = this.matches;
+        var match = matches.shift();
+
+        if (!match) {
+            sys.emit('ematch', this);
 
             return this.response.respond(404);
         }
-
-        match = matches.shift();
 
         this.args = match.args;
 
@@ -145,7 +161,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
         sys.emit('match', this);
 
-        /** @this {Connect} */
         return this.invoke(match.data.unit).then(this.handleAccept, this.handleReject, this);
     },
 
@@ -186,10 +201,10 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
 
             this.__setUrl(data.path);
 
-            return this.run();
+            return this.__next();
         }
 
-        return this.run();
+        return this.__next();
     },
 
     /**
