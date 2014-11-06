@@ -5,7 +5,12 @@ var Server = /** @type Server */ require('./core/server');
 var _ = require('lodash-node');
 var inherit = require('inherit');
 var path = require('path');
-var dirname = path.dirname(module.parent.filename);
+var filename = require.main ?
+    //  Entry point
+    require.main.filename :
+    //  REPL?
+    module.parent.filename;
+var dirname = path.dirname(filename);
 
 var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
 
