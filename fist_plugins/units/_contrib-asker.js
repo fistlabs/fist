@@ -1,8 +1,6 @@
 'use strict';
 
-var Pattern = /** @type Pattern */ require('finger/route/Pattern');
-
-var _ = require('lodash-node');
+var Rule = /** @type Rule */ require('finger/core/rule');
 var vowAsker = require('vow-asker');
 
 module.exports = function () {
@@ -29,9 +27,8 @@ module.exports = function () {
         _$prepare: function (track, context) {
             var data = Object(context.data);
 
-            if (_.isString(data.path)) {
-                //  TODO! refactor this!
-                data.path = Pattern.buildPath(data.path, data.vars);
+            if (data.path instanceof Rule) {
+                data.path = data.path.build(data.vars);
             }
 
             return data;

@@ -10,13 +10,8 @@ describe('core/deps/context', function () {
     describe('.args', function () {
         it('Should correctly dump args', function () {
             var ctx = new Context({
-                match: {
+                args: {
                     a: 42
-                },
-                url: {
-                    query: {
-                        a: 43
-                    }
                 }
             }, null, {
                 a: 41
@@ -36,13 +31,8 @@ describe('core/deps/context', function () {
         it('Should return instance parameter', function () {
 
             var ctx = new Context({
-                match: {
+                args: {
                     a: 42
-                },
-                url: {
-                    query: {
-                        a: 43
-                    }
                 }
             }, null, {
                 a: 41
@@ -54,13 +44,8 @@ describe('core/deps/context', function () {
         it('Should return request match parameter', function () {
 
             var ctx = new Context({
-                match: {
+                args: {
                     a: 42
-                },
-                url: {
-                    query: {
-                        a: 43
-                    }
                 }
             }, null, {
 //                a: 41
@@ -69,33 +54,12 @@ describe('core/deps/context', function () {
             assert.strictEqual(ctx.arg('a'), 42);
         });
 
-        it('Should return request query parameter', function () {
-
-            var ctx = new Context({
-                match: {
-//                    a: 42
-                },
-                url: {
-                    query: {
-                        a: 43
-                    }
-                }
-            }, null, {
-//                a: 41
-            });
-
-            assert.strictEqual(ctx.arg('a'), 43);
-        });
-
         it('Should support paths', function () {
 
             var ctx = new Context({
-                match: {},
-                url: {
-                    query: {
-                        sort: {
-                            type: 'asc'
-                        }
+                args: {
+                    sort: {
+                        type: 'asc'
                     }
                 }
             });
@@ -106,8 +70,7 @@ describe('core/deps/context', function () {
         it('Should support defaultValues', function () {
 
             var ctx = new Context({
-                match: {},
-                url: {query: {}}
+                args: {}
             });
 
             assert.strictEqual(ctx.arg('sort.type', 'asc'), 'asc');

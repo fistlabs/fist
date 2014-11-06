@@ -40,12 +40,12 @@ var Track = inherit(/** @lends Track.prototype */{
         this.id = uniqueId();
 
         /**
-         * @private
+         * @public
          * @memberOf {Track}
          * @property
          * @type {Object}
          * */
-        this.__tasks = {};
+        this.tasks = {};
     },
 
     /**
@@ -61,11 +61,11 @@ var Track = inherit(/** @lends Track.prototype */{
     invoke: function (path, locals) {
         var result;
 
-        if (!_.has(this.__tasks, path)) {
-            this.__tasks[path] = new TaskCache();
+        if (!_.has(this.tasks, path)) {
+            this.tasks[path] = new TaskCache();
         }
 
-        result = this.__tasks[path].get(locals);
+        result = this.tasks[path].get(locals);
 
         if (result) {
 
@@ -74,7 +74,7 @@ var Track = inherit(/** @lends Track.prototype */{
 
         result = this.__executeUnit(path, locals);
 
-        this.__tasks[path].set(locals, result);
+        this.tasks[path].set(locals, result);
 
         return result;
     },

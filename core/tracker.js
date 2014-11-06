@@ -27,14 +27,6 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
         this.__base(params);
 
         /**
-         * @public
-         * @memberOf {Tracker}
-         * @property
-         * @type {Object}
-         * */
-        this.tasks = {};
-
-        /**
          *
          * @private
          * @memberOf {Tracker}
