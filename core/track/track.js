@@ -70,7 +70,7 @@ var Track = inherit(/** @lends Track.prototype */{
 
         if (_.isObject(args)) {
             args = _.extend({}, this.args, args);
-            //  not not check cache!
+            //  Do not check cache!
             return this.__executeUnit(path, args);
         }
 
@@ -82,7 +82,7 @@ var Track = inherit(/** @lends Track.prototype */{
             return result;
         }
 
-        result = this._tasks[path] = this.__executeUnit(path);
+        result = this._tasks[path] = this.__executeUnit(path, this.args);
 
         return result;
     },
