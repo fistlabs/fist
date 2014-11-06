@@ -1,7 +1,6 @@
 'use strict';
 
 var Deps = /** @type Deps */ require('../deps/deps');
-var TaskCache = /** @type TaskCache */ require('../util/task-cache');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -21,7 +20,15 @@ var Track = inherit(/** @lends Track.prototype */{
      *
      * @returns void
      * */
-    __constructor: function (agent) {
+    __constructor: function (agent, args) {
+
+        /**
+         * @public
+         * @memberOf {Track}
+         * @property
+         * @type {Object}
+         * */
+        this.args = Object(args);
 
         /**
          * @public
@@ -40,12 +47,12 @@ var Track = inherit(/** @lends Track.prototype */{
         this.id = uniqueId();
 
         /**
-         * @public
+         * @protected
          * @memberOf {Track}
          * @property
          * @type {Object}
          * */
-        this.tasks = {};
+        this._tasks = {};
     },
 
     /**
@@ -54,27 +61,28 @@ var Track = inherit(/** @lends Track.prototype */{
      * @method
      *
      * @param {String} path
-     * @param {Object} [locals]
+     * @param {Object} [args]
      *
      * @returns {vow.Promise}
      *  */
-    invoke: function (path, locals) {
+    invoke: function (path, args) {
         var result;
 
-        if (!_.has(this.tasks, path)) {
-            this.tasks[path] = new TaskCache();
+        if (_.isObject(args)) {
+            args = _.extend({}, this.args, args);
+            //  not not check cache!
+            return this.__executeUnit(path, args);
         }
 
-        result = this.tasks[path].get(locals);
+        //  check cache
+        result = this._tasks[path];
 
         if (result) {
 
             return result;
         }
 
-        result = this.__executeUnit(path, locals);
-
-        this.tasks[path].set(locals, result);
+        result = this._tasks[path] = this.__executeUnit(path);
 
         return result;
     },
@@ -85,13 +93,13 @@ var Track = inherit(/** @lends Track.prototype */{
      * @method
      *
      * @param {String} path
-     * @param {Object} [params]
+     * @param {Object} [args]
      *
      * @returns {Deps}
      * */
-    _createContext: function (path, params) {
+    _createContext: function (path, args) {
 
-        return new Deps(this, path, params);
+        return new Deps(this, path, args);
     },
 
     /**
@@ -100,13 +108,13 @@ var Track = inherit(/** @lends Track.prototype */{
      * @method
      *
      * @param {String} path
-     * @param {Object} [params]
+     * @param {Object} [args]
      *
      * @returns {vow.Promise}
      * */
-    __executeUnit: function (path, params) {
+    __executeUnit: function (path, args) {
 
-        return this._createContext(path, params).execute();
+        return this._createContext(path, args).execute();
     }
 
 });
