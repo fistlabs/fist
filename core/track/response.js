@@ -4,6 +4,7 @@ var R_SET_COOKIE_HEADER = /^set-cookie$/i;
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Respond = /** @type Respond */ require('../control/respond');
+var Control = require('../control/control');
 
 var _ = require('lodash-node');
 var cookie = require('cookieparser');
@@ -163,7 +164,7 @@ var Response = inherit(/** @lends Response.prototype */ {
      * @returns {*}
      * */
     __createResp: function (status, body) {
-        /*eslint complexity: [2, 8] */
+        /*eslint complexity: 0 */
         if (_.isUndefined(body)) {
 
             return this.__createByUndefined(status);
@@ -194,7 +195,7 @@ var Response = inherit(/** @lends Response.prototype */ {
             return this.__createByPromise(status, body);
         }
 
-        if (body instanceof Respond) {
+        if (body instanceof Control) {
 
             return this.__createByResp(status, body);
         }
@@ -354,6 +355,10 @@ var Response = inherit(/** @lends Response.prototype */ {
             status = body.status;
         }
 
+        if (!_.isString(body.body) && !Buffer.isBuffer(body.body)) {
+            return this.__createResp(status, body.body);
+        }
+
         return new Respond(status, body.header, body.body);
     },
 
@@ -396,6 +401,8 @@ var Response = inherit(/** @lends Response.prototype */ {
 }, {
 
     /**
+     * TODO не нравится! Хочется убрать совсем!
+     *
      * @public
      * @static
      * @memberOf Response
