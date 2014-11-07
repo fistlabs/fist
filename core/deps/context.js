@@ -1,8 +1,8 @@
 'use strict';
 
+//  TODO Avoid!
 var Deps = /** @type {Deps}*/ require('./deps');
 
-var _ = require('lodash-node');
 var inherit = require('inherit');
 
 /**
@@ -24,18 +24,6 @@ var Context = inherit(Deps, /** @lends Context.prototype */ {
         var body = this.track.agent.renderers[renderer](this);
 
         return this.track.response.respond(void 0, body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Context}
-     * @method
-     *
-     * @returns {Object}
-     * */
-    _dumpArgs: function () {
-
-        return _.extend({}, this.track.args, this.__base());
     }
 
 });

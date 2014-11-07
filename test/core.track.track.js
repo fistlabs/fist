@@ -48,7 +48,7 @@ describe('core/track/track', function () {
                 path: 'a',
                 deps: ['b'],
                 data: function (track, context) {
-                    assert.strictEqual(context.getRes('b'), 'b');
+                    assert.strictEqual(context.result.get('b'), 'b');
 
                     return 'a';
                 }
@@ -97,7 +97,7 @@ describe('core/track/track', function () {
                 path: 'a',
                 deps: ['c'],
                 data: function (track, context) {
-                    assert.strictEqual(context.getRes('c'), 'c');
+                    assert.strictEqual(context.result.get('c'), 'c');
 
                     return 'a';
                 }
@@ -107,7 +107,7 @@ describe('core/track/track', function () {
                 path: 'b',
                 deps: ['c'],
                 data: function (track, context) {
-                    assert.strictEqual(context.getRes('c'), 'c');
+                    assert.strictEqual(context.result.get('c'), 'c');
 
                     return 'b';
                 }
@@ -128,8 +128,8 @@ describe('core/track/track', function () {
                 path: 'x',
                 deps: ['a', 'b'],
                 data: function (track, context) {
-                    assert.strictEqual(context.getRes('a'), 'a');
-                    assert.strictEqual(context.getRes('b'), 'b');
+                    assert.strictEqual(context.result.get('a'), 'a');
+                    assert.strictEqual(context.result.get('b'), 'b');
 
                     return 'x';
                 }

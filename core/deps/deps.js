@@ -1,10 +1,10 @@
 'use strict';
 
 var Control = /** @type Control */ require('../control/control');
+var Obus = /** @type Obus */ require('obus');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
-var ns = require('../util/ns');
 var vow = require('vow');
 
 /**
@@ -29,17 +29,17 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @public
          * @memberOf {Deps}
          * @property
-         * @type {Object}
+         * @type {Obus}
          * */
-        this.errors = {};
+        this.errors = new Obus();
 
         /**
          * @public
          * @memberOf {Deps}
          * @property
-         * @type {Object}
+         * @type {Obus}
          * */
-        this.result = {};
+        this.result = new Obus();
 
         /**
          * @public
@@ -66,12 +66,12 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         this.unit = path;
 
         /**
-         * @private
+         * @public
          * @memberOf {Deps}
          * @property
          * @type {Date}
          * */
-        this.__creationDate = new Date();
+        this.date = new Date();
     },
 
     /**
@@ -100,87 +100,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @returns {*}
      * */
     arg: function (path, defaultValue) {
-        var result = ns.use(this.args(), path);
-
-        if (this._isFalsy(result)) {
-            result = defaultValue;
-        }
-
-        return result;
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @returns {*}
-     * */
-    args: function () {
-
-        if (!this.__args) {
-            this.__args  = this._dumpArgs();
-        }
-
-        return this.__args;
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} [path]
-     * @param {*} [defaultValue]
-     *
-     * @returns {*}
-     * */
-    getRes: function (path, defaultValue) {
-        /*eslint no-unused-vars: 0*/
-        return this.__get(this.result, arguments);
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} [path]
-     * @param {*} [defaultValue]
-     *
-     * @returns {*}
-     * */
-    getErr: function (path, defaultValue) {
-        /*eslint no-unused-vars: 0*/
-        return this.__get(this.errors, arguments);
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} path
-     *
-     * @returns {Boolean}
-     * */
-    hasRes: function (path) {
-
-        return ns.has(this.result, path);
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} path
-     *
-     * @returns {Boolean}
-     * */
-    hasErr: function (path) {
-
-        return ns.has(this.errors, path);
+        return Obus.prototype.get.call(this.params, path, defaultValue);
     },
 
     /**
@@ -246,35 +166,9 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         this.track.agent.channel('ctx').emit(event, {
             path: this.unit,
             data: data,
-            time: new Date() - this.__creationDate,
+            time: new Date() - this.date,
             trackId: this.track.id
         });
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} path
-     * @param {*} data
-     * */
-    setRes: function (path, data) {
-
-        return ns.add(this.result, path, data);
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} path
-     * @param {*} data
-     * */
-    setErr: function (path, data) {
-
-        return ns.add(this.errors, path, data);
     },
 
     /**
@@ -287,63 +181,10 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     toJSON: function () {
 
         return {
-            params: this.args(),
-            errors: this.getErr(),
-            result: this.getRes()
+            params: this.params,
+            errors: this.errors,
+            result: this.result
         };
-    },
-
-    /**
-     * @protected
-     * @memberOf {Deps}
-     * @method
-     *
-     * @returns {Object}
-     * */
-    _dumpArgs: function () {
-
-        return this.params;
-    },
-
-    /**
-     * @protected
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {*} v
-     *
-     * @returns {Boolean}
-     * */
-    _isFalsy: function (v) {
-
-        return _.isUndefined(v) || _.isNull(v) ||  v === '';
-    },
-
-    /**
-     * @private
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {*} root
-     * @param {Arguments} args
-     *
-     * @returns {*}
-     * */
-    __get: function (root, args) {
-        var result;
-
-        if (!args.length) {
-
-            return root;
-        }
-
-        result = ns.use(root, args[0]);
-
-        if (this._isFalsy(result)) {
-            result = args[1];
-        }
-
-        return result;
     },
 
     /**
@@ -358,10 +199,11 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     __resolveAndSet: function (path) {
         var promise = this.track.invoke(path);
 
+        /** @this {Deps} */
         promise.done(function (data) {
-            this.setRes(path, data);
+            Obus.prototype.set.call(this.result, path, data);
         }, function (data) {
-            this.setErr(path, data);
+            Obus.prototype.set.call(this.errors, path, data);
         }, this);
 
         return promise;

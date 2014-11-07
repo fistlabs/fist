@@ -34,9 +34,9 @@ describe('fist_plugins/units/_contrib-asker', function () {
             path: 'front',
             deps: ['model'],
             data: function (track, context) {
-                assert.ok(!context.getErr('model'));
+                assert.ok(!context.errors.get('model'));
 
-                return context.track.send(context.getRes('model'));
+                return context.track.send(context.result.get('model'));
             }
         });
 
@@ -86,9 +86,9 @@ describe('fist_plugins/units/_contrib-asker', function () {
             path: 'front',
             deps: ['model'],
             data: function (track, context) {
-                assert.ok(!context.getErr('model'));
+                assert.ok(!context.errors.get('model'));
 
-                return context.track.send(context.getRes('model'));
+                return context.track.send(context.result.get('model'));
             }
         });
 
@@ -140,7 +140,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             deps: ['model'],
             data: function (track, context) {
 
-                return context.track.send(context.getErr('model'));
+                return context.track.send(context.errors.get('model'));
             }
         });
 
@@ -186,7 +186,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
             deps: ['model'],
             data: function (track, context) {
 
-                return context.track.send(context.getErr('model'));
+                return context.track.send(context.errors.get('model'));
             }
         });
 

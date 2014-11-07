@@ -7,26 +7,6 @@ describe('core/deps/context', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
     var Context = require('../core/deps/context');
 
-    describe('.args', function () {
-        it('Should correctly dump args', function () {
-            var ctx = new Context({
-                args: {
-                    a: 42
-                }
-            }, null, {
-                a: 41
-            });
-
-            var args = ctx.args();
-
-            assert.deepEqual(args, {
-                a: 41
-            });
-
-            assert.strictEqual(args, ctx.args());
-        });
-    });
-
     describe('.arg', function () {
         it('Should return instance parameter', function () {
 
@@ -43,12 +23,8 @@ describe('core/deps/context', function () {
 
         it('Should return request match parameter', function () {
 
-            var ctx = new Context({
-                args: {
-                    a: 42
-                }
-            }, null, {
-//                a: 41
+            var ctx = new Context({}, 'path', {
+                a: 42
             });
 
             assert.strictEqual(ctx.arg('a'), 42);
@@ -56,11 +32,9 @@ describe('core/deps/context', function () {
 
         it('Should support paths', function () {
 
-            var ctx = new Context({
-                args: {
-                    sort: {
-                        type: 'asc'
-                    }
+            var ctx = new Context({}, 'path', {
+                sort: {
+                    type: 'asc'
                 }
             });
 
@@ -69,11 +43,10 @@ describe('core/deps/context', function () {
 
         it('Should support defaultValues', function () {
 
-            var ctx = new Context({
-                args: {}
-            });
+            var ctx = new Context({}, 'path', {});
 
             assert.strictEqual(ctx.arg('sort.type', 'asc'), 'asc');
+            assert.strictEqual(ctx.arg('sort.type'), void 0);
         });
     });
 
