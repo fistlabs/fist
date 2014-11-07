@@ -14,7 +14,7 @@ describe('core/track/track', function () {
             var track = new Track(tracker);
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 data: function () {
 
                     return 42;
@@ -45,7 +45,7 @@ describe('core/track/track', function () {
             var track = new Track(tracker);
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 deps: ['b'],
                 data: function (track, context) {
                     assert.strictEqual(context.result.get('b'), 'b');
@@ -55,7 +55,7 @@ describe('core/track/track', function () {
             });
 
             tracker.unit({
-                path: 'b',
+                name: 'b',
                 data: 'b'
             });
 
@@ -72,7 +72,7 @@ describe('core/track/track', function () {
             var track = new Track(tracker);
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 deps: ['b'],
                 data: function () {
                     //  should not be called
@@ -94,7 +94,7 @@ describe('core/track/track', function () {
             var track = new Track(tracker);
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 deps: ['c'],
                 data: function (track, context) {
                     assert.strictEqual(context.result.get('c'), 'c');
@@ -104,7 +104,7 @@ describe('core/track/track', function () {
             });
 
             tracker.unit({
-                path: 'b',
+                name: 'b',
                 deps: ['c'],
                 data: function (track, context) {
                     assert.strictEqual(context.result.get('c'), 'c');
@@ -114,7 +114,7 @@ describe('core/track/track', function () {
             });
 
             tracker.unit({
-                path: 'c',
+                name: 'c',
                 i: 0,
                 data: function () {
                     assert.strictEqual(this.i, 0);
@@ -125,7 +125,7 @@ describe('core/track/track', function () {
             });
 
             tracker.unit({
-                path: 'x',
+                name: 'x',
                 deps: ['a', 'b'],
                 data: function (track, context) {
                     assert.strictEqual(context.result.get('a'), 'a');
@@ -150,24 +150,24 @@ describe('core/track/track', function () {
             var spy = [];
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 data: function () {
                     spy.push(1);
                 }
             });
 
             tracker.unit({
-                path: 'b',
+                name: 'b',
                 deps: ['a']
             });
 
             tracker.unit({
-                path: 'c',
+                name: 'c',
                 deps: ['a']
             });
 
             tracker.unit({
-                path: 'd',
+                name: 'd',
                 deps: ['b', 'c']
             });
 
@@ -185,24 +185,24 @@ describe('core/track/track', function () {
             var spy = [];
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 data: function () {
                     spy.push(1);
                 }
             });
 
             tracker.unit({
-                path: 'b',
+                name: 'b',
                 deps: ['a']
             });
 
             tracker.unit({
-                path: 'c',
+                name: 'c',
                 deps: ['a']
             });
 
             tracker.unit({
-                path: 'd',
+                name: 'd',
                 deps: ['b', 'c'],
                 data: function (track, context) {
                     return context.arg('x');

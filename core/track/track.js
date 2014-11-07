@@ -60,29 +60,29 @@ var Track = inherit(/** @lends Track.prototype */{
      * @memberOf {Track}
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      * @param {Object} [args]
      *
      * @returns {vow.Promise}
      *  */
-    invoke: function (path, args) {
+    invoke: function (name, args) {
         var result;
 
         if (_.isObject(args)) {
             args = _.extend({}, this.args, args);
             //  Do not check cache!
-            return this.__executeUnit(path, args);
+            return this.__executeUnit(name, args);
         }
 
         //  check cache
-        result = this._tasks[path];
+        result = this._tasks[name];
 
         if (result) {
 
             return result;
         }
 
-        result = this._tasks[path] = this.__executeUnit(path, this.args);
+        result = this._tasks[name] = this.__executeUnit(name, this.args);
 
         return result;
     },
@@ -92,14 +92,14 @@ var Track = inherit(/** @lends Track.prototype */{
      * @memberOf {Track}
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      * @param {Object} [args]
      *
      * @returns {Deps}
      * */
-    _createContext: function (path, args) {
+    _createContext: function (name, args) {
 
-        return new Deps(this, path, args);
+        return new Deps(this, name, args);
     },
 
     /**
@@ -107,14 +107,14 @@ var Track = inherit(/** @lends Track.prototype */{
      * @memberOf {Track}
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      * @param {Object} [args]
      *
      * @returns {vow.Promise}
      * */
-    __executeUnit: function (path, args) {
+    __executeUnit: function (name, args) {
 
-        return this._createContext(path, args).execute();
+        return this._createContext(name, args).execute();
     }
 
 });

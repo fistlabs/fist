@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-    path: 'u0'
+    name: 'u0'
 };

@@ -18,12 +18,12 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {String} path
+     * @param {String} name
      * @param {Object} [params]
      *
      * @constructs
      * */
-    __constructor: function (track, path, params) {
+    __constructor: function (track, name, params) {
 
         /**
          * @public
@@ -63,7 +63,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @property
          * @type {String}
          * */
-        this.unit = path;
+        this.unit = name;
 
         /**
          * @public
@@ -164,7 +164,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * */
     trigger: function (event, data) {
         this.track.agent.channel('ctx').emit(event, {
-            path: this.unit,
+            unit: this.unit,
             data: data,
             time: new Date() - this.date,
             trackId: this.track.id
@@ -192,18 +192,18 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @memberOf {Deps}
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      *
      * @returns {vow.Promise}
      * */
-    __resolveAndSet: function (path) {
-        var promise = this.track.invoke(path);
+    __resolveAndSet: function (name) {
+        var promise = this.track.invoke(name);
 
         /** @this {Deps} */
         promise.done(function (data) {
-            Obus.prototype.set.call(this.result, path, data);
+            Obus.prototype.set.call(this.result, name, data);
         }, function (data) {
-            Obus.prototype.set.call(this.errors, path, data);
+            Obus.prototype.set.call(this.errors, name, data);
         }, this);
 
         return promise;

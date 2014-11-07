@@ -9,7 +9,7 @@ module.exports = function () {
 
         base: '_contrib-serial',
 
-        path: '_contrib-asker',
+        name: '_contrib-asker',
 
         _steps: [
             'options',
@@ -27,6 +27,7 @@ module.exports = function () {
         _$prepare: function (track, context) {
             var data = Object(context.data);
 
+            //  TODO duck typing
             if (data.path instanceof Rule) {
                 data.path = data.path.build(data.vars);
             }

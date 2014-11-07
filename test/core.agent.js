@@ -27,7 +27,7 @@ describe('core/agent', function () {
             var agent = new Agent();
 
             agent.unit({
-                path: 'foo'
+                name: 'foo'
             });
 
             agent.ready().done(function () {
@@ -41,7 +41,7 @@ describe('core/agent', function () {
             var agent = new Agent();
 
             agent.unit({
-                path: 'foo'
+                name: 'foo'
             });
 
             agent.alias('foo', 'bar');
@@ -57,7 +57,7 @@ describe('core/agent', function () {
             var agent = new Agent();
 
             agent.unit({
-                path: 'foo'
+                name: 'foo'
             });
 
             agent.alias({
@@ -76,11 +76,11 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a'
+            name: 'a'
         });
 
         agent.unit({
-            path: 'b'
+            name: 'b'
         });
 
         agent.ready().then(function () {
@@ -95,12 +95,12 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a',
+            name: 'a',
             base: 'b'
         });
 
         agent.unit({
-            path: 'b',
+            name: 'b',
             x: 42
         });
 
@@ -117,7 +117,7 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a',
+            name: 'a',
             base: 'b'
         });
 
@@ -132,12 +132,12 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a',
+            name: 'a',
             deps: ['b']
         });
 
         agent.unit({
-            path: 'b'
+            name: 'b'
         });
 
         agent.ready().then(function () {
@@ -151,7 +151,7 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a',
+            name: 'a',
             deps: ['b']
         });
 
@@ -165,32 +165,32 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a',
+            name: 'a',
             deps: ['b', 'd']
         });
 
         agent.unit({
-            path: 'b',
+            name: 'b',
             deps: 'c'
         });
 
         agent.unit({
-            path: 'c',
+            name: 'c',
             deps: ['a']
         });
 
         agent.unit({
-            path: 'd',
+            name: 'd',
             deps: ['b']
         });
 
         agent.unit({
-            path: 'z',
+            name: 'z',
             deps: ['x']
         });
 
         agent.unit({
-            path: 'x',
+            name: 'x',
             deps: ['z']
         });
 
@@ -200,7 +200,7 @@ describe('core/agent', function () {
         }).done();
     });
 
-    it('Should not require members.path specified', function (done) {
+    it('Should not require members.name specified', function (done) {
         var agent = new Agent();
 
         agent.unit({
@@ -217,7 +217,7 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a'
+            name: 'a'
         });
 
         agent.channel('sys').on('ready', function () {
@@ -232,7 +232,7 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'a',
+            name: 'a',
             deps: ['a']
         });
 
@@ -248,18 +248,18 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: '_x',
+            name: '_x',
             prop: 42
         });
 
         agent.unit({
             base: '_x',
-            path: 'a',
+            name: 'a',
             deps: ['b']
         });
 
         agent.unit({
-            path: 'b'
+            name: 'b'
         });
 
         agent.ready().then(function () {
@@ -276,7 +276,7 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'b'
+            name: 'b'
         }, {
             st: 42
         });
@@ -302,7 +302,7 @@ describe('core/agent', function () {
         var agent = new Agent();
 
         agent.unit({
-            path: 'test',
+            name: 'test',
             mix: [Mixin]
         });
 
@@ -330,7 +330,7 @@ describe('core/agent', function () {
         };
 
         agent.unit({
-            path: 'test',
+            name: 'test',
             mix: Mixin
         });
 
@@ -350,7 +350,7 @@ describe('core/agent', function () {
         var spy = [];
 
         agent.unit({
-            path: '_test',
+            name: '_test',
             __constructor: function (params) {
                 this.__base(params);
                 spy.push(1);
@@ -359,7 +359,7 @@ describe('core/agent', function () {
 
         agent.unit({
             base: '_test',
-            path: 'x'
+            name: 'x'
         });
 
         agent.ready().done(function () {

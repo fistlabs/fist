@@ -31,7 +31,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.route('/backend/', 'back');
 
         app.unit({
-            path: 'front',
+            name: 'front',
             deps: ['model'],
             data: function (track, context) {
                 assert.ok(!context.errors.get('model'));
@@ -41,7 +41,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'model',
+            name: 'model',
             base: '_contrib-asker',
             _$options: function (context) {
 
@@ -53,7 +53,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'back',
+            name: 'back',
             data: function (track, context) {
 
                 return context.track.send({x: 42});
@@ -83,7 +83,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.route('/backend/', 'back');
 
         app.unit({
-            path: 'front',
+            name: 'front',
             deps: ['model'],
             data: function (track, context) {
                 assert.ok(!context.errors.get('model'));
@@ -93,7 +93,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'model',
+            name: 'model',
             base: '_contrib-asker',
             _$options: function (context) {
 
@@ -108,7 +108,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'back',
+            name: 'back',
             data: function (track, context) {
 
                 return context.track.send({x: 42});
@@ -136,7 +136,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.route('/', 'front');
 
         app.unit({
-            path: 'front',
+            name: 'front',
             deps: ['model'],
             data: function (track, context) {
 
@@ -145,7 +145,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'model',
+            name: 'model',
             base: '_contrib-asker',
             _$request: function () {
 
@@ -182,7 +182,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.route('/', 'front');
 
         app.unit({
-            path: 'front',
+            name: 'front',
             deps: ['model'],
             data: function (track, context) {
 
@@ -191,7 +191,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'model',
+            name: 'model',
             base: '_contrib-asker',
             _$request: function () {
 
@@ -228,7 +228,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.route('/', 'front');
 
         app.unit({
-            path: 'front',
+            name: 'front',
             deps: ['model'],
             data: function (track, context) {
                 assert.ok(context.getErr('model'));
@@ -238,7 +238,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         });
 
         app.unit({
-            path: 'model',
+            name: 'model',
             base: '_contrib-asker',
             _$options: function () {
 

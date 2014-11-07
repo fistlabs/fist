@@ -72,17 +72,17 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @method
      *
      * @param {String} [base]
-     * @param {Object|String} path
+     * @param {Object|String} name
      *
      * @returns {Agent}
      * */
-    alias: function (base, path) {
+    alias: function (base, name) {
 
         if (_.isObject(base)) {
-            _.forOwn(base, function (path, base) {
+            _.forOwn(base, function (name, base) {
                 this.unit({
                     base: base,
-                    path: path
+                    name: name
                 });
             }, this);
 
@@ -91,7 +91,7 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
         this.unit({
             base: base,
-            path: path
+            name: name
         });
 
         return this;
@@ -102,13 +102,13 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf {Agent}
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      *
      * @returns {Unit}
      * */
-    getUnit: function (path) {
+    getUnit: function (name) {
 
-        return this.units[path];
+        return this.units[name];
     },
 
     /**
@@ -124,13 +124,13 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     unit: function (members, statics) {
         members = Object(members);
 
-        if (!_.has(members, 'path')) {
-            members.path = 'unit-' + uniqueId();
+        if (!_.has(members, 'name')) {
+            members.name = 'unit-' + uniqueId();
         }
 
         _.remove(this.__decls, function (decl) {
 
-            return decl.members.path === members.path;
+            return decl.members.name === members.name;
         });
 
         this.__decls.push({
@@ -195,11 +195,11 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
 
         return vow.invoke(createUnits).
             then(function (units) {
-                var paths = Agent.__findDepsConflicts(units);
+                var names = Agent.__findDepsConflicts(units);
 
-                if (_.size(paths)) {
+                if (_.size(names)) {
 
-                    throw new DepsConflictError(paths);
+                    throw new DepsConflictError(names);
                 }
 
                 this.units = units;
@@ -217,10 +217,10 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
         var units = Agent.__transform(this.__decls);
 
         return _.reduce(units, function (units, Unit) {
-            var path = Unit.prototype.path;
+            var name = Unit.prototype.name;
 
-            if (R_PUBLIC_UNIT.test(path)) {
-                units[path] = this._instUnit(Unit);
+            if (R_PUBLIC_UNIT.test(name)) {
+                units[name] = this._instUnit(Unit);
             }
 
             return units;
@@ -266,14 +266,14 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
             var base = decl.members.base;
 
             if (Agent.__isFalsy(base)) {
-                base = Unit.prototype.path;
+                base = Unit.prototype.name;
             }
 
             return _.find(classes, function (Class) {
 
                 if (_.isFunction(Class)) {
 
-                    return Class.prototype.path === base;
+                    return Class.prototype.name === base;
                 }
 
                 return false;
@@ -348,10 +348,10 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
     __findDepsConflicts: function (units) {
         var found = {};
 
-        return _.reduce(units, function (paths, unit, path) {
-            var confs = Agent.__findConflictedPaths(path, units, [], found);
+        return _.reduce(units, function (names, unit, name) {
+            var confs = Agent.__findConflictedNames(name, units, [], found);
 
-            return paths.concat(confs);
+            return names.concat(confs);
         }, []);
     },
 
@@ -361,57 +361,57 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @memberOf Agent
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      * @param {Object} units
      * @param {Array} trunk
      * @param {Object} found
      *
      * @returns {Array}
      * */
-    __findConflictedPaths: function (path, units, trunk, found) {
+    __findConflictedNames: function (name, units, trunk, found) {
         var deps;
         var unit;
-        var paths = [];
+        var names = [];
 
-        if (_.has(found, path)) {
+        if (_.has(found, name)) {
 
-            return paths;
+            return names;
         }
 
-        unit = units[path];
+        unit = units[name];
 
         if (_.isUndefined(unit)) {
 
-            return paths;
+            return names;
         }
 
         deps = unit.deps;
 
         if (!_.size(deps)) {
 
-            return paths;
+            return names;
         }
 
-        paths = _.reduce(deps, function (paths, path) {
+        names = _.reduce(deps, function (names, name) {
             var confs;
             var branch = _.clone(trunk);
 
-            branch.push(path);
+            branch.push(name);
 
-            if (_.contains(trunk, path)) {
-                paths.push(branch);
+            if (_.contains(trunk, name)) {
+                names.push(branch);
 
-                return paths;
+                return names;
             }
 
-            confs = Agent.__findConflictedPaths(path, units, branch, found);
+            confs = Agent.__findConflictedNames(name, units, branch, found);
 
-            return paths.concat(confs);
-        }, paths);
+            return names.concat(confs);
+        }, names);
 
-        found[path] = true;
+        found[name] = true;
 
-        return paths;
+        return names;
     },
 
     /**

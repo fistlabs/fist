@@ -4,7 +4,7 @@ var fist = require('../');
 var app = fist();
 
 app.unit({
-    path: 'a',
+    name: 'a',
     deps: ['b'],
     data: function (track) {
 
@@ -13,7 +13,7 @@ app.unit({
 });
 
 app.unit({
-    path: 'b',
+    name: 'b',
     deps: ['c'],
     data: function () {
 
@@ -22,7 +22,7 @@ app.unit({
 });
 
 app.unit({
-    path: 'c',
+    name: 'c',
     data: function () {
 
         return 'c';

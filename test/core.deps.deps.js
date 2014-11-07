@@ -52,7 +52,7 @@ describe('core/deps/deps', function () {
             var ctx = new Deps(track, 'c');
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 data: 42
             });
 
@@ -75,7 +75,7 @@ describe('core/deps/deps', function () {
 
             tracker.channel('ctx').on('my-event', function (e) {
                 assert.strictEqual(e.trackId, track.id);
-                assert.strictEqual(e.path, 'c');
+                assert.strictEqual(e.unit, 'c');
                 assert.strictEqual(e.data, 42);
                 done();
             });

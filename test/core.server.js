@@ -78,7 +78,7 @@ describe('core/server', function () {
         server.route('/', 'index');
 
         server.unit({
-            path: 'index',
+            name: 'index',
             data: function (track, context) {
 
                 return context.track.send(201);
@@ -111,7 +111,7 @@ describe('core/server', function () {
         server.route('/', 'index');
 
         server.unit({
-            path: 'index',
+            name: 'index',
             data: function (track, context) {
 
                 return context.track.send(201);
@@ -245,14 +245,14 @@ describe('core/server', function () {
         server.route('/', 'index');
 
         server.unit({
-            path: 'preset',
+            name: 'preset',
             data: function (track, context) {
                 context.track.url.query.role = 'admin';
             }
         });
 
         server.unit({
-            path: 'index',
+            name: 'index',
             data: function (track, context) {
                 assert.deepEqual(context.track.url.query, {
                     role: 'admin'
@@ -280,7 +280,7 @@ describe('core/server', function () {
         var server = new Server();
 
         server.unit({
-            path: 'index',
+            name: 'index',
             rule: '/'
         });
 
@@ -294,13 +294,13 @@ describe('core/server', function () {
         var server = new Server();
 
         server.unit({
-            path: 'index',
+            name: 'index',
             base: 'any',
             rule: '/'
         });
 
         server.unit({
-            path: 'any',
+            name: 'any',
             rule: '/'
         });
 
@@ -323,7 +323,7 @@ describe('core/server', function () {
             server.route('/<page>/', 'control');
 
             server.unit({
-                path: 'rewrite',
+                name: 'rewrite',
                 data: function (track, context) {
 
                     return context.track.rewrite('/test/?a=42');
@@ -331,7 +331,7 @@ describe('core/server', function () {
             });
 
             server.unit({
-                path: 'control',
+                name: 'control',
                 data: function (track, context) {
                     assert.strictEqual(context.arg('page'), 'test');
                     assert.strictEqual(context.track.url.path, '/test/?a=42');
@@ -362,7 +362,7 @@ describe('core/server', function () {
         server.route('/', {name: 'index', unit: 'foo'});
 
         server.unit({
-            path: 'foo',
+            name: 'foo',
             deps: ['bar']
         });
 

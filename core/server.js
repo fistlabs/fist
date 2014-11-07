@@ -178,7 +178,7 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         var unit = this.__base(Unit);
 
         if (_.isString(unit.rule)) {
-            this.route(unit.rule, unit.path);
+            this.route(unit.rule, unit.name);
         }
 
         return unit;

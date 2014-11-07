@@ -88,7 +88,7 @@ describe('core/unit', function () {
             var tracker = new Tracker();
 
             tracker.unit({
-                path: 'x',
+                name: 'x',
                 data: 42
             });
 
@@ -108,7 +108,7 @@ describe('core/unit', function () {
             var tracker = new Tracker();
 
             tracker.unit({
-                path: 'test',
+                name: 'test',
                 spy: [],
                 _maxAge: 0,
                 data: function () {
@@ -136,7 +136,7 @@ describe('core/unit', function () {
             var tracker = new Tracker();
 
             tracker.unit({
-                path: 'test',
+                name: 'test',
                 spy: [],
                 _maxAge: 10000,
                 data: function () {
@@ -164,7 +164,7 @@ describe('core/unit', function () {
             var tracker = new Tracker();
 
             tracker.unit({
-                path: 'test-42',
+                name: 'test-42',
                 _maxAge: 10000,
                 data: function () {
 
@@ -177,7 +177,7 @@ describe('core/unit', function () {
             });
 
             tracker.unit({
-                path: 'test-43',
+                name: 'test-43',
                 base: 'test-42',
                 data: function () {
 
@@ -215,7 +215,7 @@ describe('core/unit', function () {
             });
 
             tracker.unit({
-                path: 'test',
+                name: 'test',
                 spy: [],
                 _maxAge: 10000,
                 data: function () {
@@ -247,7 +247,7 @@ describe('core/unit', function () {
             var spy = [];
 
             tracker.unit({
-                path: 'test',
+                name: 'test',
                 _maxAge: 10000,
                 data: function () {
                     spy.push(1);
@@ -274,7 +274,7 @@ describe('core/unit', function () {
             var spy = [];
 
             tracker.unit({
-                path: 'test',
+                name: 'test',
                 _maxAge: 10000,
                 data: function () {
                     spy.push(1);
@@ -299,13 +299,13 @@ describe('core/unit', function () {
             var spy = [];
 
             tracker.unit({
-                path: 'test',
+                name: 'test',
                 _maxAge: 10000,
                 data: 42
             });
 
             tracker.channel('ctx').on('cache', function (e) {
-                assert.strictEqual(e.path, 'test');
+                assert.strictEqual(e.unit, 'test');
                 assert.isNumber(e.time);
                 assert.strictEqual(e.data, 42);
                 spy.push(1);
