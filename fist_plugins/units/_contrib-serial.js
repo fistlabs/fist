@@ -12,7 +12,7 @@ module.exports = function () {
 
         name: '_contrib-serial',
 
-        data: function (track, context) {
+        main: function (track, context) {
 
             return this.__next(context, new Deque(this._steps), false);
         },

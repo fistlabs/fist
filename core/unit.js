@@ -92,7 +92,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @returns {*}
      * */
-    data: /* istanbul ignore next */ function (track, context) {
+    main: /* istanbul ignore next */ function (track, context) {
         /*eslint no-unused-vars: 0*/
     },
 
@@ -205,15 +205,15 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     __call: function (context) {
         var self = this;
 
-        if (_.isFunction(self.data)) {
+        if (_.isFunction(self.main)) {
 
             return vow.invoke(function () {
 
-                return self.data(context.track, context);
+                return self.main(context.track, context);
             });
         }
 
-        return vow.resolve(self.data);
+        return vow.resolve(self.main);
     },
 
     /**

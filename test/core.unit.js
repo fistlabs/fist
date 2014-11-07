@@ -89,7 +89,7 @@ describe('core/unit', function () {
 
             tracker.unit({
                 name: 'x',
-                data: 42
+                main: 42
             });
 
             tracker.ready().always(function () {
@@ -111,7 +111,7 @@ describe('core/unit', function () {
                 name: 'test',
                 spy: [],
                 _maxAge: 0,
-                data: function () {
+                main: function () {
                     this.spy.push(1);
 
                     return this.spy;
@@ -139,7 +139,7 @@ describe('core/unit', function () {
                 name: 'test',
                 spy: [],
                 _maxAge: 10000,
-                data: function () {
+                main: function () {
                     this.spy.push(1);
 
                     throw this.spy;
@@ -166,7 +166,7 @@ describe('core/unit', function () {
             tracker.unit({
                 name: 'test-42',
                 _maxAge: 10000,
-                data: function () {
+                main: function () {
 
                     return 42;
                 },
@@ -179,7 +179,7 @@ describe('core/unit', function () {
             tracker.unit({
                 name: 'test-43',
                 base: 'test-42',
-                data: function () {
+                main: function () {
 
                     return 43;
                 }
@@ -218,7 +218,7 @@ describe('core/unit', function () {
                 name: 'test',
                 spy: [],
                 _maxAge: 10000,
-                data: function () {
+                main: function () {
                     this.spy.push(1);
 
                     return this.spy;
@@ -249,7 +249,7 @@ describe('core/unit', function () {
             tracker.unit({
                 name: 'test',
                 _maxAge: 10000,
-                data: function () {
+                main: function () {
                     spy.push(1);
 
                     return new Control();
@@ -276,7 +276,7 @@ describe('core/unit', function () {
             tracker.unit({
                 name: 'test',
                 _maxAge: 10000,
-                data: function () {
+                main: function () {
                     spy.push(1);
                 }
             });
@@ -301,7 +301,7 @@ describe('core/unit', function () {
             tracker.unit({
                 name: 'test',
                 _maxAge: 10000,
-                data: 42
+                main: 42
             });
 
             tracker.channel('ctx').on('cache', function (e) {

@@ -126,7 +126,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 name: 'a',
                 deps: ['b', 'c'],
-                data: function (track, context) {
+                main: function (track, context) {
                     context.trigger('notify', 'a');
 
                     return 'a';
@@ -136,7 +136,7 @@ describe('core/tracker', function () {
             tracker.unit({
                 name: 'b',
                 deps: ['c'],
-                data: function (track, context) {
+                main: function (track, context) {
                     context.trigger('notify', 'b');
 
                     throw 'b';
@@ -145,7 +145,7 @@ describe('core/tracker', function () {
 
             tracker.unit({
                 name: 'c',
-                data: function (track, context) {
+                main: function (track, context) {
                     context.trigger('notify', 'c');
 
                     return 'c';
@@ -185,7 +185,7 @@ describe('core/tracker', function () {
 
             tracker.unit({
                 name: 'a',
-                data: function () {
+                main: function () {
 
                     return skip;
                 }
@@ -194,18 +194,18 @@ describe('core/tracker', function () {
             tracker.unit({
                 name: 'b',
                 deps: ['a'],
-                data: 'b'
+                main: 'b'
             });
 
             tracker.unit({
                 name: 'c',
-                data: 'c'
+                main: 'c'
             });
 
             tracker.unit({
                 name: 'd',
                 deps: ['b', 'c'],
-                data: 'd'
+                main: 'd'
             });
 
             tracker.ready().always(function () {

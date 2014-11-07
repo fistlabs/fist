@@ -6,7 +6,7 @@ var app = fist();
 app.unit({
     name: 'a',
     deps: ['b'],
-    data: function (track) {
+    main: function (track) {
 
         return track.send();
     }
@@ -15,7 +15,7 @@ app.unit({
 app.unit({
     name: 'b',
     deps: ['c'],
-    data: function () {
+    main: function () {
 
         return 'b';
     }
@@ -23,7 +23,7 @@ app.unit({
 
 app.unit({
     name: 'c',
-    data: function () {
+    main: function () {
 
         return 'c';
     }

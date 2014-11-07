@@ -33,7 +33,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'front',
             deps: ['model'],
-            data: function (track, context) {
+            main: function (track, context) {
                 assert.ok(!context.errors.get('model'));
 
                 return context.track.send(context.result.get('model'));
@@ -54,7 +54,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
 
         app.unit({
             name: 'back',
-            data: function (track, context) {
+            main: function (track, context) {
 
                 return context.track.send({x: 42});
             }
@@ -85,7 +85,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'front',
             deps: ['model'],
-            data: function (track, context) {
+            main: function (track, context) {
                 assert.ok(!context.errors.get('model'));
 
                 return context.track.send(context.result.get('model'));
@@ -109,7 +109,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
 
         app.unit({
             name: 'back',
-            data: function (track, context) {
+            main: function (track, context) {
 
                 return context.track.send({x: 42});
             }
@@ -138,7 +138,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'front',
             deps: ['model'],
-            data: function (track, context) {
+            main: function (track, context) {
 
                 return context.track.send(context.errors.get('model'));
             }
@@ -184,7 +184,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'front',
             deps: ['model'],
-            data: function (track, context) {
+            main: function (track, context) {
 
                 return context.track.send(context.errors.get('model'));
             }
@@ -230,7 +230,7 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'front',
             deps: ['model'],
-            data: function (track, context) {
+            main: function (track, context) {
                 assert.ok(context.getErr('model'));
 
                 throw context.getErr('model');
