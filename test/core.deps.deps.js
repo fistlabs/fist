@@ -135,7 +135,7 @@ describe('core/deps/deps', function () {
 
     describe('.toJSON', function () {
         it('Should serialize to JSON', function () {
-            var context = new Deps();
+            var context = new Deps({track: {}});
             stdAssert.deepEqual(context.toJSON(), {
                 params: {},
                 result: {},

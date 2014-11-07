@@ -113,7 +113,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     args: function () {
 
         if (!this.__args) {
-            this.__args  = this._dumpArgs();
+            this.__args = _.extend({}, this.track.args, this.params);
         }
 
         return this.__args;
@@ -204,18 +204,6 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     },
 
     /**
-     * @protected
-     * @memberOf {Deps}
-     * @method
-     *
-     * @returns {Object}
-     * */
-    _dumpArgs: function () {
-
-        return this.params;
-    },
-
-    /**
      * @private
      * @memberOf {Deps}
      * @method
@@ -229,9 +217,9 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /** @this {Deps} */
         promise.done(function (data) {
-            this.result.set(path, data);
+            Obus.prototype.set.call(this.result, path, data);
         }, function (data) {
-            this.errors.set(path, data);
+            Obus.prototype.set.call(this.errors, path, data);
         }, this);
 
         return promise;
