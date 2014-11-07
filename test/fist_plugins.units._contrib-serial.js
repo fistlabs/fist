@@ -19,7 +19,7 @@ describe('fist_plugins/units/_contrib-serial', function () {
 
         tracker.unit({
             base: '_contrib-serial',
-            path: 'test',
+            name: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
 
@@ -55,7 +55,7 @@ describe('fist_plugins/units/_contrib-serial', function () {
 
         tracker.unit({
             base: '_contrib-serial',
-            path: 'test',
+            name: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
 
@@ -93,7 +93,7 @@ describe('fist_plugins/units/_contrib-serial', function () {
 
         tracker.unit({
             base: '_contrib-serial',
-            path: 'test',
+            name: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
 
@@ -136,7 +136,7 @@ describe('fist_plugins/units/_contrib-serial', function () {
 
         tracker.unit({
             base: '_contrib-serial',
-            path: 'test',
+            name: 'test',
             _steps: ['a', 'b'],
             _$a: function () {
 

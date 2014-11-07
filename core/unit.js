@@ -70,7 +70,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @property
      * @type {String}
      * */
-    path: '_' + uniqueId(),
+    name: '_' + uniqueId(),
 
     /**
      * @public
@@ -104,9 +104,9 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     delDeps: function () {
         var args = _.flatten(arguments);
 
-        this.deps = _.reject(this.deps, function (path) {
+        this.deps = _.reject(this.deps, function (name) {
 
-            return _.contains(args, path);
+            return _.contains(args, name);
         });
     },
 
@@ -248,7 +248,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
     __getCacheKey: function (context) {
         var parts = this._getCacheKeyParts(context.track, context);
 
-        parts = parts.concat(this.path);
+        parts = parts.concat(this.name);
 
         return parts.join(S_SEPARATOR);
     },

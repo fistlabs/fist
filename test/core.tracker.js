@@ -111,20 +111,20 @@ describe('core/tracker', function () {
 
             tracker.channel('ctx').on('pending', function (e) {
                 assert.strictEqual(e.trackId, track.id);
-                spy.push([-1, e.path]);
+                spy.push([-1, e.unit]);
             }).on('notify', function (e) {
                 assert.strictEqual(e.trackId, track.id);
-                spy.push([2, e.path]);
+                spy.push([2, e.unit]);
             }).on('accept', function (e) {
                 assert.strictEqual(e.trackId, track.id);
-                spy.push([0, e.path]);
+                spy.push([0, e.unit]);
             }).on('reject', function (e) {
                 assert.strictEqual(e.trackId, track.id);
-                spy.push([1, e.path]);
+                spy.push([1, e.unit]);
             });
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 deps: ['b', 'c'],
                 data: function (track, context) {
                     context.trigger('notify', 'a');
@@ -134,7 +134,7 @@ describe('core/tracker', function () {
             });
 
             tracker.unit({
-                path: 'b',
+                name: 'b',
                 deps: ['c'],
                 data: function (track, context) {
                     context.trigger('notify', 'b');
@@ -144,7 +144,7 @@ describe('core/tracker', function () {
             });
 
             tracker.unit({
-                path: 'c',
+                name: 'c',
                 data: function (track, context) {
                     context.trigger('notify', 'c');
 
@@ -184,7 +184,7 @@ describe('core/tracker', function () {
             var skip = new Control();
 
             tracker.unit({
-                path: 'a',
+                name: 'a',
                 data: function () {
 
                     return skip;
@@ -192,18 +192,18 @@ describe('core/tracker', function () {
             });
 
             tracker.unit({
-                path: 'b',
+                name: 'b',
                 deps: ['a'],
                 data: 'b'
             });
 
             tracker.unit({
-                path: 'c',
+                name: 'c',
                 data: 'c'
             });
 
             tracker.unit({
-                path: 'd',
+                name: 'd',
                 deps: ['b', 'c'],
                 data: 'd'
             });

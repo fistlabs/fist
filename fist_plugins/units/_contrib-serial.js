@@ -10,7 +10,7 @@ module.exports = function () {
 
     this.unit({
 
-        path: '_contrib-serial',
+        name: '_contrib-serial',
 
         data: function (track, context) {
 

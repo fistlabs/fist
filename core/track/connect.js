@@ -369,14 +369,14 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @memberOf {Track}
      * @method
      *
-     * @param {String} path
+     * @param {String} name
      * @param {Object} params
      *
      * @returns {Deps}
      * */
-    _createContext: function (path, params) {
+    _createContext: function (name, params) {
 
-        return new Context(this, path, params);
+        return new Context(this, name, params);
     }
 
 });

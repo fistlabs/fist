@@ -85,7 +85,7 @@ var BaseConflictError = inherit(ReferenceError, {
     __formatConflictDetails: function (decl) {
         var members = decl.members;
 
-        return util.format('%s (requires %s)', members.path, members.base);
+        return util.format('%s (requires %s)', members.name, members.base);
     }
 
 });

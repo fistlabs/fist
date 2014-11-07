@@ -15,12 +15,12 @@ var DepsConflictError = inherit(ReferenceError, {
      * @memberOf {DepsConflictError}
      * @method
      *
-     * @param {Array} paths
+     * @param {Array} names
      *
      * @constructs
      * */
-    __constructor: function (paths) {
-        var msg = DepsConflictError.__formatConflictsDetails(paths);
+    __constructor: function (names) {
+        var msg = DepsConflictError.__formatConflictsDetails(names);
         var err = new ReferenceError(msg);
 
         err.name = this.name;
@@ -60,12 +60,12 @@ var DepsConflictError = inherit(ReferenceError, {
      * @memberOf DepsConflictError
      * @method
      *
-     * @param {Array} paths
+     * @param {Array} names
      *
      * @returns {String}
      * */
-    __formatConflictsDetails: function (paths) {
-        var details = _.map(paths, DepsConflictError.__formatConflictDetails);
+    __formatConflictsDetails: function (names) {
+        var details = _.map(names, DepsConflictError.__formatConflictDetails);
 
         details = details.join(', ');
 
@@ -78,13 +78,13 @@ var DepsConflictError = inherit(ReferenceError, {
      * @memberOf DepsConflictError
      * @method
      *
-     * @param {Array} path
+     * @param {Array} name
      *
      * @returns {String}
      * */
-    __formatConflictDetails: function (path) {
+    __formatConflictDetails: function (name) {
 
-        return path.join(' < ');
+        return name.join(' < ');
     }
 
 });

@@ -2,6 +2,6 @@
 
 module.exports = [
     {
-        path: 'u1'
+        name: 'u1'
     }
 ];
