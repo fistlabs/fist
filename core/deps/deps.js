@@ -66,12 +66,12 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         this.unit = path;
 
         /**
-         * @private
+         * @public
          * @memberOf {Deps}
          * @property
          * @type {Date}
          * */
-        this.__creationDate = new Date();
+        this.date = new Date();
     },
 
     /**
@@ -100,23 +100,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @returns {*}
      * */
     arg: function (path, defaultValue) {
-        return Obus.prototype.get.call(this.args(), path, defaultValue);
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @returns {*}
-     * */
-    args: function () {
-
-        if (!this.__args) {
-            this.__args = _.extend({}, this.track.args, this.params);
-        }
-
-        return this.__args;
+        return Obus.prototype.get.call(this.params, path, defaultValue);
     },
 
     /**
@@ -182,7 +166,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         this.track.agent.channel('ctx').emit(event, {
             path: this.unit,
             data: data,
-            time: new Date() - this.__creationDate,
+            time: new Date() - this.date,
             trackId: this.track.id
         });
     },
@@ -197,7 +181,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     toJSON: function () {
 
         return {
-            params: this.args(),
+            params: this.params,
             errors: this.errors,
             result: this.result
         };

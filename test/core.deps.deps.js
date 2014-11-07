@@ -37,7 +37,7 @@ describe('core/deps/deps', function () {
 
     describe('new Deps(track, path, params)', function () {
         var params = {a: 42};
-        var ctx = new Deps(null, null, params);
+        var ctx = new Deps({}, null, params);
 
         it('Should have a "params" property', function () {
             assert.property(ctx, 'params');
@@ -84,22 +84,6 @@ describe('core/deps/deps', function () {
         });
     });
 
-    describe('.args', function () {
-
-        it('Should return args', function () {
-            var ctx = new Deps(track, 'c', {
-                a: 42
-            });
-            var args = ctx.args();
-
-            assert.deepEqual(args, {
-                a: 42
-            });
-
-            assert.strictEqual(args, ctx.args());
-        });
-    });
-
     describe('.arg', function () {
         it('Should return parameter', function () {
             var ctx = new Deps(track, 'c', {
@@ -135,7 +119,7 @@ describe('core/deps/deps', function () {
 
     describe('.toJSON', function () {
         it('Should serialize to JSON', function () {
-            var context = new Deps({track: {}});
+            var context = new Deps({});
             stdAssert.deepEqual(context.toJSON(), {
                 params: {},
                 result: {},
