@@ -79,7 +79,7 @@ describe('core/server', function () {
 
         server.unit({
             name: 'index',
-            data: function (track, context) {
+            main: function (track, context) {
 
                 return context.track.send(201);
             }
@@ -112,7 +112,7 @@ describe('core/server', function () {
 
         server.unit({
             name: 'index',
-            data: function (track, context) {
+            main: function (track, context) {
 
                 return context.track.send(201);
             }
@@ -246,14 +246,14 @@ describe('core/server', function () {
 
         server.unit({
             name: 'preset',
-            data: function (track, context) {
+            main: function (track, context) {
                 context.track.url.query.role = 'admin';
             }
         });
 
         server.unit({
             name: 'index',
-            data: function (track, context) {
+            main: function (track, context) {
                 assert.deepEqual(context.track.url.query, {
                     role: 'admin'
                 });
@@ -324,7 +324,7 @@ describe('core/server', function () {
 
             server.unit({
                 name: 'rewrite',
-                data: function (track, context) {
+                main: function (track, context) {
 
                     return context.track.rewrite('/test/?a=42');
                 }
@@ -332,7 +332,7 @@ describe('core/server', function () {
 
             server.unit({
                 name: 'control',
-                data: function (track, context) {
+                main: function (track, context) {
                     assert.strictEqual(context.arg('page'), 'test');
                     assert.strictEqual(context.track.url.path, '/test/?a=42');
 

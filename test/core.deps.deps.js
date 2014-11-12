@@ -53,7 +53,7 @@ describe('core/deps/deps', function () {
 
             tracker.unit({
                 name: 'a',
-                data: 42
+                main: 42
             });
 
             tracker.ready().done(function () {

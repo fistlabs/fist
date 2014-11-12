@@ -118,23 +118,22 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @memberOf {Server}
      * @method
      *
-     * @param {String} rule
-     * @param {{unit?:String, name?:String}|String} [data]
+     * @param {String} ruleString
+     * @param {{unit?:String, name?:String}|String} [ruleData]
      *
      * @returns {Server}
      * */
-    route: function (rule, data) {
-        var route;
+    route: function (ruleString, ruleData) {
 
-        if (!_.isObject(data)) {
-            data = {name: data};
+        if (!_.isObject(ruleData)) {
+            ruleData = {name: ruleData};
         }
 
-        route = this.router.addRule(rule, data);
-
-        if (_.isUndefined(route.data.unit) || _.isNull(route.data.unit)) {
-            route.data.unit = route.data.name;
+        if (_.isUndefined(ruleData.unit) || _.isNull(ruleData.unit)) {
+            ruleData.unit = ruleData.name;
         }
+
+        this.router.addRule(ruleString, ruleData);
 
         return this;
     },
