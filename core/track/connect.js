@@ -2,7 +2,6 @@
 
 var REDIRECT_CODES = [300, 301, 302, 303, 305, 307];
 
-var Context = /** @type Context */ require('../deps/context');
 var Negotiator = /** @type Negotiator */ require('negotiator');
 var Request = /** @type Request */ require('./request');
 var Respond = require('../control/respond');
@@ -358,21 +357,6 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
         }
 
         return this.response.respond(status, body);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Track}
-     * @method
-     *
-     * @param {String} name
-     * @param {Object} params
-     *
-     * @returns {Deps}
-     * */
-    _createContext: function (name, params) {
-
-        return new Context(this, name, params);
     }
 
 });

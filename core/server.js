@@ -28,18 +28,6 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
         this.__base(params);
 
         /**
-         * TODO remove this behaviour
-         *
-         * Шаблоны для track.render()
-         *
-         * @public
-         * @memberOf {Server}
-         * @property
-         * @type {Object<Function>}
-         * */
-        this.renderers = {};
-
-        /**
          * @public
          * @memberOf {Server}
          * @property

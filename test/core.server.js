@@ -27,7 +27,6 @@ describe('core/server', function () {
     it('Should be an instance of core/server', function () {
         var server = new Server();
 
-        assert.deepEqual(server.renderers, {});
         assert.instanceOf(server.router, Router);
     });
 

@@ -8,13 +8,13 @@ var inherit = require('inherit');
 var vow = require('vow');
 
 /**
- * @class Deps
+ * @class Context
  * */
-var Deps = inherit(/** @lends Deps.prototype */ {
+var Context = inherit(/** @lends Context.prototype */ {
 
     /**
      * @protected
-     * @memberOf {Deps}
+     * @memberOf {Context}
      * @method
      *
      * @param {Track} track
@@ -27,7 +27,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /**
          * @public
-         * @memberOf {Deps}
+         * @memberOf {Context}
          * @property
          * @type {Obus}
          * */
@@ -35,7 +35,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /**
          * @public
-         * @memberOf {Deps}
+         * @memberOf {Context}
          * @property
          * @type {Obus}
          * */
@@ -43,7 +43,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /**
          * @public
-         * @memberOf {Deps}
+         * @memberOf {Context}
          * @property
          * @type {Object}
          * */
@@ -51,7 +51,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /**
          * @public
-         * @memberOf {Deps}
+         * @memberOf {Context}
          * @property
          * @type {Track}
          * */
@@ -59,7 +59,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /**
          * @public
-         * @memberOf {Deps}
+         * @memberOf {Context}
          * @property
          * @type {String}
          * */
@@ -67,7 +67,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /**
          * @public
-         * @memberOf {Deps}
+         * @memberOf {Context}
          * @property
          * @type {Logger}
          * */
@@ -76,7 +76,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
     /**
      * @public
-     * @memberOf {Deps}
+     * @memberOf {Context}
      * @method
      *
      * @param {Array<String>} deps
@@ -91,7 +91,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
     /**
      * @public
-     * @memberOf {Deps}
+     * @memberOf {Context}
      * @method
      *
      * @param {String} path
@@ -105,7 +105,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
     /**
      * @public
-     * @memberOf {Deps}
+     * @memberOf {Context}
      * @method
      *
      * @returns {vow.Promise}
@@ -118,7 +118,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         this.logger.debug('Pending...');
 
-        /** @this {Deps} */
+        /** @this {Context} */
         defer.promise().then(function () {
             var date = new Date();
             this.logger.note('Accept in %dms (%dms)',
@@ -167,7 +167,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
     /**
      * @public
-     * @memberOf {Deps}
+     * @memberOf {Context}
      * @method
      *
      * @returns {Object}
@@ -183,7 +183,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
     /**
      * @private
-     * @memberOf {Deps}
+     * @memberOf {Context}
      * @method
      *
      * @param {String} name
@@ -193,7 +193,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
     __resolveAndSet: function (name) {
         var promise = this.track.invoke(name);
 
-        /** @this {Deps} */
+        /** @this {Context} */
         promise.done(function (data) {
             Obus.set(this.result, name, data);
         }, function (data) {
@@ -205,4 +205,4 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
 });
 
-module.exports = Deps;
+module.exports = Context;

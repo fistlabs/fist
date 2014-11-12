@@ -1,6 +1,6 @@
 'use strict';
 
-var Deps = /** @type Deps */ require('../deps/deps');
+var Context = /** @type Context */ require('../context/context');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
@@ -104,11 +104,11 @@ var Track = inherit(/** @lends Track.prototype */{
      * @param {String} name
      * @param {Object} [args]
      *
-     * @returns {Deps}
+     * @returns {Context}
      * */
     _createContext: function (name, args) {
 
-        return new Deps(this, name, args);
+        return new Context(this, name, args);
     },
 
     /**

@@ -8,16 +8,16 @@ var _ = require('lodash-node');
 var assert = require('chai').assert;
 var stdAssert = require('assert');
 
-describe('core/deps/deps', function () {
+describe('core/context/context', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
-    var Deps = require('../core/deps/deps');
+    var Context = require('../core/context/context');
     var tracker = new Tracker({
         appName: 'foo'
     });
     var track = new Track(tracker);
 
-    describe('new Deps()', function () {
-        var ctx = new Deps(track);
+    describe('new Context()', function () {
+        var ctx = new Context(track);
 
         var props = [
             'result',
@@ -32,15 +32,15 @@ describe('core/deps/deps', function () {
             });
         });
 
-        it('Should be an instance of Deps', function () {
-            assert.instanceOf(ctx, Deps);
+        it('Should be an instance of Context', function () {
+            assert.instanceOf(ctx, Context);
         });
 
     });
 
-    describe('new Deps(track, path, params)', function () {
+    describe('new Context(track, path, params)', function () {
         var params = {a: 42};
-        var ctx = new Deps(track, null, params);
+        var ctx = new Context(track, null, params);
 
         it('Should have a "params" property', function () {
             assert.property(ctx, 'params');
@@ -52,7 +52,7 @@ describe('core/deps/deps', function () {
 
     describe('.append', function () {
         it('Should append deps', function (done) {
-            var ctx = new Deps(track, 'c');
+            var ctx = new Context(track, 'c');
 
             tracker.unit({
                 name: 'a',
@@ -74,7 +74,7 @@ describe('core/deps/deps', function () {
 
     describe('.arg', function () {
         it('Should return parameter', function () {
-            var ctx = new Deps(track, 'c', {
+            var ctx = new Context(track, 'c', {
                 a: 42
             });
 
@@ -82,7 +82,7 @@ describe('core/deps/deps', function () {
         });
 
         it('Should support paths', function () {
-            var ctx = new Deps(track, 'c', {
+            var ctx = new Context(track, 'c', {
                 a: {
                     b: 42
                 }
@@ -92,13 +92,13 @@ describe('core/deps/deps', function () {
         });
 
         it('Should not fail if no params', function () {
-            var ctx = new Deps(track, 'c');
+            var ctx = new Context(track, 'c');
 
             assert.strictEqual(ctx.arg('a.b'), void 0);
         });
 
         it('Should support default value', function () {
-            var ctx = new Deps(track, 'c');
+            var ctx = new Context(track, 'c');
             var def = {};
 
             assert.strictEqual(ctx.arg('a.b', def), def);
@@ -107,7 +107,7 @@ describe('core/deps/deps', function () {
 
     describe('.toJSON', function () {
         it('Should serialize to JSON', function () {
-            var context = new Deps(track);
+            var context = new Context(track);
             stdAssert.deepEqual(context.toJSON(), {
                 params: {},
                 result: {},

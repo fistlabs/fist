@@ -88,7 +88,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {*}
      * */
@@ -115,7 +115,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {*}
      * */
@@ -156,7 +156,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      *
      * @param {String} key
      * @param {*} value
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {*}
      * */
@@ -184,7 +184,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {Array<String>}
      * */
@@ -198,7 +198,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {*}
      * */
@@ -221,7 +221,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {vow.Promise}
      * */
@@ -241,7 +241,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @memberOf {Unit}
      * @method
      *
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {String}
      * */
@@ -259,7 +259,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} key
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {vow.Promise}
      * */
@@ -288,7 +288,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * @method
      *
      * @param {String} cacheKey
-     * @param {Deps} context
+     * @param {Context} context
      *
      * @returns {vow.Promise}
      * */
