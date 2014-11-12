@@ -10,14 +10,12 @@ describe('core/agent', function () {
     var Unit = require('../core/unit');
 
     it('Should be an instance of core/agent', function () {
-        var EventEmitter = require('events').EventEmitter;
         var agent = new Agent({x: 42});
 
         assert.property(agent, 'params');
         assert.isObject(agent.params);
         assert.property(agent.params, 'x');
         assert.strictEqual(agent.params.x, 42);
-        assert.instanceOf(agent, EventEmitter);
         assert.instanceOf(agent, Agent);
         assert.isObject(agent.units);
     });
@@ -211,37 +209,6 @@ describe('core/agent', function () {
             assert.ok(!_.isEmpty(agent.units));
             done();
         });
-    });
-
-    it('Should emit sys@ready on init', function (done) {
-        var agent = new Agent();
-
-        agent.unit({
-            name: 'a'
-        });
-
-        agent.channel('sys').on('ready', function () {
-            assert.instanceOf(agent.getUnit('a'), Unit);
-            done();
-        });
-
-        agent.ready();
-    });
-
-    it('Should emit sys@eready on init error', function (done) {
-        var agent = new Agent();
-
-        agent.unit({
-            name: 'a',
-            deps: ['a']
-        });
-
-        agent.channel('sys').on('eready', function (err) {
-            assert.instanceOf(err, ReferenceError);
-            done();
-        });
-
-        agent.ready();
     });
 
     it('Should not share abstract units', function (done) {

@@ -43,9 +43,9 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'model',
             base: '_contrib-asker',
-            _$options: function (context) {
+            _$options: function (track, context) {
 
-                return _.extend(this.__base(context), {
+                return _.extend(this.__base(track, context), {
                     path: '/backend/',
                     socketPath: sock
                 });
@@ -95,9 +95,9 @@ describe('fist_plugins/units/_contrib-asker', function () {
         app.unit({
             name: 'model',
             base: '_contrib-asker',
-            _$options: function (context) {
+            _$options: function (track, context) {
 
-                return _.extend(this.__base(context), {
+                return _.extend(this.__base(track, context), {
                     path: new Rule('/<token>/'),
                     socketPath: sock,
                     vars: {
@@ -109,9 +109,9 @@ describe('fist_plugins/units/_contrib-asker', function () {
 
         app.unit({
             name: 'back',
-            main: function (track, context) {
+            main: function (track) {
 
-                return context.track.send({x: 42});
+                return track.send({x: 42});
             }
         });
 
@@ -231,9 +231,9 @@ describe('fist_plugins/units/_contrib-asker', function () {
             name: 'front',
             deps: ['model'],
             main: function (track, context) {
-                assert.ok(context.getErr('model'));
+                assert.ok(context.errors.get('model'));
 
-                throw context.getErr('model');
+                throw context.errors.get('model');
             }
         });
 

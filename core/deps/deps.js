@@ -18,12 +18,12 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {String} name
+     * @param {String} unit
      * @param {Object} [params]
      *
      * @constructs
      * */
-    __constructor: function (track, name, params) {
+    __constructor: function (track, unit, params) {
 
         /**
          * @public
@@ -63,15 +63,15 @@ var Deps = inherit(/** @lends Deps.prototype */ {
          * @property
          * @type {String}
          * */
-        this.unit = name;
+        this.unit = unit;
 
         /**
          * @public
          * @memberOf {Deps}
          * @property
-         * @type {Date}
+         * @type {Logger}
          * */
-        this.date = new Date();
+        this.logger = this.track.logger.bind(this.unit);
     },
 
     /**
@@ -111,19 +111,29 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @returns {vow.Promise}
      * */
     execute: function () {
+        var fullExecStartDate = new Date();
+        var mainExecStartDate = fullExecStartDate;
         var defer = vow.defer();
         var unit = this.track.agent.getUnit(this.unit);
 
-        this.trigger('pending');
+        this.logger.debug('Pending...');
 
         /** @this {Deps} */
-        defer.promise().then(function (data) {
-            this.trigger('accept', data);
+        defer.promise().then(function () {
+            var date = new Date();
+            this.logger.note('Accept in %dms (%dms)',
+                date - fullExecStartDate,
+                date - mainExecStartDate);
         }, function (data) {
-            this.trigger('reject', data);
+            var date = new Date();
+            this.logger.warn('Reject in %dms (%dms) %s',
+                date - fullExecStartDate,
+                date - mainExecStartDate,
+                data, data);
         }, this);
 
         if (_.isUndefined(unit)) {
+            this.logger.error('No such unit');
             defer.reject(new Control());
 
             return defer.promise();
@@ -136,6 +146,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         }
 
         defer.resolve(this.append(unit.deps).then(function (promises) {
+            mainExecStartDate = new Date();
             var promise = _.find(promises, function (promise) {
                 //  Both rejects and accepts
                 return promise.valueOf() instanceof Control;
@@ -152,23 +163,6 @@ var Deps = inherit(/** @lends Deps.prototype */ {
         }, this));
 
         return defer.promise();
-    },
-
-    /**
-     * @public
-     * @memberOf {Deps}
-     * @method
-     *
-     * @param {String} event
-     * @param {*} [data]
-     * */
-    trigger: function (event, data) {
-        this.track.agent.channel('ctx').emit(event, {
-            unit: this.unit,
-            data: data,
-            time: new Date() - this.date,
-            trackId: this.track.id
-        });
     },
 
     /**

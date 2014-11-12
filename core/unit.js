@@ -142,7 +142,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             delete value.fresh;
 
             this.__setCache(key, value, context).fail(function (err) {
-                context.trigger('ecache', err);
+                context.logger.warn('Failed to set cache', err);
             });
 
             return data;
@@ -268,7 +268,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
         return this.__getCache(key, context).then(function (res) {
 
             if (_.isObject(res)) {
-                context.trigger('cache', res.data);
+                context.logger.debug('Using cache');
 
                 return res;
             }
@@ -276,8 +276,7 @@ var Unit = inherit(/** @lends Unit.prototype */ {
             return this.__callAndWrap(context);
 
         }, function (err) {
-            //  ошибка забора из кэша
-            context.trigger('ecache', err);
+            context.logger.warn('Failed to load cache', err);
 
             return this.__callAndWrap(context);
         }, this);

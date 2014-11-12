@@ -59,17 +59,48 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * */
     getHandler: function () {
         var self = this;
-        var sys = self.channel('sys');
 
         return function (req, res) {
-            var date = new Date();
+            var execStartDate = new Date();
             var track = self._createTrack(req, res);
 
-            sys.emit('request', track);
+            track.logger.info('Incoming %s %s\n', req.method, req.url, req.headers);
+
             self.handle(track).done(function (resp) {
+                var statusCode = res.statusCode;
+                var statusText = http.STATUS_CODES[statusCode] || String(statusCode);
+                var logRecorder;
+
                 Response.end(res, resp);
-                track.time = new Date() - date;
-                sys.emit('response', track);
+
+                switch (true) {
+
+                    case statusCode >= 500:
+                        //  Server errors
+                        logRecorder = 'error';
+
+                        break;
+
+                    case statusCode >= 400:
+                        //  Client errors
+                        logRecorder = 'warn';
+
+                        break;
+
+                    case statusCode >= 300:
+                        //  Redirects
+                        logRecorder = 'log';
+
+                        break;
+
+                    default:
+                        //  Usual cases
+                        logRecorder = 'info';
+
+                        break;
+                }
+
+                track.logger[logRecorder]('%d (%s) %dms', statusCode, statusText, new Date() - execStartDate);
             });
         };
     },

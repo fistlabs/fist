@@ -198,7 +198,6 @@ describe('core/unit', function () {
         });
 
         it('Should not cache coz of error', function (done) {
-            var e = [];
             var SlyTracker = inherit(Tracker, {
                 _createCache: function (p) {
 
@@ -209,10 +208,6 @@ describe('core/unit', function () {
             });
 
             var tracker = new SlyTracker();
-
-            tracker.channel('ctx').on('ecache', function (event) {
-                e.push(event.data);
-            });
 
             tracker.unit({
                 name: 'test',
@@ -229,12 +224,10 @@ describe('core/unit', function () {
                 new Track(tracker).invoke('test').
                     then(function (spy) {
                         assert.deepEqual(spy, [1]);
-                        assert.deepEqual(e, [42, 42]);
                     }).always(function () {
                         new Track(tracker).invoke('test').
                             then(function (spy) {
                                 assert.deepEqual(spy, [1, 1]);
-                                assert.deepEqual(e, [42, 42, 42, 42]);
 
                                 done();
                             }).done();
@@ -285,34 +278,6 @@ describe('core/unit', function () {
                 new Track(tracker).invoke('test').then(function () {
                     assert.deepEqual(spy, [1]);
                 }).always(function () {
-                    new Track(tracker).invoke('test').
-                        then(function () {
-                            assert.deepEqual(spy, [1]);
-                            done();
-                        }).done();
-                }).done();
-            });
-        });
-
-        it('Should emit ctx@cache', function (done) {
-            var tracker = new Tracker();
-            var spy = [];
-
-            tracker.unit({
-                name: 'test',
-                _maxAge: 10000,
-                main: 42
-            });
-
-            tracker.channel('ctx').on('cache', function (e) {
-                assert.strictEqual(e.unit, 'test');
-                assert.isNumber(e.time);
-                assert.strictEqual(e.data, 42);
-                spy.push(1);
-            });
-
-            tracker.ready().always(function () {
-                new Track(tracker).invoke('test').always(function () {
                     new Track(tracker).invoke('test').
                         then(function () {
                             assert.deepEqual(spy, [1]);

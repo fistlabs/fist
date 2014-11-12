@@ -11,7 +11,9 @@ var stdAssert = require('assert');
 describe('core/deps/deps', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
     var Deps = require('../core/deps/deps');
-    var tracker = new Tracker();
+    var tracker = new Tracker({
+        appName: 'foo'
+    });
     var track = new Track(tracker);
 
     describe('new Deps()', function () {
@@ -19,7 +21,8 @@ describe('core/deps/deps', function () {
 
         var props = [
             'result',
-            'errors'
+            'errors',
+            'logger'
         ];
 
         _.forEach(props, function (prop) {
@@ -37,7 +40,7 @@ describe('core/deps/deps', function () {
 
     describe('new Deps(track, path, params)', function () {
         var params = {a: 42};
-        var ctx = new Deps({}, null, params);
+        var ctx = new Deps(track, null, params);
 
         it('Should have a "params" property', function () {
             assert.property(ctx, 'params');
@@ -66,21 +69,6 @@ describe('core/deps/deps', function () {
                 });
             });
 
-        });
-    });
-
-    describe('.trigger', function () {
-        it('Should trigger the event', function (done) {
-            var ctx = new Deps(track, 'c');
-
-            tracker.channel('ctx').on('my-event', function (e) {
-                assert.strictEqual(e.trackId, track.id);
-                assert.strictEqual(e.unit, 'c');
-                assert.strictEqual(e.data, 42);
-                done();
-            });
-
-            ctx.trigger('my-event', 42);
         });
     });
 
@@ -119,7 +107,7 @@ describe('core/deps/deps', function () {
 
     describe('.toJSON', function () {
         it('Should serialize to JSON', function () {
-            var context = new Deps({});
+            var context = new Deps(track);
             stdAssert.deepEqual(context.toJSON(), {
                 params: {},
                 result: {},

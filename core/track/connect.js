@@ -117,18 +117,17 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @returns {vow.Promise}
      * */
     run: function () {
-        var sys = this.agent.channel('sys');
         var matches = this.matches;
 
         if (!matches) {
-            sys.emit('ematch', this);
+            this.logger.warn('There is no %s handlers', this.method);
             return this.response.respond(501);
         }
 
         if (!_.size(matches)) {
             matches = this.agent.router.matchVerbs(this.url.path);
             if (_.size(matches)) {
-                sys.emit('ematch', this);
+                this.logger.warn('The method %s is not allowed for url %s', this.method, this.url.path);
                 this.header('Allow', matches.join(', '));
                 return this.response.respond(405);
             }
@@ -145,21 +144,18 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * @returns {vow.Promise}
      * */
     __next: function () {
-        var sys = this.agent.channel('sys');
         var matches = this.matches;
         var match = matches.shift();
 
         if (!match) {
-            sys.emit('ematch', this);
+            this.logger.warn('There is no matched routes for %s %s', this.method, this.url.path);
 
             return this.response.respond(404);
         }
 
         this.args = match.args;
-
         this.route = match.data.name;
-
-        sys.emit('match', this);
+        this.logger.info('Match "%s %s" on "%s" route ~', this.method, this.url.path, match.data.name, match.args);
 
         return this.invoke(match.data.unit).then(this.handleAccept, this.handleReject, this);
     },

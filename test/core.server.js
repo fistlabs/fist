@@ -140,15 +140,10 @@ describe('core/server', function () {
     });
 
     it('Should respond 404 if match failed', function (done) {
-        var spy = [];
         var server = new Server();
         var origServer;
 
         server.route('/foo/');
-
-        server.channel('sys').on('ematch', function () {
-            spy.push(1);
-        });
 
         unlink();
 
@@ -165,20 +160,14 @@ describe('core/server', function () {
             }
         }).done(function (res) {
             assert.strictEqual(res.statusCode, 404);
-            assert.deepEqual(spy, [1]);
             origServer.close();
             done();
         });
     });
 
     it('Should return 501 if method handler not implemented', function (done) {
-        var spy = [];
         var server = new Server();
         var origServer;
-
-        server.channel('sys').on('ematch', function () {
-            spy.push(1);
-        });
 
         unlink();
 
@@ -195,25 +184,18 @@ describe('core/server', function () {
             }
         }).done(function (res) {
             assert.strictEqual(res.statusCode, 501);
-            assert.deepEqual(spy, [1]);
             origServer.close();
             done();
         });
     });
 
-    it('Should return 405 if request method ' +
-       'is not implemented', function (done) {
+    it('Should return 405 if request method is not implemented', function (done) {
 
-        var spy = [];
         var server = new Server();
         var origServer;
 
         server.route('GET /foo/', 'foo');
         server.route('POST /', 'upload');
-
-        server.channel('sys').on('ematch', function () {
-            spy.push(1);
-        });
 
         unlink();
 
@@ -231,7 +213,6 @@ describe('core/server', function () {
         }).done(function (res) {
             assert.strictEqual(res.statusCode, 405);
             assert.strictEqual(res.headers.allow, 'POST');
-            assert.deepEqual(spy, [1]);
             origServer.close();
             done();
         });

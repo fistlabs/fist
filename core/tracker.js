@@ -4,6 +4,7 @@ var Agent = /** @type Agent */ require('./agent');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
+var loggin = require('loggin');
 var path = require('path');
 var vow = require('vow');
 var vowFs = require('vow-fs');
@@ -25,6 +26,14 @@ var Tracker = inherit(Agent, /** @lends Tracker.prototype */ {
      * */
     __constructor: function (params) {
         this.__base(params);
+
+        /**
+         * @public
+         * @memberOf {Tracker}
+         * @property
+         * @type {Logger}
+         * */
+        this.logger = loggin.getLogger(this.params.appName);
 
         /**
          *
