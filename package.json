@@ -11,7 +11,7 @@
     ],
     "dependencies": {
         "loggin": "1.0.0-4",
-        "obus": "1.0.0-0",
+        "obus": "1.0.0-1",
         "vow-fs": "0.3.3",
         "vow-asker": "0.7.0",
         "lru-cache": "2.5.0",
