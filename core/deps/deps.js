@@ -100,7 +100,7 @@ var Deps = inherit(/** @lends Deps.prototype */ {
      * @returns {*}
      * */
     arg: function (path, defaultValue) {
-        return Obus.prototype.get.call(this.params, path, defaultValue);
+        return Obus.get(this.params, path, defaultValue);
     },
 
     /**
@@ -195,9 +195,9 @@ var Deps = inherit(/** @lends Deps.prototype */ {
 
         /** @this {Deps} */
         promise.done(function (data) {
-            Obus.prototype.set.call(this.result, name, data);
+            Obus.set(this.result, name, data);
         }, function (data) {
-            Obus.prototype.set.call(this.errors, name, data);
+            Obus.set(this.errors, name, data);
         }, this);
 
         return promise;
