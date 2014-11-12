@@ -5,19 +5,18 @@ var R_PUBLIC_UNIT = /^[a-z]/i;
 var BaseConflictError = require('./error/base-conflict-error');
 var DepsConflictError = require('./error/deps-conflict-error');
 var Cache = /** @type Cache */ require('./cache/cache');
-var Channel = /** @type Channel */ require('./channel');
 var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
 var inherit = require('inherit');
+var loggin = require('loggin');
 var uniqueId = require('unique-id');
 var vow = require('vow');
 
 /**
  * @class Agent
- * @extends Channel
  * */
-var Agent = inherit(Channel, /** @lends Agent.prototype */ {
+var Agent = inherit(/** @lends Agent.prototype */ {
 
     /**
      * @private
@@ -29,8 +28,6 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @param {Object} [params]
      * */
     __constructor: function (params) {
-        this.__base();
-
         params = _.extend({cwd: process.cwd()}, this.params, params);
 
         /**
@@ -64,6 +61,14 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
          * @type {Array}
          * */
         this.__decls = [];
+
+        /**
+         * @public
+         * @memberOf {Agent}
+         * @property
+         * @type {Logger}
+         * */
+        this.logger = loggin.getLogger(this.params.appName);
     },
 
     /**
@@ -149,22 +154,23 @@ var Agent = inherit(Channel, /** @lends Agent.prototype */ {
      * @returns {vow.Promise}
      * */
     ready: function () {
-        var sys = this.channel('sys');
 
         if (this.__ready) {
 
             return this.__ready;
         }
 
-        sys.emit('pending');
+        this.logger.debug('Pending...');
 
         this.__ready = this._getReady();
 
+        /** @this {Agent} */
         this.__ready.then(function () {
-            sys.emit('ready');
+            this.logger.note('Ready.');
         }, function (err) {
-            sys.emit('eready', err);
-        });
+            this.logger.fatal('Failed to start application', err);
+            throw err;
+        }, this);
 
         return this.__ready;
     },

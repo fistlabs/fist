@@ -116,41 +116,6 @@ describe('core/track/response', function () {
         });
     });
 
-    describe('.setStatus', function () {
-        it('Should set statusCode', function (done) {
-            http({
-
-            }, function (rq, rs) {
-                var res = new Res(rs);
-
-                res.setStatus(201);
-                rs.end();
-            }).done(function (res) {
-                assert.strictEqual(res.statusCode, 201);
-
-                done();
-            });
-        }) ;
-    });
-
-    describe('.getStatus', function () {
-        it('Should get statusCode', function (done) {
-            http({
-
-            }, function (rq, rs) {
-                var res = new Res(rs);
-
-                res.setStatus(201);
-                assert.strictEqual(res.getStatus(), 201);
-                rs.end();
-            }).done(function (res) {
-                assert.strictEqual(res.statusCode, 201);
-
-                done();
-            });
-        });
-    });
-
     describe('.setCookie', function () {
         it('Should set cookie', function (done) {
             http({}, function (rq, rs) {
@@ -178,9 +143,9 @@ describe('core/track/response', function () {
                 var res = new Res(rs);
                 var resp;
 
-                res.setStatus(200);
+                rs.statusCode = 200;
                 resp = res.respond(201);
-                assert.strictEqual(res.getStatus(), 200);
+                assert.strictEqual(rs.statusCode, 200);
 
                 vow.when(resp, function (resp) {
                     Res.end(rs, resp);

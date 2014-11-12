@@ -211,6 +211,7 @@ describe('core/track/connect', function () {
         });
     });
 
+    //  TODO remove this method
     describe('.goToPath', function () {
         it('Should go to route path', function (done) {
             var tracker = /** @type {Server}*/ doConnect({

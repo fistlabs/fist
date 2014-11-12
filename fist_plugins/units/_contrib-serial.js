@@ -20,22 +20,28 @@ module.exports = function () {
         _steps: [],
 
         __next: function (context, steps, isError) {
+            var data = context.data;
             var name;
             var func;
             var self = this;
 
-            if (steps.isEmpty() || context.data instanceof Control) {
+            if (steps.isEmpty() || data instanceof Control) {
 
-                return context.data;
+                return data;
             }
 
             name = steps.shift();
             func = this['_$' + name];
-            context.trigger(name, context.data);
 
-            if (isError && !_.isFunction(func)) {
+            if (isError) {
+                if (!_.isFunction(func)) {
 
-                return vow.reject(context.data);
+                    return vow.reject(data);
+                }
+
+                context.logger.bind(name).warn('Running fallback %s', data, data);
+            } else {
+                context.logger.bind(name).debug('Start processing');
             }
 
             return vow.invoke(function () {

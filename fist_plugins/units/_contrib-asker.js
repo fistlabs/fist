@@ -1,6 +1,5 @@
 'use strict';
 
-var Rule = /** @type Rule */ require('finger/core/rule');
 var vowAsker = require('vow-asker');
 
 module.exports = function () {
@@ -26,10 +25,10 @@ module.exports = function () {
 
         _$prepare: function (track, context) {
             var data = Object(context.data);
+            var path = data.path;
 
-            //  TODO duck typing
-            if (data.path instanceof Rule) {
-                data.path = data.path.build(data.vars);
+            if (path && typeof path === 'object' && typeof path.build === 'function') {
+                data.path = path.build(data.vars);
             }
 
             return data;

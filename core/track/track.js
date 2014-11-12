@@ -53,6 +53,14 @@ var Track = inherit(/** @lends Track.prototype */{
          * @type {Object}
          * */
         this._tasks = {};
+
+        /**
+         * @public
+         * @memberOf {Track}
+         * @property
+         * @type {Logger}
+         * */
+        this.logger = this.agent.logger.bind(this.id);
     },
 
     /**
@@ -68,6 +76,7 @@ var Track = inherit(/** @lends Track.prototype */{
     invoke: function (name, args) {
         var result;
 
+        //  TODO String(args)!
         if (_.isObject(args)) {
             args = _.extend({}, this.args, args);
             //  Do not check cache!

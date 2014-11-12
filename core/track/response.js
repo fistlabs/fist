@@ -115,33 +115,6 @@ var Response = inherit(/** @lends Response.prototype */ {
      * @memberOf {Response}
      * @method
      *
-     * @returns {Number}
-     * */
-    getStatus: function () {
-
-        return this._res.statusCode;
-    },
-
-    /**
-     * @public
-     * @memberOf {Response}
-     * @method
-     *
-     * @param {Number} code
-     *
-     * @returns {Response}
-     * */
-    setStatus: function (code) {
-        this._res.statusCode = code;
-
-        return this;
-    },
-
-    /**
-     * @public
-     * @memberOf {Response}
-     * @method
-     *
      * @returns {vow.Promise}
      * */
     respond: function (status, body) {
