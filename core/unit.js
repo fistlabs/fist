@@ -44,8 +44,13 @@ var Unit = inherit(/** @lends Unit.prototype */ {
          * */
         this.params = _.extend({}, this.params, params);
 
-        //  make proto-deps own and unique
-        this.addDeps(this.deps);
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Array<String>}
+         * */
+        this.deps = _.uniq(this.deps);
     },
 
     /**
@@ -74,15 +79,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
 
     /**
      * @public
-     * @memberOf {Unit}
-     * @method
-     * */
-    addDeps: function () {
-        this.deps = _.union(this.deps, _.flatten(arguments));
-    },
-
-    /**
-     * @public
      * @abstract
      * @memberOf {Unit}
      * @method
@@ -94,20 +90,6 @@ var Unit = inherit(/** @lends Unit.prototype */ {
      * */
     main: /* istanbul ignore next */ function (track, context) {
         /*eslint no-unused-vars: 0*/
-    },
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @method
-     * */
-    delDeps: function () {
-        var args = _.flatten(arguments);
-
-        this.deps = _.reject(this.deps, function (name) {
-
-            return _.contains(args, name);
-        });
     },
 
     /**

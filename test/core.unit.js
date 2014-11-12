@@ -61,28 +61,6 @@ describe('core/unit', function () {
         assert.deepEqual(new Unit0().deps, [1, 2, 3]);
     });
 
-    describe('.addDeps', function () {
-        it('Should add unique deps', function () {
-            var unit = new Unit();
-
-            unit.addDeps([1, 2, 3]);
-            assert.deepEqual(unit.deps, [1, 2, 3]);
-            unit.addDeps(1, 2, 3, 4, [5, 6]);
-            assert.deepEqual(unit.deps, [1, 2, 3, 4, 5, 6]);
-        });
-    });
-
-    describe('.delDeps', function () {
-        it('Should del deps', function () {
-            var unit = new Unit();
-
-            unit.addDeps(1, 2, 3, 4, 5, 6);
-            assert.deepEqual(unit.deps, [1, 2, 3, 4, 5, 6]);
-            unit.delDeps(1, 2, [3, 4]);
-            assert.deepEqual(unit.deps, [5, 6]);
-        });
-    });
-
     describe('.data', function () {
         it('Should resolve data if it is not a function', function (done) {
             var tracker = new Tracker();
