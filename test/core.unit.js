@@ -105,7 +105,6 @@ describe('core/unit', function () {
 
     describe('test caching', function () {
         var AsyncCache = require('./util/AsyncCache');
-        var inherit = require('inherit');
 
         it('Should not cache result', function (done) {
             var tracker = new Tracker();

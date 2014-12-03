@@ -98,9 +98,13 @@ var Cache = inherit(LRUCache, /** @lends Cache.prototype */ {
             this.del(k);
         }
 
-        process.nextTick(function () {
-            done(null, base.call(self, k));
-        });
+        if ('function' === typeof done) {
+            process.nextTick(function () {
+                done(null, base.call(self, k));
+            });
+        } else {
+            base.call(self, k);
+        }
     }
 
 });

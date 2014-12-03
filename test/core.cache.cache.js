@@ -48,6 +48,17 @@ describe('core/cache/cache', function () {
             });
         });
 
+        it('Should ignore lru-cache stupidity', function (done) {
+            var c = new Cache();
+
+            c.set('foo', 'bar', 100, function (err) {
+                assert.isNull(err);
+                c.set('foo', 'baz', 100, function (err) {
+                    assert.isNull(err);
+                    done();
+                });
+            });
+        });
     });
 
 });
