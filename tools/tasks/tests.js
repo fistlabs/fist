@@ -15,7 +15,6 @@ function gulpMochaPipe() {
 }
 
 function runUnit() {
-    require('loggin').loggings.global.setHandlers([]);
     var stream = this.src('test/*.js').pipe(gulpMochaPipe());
 
     stream.on('error', function (e) {
@@ -27,7 +26,6 @@ function runUnit() {
 
 function runCover(done) {
     var self = this;
-    require('loggin').loggings.global.setHandlers([]);
     this.src([
         'fist.js',
         'core/**/*.js',

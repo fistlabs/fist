@@ -1,368 +1,151 @@
+/*eslint max-nested-callbacks: 0*/
 /*global describe, it*/
 'use strict';
 
 var Router = require('finger/core/router');
-
-var assert = require('chai').assert;
-var fs = require('fs');
-var sock = require('./util/sock');
-var vowAsker = require('vow-asker');
-
-function unlink() {
-
-    try {
-        fs.unlinkSync(sock);
-
-        return true;
-
-    } catch (err) {
-
-        return false;
-    }
-}
+var assert = require('assert');
+var supertest = require('supertest');
 
 describe('core/server', function () {
     var Server = require('../core/server');
 
-    it('Should be an instance of core/server', function () {
-        var server = new Server();
-
-        assert.instanceOf(server.router, Router);
-    });
-
-    describe('.route', function () {
-        var server = new Server();
-
-        server.route('/', 'index');
-
-        assert.deepEqual(server.router.getRule('index').data, {
-            name: 'index',
-            unit: 'index'
-        });
-
-        server.route('/', {
-            name: 'index'
-        });
-
-        assert.deepEqual(server.router.getRule('index').data, {
-            name: 'index',
-            unit: 'index'
-        });
-
-        server.route('/', {
-            name: 'index',
-            unit: null
-        });
-
-        assert.deepEqual(server.router.getRule('index').data, {
-            name: 'index',
-            unit: 'index'
-        });
-
-        server.route('/', {
-            name: 'index',
-            unit: 'unit'
-        });
-
-        assert.deepEqual(server.router.getRule('index').data, {
-            name: 'index',
-            unit: 'unit'
-        });
-    });
-
-    it('Should respond after matching', function (done) {
-        var server = new Server();
-        var origServer;
-
-        server.route('/', 'index');
-
-        server.unit({
-            name: 'index',
-            main: function (track, context) {
-
-                return context.track.send(201);
-            }
-        });
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '/',
-            socketPath: sock
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 201);
-            origServer.close();
-            done();
-        });
-    });
-
-    it('Should respond 500 if init failed', function (done) {
-        var server = new Server();
-        var origServer;
-
-        server.plug(function () {
-
-            throw 'ERR';
-        });
-
-        server.route('/', 'index');
-
-        server.unit({
-            name: 'index',
-            main: function (track, context) {
-
-                return context.track.send(201);
-            }
-        });
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '/',
-            socketPath: sock,
-            statusFilter: function () {
-
-                return {
-                    accept: true
-                };
-            }
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 500);
-            assert.deepEqual(res.data, new Buffer('ERR'));
-            origServer.close();
-            done();
-        });
-    });
-
-    it('Should respond 404 if match failed', function (done) {
-        var server = new Server();
-        var origServer;
-
-        server.route('/foo/');
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '/',
-            socketPath: sock,
-            statusFilter: function () {
-
-                return {
-                    accept: true
-                };
-            }
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 404);
-            origServer.close();
-            done();
-        });
-    });
-
-    it('Should return 501 if method handler not implemented', function (done) {
-        var server = new Server();
-        var origServer;
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '/',
-            socketPath: sock,
-            statusFilter: function () {
-
-                return {
-                    accept: true
-                };
-            }
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 501);
-            origServer.close();
-            done();
-        });
-    });
-
-    it('Should return 405 if request method is not implemented', function (done) {
-
-        var server = new Server();
-        var origServer;
-
-        server.route('GET /foo/', 'foo');
-        server.route('POST /', 'upload');
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '/',
-            socketPath: sock,
-            statusFilter: function () {
-
-                return {
-                    accept: true
-                };
-            }
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 405);
-            assert.strictEqual(res.headers.allow, 'POST');
-            origServer.close();
-            done();
-        });
-    });
-
-    it('Should continue routing if controller has not sent', function (done) {
-        var server = new Server();
-        var origServer;
-
-        server.route('/', 'preset');
-        server.route('/', 'index');
-
-        server.unit({
-            name: 'preset',
-            main: function (track, context) {
-                context.track.url.query.role = 'admin';
-            }
-        });
-
-        server.unit({
-            name: 'index',
-            main: function (track, context) {
-                assert.deepEqual(context.track.url.query, {
-                    role: 'admin'
-                });
-
-                return context.track.send(201);
-            }
-        });
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '/',
-            socketPath: sock
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 201);
-            origServer.close();
-            done();
-        });
-    });
-
-    it('Should auto declare units with .rule', function (done) {
-        var server = new Server();
-
-        server.unit({
-            name: 'index',
-            rule: '/'
-        });
-
-        server.ready().done(function () {
-            assert.ok(server.router.getRule('index'));
-            done();
-        });
-    });
-
-    it('Should decl routes according to unit decl order', function (done) {
-        var server = new Server();
-
-        server.unit({
-            name: 'index',
-            base: 'any',
-            rule: '/'
-        });
-
-        server.unit({
-            name: 'any',
-            rule: '/'
-        });
-
-        server.ready().done(function () {
-            var router = server.router;
-            var m = router.matchAll('GET', '/')[0];
-
-            assert.isObject(m);
-            assert.strictEqual(m.data.name, 'index');
-            done();
-        });
-    });
-
-    describe('rewrite', function () {
-        it('Should rewrite the url', function (done) {
+    describe('new Server()', function () {
+        it('Should be an instance of Server', function () {
             var server = new Server();
-            var origServer;
+            assert.ok(server instanceof Server);
+        });
 
-            server.route('/x/y/z/', 'rewrite');
-            server.route('/<page>/', 'control');
+        it('Should have a router', function () {
+            var server = new Server();
+            assert.ok(server.router instanceof Router);
+        });
 
-            server.unit({
-                name: 'rewrite',
-                main: function (track, context) {
-
-                    return context.track.rewrite('/test/?a=42');
+        it('Should accept params.router', function () {
+            var server = new Server({
+                router: {
+                    foo: 'bar'
                 }
+            });
+            assert.strictEqual(server.router.params.foo, 'bar');
+        });
+    });
+
+    describe('server.route', function () {
+        it('Should take ruleData from second argument', function () {
+            var server = new Server();
+            server.route('/', {
+                name: 'foo',
+                unit: 'bar'
+            });
+            assert.ok(server.router.getRule('foo'));
+            assert.strictEqual(server.router.getRule('foo').data.name, 'foo');
+            assert.strictEqual(server.router.getRule('foo').data.unit, 'bar');
+        });
+
+        it('Should set unit as name by default', function () {
+            var server = new Server();
+            server.route('/', {name: 'foo'});
+            assert.strictEqual(server.router.getRule('foo').data.unit, 'foo');
+        });
+
+        it('Should allow use second argument as rule name', function () {
+            var server = new Server();
+            server.route('/', 'foo');
+            assert.ok(server.router.getRule('foo'));
+        });
+    });
+
+    describe('server.getHandler()', function () {
+        it('Should handle request and return 501', function (done) {
+            var server = new Server();
+            supertest(server.getHandler()).
+                get('/').
+                expect(501).
+                end(done);
+        });
+
+        it('Should handler request and return 404', function (done) {
+            var server = new Server();
+            server.route('GET /foo/');
+            supertest(server.getHandler()).
+                get('/').
+                expect(404).
+                end(done);
+        });
+
+        it('Should handler request and return 302', function (done) {
+            var server = new Server();
+            server.route('GET /', {
+                name: 'foo',
+                unit: 'foo'
             });
 
             server.unit({
-                name: 'control',
-                main: function (track, context) {
-                    assert.strictEqual(context.arg('page'), 'test');
-                    assert.strictEqual(context.track.url.path, '/test/?a=42');
-
-                    return context.track.send(201);
+                name: 'foo',
+                main: function (track) {
+                    track.status(302).header('Location', '/foo/').send();
                 }
             });
 
-            unlink();
+            supertest(server.getHandler()).
+                get('/').
+                expect(302).
+                end(done);
+        });
 
-            origServer = server.listen(sock);
+        it('Should handler request and return 200', function (done) {
+            var server = new Server();
+            server.route('GET /', {
+                name: 'foo',
+                unit: 'foo'
+            });
 
-            vowAsker({
-                path: '/x/y/z/',
-                socketPath: sock
-            }).done(function (res) {
-                assert.strictEqual(res.statusCode, 201);
-                origServer.close();
-                done();
+            server.unit({
+                name: 'foo',
+                main: function (track) {
+                    track.send('foo');
+                }
+            });
+
+            server.ready().done(function () {
+                supertest(server.getHandler()).
+                    get('/').
+                    expect(200).
+                    expect('foo').
+                    end(done);
             });
         });
     });
 
-    it('Should send error if unit is undefined', function (done) {
-        var server = new Server();
-        var origServer;
+    describe('server.listen()', function () {
+        var asker = require('vow-asker');
 
-        server.route('/', {name: 'index', unit: 'foo'});
+        it('Should create and run http server', function (done) {
+            var server = new Server();
+            server.route('/', {
+                name: 'foo',
+                unit: 'foo'
+            });
 
-        server.unit({
-            name: 'foo',
-            deps: ['bar']
+            server.unit({
+                name: 'foo',
+                main: function (track) {
+                    track.send('foo');
+                }
+            });
+
+            var srv = server.listen(1337);
+
+            asker({
+                host: 'localhost',
+                path: '/',
+                port: 1337
+            }).done(function (res) {
+                assert.deepEqual(res.data, new Buffer('foo'));
+                srv.close();
+                done();
+            }, done);
+
         });
-
-        unlink();
-
-        origServer = server.listen(sock);
-
-        vowAsker({
-            path: '',
-            socketPath: sock,
-            statusFilter: function () {
-                return {
-                    accept: true
-                };
-            }
-        }).done(function (res) {
-            assert.strictEqual(res.statusCode, 500);
-            origServer.close();
-            done();
-        });
-
     });
 });

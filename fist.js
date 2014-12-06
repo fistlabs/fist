@@ -5,45 +5,32 @@ var Server = /** @type Server */ require('./core/server');
 var _ = require('lodash-node');
 var inherit = require('inherit');
 var path = require('path');
-var filename = require.main ?
-    //  Entry point
-    require.main.filename :
-    //  REPL?
-    module.parent.filename;
-var dirname = path.dirname(filename);
 
 var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
 
-/**
- * @param {Object} [params]
- * @param {Object} [members]
- * @param {Object} [statics]
- *
- * @returns {Server}
- * */
 function fist(params, members, statics) {
-    var app = fist.create(params, members, statics);
-    var patterns = [__dirname, app.params.cwd];
+    var app = fist.create(_.extend({
+        implicitBase: '_fist_contrib_unit'
+    }, params), members, statics);
 
-    patterns = _.map(patterns, function (dirname) {
-
-        return path.join(dirname, S_FIST_PLUGINS);
+    _.forEach([__dirname, app.params.root], function (dirname) {
+        return app.install(path.join(dirname, S_FIST_PLUGINS));
     });
 
-    return app.include(patterns);
+    return app;
 }
+
+fist.create = function (params, members, statics) {
+    var Fist = fist.inherit(members, statics);
+
+    return new Fist(params);
+};
 
 fist.inherit = function (members, statics) {
 
     return inherit(Server, members, statics);
 };
 
-fist.create = function (params, members, statics) {
-    var Fist = fist.inherit(members, statics);
-
-    params = _.extend({cwd: dirname}, params);
-
-    return new Fist(params);
-};
+fist.logging = require('./core/core').logging;
 
 module.exports = fist;
