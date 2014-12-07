@@ -109,11 +109,11 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
     hashCall: function (track, context) {
         var params = String(context.params);
 
-        if (params.indexOf('[object Object]') !== -1) {
-            context.logger.warn('context.params serialization result looks like something wrong.\n' +
+        if (context.params.toString === Object.prototype.toString) {
+            context.logger.warn('unit.params.toString() is not defined.\n' +
+            '   Hard-to-find issues with memorization/caching is possible\n' +
             '   Hash: "%s"\n' +
-            '   Hint: Try to define unit.params.toString() function to serialize params ' +
-                'and provide correct memorization ability', params);
+            '   Hint: Try to provide unit.params.toString() function to serialize params', params);
         }
 
         return [this.name, params].join(', ');
