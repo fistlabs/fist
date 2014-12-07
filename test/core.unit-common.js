@@ -85,28 +85,40 @@ describe('core/unit-common', function () {
         });
     });
 
-    describe('UnitCommon.createContext()', function () {
-        it('Should have static createContext method', function () {
-            assert.strictEqual(typeof UnitCommon.createContext, 'function');
+    describe('unit.createContext()', function () {
+        it('Should have createContext method', function () {
+            var unit = new UnitCommon();
+            assert.strictEqual(typeof unit.createContext, 'function');
         });
 
         it('Should create Context', function () {
-            assert.ok(UnitCommon.createContext(new Logger(new Logging())) instanceof Context);
+            var unit = new UnitCommon();
+            assert.ok(unit.createContext(new Logger(new Logging())) instanceof Context);
         });
     });
 
-    describe('unit.getMemKey()', function () {
-        it('Should generate default memKey from unit name and args', function () {
+    describe('unit.hashCall()', function () {
+        it('Should have hashCall method', function () {
+            var unit = new UnitCommon();
+            assert.strictEqual(typeof unit.hashCall, 'function');
+        });
+
+        it('Should generate hash from unit name and arguments', function () {
             var Unit = inherit(UnitCommon, {
-                name: 'foo'
+                name: 'foo',
+                params: {
+                    toString: function () {
+                        return this.foo;
+                    }
+                }
             });
 
             var unit = new Unit();
             var track = getTrack();
-            var context = new Context(new Logger(new Logging())).setup();
-            context.argsHash = 'bar';
+            var context = new Context(new Logger(new Logging())).
+                setup(unit.params, track.params, {foo: 'bar'});
 
-            assert.strictEqual(unit.getMemKey(track, context), 'foo,bar');
+            assert.strictEqual(unit.hashCall(track, context), 'foo, bar');
         });
     });
 
@@ -127,7 +139,7 @@ describe('core/unit-common', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track).then(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name))).then(function (res) {
                 assert.strictEqual(res.result, 42);
                 done();
             });
@@ -161,10 +173,12 @@ describe('core/unit-common', function () {
             };
 
             var unit = new Unit();
+            var context = unit.createContext(track.logger.bind(unit.name)).
+                setup(unit.params, track.params, {
+                    baz: 12
+                });
 
-            unit.call(track, {
-                baz: 12
-            }).then(function (res) {
+            unit.call(track, context).done(function (res) {
                 assert.strictEqual(res.result, 100500);
                 done();
             });
@@ -173,9 +187,13 @@ describe('core/unit-common', function () {
         it('Should support cache', function (done) {
             var i = 0;
             var Unit = inherit(UnitCommon, {
+
                 name: 'foo',
-                getMemKey: function () {
-                    return 'foo';
+
+                params: {
+                    toString: function () {
+                        return 'bar';
+                    }
                 },
 
                 maxAge: 0.05,
@@ -188,19 +206,21 @@ describe('core/unit-common', function () {
 
             var track = getTrack();
             var unit = new Unit();
+            var context = unit.createContext(track.logger.bind(unit.name)).
+                setup(unit.params, track.params);
 
-            unit.call(track).done(function (res) {
+            unit.call(track, context).done(function (res) {
                 assert.strictEqual(res.result, 1);
-                assert.strictEqual(res.memKey, 'foo');
+                assert.strictEqual(res.memKey, 'foo, bar');
 
-                unit.call(track).done(function (res) {
+                unit.call(track, context).done(function (res) {
                     assert.strictEqual(res.result, 1);
-                    assert.strictEqual(res.memKey, 'foo');
+                    assert.strictEqual(res.memKey, 'foo, bar');
 
                     setTimeout(function () {
-                        unit.call(track).done(function (res) {
+                        unit.call(track, context).done(function (res) {
                             assert.strictEqual(res.result, 2);
-                            assert.strictEqual(res.memKey, 'foo');
+                            assert.strictEqual(res.memKey, 'foo, bar');
 
                             done();
                         });
@@ -213,8 +233,11 @@ describe('core/unit-common', function () {
             var i = 0;
             var Unit = inherit(UnitCommon, {
                 name: 'foo',
-                getMemKey: function () {
-                    return 'foo';
+
+                params: {
+                    toString: function () {
+                        return 'bar';
+                    }
                 },
 
                 maxAge: 0.05,
@@ -241,14 +264,16 @@ describe('core/unit-common', function () {
 
             var track = getTrack();
             var unit = new Unit();
+            var context = unit.createContext(track.logger.bind(unit.name)).
+                setup(unit.params, track.params);
 
-            unit.call(track).done(function (res) {
+            unit.call(track, context).done(function (res) {
                 assert.strictEqual(res.result, 1);
-                assert.strictEqual(res.memKey, 'foo');
+                assert.strictEqual(res.memKey, 'foo, bar');
 
-                unit.call(track).done(function (res) {
+                unit.call(track, context).done(function (res) {
                     assert.strictEqual(res.result, 2);
-                    assert.strictEqual(res.memKey, 'foo');
+                    assert.strictEqual(res.memKey, 'foo, bar');
 
                     done();
                 });
@@ -275,10 +300,10 @@ describe('core/unit-common', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track).done(null, function (err) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(null, function (err) {
                 assert.strictEqual(err, 1);
 
-                unit.call(track).done(null, function (err) {
+                unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(null, function (err) {
                     assert.strictEqual(err, 2);
                     done();
                 });
@@ -306,11 +331,11 @@ describe('core/unit-common', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track).done(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, null);
 
-                unit.call(track).done(function (res) {
+                unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
                     assert.strictEqual(res.result, 2);
                     assert.strictEqual(res.memKey, null);
                     done();
@@ -330,7 +355,7 @@ describe('core/unit-common', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track).done(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
                 assert.strictEqual(res, null);
                 done();
             });
@@ -357,11 +382,11 @@ describe('core/unit-common', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track).done(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
                 assert.strictEqual(res, null);
                 assert.strictEqual(i, 1);
 
-                unit.call(track).done(function (res) {
+                unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
                     assert.strictEqual(res, null);
                     assert.strictEqual(i, 2);
                     done();

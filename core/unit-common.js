@@ -62,29 +62,17 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
      * @method
      *
      * @param {Track} track
-     * @param {*} args
-     * @param {*} hash
+     * @param {Context} context
      *
      * @returns {*}
      * */
-    call: function (track, args, hash) {
+    call: function (track, context) {
         var self = this;
-        var context;
         var dStartExec = new Date();
         var result;
-        var logger = track.logger.bind(self.name);
+        var logger = context.logger;
 
         logger.debug('Pending...');
-
-        context = self.__self.createContext(logger).setup(self.params, track.params, args);
-
-        /**
-         * @public
-         * @memberOf {Context}
-         * @property
-         * @type {*}
-         * */
-        context.argsHash = hash;
         result = self._execute(track, context);
 
         result.done(function () {
@@ -113,12 +101,35 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
      * @memberOf {UnitCommon}
      * @method
      *
-     * @param {*} args
+     * @param {Track} track
+     * @param {Context} context
      *
      * @returns {String}
      * */
-    hashArgs: function (args) {
-        return args;
+    hashCall: function (track, context) {
+        var params = String(context.params);
+
+        if (params.indexOf('[object Object]') !== -1) {
+            context.logger.warn('context.params serialization result looks like something wrong.\n' +
+            '   Hash: "%s"\n' +
+            '   Hint: Try to define unit.params.toString() function to serialize params ' +
+                'and provide correct memorization ability', params);
+        }
+
+        return [this.name, params].join(', ');
+    },
+
+    /**
+     * @public
+     * @memberOf {UnitCommon}
+     * @method
+     *
+     * @param {Logger} logger
+     *
+     * @returns {Context}
+     * */
+    createContext: function (logger) {
+        return new Context(logger);
     },
 
     /**
@@ -136,21 +147,6 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
     },
 
     /**
-     * @public
-     * @memberOf {UnitCommon}
-     * @method
-     *
-     * @param {Track} track
-     * @param {Context} context
-     *
-     * @returns {*}
-     * */
-    getMemKey: function (track, context) {
-        /*eslint no-unused-vars: 0*/
-        return [this.name, context.argsHash].join(',');
-    },
-
-    /**
      * @protected
      * @memberOf {UnitCommon}
      * @method
@@ -160,7 +156,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
      * */
     _execute: function (track, context) {
         var self = this;
-        var memKey = null;
+        var memKey;
         var defer;
         var logger = context.logger;
 
@@ -174,7 +170,6 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
         }
 
         if (!memKey) {
-
             return main(self, track, context).then(function (result) {
                 if (track.isFlushed()) {
                     logger.note('The track was flushed during execution');
@@ -212,7 +207,6 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
 
             //  calling unit
             main(self, track, context).then(function (result) {
-
                 if (track.isFlushed()) {
                     logger.note('The track was flushed during execution');
                     defer.resolve(null);
@@ -255,24 +249,10 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
      * @returns {*}
      * */
     _buildMemKey: function (track, context) {
-        return this.getMemKey(track, context);
+        return this.hashCall(track, context);
     }
 
 }, {
-
-    /**
-     * @public
-     * @static
-     * @memberOf {UnitCommon}
-     * @method
-     *
-     * @param {Logger} logger
-     *
-     * @returns {Context}
-     * */
-    createContext: function (logger) {
-        return new Context(logger);
-    },
 
     /**
      * @public

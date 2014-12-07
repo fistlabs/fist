@@ -217,13 +217,10 @@ module.exports = function (agent) {
             }
 
             return parts.join(',');
-        }
-
-    }, {
+        },
 
         /**
          * @public
-         * @static
          * @memberOf {_fist_contrib_unit}
          * @method
          *
@@ -233,7 +230,9 @@ module.exports = function (agent) {
          * */
         createContext: function (logger) {
             return new Model(logger);
-        },
+        }
+
+    }, {
 
         /**
          * @public

@@ -405,8 +405,10 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
                 bar += 1;
                 throw 'baz';
             },
-            getMemKey: function () {
-                return 'bar0';
+            params: {
+                toString: function () {
+                    return 'bar0';
+                }
             }
         });
 

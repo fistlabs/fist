@@ -69,12 +69,14 @@ describe('core/track/track', function () {
             });
         });
 
-        it('Should memorize unit calls by args hash if unit.hashArgs() defined', function (done) {
+        it('Should memorize unit calls by args hash if params.toString() defined', function (done) {
             var i = 0;
             var Unit = inherit(UnitCommon, {
                 name: 'foo',
-                hashArgs: function (args) {
-                    return args && args.foo;
+                params: {
+                    toString: function () {
+                        return this.foo;
+                    }
                 },
                 main: function (track, context) {
                     i += 1;
@@ -95,37 +97,6 @@ describe('core/track/track', function () {
                 track.invoke(unit, args).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
-                    done();
-                });
-            });
-        });
-
-        it('Should not memorize unit calls if no unit.hasArgs() returned complex type', function (done) {
-            var i = 0;
-            var Unit = inherit(UnitCommon, {
-                name: 'foo',
-                hashArgs: function () {
-                    return {};
-                },
-                main: function (track, context) {
-                    i += 1;
-                    assert.strictEqual(context.params.foo, 'bar');
-                    return 42;
-                }
-            });
-            var args = {
-                foo: 'bar'
-            };
-            var unit = new Unit();
-            var track = new Track(agent);
-
-            track.invoke(unit, args).done(function (res) {
-                assert.strictEqual(res.result, 42);
-                assert.strictEqual(i, 1);
-
-                track.invoke(unit, args).done(function (res) {
-                    assert.strictEqual(res.result, 42);
-                    assert.strictEqual(i, 2);
                     done();
                 });
             });

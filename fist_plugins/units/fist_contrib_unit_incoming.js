@@ -1,10 +1,9 @@
 'use strict';
 
-var Busboy = require('busboy');
-var FistError = require('../../core/fist-error');
+var Busboy = /** @type Busboy */ require('busboy');
+var FistError = /** @type FistError */ require('../../core/fist-error');
 
 var _ = require('lodash-node');
-
 var errors = {
     400: 'BAD_REQUEST_ENTITY',
     413: 'BAD_REQUEST_ENTITY_SIZE',
@@ -50,15 +49,13 @@ module.exports = function (agent) {
         /**
          * @public
          * @memberOf {fist_contrib_unit_incoming}
-         * @method
-         *
-         * @param {*} args
-         *
-         * @returns {String}
+         * @property
+         * @type {Object}
          * */
-        hashArgs: function (args) {
-            /*eslint no-unused-vars: 0*/
-            return this.name;
+        params: {
+            toString: function () {
+                return this.name;
+            }
         },
 
         /**
