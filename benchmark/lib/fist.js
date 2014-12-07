@@ -4,18 +4,13 @@ var fist = require('../../fist');
 var app = fist();
 
 fist.logging.conf({
-    logLevel: 'NOTSET',
+    logLevel: 'INTERNAL',
     enabled: []
 });
 
 app.unit({
     base: '_fist_contrib_unit',
-    name: 'base',
-    params: {
-        toString: function () {
-            return '';
-        }
-    }
+    name: 'base'
 });
 
 app.unit({

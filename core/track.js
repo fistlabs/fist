@@ -78,12 +78,15 @@ Track.prototype.constructor = Track;
  * @returns {vow.Promise}
  * */
 Track.prototype.invoke = function (unit, args) {
-    var context = unit.createContext(this.logger.bind(unit.name)).
-        setup(unit.params, this.params, args);
-    var hash = unit.hashCall(this, context);
+    var logger = this.logger.bind(unit.name);
+    var context = unit.createContext(logger).setup(unit.params, this.params, args);
+    var hash = unit.name + ', ' + unit.hashCall(this, context);
     var calls = this._calls;
 
+    logger.debug('Starting invocation, arguments %j hashed as "%s"', context.params, hash);
+
     if (!hasProperty.call(calls, hash)) {
+        logger.debug('Using memorized result, hash = "%s"', hash);
         calls[hash] = unit.call(this, context);
     }
 

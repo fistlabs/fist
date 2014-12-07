@@ -16,7 +16,7 @@ function getTrack() {
 }
 
 describe('core/unit-common', function () {
-    var UnitCommon = require('../core/unit-common');
+    var UnitCommon = require('../core/unit-common').createClass();
 
     it('Should be an instance of UnitCommon', function () {
         assert.ok(new UnitCommon() instanceof UnitCommon);
@@ -103,14 +103,9 @@ describe('core/unit-common', function () {
             assert.strictEqual(typeof unit.hashCall, 'function');
         });
 
-        it('Should generate hash from unit name and arguments', function () {
+        it('Should return empty string by default', function () {
             var Unit = inherit(UnitCommon, {
-                name: 'foo',
-                params: {
-                    toString: function () {
-                        return this.foo;
-                    }
-                }
+                name: 'foo'
             });
 
             var unit = new Unit();
@@ -118,7 +113,7 @@ describe('core/unit-common', function () {
             var context = new Context(new Logger(new Logging())).
                 setup(unit.params, track.params, {foo: 'bar'});
 
-            assert.strictEqual(unit.hashCall(track, context), 'foo, bar');
+            assert.strictEqual(unit.hashCall(track, context), '');
         });
     });
 
@@ -190,13 +185,11 @@ describe('core/unit-common', function () {
 
                 name: 'foo',
 
-                params: {
-                    toString: function () {
-                        return 'bar';
-                    }
-                },
-
                 maxAge: 0.05,
+
+                hashCall: function () {
+                    return 'bar';
+                },
 
                 main: function () {
                     i += 1;
@@ -234,13 +227,11 @@ describe('core/unit-common', function () {
             var Unit = inherit(UnitCommon, {
                 name: 'foo',
 
-                params: {
-                    toString: function () {
-                        return 'bar';
-                    }
-                },
-
                 maxAge: 0.05,
+
+                hashCall: function () {
+                    return 'bar';
+                },
 
                 main: function () {
                     i += 1;
@@ -284,9 +275,6 @@ describe('core/unit-common', function () {
             var i = 0;
             var Unit = inherit(UnitCommon, {
                 name: 'foo',
-                getMemKey: function () {
-                    return 'bar';
-                },
 
                 maxAge: 0.05,
 
@@ -299,11 +287,12 @@ describe('core/unit-common', function () {
 
             var track = getTrack();
             var unit = new Unit();
+            var context = unit.createContext(track.logger.bind(unit.name));
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(null, function (err) {
+            unit.call(track, context).done(null, function (err) {
                 assert.strictEqual(err, 1);
 
-                unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(null, function (err) {
+                unit.call(track, context).done(null, function (err) {
                     assert.strictEqual(err, 2);
                     done();
                 });

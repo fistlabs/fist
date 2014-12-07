@@ -21,10 +21,19 @@ var vowFs = require('vow-fs');
  * @param {Object} [params]
  * */
 function Core(params) {
+
+    /**
+     * @public
+     * @memberOf {Core}
+     * @property
+     * @type {Function}
+     * */
+    this.Unit = UnitCommon.createClass(this);
+
     params = _.extend({
         root: path.dirname(getMainFileName()),
         unitRanges: {},
-        implicitBase: UnitCommon.prototype.name
+        implicitBase: this.Unit.prototype.name
     }, params);
 
     /**
@@ -381,10 +390,10 @@ function createUnitClass(decl) {
         this.logger.warn('The base for unit "%s" is implicitly defined as "%s"', name, base);
     }
 
-    if (base === UnitCommon.prototype.name) {
-        promise = vow.invoke(function () {
-            return UnitCommon.inherit(members, statics);
-        });
+    if (base === this.Unit.prototype.name) {
+        promise = vow.invoke(function (self) {
+            return self.Unit.inherit(members, statics);
+        }, this);
     } else {
         promise = _.find(this._decls, {members: {name: base}});
 

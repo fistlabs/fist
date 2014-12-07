@@ -404,11 +404,6 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
             main: function () {
                 bar += 1;
                 throw 'baz';
-            },
-            params: {
-                toString: function () {
-                    return 'bar0';
-                }
             }
         });
 

@@ -10,7 +10,6 @@ var path = require('path');
 
 describe('core/core', function () {
     var Agent = require('../core/core');
-    var UnitCommon = require('../core/unit-common');
 
     describe('new Agent()', function () {
         it('Should be an instance of Agent', function () {
@@ -192,7 +191,7 @@ describe('core/core', function () {
             });
 
             agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof UnitCommon);
+                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
                 done();
             });
         });
@@ -204,7 +203,7 @@ describe('core/core', function () {
             });
 
             agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof UnitCommon);
+                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
                 done();
             });
         });
@@ -234,10 +233,10 @@ describe('core/core', function () {
 
             agent.ready().done(function () {
                 setTimeout(function () {
-                    assert.ok(agent.getUnit('foo') instanceof UnitCommon);
-                    assert.ok(agent.getUnit('bar') instanceof UnitCommon);
-                    assert.ok(agent.getUnit('zot') instanceof UnitCommon);
-                    assert.ok(agent.getUnit('moo') instanceof UnitCommon);
+                    assert.ok(agent.getUnit('foo') instanceof agent.Unit);
+                    assert.ok(agent.getUnit('bar') instanceof agent.Unit);
+                    assert.ok(agent.getUnit('zot') instanceof agent.Unit);
+                    assert.ok(agent.getUnit('moo') instanceof agent.Unit);
                     done();
                 }, 100);
             });
@@ -256,7 +255,7 @@ describe('core/core', function () {
             });
 
             agent.ready().done(function () {
-                assert.ok(agent.getUnit('bar') instanceof UnitCommon);
+                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
                 assert.ok(!agent.getUnit('_foo'));
                 assert.ok(agent.getUnitClass('_foo'));
                 done();
@@ -363,9 +362,9 @@ describe('core/core', function () {
             });
 
             agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof UnitCommon);
+                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
                 assert.strictEqual(agent.getUnit('foo').x, 1);
-                assert.ok(agent.getUnit('bar') instanceof UnitCommon);
+                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
                 assert.ok(agent.getUnit('bar') instanceof agent.getUnitClass('foo'));
                 assert.strictEqual(agent.getUnit('bar').x, 1);
                 assert.strictEqual(agent.getUnit('bar').y, 2);
@@ -384,8 +383,8 @@ describe('core/core', function () {
             agent.alias('foo', 'bar');
 
             agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof UnitCommon);
-                assert.ok(agent.getUnit('bar') instanceof UnitCommon);
+                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
+                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
                 assert.strictEqual(agent.getUnit('foo').x, 42);
                 assert.strictEqual(agent.getUnit('bar').x, 42);
                 done();
@@ -405,8 +404,8 @@ describe('core/core', function () {
             });
 
             agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof UnitCommon);
-                assert.ok(agent.getUnit('bar') instanceof UnitCommon);
+                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
+                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
                 assert.strictEqual(agent.getUnit('foo').x, 42);
                 assert.strictEqual(agent.getUnit('bar').x, 42);
                 done();

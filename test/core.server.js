@@ -134,12 +134,13 @@ describe('core/server', function () {
                 }
             });
 
-            var srv = server.listen(1337);
+            var port = Math.random().toString().slice(3, 8) + 0;
+            var srv = server.listen(port);
 
             asker({
                 host: 'localhost',
                 path: '/',
-                port: 1337
+                port: port
             }).done(function (res) {
                 assert.deepEqual(res.data, new Buffer('foo'));
                 srv.close();

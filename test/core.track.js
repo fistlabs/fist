@@ -3,12 +3,11 @@
 'use strict';
 
 var Logger = require('loggin/core/logger');
-var UnitCommon = require('../core/unit-common');
 
 var assert = require('assert');
 var inherit = require('inherit');
 
-describe('core/track/track', function () {
+describe('core/track', function () {
     var Core = require('../core/core');
     var Track = require('../core/track');
     var agent = new Core();
@@ -30,7 +29,7 @@ describe('core/track/track', function () {
 
     describe('track.invoke()', function () {
         it('Should invoke unit', function (done) {
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(agent.Unit, {
                 name: 'foo',
                 main: function () {
                     return 42;
@@ -47,7 +46,7 @@ describe('core/track/track', function () {
 
         it('Should memorize unit calls', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(agent.Unit, {
                 name: 'foo',
                 main: function () {
                     i += 1;
@@ -71,7 +70,7 @@ describe('core/track/track', function () {
 
         it('Should memorize unit calls by args hash if params.toString() defined', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(agent.Unit, {
                 name: 'foo',
                 params: {
                     toString: function () {
