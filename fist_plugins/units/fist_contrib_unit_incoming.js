@@ -54,7 +54,7 @@ module.exports = function (agent) {
          * */
         params: {
             toString: function () {
-                return this.name;
+                return '';
             }
         },
 
