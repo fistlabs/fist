@@ -7,6 +7,9 @@ var path = require('path');
 
 var S_FIST_PLUGINS = path.join('fist_plugins', '**', '*.js');
 
+/**
+ * @returns {Server}
+ * */
 function fist(params) {
     var app = new Server(_.extend({
         implicitBase: '_fist_contrib_unit'
