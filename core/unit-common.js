@@ -79,7 +79,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
             var execTime = new Date() - dStartExec;
 
             if (track.isFlushed()) {
-                logger.note('The track was flushed in %dms, skipping result', execTime);
+                logger.note('Skip result in %dms', execTime);
             } else {
                 logger.note('Accepted in %dms', execTime);
             }
@@ -87,7 +87,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
             var execTime = new Date() - dStartExec;
 
             if (track.isFlushed()) {
-                logger.warn('The track was flushed in %dms, skipping error', execTime, err);
+                logger.warn('Skip error in %dms', execTime, err);
             } else {
                 logger.warn('Rejected in %dms', execTime, err);
             }
@@ -137,7 +137,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
         var self = this;
         var memKey = null;
         var defer;
-        var logger;
+        var logger = context.logger;
 
         //  if maxAge is not a number,
         //  then the expression will return true
@@ -152,6 +152,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
 
             return main(self, track, context).then(function (result) {
                 if (track.isFlushed()) {
+                    logger.note('The track was flushed during execution');
                     return null;
                 }
 
@@ -163,7 +164,6 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
         }
 
         defer = vow.defer();
-        logger = context.logger;
 
         self.__self.cache.get(memKey, function (err, res) {
             //  has value in cache
@@ -189,6 +189,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
             main(self, track, context).then(function (result) {
 
                 if (track.isFlushed()) {
+                    logger.note('The track was flushed during execution');
                     defer.resolve(null);
                     return;
                 }

@@ -1,6 +1,7 @@
 'use strict';
 
 var bodyEncoders = require('asker').bodyEncoders;
+var hasProperty = Object.prototype.hasOwnProperty;
 var vowAsker = require('vow-asker');
 var url = require('fast-url-parser');
 
@@ -91,7 +92,7 @@ module.exports = function (agent) {
         request: function (track, context) {
             var opts = context.prev;
 
-            context.logger.info('Outgoing %s %s%s', function () {
+            context.logger.info('Outgoing %s %s%s%s', function () {
                 return opts.method || 'GET';
             }, function () {
                 if (!opts.pathname) {
@@ -103,6 +104,17 @@ module.exports = function (agent) {
                 }
 
                 return url.format(opts);
+            }, function () {
+                var header = '';
+                var name;
+
+                for (name in opts.headers) {
+                    if (hasProperty.call(opts.headers, name)) {
+                        header += '\n\t' + name + ': ' + opts.headers[name];
+                    }
+                }
+
+                return header;
             }, function () {
                 if (opts.body) {
                     if (!opts.bodyEncoding) {

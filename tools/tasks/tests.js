@@ -25,6 +25,8 @@ function runUnit() {
 }
 
 function runCover(done) {
+    /*eslint no-extend-native: 0*/
+    Object.prototype.bug = 42;
     var self = this;
     this.src([
         'fist.js',

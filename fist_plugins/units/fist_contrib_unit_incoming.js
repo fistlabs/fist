@@ -1,52 +1,140 @@
 'use strict';
 
 var Busboy = require('busboy');
+var FistError = require('../../core/fist-error');
 
 var _ = require('lodash-node');
+
+var errors = {
+    400: 'BAD_REQUEST_ENTITY',
+    413: 'BAD_REQUEST_ENTITY_SIZE',
+    500: 'BAD_INTERNAL_SETTINGS',
+    415: 'BAD_REQUEST_MEDIA_TYPE'
+};
+var rawBody = require('raw-body');
 var typer = require('media-typer');
 var vow = require('vow');
-var rawBody = require('raw-body');
 
 module.exports = function (agent) {
 
+    /**
+     * @class fist_contrib_unit_incoming
+     * @extends UnitCommon
+     * */
     agent.unit({
+
+        /**
+         * @public
+         * @memberOf {fist_contrib_unit_incoming}
+         * @property
+         * @type {String}
+         * */
         base: '_fist_contrib_unit_common',
-        name: 'fist_contrib_unit_incoming_data',
+
+        /**
+         * @public
+         * @memberOf {fist_contrib_unit_incoming}
+         * @property
+         * @type {String}
+         * */
+        name: 'fist_contrib_unit_incoming',
+
+        /**
+         * @public
+         * @memberOf {fist_contrib_unit_incoming}
+         * @property
+         * @type {Number}
+         * */
+        maxAge: 0,
+
+        /**
+         * @public
+         * @memberOf {fist_contrib_unit_incoming}
+         * @method
+         *
+         * @param {Connect} track
+         * @param {Context} context
+         *
+         * @returns {vow.Promise}
+         * */
         main: function (track, context) {
-            var defer;
-            var mime = track.header('Content-Type');
+            var mime = typer.parse(track.header('Content-Type') || 'text/plain');
+            var promise;
 
-            if (mime) {
-                mime = typer.parse(mime);
-
-                if (mime.type === 'multipart' ||
-                    (mime.type === 'application' && mime.subtype === 'x-www-form-urlencoded')) {
-
-                    return this._busboy(track, context);
-                }
+            //  the only mimes supported by busboy
+            if (mime.type === 'multipart' || mime.type === 'application' && mime.subtype === 'x-www-form-urlencoded') {
+                promise = vow.invoke(function (self) {
+                    //  may throw during instantiation
+                    return self._busboy(track, context, mime);
+                }, this);
+            } else {
+                promise = this._other(track, context, mime);
             }
 
-            defer = vow.defer();
+            return promise.fail(function (err) {
+                var status = err && err.status || 400;
+                var code = errors.hasOwnProperty(status) ? errors[status] : errors[400];
+                err = new FistError(code, err && err.message);
+                track.status(status).send();
+                throw err;
+            });
+        },
 
-            //  TODO!!!!
+        /**
+         * @protected
+         * @memberOf {fist_contrib_unit_incoming}
+         * @method
+         *
+         * @param {Connect} track
+         * @param {Context} context
+         * @param {Object} mime
+         *
+         * @returns {vow.Promise}
+         * */
+        _getRawBody: function (track, context, mime) {
+            var defer = vow.defer();
+
             rawBody(track.incoming, {
-                length: track.header('Content-length'),
+                length: track.header('Content-Length'),
                 limit: Infinity,
-                encoding: mime && mime.parameters.charset
+                encoding:  mime.parameters.charset
             }, function (err, res) {
                 if (err) {
-                    track.send(err.status);
                     defer.reject(err);
                 } else {
                     defer.resolve(res);
                 }
             });
 
-            return defer.promise().then(function (res) {
-                if (mime && mime.type === 'application' && mime.subtype === 'json') {
+            return defer.promise();
+        },
+
+        /**
+         * @protected
+         * @memberOf {fist_contrib_unit_incoming}
+         * @method
+         *
+         * @param {Connect} track
+         * @param {Context} context
+         * @param {Object} mime
+         *
+         * @returns {vow.Promise}
+         * */
+        _other: function (track, context, mime) {
+            return this._getRawBody(track, context, mime).then(function (res) {
+                //  support for application/json
+                if (mime.type === 'application' && mime.subtype === 'json') {
                     return {
                         type: 'json',
                         input: JSON.parse(res),
+                        files: {}
+                    };
+                }
+
+                if (mime.type === 'text' && mime.subtype === 'plain') {
+                    return {
+                        type: 'text',
+                        input: String(res),
                         files: {}
                     };
                 }
@@ -55,11 +143,23 @@ module.exports = function (agent) {
                     type: 'raw',
                     input: res,
                     files: {}
-                }
+                };
             });
         },
 
-        _createBusboy: function (track) {
+        /**
+         * @protected
+         * @memberOf {fist_contrib_unit_incoming}
+         * @method
+         *
+         * @param {Connect} track
+         * @param {Context} context
+         * @param {Object} mime
+         *
+         * @returns {Busboy}
+         * */
+        _createBusboy: function (track, context, mime) {
+            /*eslint no-unused-vars: 0*/
             return new Busboy({
                 headers: track.header(),
                 defCharset: 'utf-8',
@@ -75,37 +175,59 @@ module.exports = function (agent) {
             });
         },
 
-        _busboy: function (track, context) {
-            var busboy = this._createBusboy(track, context);
+        /**
+         * @protected
+         * @memberOf {fist_contrib_unit_incoming}
+         * @method
+         *
+         * @param {Connect} track
+         * @param {Context} context
+         * @param {Object} mime
+         *
+         * @returns {vow.Promise}
+         * */
+        _busboy: function (track, context, mime) {
+            var fullData = [];
+            var actualLength = 0;
+            var expectedLength = Number(track.header('Content-Length'));
+            var busboy = this._createBusboy(track, context, mime);
             var defer = vow.defer();
             var input = {};
             var files = {};
             var result = {
-                type: 'multipart',
+                type: mime.type === 'multipart' ? mime.type : 'urlencoded',
                 input: input,
                 files: files
             };
 
-            busboy.on('file', function(name, file, filename, encoding, mime) {
-                var contents = [];
+            busboy.on('file', function (name, file, filename, encoding, mime) {
+                /*eslint max-params: 0*/
+                var content = [];
                 var fileObj = {
                     encoding: encoding,
                     mime: mime,
                     filename: filename,
-                    contents: contents
+                    content: content
                 };
 
-                file.on('data', function(data) {
-                    contents[contents.length] = data;
+                file.on('data', function (data) {
+                    content[content.length] = data;
                 });
 
-                file.on('end', function() {
-                    fileObj.contents = Buffer.concat(contents);
-                    files[name] = fileObj;
+                file.on('end', function () {
+                    fileObj.content = Buffer.concat(content);
+
+                    if (!_.has(files, name)) {
+                        files[name] = fileObj;
+                    } else if (!_.isArray(files[name])) {
+                        files[name] = [files[name], fileObj];
+                    } else {
+                        files[name].push(fileObj);
+                    }
                 });
             });
 
-            busboy.on('field', function(name, value/*, nameTruncated, valueTruncated*/) {
+            busboy.on('field', function (name, value/*, nameTruncated, valueTruncated*/) {
                 if (!_.has(input, name)) {
                     input[name] = value;
                 } else if (!_.isArray(input[name])) {
@@ -115,11 +237,28 @@ module.exports = function (agent) {
                 }
             });
 
-            busboy.on('finish', function() {
-                defer.resolve(result);
+            busboy.on('finish', function () {
+                if (actualLength === expectedLength) {
+                    defer.resolve(result);
+                } else {
+                    defer.reject(new Error('request size did not match content length'));
+                }
+            });
+
+            busboy.on('error', function (err) {
+                defer.reject(err);
             });
 
             track.incoming.pipe(busboy);
+
+            track.incoming.on('data', function (chunk) {
+                fullData[fullData.length] = chunk;
+                actualLength += chunk.length;
+            });
+
+            track.incoming.on('end', function () {
+                context.logger.info('Incoming data\n%s', Buffer.concat(fullData).toString());
+            });
 
             return defer.promise();
         }

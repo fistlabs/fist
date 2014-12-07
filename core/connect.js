@@ -314,9 +314,8 @@ Connect.prototype._sendString = function (data) {
         outgoing.setHeader('Content-Type', 'text/plain');
     }
 
-    if (!outgoing.getHeader('Content-Length')) {
-        outgoing.setHeader('Content-Length', Buffer.byteLength(data));
-    }
+    outgoing.removeHeader('Content-Length');
+    outgoing.setHeader('Content-Length', Buffer.byteLength(data));
 
     outgoing.end(data);
 };
@@ -335,9 +334,8 @@ Connect.prototype._sendBuffer = function (data) {
         outgoing.setHeader('Content-Type', 'application/octet-stream');
     }
 
-    if (!outgoing.getHeader('Content-Length')) {
-        outgoing.setHeader('Content-Length', data.length);
-    }
+    outgoing.removeHeader('Content-Length');
+    outgoing.setHeader('Content-Length', data.length);
 
     outgoing.end(data);
 };
@@ -390,9 +388,8 @@ Connect.prototype._sendJSON = function (data) {
         outgoing.setHeader('Content-Type', 'application/json');
     }
 
-    if (!outgoing.getHeader('Content-Length')) {
-        outgoing.setHeader('Content-Length', Buffer.byteLength(data));
-    }
+    outgoing.removeHeader('Content-Length');
+    outgoing.setHeader('Content-Length', Buffer.byteLength(data));
 
     outgoing.end(data);
 };

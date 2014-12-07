@@ -241,7 +241,7 @@ describe('core/connect', function () {
                     end(done);
             });
 
-            it('Should not overwrite explicit headers', function (done) {
+            it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
                     var connect = new Connect(new Server(), req, res);
                     connect.header({
@@ -254,7 +254,7 @@ describe('core/connect', function () {
                     get('/').
                     expect('Foo').
                     expect('Content-Type', 'text/bar+plain').
-                    expect('Content-Length', '42').
+                    expect('Content-Length', Buffer.byteLength('Foo')).
                     end(done);
             });
         });
@@ -288,7 +288,7 @@ describe('core/connect', function () {
                     end(done);
             });
 
-            it('Should not overwrite explicit headers', function (done) {
+            it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
                     var connect = new Connect(new Server(), req, res);
                     connect.header({
@@ -300,7 +300,7 @@ describe('core/connect', function () {
                     get('/').
                     expect(new Buffer('foo').toString()).
                     expect('Content-Type', /text\/plain/).
-                    expect('Content-Length', '42').
+                    expect('Content-Length', Buffer.byteLength('foo')).
                     end(done);
             });
         });
@@ -319,7 +319,7 @@ describe('core/connect', function () {
                     end(done);
             });
 
-            it('Should not overwrite explicit headers', function (done) {
+            it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
                     var connect = new Connect(new Server(), req, res);
                     connect.header('Content-Type', 'text/plain').send(req);
@@ -379,7 +379,7 @@ describe('core/connect', function () {
                     end(done);
             });
 
-            it('Should not overwrite explicit headers', function (done) {
+            it('Should not overwrite explicit type', function (done) {
                 var obj = {foo: 'bar'};
 
                 supertest(function (req, res) {
@@ -392,7 +392,7 @@ describe('core/connect', function () {
                     get('/').
                     expect(JSON.stringify(obj)).
                     expect('Content-Type', /text\/plain/).
-                    expect('Content-Length', '42').
+                    expect('Content-Length', Buffer.byteLength(JSON.stringify(obj))).
                     end(done);
             });
         });

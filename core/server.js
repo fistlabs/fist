@@ -50,7 +50,17 @@ Server.prototype.getHandler = function () {
         var dExecStart = new Date();
         var track = new Connect(self, req, res);
 
-        track.logger.info('Incoming %(method)s %(url)s\n\t%(headers)j', req);
+        track.logger.info('Incoming %(method)s %(url)s %s', function () {
+            var name;
+            var headers = '';
+            for (name in req.headers) {
+                if (req.headers.hasOwnProperty(name)) {
+                    headers += '\n\t' + name + ': ' + req.headers[name];
+                }
+            }
+
+            return headers;
+        }, req);
 
         res.on('finish', function () {
             var statusCode = res.statusCode;

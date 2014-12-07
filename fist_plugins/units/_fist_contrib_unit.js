@@ -159,6 +159,7 @@ module.exports = function (agent) {
                 var hosting;
 
                 if (track.isFlushed()) {
+                    logger.note('The track was flushed up from dependencies tree, skip invocation');
                     return null;
                 }
 

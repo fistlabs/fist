@@ -107,8 +107,12 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
                     protocol: 'http:',
                     hostname: 'localhost',
                     body: 'foo',
-                    path: '/upload/',
-                    query: context.params
+                    path: '/upload/?bar=baz',
+                    query: context.params,
+                    headers: {
+                        'X-Foo': 'bar',
+                        'X-Bar': 'baz'
+                    }
                 };
             }
         });
