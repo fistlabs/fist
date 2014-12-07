@@ -7,10 +7,11 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "asker": "0.5.0",
         "raw-body": "1.3.1",
         "busboy": "0.2.9",
         "semver": "4.1.0",
-        "loggin": "1.0.5",
+        "loggin": "1.0.6",
         "obus": "1.0.0-1",
         "vow-fs": "0.3.3",
         "vow-asker": "0.7.0",

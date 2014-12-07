@@ -59,7 +59,7 @@ function next(self, track, context) {
 
     name = context.series.shift();
 
-    track.logger.debug('Start processing "%s"', name);
+    context.logger.debug('Start processing "%s"', name);
 
     return vow.invoke(function () {
         return self[name].call(self, track, context);
@@ -72,12 +72,12 @@ function next(self, track, context) {
         context.prev = err;
         context.series.clear();
 
-        if (typeof func == 'function') {
-            track.logger.warn('Failed to execute "%s", running "e%s"', name, name);
+        if (typeof func === 'function') {
+            context.logger.warn('Failed to execute "%s", running "e%s"', name, name);
             return func.call(self, track, context);
         }
 
-        track.logger.warn('Failed to execute "%s"', name);
+        context.logger.warn('Failed to execute "%s"', name);
         throw context.prev;
     });
 }
