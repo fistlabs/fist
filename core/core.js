@@ -79,7 +79,7 @@ function Core(params) {
 /**
  * @public
  * @static
- * @memberOf Server
+ * @memberOf Core
  * @property
  * @type Logging
  * */
@@ -87,7 +87,7 @@ Core.logging = logging;
 
 /**
  * @private
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @constructs
@@ -96,13 +96,13 @@ Core.prototype.constructor = Core;
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @param {Object|String} base
  * @param {String} [name]
  *
- * @returns {Server}
+ * @returns {Core}
  * */
 Core.prototype.alias = function (base, name) {
     if (_.isObject(base)) {
@@ -126,13 +126,13 @@ Core.prototype.alias = function (base, name) {
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @param {Object} members
  * @param {Object} [statics]
  *
- * @returns {Server}
+ * @returns {Core}
  * */
 Core.prototype.unit = function (members, statics) {
     var ranges = Object(this.params.unitRanges);
@@ -184,7 +184,7 @@ Core.prototype.unit = function (members, statics) {
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @param {String} name
@@ -197,7 +197,7 @@ Core.prototype.getUnit = function (name) {
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @param {String} name
@@ -218,7 +218,7 @@ Core.prototype.callUnit = function (name, track, args) {
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @param {String} name
@@ -231,7 +231,7 @@ Core.prototype.getUnitClass = function (name) {
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @returns {vow.Promise}
@@ -246,7 +246,7 @@ Core.prototype.ready = function () {
 
     this.__ready = this._getReady();
 
-    /** @this {Server} */
+    /** @this {Core} */
     this.__ready.done(function () {
         this.logger.note('Ready.');
     }, function (err) {
@@ -258,12 +258,12 @@ Core.prototype.ready = function () {
 
 /**
  * @public
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @param {String} moduleName
  *
- * @returns {Server}
+ * @returns {Core}
  * */
 Core.prototype.install = function (moduleName) {
     var plugins = this._plugs;
@@ -292,7 +292,7 @@ Core.prototype.install = function (moduleName) {
 
 /**
  * @protected
- * @memberOf {Server}
+ * @memberOf {Core}
  * @method
  *
  * @returns {vow.Promise}
