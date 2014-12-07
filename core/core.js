@@ -270,27 +270,38 @@ Core.prototype.ready = function () {
  * @memberOf {Core}
  * @method
  *
+ * @param {*} plugin
+ *
+ * @returns {Core}
+ * */
+Core.prototype.plugin = function (plugin) {
+    this._plugs.push(plugin);
+    return this;
+};
+
+/**
+ * @public
+ * @memberOf {Core}
+ * @method
+ *
  * @param {String} moduleName
  *
  * @returns {Core}
  * */
 Core.prototype.install = function (moduleName) {
-    var plugins = this._plugs;
 
     try {
         //  is module
         moduleName = require.resolve(moduleName);
 
-        plugins.push(function () {
-            plugins.push(require(moduleName));
-        });
+        this.plugin(createInstaller(moduleName));
 
     } catch (err) {
-        plugins.push(function (agent) {
+        this.plugin(function (agent) {
             var opts = {silent: true, cwd: agent.params.root};
             return vowFs.glob(moduleName, opts).then(function (paths) {
-                _.forEach(paths, function (moduleName) {
-                    plugins.push(require(moduleName));
+                _.forEach(paths, function (fileName) {
+                    agent.plugin(createInstaller(fileName));
                 });
             });
         });
@@ -310,6 +321,12 @@ Core.prototype._getReady = function () {
     return shiftPlugins.call(this, vow.resolve()).
         then(createUnits, this);
 };
+
+function createInstaller(moduleName) {
+    return function (agent) {
+        agent.plugin(require(moduleName));
+    };
+}
 
 function shiftPlugins(promise) {
     return promise.then(function () {
