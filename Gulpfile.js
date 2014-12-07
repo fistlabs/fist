@@ -23,7 +23,7 @@ require('loggin').conf({
             Class: 'loggin/core/layout/colored',
             kwargs: {
                 dateFormat: '%H:%M:%S',
-                template: '\t\t%(date)s %(level)-17s :%(context)s - %(message)s\n',
+                template: '\t%(date)s %(level)-17s %(context)s - %(message)s\n',
                 colors: {
                     INTERNAL: 'white',
                     DEBUG: 'fuchsia',
