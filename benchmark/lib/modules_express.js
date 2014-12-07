@@ -12,7 +12,7 @@ app.use(function (req, res, next) {
 });
 
 app.get('/:page/', function (req, res) {
-    res.send('OK');
+    res.end('OK');
 });
 
 app.listen(1337);

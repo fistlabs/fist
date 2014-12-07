@@ -4,8 +4,7 @@ var fist = require('../../fist');
 var app = fist();
 
 fist.logging.conf({
-    logLevel: 'INTERNAL',
-    enabled: []
+    logLevel: 'NOTSET'
 });
 
 app.unit({
@@ -18,7 +17,7 @@ app.unit({
     name: 'a',
     deps: ['b'],
     main: function (track) {
-        return track.send('OK');
+        return track.outgoing.end('OK');
     }
 });
 
