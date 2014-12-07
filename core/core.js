@@ -285,23 +285,24 @@ Core.prototype.plugin = function (plugin) {
  * @method
  *
  * @param {String} moduleName
+ * @param {*} [settings]
  *
  * @returns {Core}
  * */
-Core.prototype.install = function (moduleName) {
+Core.prototype.install = function (moduleName, settings) {
 
     try {
         //  is module
         moduleName = require.resolve(moduleName);
 
-        this.plugin(createInstaller(moduleName));
+        this.plugin(createInstaller(moduleName, settings));
 
     } catch (err) {
         this.plugin(function (agent) {
             var opts = {silent: true, cwd: agent.params.root};
             return vowFs.glob(moduleName, opts).then(function (paths) {
                 _.forEach(paths, function (fileName) {
-                    agent.plugin(createInstaller(fileName));
+                    agent.plugin(createInstaller(fileName, settings));
                 });
             });
         });
@@ -322,9 +323,15 @@ Core.prototype._getReady = function () {
         then(createUnits, this);
 };
 
-function createInstaller(moduleName) {
+function createInstaller(moduleName, settings) {
     return function (agent) {
-        agent.plugin(require(moduleName));
+        var plugin = require(moduleName);
+
+        if (settings) {
+            plugin = plugin(settings);
+        }
+
+        agent.plugin(plugin);
     };
 }
 
