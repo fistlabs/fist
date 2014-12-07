@@ -52,6 +52,20 @@ module.exports = function (agent) {
          * @memberOf {fist_contrib_unit_incoming}
          * @method
          *
+         * @param {*} args
+         *
+         * @returns {String}
+         * */
+        hashArgs: function (args) {
+            /*eslint no-unused-vars: 0*/
+            return this.name;
+        },
+
+        /**
+         * @public
+         * @memberOf {fist_contrib_unit_incoming}
+         * @method
+         *
          * @param {Connect} track
          * @param {Context} context
          *

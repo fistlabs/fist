@@ -61,9 +61,13 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
      * @memberOf {UnitCommon}
      * @method
      *
+     * @param {Track} track
+     * @param {*} args
+     * @param {*} hash
+     *
      * @returns {*}
      * */
-    call: function (track, args) {
+    call: function (track, args, hash) {
         var self = this;
         var context;
         var dStartExec = new Date();
@@ -73,6 +77,14 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
         logger.debug('Pending...');
 
         context = self.__self.createContext(logger).setup(self.params, track.params, args);
+
+        /**
+         * @public
+         * @memberOf {Context}
+         * @property
+         * @type {*}
+         * */
+        context.argsHash = hash;
         result = self._execute(track, context);
 
         result.done(function () {
@@ -89,11 +101,24 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
             if (track.isFlushed()) {
                 logger.warn('Skip error in %dms', execTime, err);
             } else {
-                logger.warn('Rejected in %dms', execTime, err);
+                logger.error('Rejected in %dms', execTime, err);
             }
         });
 
         return result;
+    },
+
+    /**
+     * @public
+     * @memberOf {UnitCommon}
+     * @method
+     *
+     * @param {*} args
+     *
+     * @returns {String}
+     * */
+    hashArgs: function (args) {
+        return args;
     },
 
     /**
@@ -122,7 +147,7 @@ var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
      * */
     getMemKey: function (track, context) {
         /*eslint no-unused-vars: 0*/
-        return [this.name, String(context.params)].join(',');
+        return [this.name, context.argsHash].join(',');
     },
 
     /**

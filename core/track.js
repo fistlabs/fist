@@ -78,9 +78,16 @@ Track.prototype.constructor = Track;
  * @returns {vow.Promise}
  * */
 Track.prototype.invoke = function (unit, args) {
-    var argsHash;
+    var hash = unit.hashArgs(args);
     var calls = this._calls;
     var name = unit.name;
+
+    if (Object(hash) === hash) {
+        //  generate unique id no prevent unexpected cache
+        hash = uniqueId();
+        this.logger.warn('The arguments %j could not be hashed for memorize "%s" invocation\n' +
+        '   Hint: define unit.hashArgs(args) method to provide unique arguments hash', args, name);
+    }
 
     if (hasProperty.call(calls, name)) {
         calls = calls[name];
@@ -88,24 +95,11 @@ Track.prototype.invoke = function (unit, args) {
         calls = calls[name] = {};
     }
 
-    if (Object(args) !== args || hasProperty.call(args, 'toString')) {
-        //  The arguments are well hashable
-        argsHash = String(args);
-
-        if (hasProperty.call(calls, argsHash)) {
-            //  score!
-            return calls[argsHash];
-        }
-
-        calls[argsHash] = unit.call(this, args);
-
-        return calls[argsHash];
+    if (!hasProperty.call(calls, hash)) {
+        calls[hash] = unit.call(this, args, hash);
     }
 
-    this.logger.warn('The arguments %j could not be hashed for memorize "%s" invocation\n' +
-    '   Hint: define own args.toString function to provide unique arguments hash', args, name);
-
-    return unit.call(this, args);
+    return calls[hash];
 };
 
 /**

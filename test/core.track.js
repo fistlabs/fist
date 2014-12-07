@@ -69,10 +69,13 @@ describe('core/track/track', function () {
             });
         });
 
-        it('Should memorize unit calls by args hash if .toString defined', function (done) {
+        it('Should memorize unit calls by args hash if unit.hashArgs() defined', function (done) {
             var i = 0;
             var Unit = inherit(UnitCommon, {
                 name: 'foo',
+                hashArgs: function (args) {
+                    return args && args.foo;
+                },
                 main: function (track, context) {
                     i += 1;
                     assert.strictEqual(context.params.foo, 'bar');
@@ -80,10 +83,7 @@ describe('core/track/track', function () {
                 }
             });
             var args = {
-                foo: 'bar',
-                toString: function () {
-                    return this.foo;
-                }
+                foo: 'bar'
             };
             var unit = new Unit();
             var track = new Track(agent);
@@ -100,10 +100,13 @@ describe('core/track/track', function () {
             });
         });
 
-        it('Should not memorize unit calls if no .toString defined', function (done) {
+        it('Should not memorize unit calls if no unit.hasArgs() returned complex type', function (done) {
             var i = 0;
             var Unit = inherit(UnitCommon, {
                 name: 'foo',
+                hashArgs: function () {
+                    return {};
+                },
                 main: function (track, context) {
                     i += 1;
                     assert.strictEqual(context.params.foo, 'bar');

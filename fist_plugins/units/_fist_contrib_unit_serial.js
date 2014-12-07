@@ -77,7 +77,7 @@ function next(self, track, context) {
             return func.call(self, track, context);
         }
 
-        context.logger.warn('Failed to execute "%s"', name);
+        context.logger.error('Failed to execute "%s"', name);
         throw context.prev;
     });
 }

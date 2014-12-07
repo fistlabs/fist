@@ -77,9 +77,6 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
 
         agent.ready().done(function () {
             track.eject('docs', {
-                toString: function () {
-                    return this.type;
-                },
                 type: 'index'
             }).done(function (res) {
                 assert.deepEqual(res, {
@@ -119,10 +116,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
 
         agent.ready().done(function () {
             track.eject('upload', {
-                foo: 'bar',
-                toString: function () {
-                    return JSON.stringify(this);
-                }
+                foo: 'bar'
             }).done(function (res) {
                 assert.strictEqual(res.foo, 'bar');
                 done();

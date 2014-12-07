@@ -103,11 +103,8 @@ describe('core/unit-common', function () {
 
             var unit = new Unit();
             var track = getTrack();
-            var context = new Context(new Logger(new Logging())).setup({
-                foo: 'bar',
-                toString: function () {
-                    return this.foo;
-                }});
+            var context = new Context(new Logger(new Logging())).setup();
+            context.argsHash = 'bar';
 
             assert.strictEqual(unit.getMemKey(track, context), 'foo,bar');
         });
