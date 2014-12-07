@@ -10,34 +10,35 @@ fist.logging.conf({
 
 app.unit({
     base: '_fist_contrib_unit',
+    name: 'base',
+    params: {
+        toString: function () {
+            return '';
+        }
+    }
+});
+
+app.unit({
+    base: 'base',
     name: 'a',
     deps: ['b'],
-    params: {
-        toString: function () {}
-    },
     main: function (track) {
         return track.send('OK');
     }
 });
 
 app.unit({
-    base: '_fist_contrib_unit',
+    base: 'base',
     name: 'b',
     deps: ['c'],
-    params: {
-        toString: function () {}
-    },
     main: function () {
         return 'b';
     }
 });
 
 app.unit({
-    base: '_fist_contrib_unit',
+    base: 'base',
     name: 'c',
-    params: {
-        toString: function () {}
-    },
     main: function () {
         return 'c';
     }
