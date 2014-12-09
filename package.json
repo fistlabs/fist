@@ -13,7 +13,7 @@
         "busboy": "git://github.com/mscdex/busboy.git#e70d9e462b21f5554c54aa16bc20620e5f5e3eff",
         "semver": "4.1.0",
         "loggin": "2.1.0",
-        "obus": "1.0.0-1",
+        "obus": "1.0.0",
         "vow-fs": "0.3.3",
         "vow-asker": "0.7.0",
         "unique-id": "0.0.1",
