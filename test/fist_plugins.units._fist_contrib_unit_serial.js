@@ -6,6 +6,7 @@ var Agent = require('../core/core');
 var Track = require('../core/track');
 
 var assert = require('assert');
+var logger = require('loggin');
 
 function getAgent(params) {
     var agent = new Agent(params);
@@ -17,7 +18,7 @@ function getAgent(params) {
 describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
     it('Should run unit step by step', function (done) {
         var agent = getAgent();
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_serial',
@@ -41,7 +42,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
 
     it('Should stop running series if track was flushed', function (done) {
         var agent = getAgent();
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_serial',
@@ -66,7 +67,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
 
     it('Should run fallback if step failed', function (done) {
         var agent = getAgent();
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_serial',
@@ -94,7 +95,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
 
     it('Should be rejected if no fallback provided', function (done) {
         var agent = getAgent();
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_serial',
@@ -118,7 +119,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
 
     it('Should resolve unit if no series left', function (done) {
         var agent = getAgent();
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_serial',

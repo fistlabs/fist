@@ -1,21 +1,13 @@
 'use strict';
 
 var hasProperty = Object.prototype.hasOwnProperty;
-var uniqueId = require('unique-id');
 
 /**
  * @class Track
  * @param {Server} agent
+ * @param {Logger} logger
  * */
-function Track(agent) {
-
-    /**
-     * @public
-     * @memberOf {Track}
-     * @property
-     * @type {String}
-     * */
-    this.id = uniqueId();
+function Track(agent, logger) {
 
     /**
      * @public
@@ -23,7 +15,7 @@ function Track(agent) {
      * @property
      * @type {Logger}
      * */
-    this.logger = agent.logger.bind(this.id);
+    this.logger = logger;
 
     /**
      * @public

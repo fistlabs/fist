@@ -7,6 +7,10 @@ var Router = /** @type Router */ require('finger/core/router');
 var _ = require('lodash-node');
 var http = require('http');
 var proxyAddr = require('proxy-addr');
+var uniqueId = require('unique-id');
+var vow = require('vow');
+
+var STATUS_CODES = http.STATUS_CODES;
 
 /**
  * @class Server
@@ -56,9 +60,10 @@ Server.prototype.getHandler = function () {
 
     return function (req, res) {
         var dExecStart = new Date();
-        var track = new Connect(self, req, res);
+        var requestId = req.id || req.headers['x-request-id'] || uniqueId();
+        var logger = self.logger.bind(requestId);
 
-        track.logger.info('Incoming %(method)s %(url)s %s', function () {
+        logger.info('Incoming %(method)s %(url)s %s', function () {
             var name;
             var headers = '';
             for (name in req.headers) {
@@ -72,7 +77,6 @@ Server.prototype.getHandler = function () {
 
         res.on('finish', function () {
             var statusCode = res.statusCode;
-            var statusText = http.STATUS_CODES[statusCode];
             var recordType;
 
             switch (true) {
@@ -102,11 +106,10 @@ Server.prototype.getHandler = function () {
                     break;
             }
 
-            track.logger[recordType]('%d %s (%dms)',
-                statusCode, statusText, new Date() - dExecStart);
+            logger[recordType]('%d %s (%dms)', statusCode, STATUS_CODES[statusCode], new Date() - dExecStart);
         });
 
-        self.handle(track).done();
+        self.handle(req, res, logger).done();
     };
 };
 
@@ -117,16 +120,95 @@ Server.prototype.getHandler = function () {
  *
  * @returns {vow.Promise}
  * */
-Server.prototype.handle = function (track) {
+Server.prototype.handle = function (req, res, logger) {
     var promise = this.ready();
 
     //  -1 possible tick
     if (promise.isFulfilled()) {
-        return track.run();
+        return this._initTrack(req, res, logger);
     }
 
     //  wait for init
-    return promise.then(track.run, track);
+    return promise.then(function () {
+        return this._initTrack(req, res, logger);
+    }, this);
+};
+
+/**
+ * @protected
+ * @memberOf {Server}
+ * @method
+ *
+ * @returns {vow.Promise}
+ * */
+Server.prototype._initTrack = function (req, res, logger) {
+    var matches;
+    var path = req.url;
+    var router = this.router;
+    var verb = req.method;
+
+    if (!router.isImplemented(verb)) {
+        logger.warn('There is no %s handlers', verb);
+        res.statusCode = 501;
+        res.end(STATUS_CODES[501]);
+        return vow.resolve();
+    }
+
+    matches = router.matchAll(verb, path);
+
+    if (!matches.length) {
+        matches = router.matchVerbs(path);
+
+        if (matches.length) {
+            logger.warn('The method %s is not allowed for resource %s', verb, path);
+            res.statusCode = 405;
+            res.setHeader('Allow', matches.join(', '));
+            res.end(STATUS_CODES[405]);
+            return vow.resolve();
+        }
+
+        //  matches === [] here
+    }
+
+    return this._nextRun(new Connect(this, logger, req, res), matches);
+};
+
+/**
+ * @private
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {vow.Promise}
+ * */
+Server.prototype._nextRun = function (track, matches) {
+    var match;
+    var outgoing;
+
+    if (!matches.length) {
+        track.logger.warn('There is no matching route');
+        track.status(404).send();
+        return vow.resolve();
+    }
+
+    match = matches.shift();
+    track.params = match.args;
+    track.route = match.data.name;
+    track.logger.note('Match "%(data.name)s" route ~ %(args)j', match);
+    outgoing = track.outgoing;
+
+    /** @this {Server} */
+    return track.eject(match.data.unit).
+        then(function () {
+            if (!outgoing.headersSent) {
+                return this._nextRun(track, matches);
+            }
+
+            return void 0;
+        }, function (err) {
+            if (!outgoing.headersSent) {
+                track.status(500).send(err);
+            }
+        }, this);
 };
 
 /**

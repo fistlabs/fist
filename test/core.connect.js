@@ -5,6 +5,7 @@
 var Server = require('../core/server');
 
 var assert = require('assert');
+var logger = require('loggin');
 var supertest = require('supertest');
 
 describe('core/connect', function () {
@@ -13,7 +14,7 @@ describe('core/connect', function () {
     describe('connect.getHost()', function () {
         it('Should return the value of "Host" header', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHost(), 'foo.bar:1234');
                 res.end();
             }).
@@ -27,7 +28,7 @@ describe('core/connect', function () {
             supertest(function (req, res) {
                 var connect = new Connect(new Server({
                     trustProxy: '127.0.0.1'
-                }), req, res);
+                }), logger, req, res);
                 assert.strictEqual(connect.getHost(), 'foo.bar.baz:12345');
                 res.end();
             }).
@@ -42,7 +43,7 @@ describe('core/connect', function () {
             supertest(function (req, res) {
                 var connect = new Connect(new Server({
                     trustProxy: '222.222.222.222'
-                }), req, res);
+                }), logger, req, res);
                 assert.strictEqual(connect.getHost(), 'foo.bar:1234');
                 res.end();
             }).
@@ -56,7 +57,7 @@ describe('core/connect', function () {
         it('Should return "localhost" if not Host header set', function (done) {
             supertest(function (req, res) {
                 req.headers.host = void 0;
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHost(), 'localhost');
                 res.end();
             }).
@@ -69,7 +70,7 @@ describe('core/connect', function () {
     describe('connect.getHostname()', function () {
         it('Should return hostname by host with port', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), 'foo.bar');
                 res.end();
             }).
@@ -81,7 +82,7 @@ describe('core/connect', function () {
 
         it('Should return hostname by host with no port', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), 'foo.bar');
                 res.end();
             }).
@@ -93,7 +94,7 @@ describe('core/connect', function () {
 
         it('Should return hostname ipv4 literal with port', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), '127.0.0.1');
                 res.end();
             }).
@@ -105,7 +106,7 @@ describe('core/connect', function () {
 
         it('Should return hostname ipv4 literal with no port', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), '127.0.0.1');
                 res.end();
             }).
@@ -117,7 +118,7 @@ describe('core/connect', function () {
 
         it('Should return hostname by ipv6 literal with port', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), '::1');
                 res.end();
             }).
@@ -129,7 +130,7 @@ describe('core/connect', function () {
 
         it('Should return hostname by ipv6 literal with no port', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), '::1');
                 res.end();
             }).
@@ -141,7 +142,7 @@ describe('core/connect', function () {
 
         it('Should return Host header value on no regexp match (1)', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), '::::::');
                 res.end();
             }).
@@ -153,7 +154,7 @@ describe('core/connect', function () {
 
         it('Should return Host header value on no regexp match (2)', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHostname(), '[][][]');
                 res.end();
             }).
@@ -168,7 +169,7 @@ describe('core/connect', function () {
         it('Should return "http" coz connection is not encrypted', function (done) {
             supertest(function (req, res) {
                 req.connection.encrypted = false;
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getProtocol(), 'http');
                 res.end();
             }).
@@ -180,7 +181,7 @@ describe('core/connect', function () {
         it('Should return "https" coz connection is encrypted', function (done) {
             supertest(function (req, res) {
                 req.connection.encrypted = true;
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getProtocol(), 'https');
                 res.end();
             }).
@@ -191,7 +192,7 @@ describe('core/connect', function () {
 
         it('Should return first value of X-Forwarded-Proto coz proxy trusted', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getProtocol(), 'https');
                 res.end();
             }).
@@ -206,7 +207,7 @@ describe('core/connect', function () {
     describe('connect.getIp()', function () {
         it('Should return remoteAddress', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getIp(), req.connection.remoteAddress);
                 res.end();
             }).
@@ -219,7 +220,7 @@ describe('core/connect', function () {
     describe('connect.getIp()', function () {
         it('Should contain remoteAddress', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.notStrictEqual(connect.getIps().indexOf(req.connection.remoteAddress), -1);
                 res.end();
             }).
@@ -232,7 +233,7 @@ describe('core/connect', function () {
     describe('connect.url', function () {
         it('Should be parsed request url', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 var url = connect.url;
 
                 assert.ok(url);
@@ -250,7 +251,7 @@ describe('core/connect', function () {
 
         it('Should get url.hostname from Host header', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 var url = connect.url;
                 assert.strictEqual(url.hostname, connect.getHostname());
                 assert.strictEqual(url.hostname, 'foo.bar');
@@ -268,7 +269,7 @@ describe('core/connect', function () {
             supertest(function (req, res) {
                 var connect = new Connect(new Server({
                     trustProxy: 'loopback'
-                }), req, res);
+                }), logger, req, res);
                 var url = connect.url;
                 assert.strictEqual(url.host, connect.getHost());
                 assert.strictEqual(url.host, 'foo.bar.baz:1234');
@@ -287,7 +288,7 @@ describe('core/connect', function () {
             supertest(function (req, res) {
                 var connect = new Connect(new Server({
                     trustProxy: 'loopback'
-                }), req, res);
+                }), logger, req, res);
                 var url = connect.url;
                 assert.strictEqual(url.protocol, connect.getProtocol() + ':');
 
@@ -303,7 +304,7 @@ describe('core/connect', function () {
                 req.connection.encrypted = true;
                 var connect = new Connect(new Server({
                     trustProxy: []
-                }), req, res);
+                }), logger, req, res);
                 var url = connect.url;
                 assert.strictEqual(url.protocol, 'https:');
                 assert.strictEqual(connect.getProtocol(), 'https');
@@ -320,7 +321,7 @@ describe('core/connect', function () {
     describe('connect.header()', function () {
         it('Should return all request headers', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 var header = connect.header();
 
                 assert.ok(header);
@@ -338,7 +339,7 @@ describe('core/connect', function () {
 
         it('Should return request header by name', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
 
                 assert.strictEqual(connect.header('x-foo'), 'bar');
                 assert.strictEqual(connect.header('X-Foo'), 'bar');
@@ -354,7 +355,7 @@ describe('core/connect', function () {
 
         it('Should set header by name and value', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
 
                 assert.strictEqual(connect.header('X-Foo', 'bar'), connect);
                 assert.strictEqual(connect.header('X-Bar', 'baz'), connect);
@@ -370,7 +371,7 @@ describe('core/connect', function () {
 
         it('Should set header by object', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
 
                 assert.strictEqual(connect.header({
                     'X-Foo': 'bar',
@@ -390,7 +391,7 @@ describe('core/connect', function () {
     describe('connect.cookie()', function () {
         it('Should return all request cookies', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 var cookie = connect.cookie();
 
                 assert.ok(cookie);
@@ -407,7 +408,7 @@ describe('core/connect', function () {
 
         it('Should not fail if no Cookie header set', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 var cookie = connect.cookie();
 
                 assert.ok(cookie);
@@ -421,7 +422,7 @@ describe('core/connect', function () {
 
         it('Should return request cookie by name', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
 
                 assert.strictEqual(connect.cookie('foo'), 'bar');
                 assert.strictEqual(connect.cookie('bar'), 'baz');
@@ -435,7 +436,7 @@ describe('core/connect', function () {
 
         it('Should set cookie by name, value and options', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
 
                 assert.strictEqual(connect.cookie('foo', 'bar'), connect);
                 assert.strictEqual(connect.cookie('bar', 'baz', {
@@ -459,7 +460,7 @@ describe('core/connect', function () {
 
             it('Should send string and auto set headers implicit headers', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send('Foo');
                 }).
                     get('/').
@@ -471,7 +472,7 @@ describe('core/connect', function () {
 
             it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.header({
                         'Content-Type': 'text/bar+plain',
                         'Content-Length': 42
@@ -492,7 +493,7 @@ describe('core/connect', function () {
 
             it('Should send status text if no body passed', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send();
                 }).
                     get('/').
@@ -506,7 +507,7 @@ describe('core/connect', function () {
         describe('connect.send(Buffer)', function () {
             it('Should send buffer as application/octet-stream by default', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send(new Buffer('foo'));
                 }).
                     get('/').
@@ -518,7 +519,7 @@ describe('core/connect', function () {
 
             it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.header({
                         'Content-Type': 'text/plain',
                         'Content-Length': '42'
@@ -536,7 +537,7 @@ describe('core/connect', function () {
         describe('connect.send(Stream.Readable)', function () {
             it('Should pipe stream to response', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send(req);
                 }).
                     get('/').
@@ -549,7 +550,7 @@ describe('core/connect', function () {
 
             it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.header('Content-Type', 'text/plain').send(req);
                 }).
                     get('/').
@@ -565,7 +566,7 @@ describe('core/connect', function () {
             it('Should send error stack as string', function (done) {
                 var error = new Error(':)');
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send(error);
                 }).
                     get('/').
@@ -580,7 +581,7 @@ describe('core/connect', function () {
                 error.stack = null;
 
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send(error);
                 }).
                     get('/').
@@ -597,7 +598,7 @@ describe('core/connect', function () {
                 var obj = {foo: 'bar'};
 
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.send(obj);
                 }).
                     get('/').
@@ -611,7 +612,7 @@ describe('core/connect', function () {
                 var obj = {foo: 'bar'};
 
                 supertest(function (req, res) {
-                    var connect = new Connect(new Server(), req, res);
+                    var connect = new Connect(new Server(), logger, req, res);
                     connect.header({
                         'Content-Type': 'text/plain',
                         'Content-Length': 42
@@ -630,7 +631,7 @@ describe('core/connect', function () {
     describe('connect.status()', function () {
         it('Should set status', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.status(201), connect);
                 connect.send();
             }).
@@ -641,221 +642,12 @@ describe('core/connect', function () {
 
         it('Should get status', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.status(), 200);
                 connect.send();
             }).
                 get('/').
                 end(done);
-        });
-    });
-
-    describe('connect.run()', function () {
-
-        it('Should send 501', function (done) {
-            supertest(function (req, res) {
-                return new Connect(new Server(), req, res).run();
-            }).
-                get('/').
-                expect(501, done);
-        });
-
-        it('Should send 405', function (done) {
-            var agent = new Server();
-            agent.route('GET /', {
-                name: 'index'
-            });
-            agent.route('POST /upload/', {
-                name: 'upload'
-            });
-            agent.ready().done(function () {
-                supertest(function (req, res) {
-                    return new Connect(agent, req, res).run();
-                }).
-                    post('/').
-                    expect('Allow', /GET/).
-                    expect(405).
-                    end(done);
-            });
-        });
-
-        it('Should send 404', function (done) {
-            var agent = new Server();
-            agent.route('GET /', {
-                name: 'index'
-            });
-            agent.ready().done(function () {
-                supertest(function (req, res) {
-                    return new Connect(agent, req, res).run();
-                }).
-                    get('/foo/').
-                    expect(404).
-                    end(done);
-            });
-        });
-
-        it('Should run controllers one by one', function (done) {
-            var spy = [];
-            var agent = new Server();
-            agent.unit({
-                name: 'foo',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'bar',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'baz',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-
-            agent.route('GET /', 'foo');
-            agent.route('GET /', 'bar');
-            agent.route('GET /', 'baz');
-
-            agent.ready().done(function () {
-                supertest(function (req, res) {
-                    var connect = new Connect(agent, req, res);
-                    connect.run();
-                }).
-                    get('/').
-                    expect(404).
-                    end(function (err) {
-                        assert.deepEqual(spy, ['foo', 'bar', 'baz']);
-                        done(err);
-                    });
-            });
-        });
-
-        it('Should stop find controller if one found', function (done) {
-            var spy = [];
-            var agent = new Server();
-            agent.unit({
-                name: 'foo',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'bar',
-                main: function (track) {
-                    track.send(this.name);
-                }
-            });
-            agent.unit({
-                name: 'baz',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-
-            agent.route('GET /', 'foo');
-            agent.route('GET /', 'bar');
-            agent.route('GET /', 'baz');
-
-            agent.ready().done(function () {
-                supertest(function (req, res) {
-                    var connect = new Connect(agent, req, res);
-                    connect.run();
-                }).
-                    get('/').
-                    expect(200).
-                    expect('bar').
-                    end(function (err) {
-                        assert.deepEqual(spy, ['foo']);
-                        done(err);
-                    });
-            });
-        });
-
-        it('Should send 500 if controller was rejected', function (done) {
-            var spy = [];
-            var agent = new Server();
-            agent.unit({
-                name: 'foo',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'bar',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'baz',
-                main: function () {
-                    throw this.name;
-                }
-            });
-
-            agent.route('GET /', 'foo');
-            agent.route('GET /', 'bar');
-            agent.route('GET /', 'baz');
-
-            agent.ready().done(function () {
-                supertest(function (req, res) {
-                    var connect = new Connect(agent, req, res);
-                    connect.run();
-                }).
-                    get('/').
-                    expect(500).
-                    expect('baz').
-                    end(function (err) {
-                        assert.deepEqual(spy, ['foo', 'bar']);
-                        done(err);
-                    });
-            });
-        });
-
-        it('Should not overwrite explicit head if controller was rejected', function (done) {
-            var spy = [];
-            var agent = new Server();
-            agent.unit({
-                name: 'foo',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'bar',
-                main: function () {
-                    spy.push(this.name);
-                }
-            });
-            agent.unit({
-                name: 'baz',
-                main: function (track) {
-                    track.status(502).send('o_O');
-                    throw this.name;
-                }
-            });
-
-            agent.route('GET /', 'foo');
-            agent.route('GET /', 'bar');
-            agent.route('GET /', 'baz');
-
-            agent.ready().done(function () {
-                supertest(function (req, res) {
-                    var connect = new Connect(agent, req, res);
-                    connect.run();
-                }).
-                    get('/').
-                    expect(502).
-                    expect('o_O').
-                    end(function (err) {
-                        assert.deepEqual(spy, ['foo', 'bar']);
-                        done(err);
-                    });
-            });
         });
     });
 });

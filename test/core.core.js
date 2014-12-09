@@ -6,6 +6,7 @@ var Track = require('../core/track');
 
 var _ = require('lodash-node');
 var assert = require('assert');
+var logger = require('loggin');
 var path = require('path');
 
 describe('core/core', function () {
@@ -49,9 +50,19 @@ describe('core/core', function () {
                 var agent = new Core({
                     name: 'foo'
                 });
-                var logger = agent.logger;
-                var name = _.last(logger.context.split(/\W+/));
+                var name = _.last(agent.logger.context.split(/\W+/));
                 assert.strictEqual(name, 'foo');
+            });
+
+            it('Should take logging settings', function () {
+                var agent = new Core({
+                    name: 'foo',
+                    logging: {
+                        logLevel: 'FOO'
+                    }
+                });
+
+                assert.strictEqual(agent.logger.logLevel, 'FOO');
             });
         });
     });
@@ -416,7 +427,7 @@ describe('core/core', function () {
             });
 
             agent.ready().done(function () {
-                agent.callUnit('foo', new Track(agent)).done(function (res) {
+                agent.callUnit('foo', new Track(agent, logger)).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     done();
                 });
@@ -427,7 +438,7 @@ describe('core/core', function () {
             var agent = new Core();
             agent.ready().done(function () {
                 assert.throws(function () {
-                    agent.callUnit('foo', new Track(agent));
+                    agent.callUnit('foo', new Track(agent, logger));
                 });
                 done();
             });

@@ -242,23 +242,23 @@ Core.prototype.getUnitClass = function (name) {
  * @returns {vow.Promise}
  * */
 Core.prototype.ready = function () {
-    if (this.__ready) {
+    if (this.__readyPromise) {
         //  already initialized
-        return this.__ready;
+        return this.__readyPromise;
     }
 
     this.logger.debug('Pending...');
 
-    this.__ready = this._getReady();
+    this.__readyPromise = this._getReady();
 
     /** @this {Core} */
-    this.__ready.done(function () {
+    this.__readyPromise.done(function () {
         this.logger.note('Ready.');
     }, function (err) {
         this.logger.fatal('Failed to start application', err);
     }, this);
 
-    return this.__ready;
+    return this.__readyPromise;
 };
 
 /**

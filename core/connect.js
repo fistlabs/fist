@@ -1,4 +1,5 @@
 'use strict';
+//  TODO move routing to server
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Track = /** @type Track */ require('./track');
@@ -6,7 +7,6 @@ var Track = /** @type Track */ require('./track');
 var cookieparser = require('cookieparser');
 var hasProperty = Object.prototype.hasOwnProperty;
 var urlParse = require('url').parse;
-var vow = require('vow');
 var proxyAddr = require('proxy-addr');
 
 /**
@@ -14,13 +14,14 @@ var proxyAddr = require('proxy-addr');
  * @extends Track
  *
  * @param {Server} agent
+ * @param {Logger} logger
  * @param {IncomingMessage} incoming
  * @param {ServerResponse} outgoing
  * */
-function Connect(agent, incoming, outgoing) {
+function Connect(agent, logger, incoming, outgoing) {
     var self = this;
 
-    Track.call(this, agent);
+    Track.call(this, agent, logger);
 
     outgoing.on('close', function () {
         self._isFlushed = true;
@@ -54,7 +55,13 @@ function Connect(agent, incoming, outgoing) {
      * */
     this.route = null;
 
-    this._setUrl(incoming.url);
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @property
+     * @type {Object}
+     * */
+    this.url = urlParse(this.getProtocol() + '://' + this.getHost() + incoming.url, true);
 }
 
 Connect.prototype = Object.create(Track.prototype);
@@ -77,76 +84,6 @@ Connect.prototype.constructor = Connect;
  * */
 Connect.prototype.isFlushed = function () {
     return Track.prototype.isFlushed.call(this) || this.outgoing.headersSent;
-};
-
-/**
- * @public
- * @memberOf {Connect}
- * @method
- *
- * @returns {vow.Promise}
- * */
-Connect.prototype.run = function () {
-    var matches = this._matches;
-    var outgoing = this.outgoing;
-
-    if (!matches) {
-        this.logger.warn('There is no %(incoming.method)s handlers', this);
-        outgoing.statusCode = 501;
-        this._sendUndefined();
-        return vow.resolve();
-    }
-
-    if (!matches.length) {
-        matches = this._agent.router.matchVerbs(this.url.path);
-        if (matches.length) {
-            this.logger.warn('The method %(incoming.method)s is not allowed for resource %(url.path)s', this);
-            outgoing.statusCode = 405;
-            outgoing.setHeader('Allow', matches.join(', '));
-            this._sendUndefined();
-            return vow.resolve();
-        }
-    }
-
-    return this.next();
-};
-
-/**
- * @private
- * @memberOf {Connect}
- * @method
- *
- * @returns {vow.Promise}
- * */
-Connect.prototype.next = function () {
-    var match = this._matches.shift();
-    var outgoing = this.outgoing;
-    var self = this;
-
-    if (!match) {
-        this.logger.warn('There is no matching route');
-        outgoing.statusCode = 404;
-        this._sendUndefined();
-        return vow.resolve();
-    }
-
-    this.params = match.args;
-    this.route = match.data.name;
-    this.logger.note('Match "%(data.name)s" route ~ %(args)j', match);
-
-    return this.eject(match.data.unit).
-        then(function () {
-            if (!outgoing.headersSent) {
-                return self.next();
-            }
-
-            return void 0;
-        }, function (err) {
-            if (!outgoing.headersSent) {
-                outgoing.statusCode = 500;
-                self.send(err);
-            }
-        });
 };
 
 /**
@@ -470,37 +407,6 @@ Connect.prototype.getProtocol = function () {
     }
 
     return protocol;
-};
-
-/**
- * @private
- * @memberOf {Connect}
- * @method
- *
- * @param {String} url
- * */
-Connect.prototype._setUrl = function (url) {
-    this.params = {};
-
-    /**
-     * @public
-     * @memberOf {Connect}
-     * @property
-     * @type {Object}
-     * */
-    this.url = urlParse(this.getProtocol() + '://' + this.getHost() + url, true);
-
-    /**
-     * @public
-     * @memberOf {Connect}
-     * @property
-     * @type {Array<Object>}
-     * */
-    this._matches = null;
-
-    if (this._agent.router.isImplemented(this.incoming.method)) {
-        this._matches = this._agent.router.matchAll(this.incoming.method, url);
-    }
 };
 
 module.exports = Connect;

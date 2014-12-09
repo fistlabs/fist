@@ -5,6 +5,7 @@
 var Router = require('finger/core/router');
 var assert = require('assert');
 var supertest = require('supertest');
+var STATUS_CODES = require('http').STATUS_CODES;
 
 describe('core/server', function () {
     var Server = require('../core/server');
@@ -61,19 +62,33 @@ describe('core/server', function () {
             supertest(server.getHandler()).
                 get('/').
                 expect(501).
+                expect(STATUS_CODES[501]).
                 end(done);
         });
 
-        it('Should handler request and return 404', function (done) {
+        it('Should handle request and return 405', function (done) {
+            var server = new Server();
+            server.route('GET /', 'index');
+            server.route('POST /foo/', 'foo');
+            supertest(server.getHandler()).
+                get('/foo/').
+                expect('Allow', 'POST').
+                expect(405).
+                expect(STATUS_CODES[405]).
+                end(done);
+        });
+
+        it('Should handle request and return 404', function (done) {
             var server = new Server();
             server.route('GET /foo/');
             supertest(server.getHandler()).
                 get('/').
                 expect(404).
+                expect(STATUS_CODES[404]).
                 end(done);
         });
 
-        it('Should handler request and return 302', function (done) {
+        it('Should handle request and return 302', function (done) {
             var server = new Server();
             server.route('GET /', {
                 name: 'foo',
@@ -93,7 +108,7 @@ describe('core/server', function () {
                 end(done);
         });
 
-        it('Should handler request and return 200', function (done) {
+        it('Should handle request and return 200', function (done) {
             var server = new Server();
             server.route('GET /', {
                 name: 'foo',
@@ -113,6 +128,158 @@ describe('core/server', function () {
                     expect(200).
                     expect('foo').
                     end(done);
+            });
+        });
+
+        it('Should run controllers one by one', function (done) {
+            var spy = [];
+            var agent = new Server();
+            agent.unit({
+                name: 'foo',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'bar',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'baz',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+
+            agent.route('GET /', 'foo');
+            agent.route('GET /', 'bar');
+            agent.route('GET /', 'baz');
+
+            agent.ready().done(function () {
+                supertest(agent.getHandler()).
+                    get('/').
+                    expect(404).
+                    end(function (err) {
+                        assert.deepEqual(spy, ['foo', 'bar', 'baz']);
+                        done(err);
+                    });
+            });
+        });
+
+        it('Should stop finding controller if one found', function (done) {
+            var spy = [];
+            var agent = new Server();
+            agent.unit({
+                name: 'foo',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'bar',
+                main: function (track) {
+                    track.send(this.name);
+                }
+            });
+            agent.unit({
+                name: 'baz',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+
+            agent.route('GET /', 'foo');
+            agent.route('GET /', 'bar');
+            agent.route('GET /', 'baz');
+
+            agent.ready().done(function () {
+                supertest(agent.getHandler()).
+                    get('/').
+                    expect(200).
+                    expect('bar').
+                    end(function (err) {
+                        assert.deepEqual(spy, ['foo']);
+                        done(err);
+                    });
+            });
+        });
+
+        it('Should send 500 if controller was rejected', function (done) {
+            var spy = [];
+            var agent = new Server();
+            agent.unit({
+                name: 'foo',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'bar',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'baz',
+                main: function () {
+                    throw this.name;
+                }
+            });
+
+            agent.route('GET /', 'foo');
+            agent.route('GET /', 'bar');
+            agent.route('GET /', 'baz');
+
+            agent.ready().done(function () {
+                supertest(agent.getHandler()).
+                    get('/').
+                    expect(500).
+                    expect('baz').
+                    end(function (err) {
+                        assert.deepEqual(spy, ['foo', 'bar']);
+                        done(err);
+                    });
+            });
+        });
+
+        it('Should not overwrite explicit head if controller was rejected', function (done) {
+            var spy = [];
+            var agent = new Server();
+            agent.unit({
+                name: 'foo',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'bar',
+                main: function () {
+                    spy.push(this.name);
+                }
+            });
+            agent.unit({
+                name: 'baz',
+                main: function (track) {
+                    track.status(502).send('o_O');
+                    throw this.name;
+                }
+            });
+
+            agent.route('GET /', 'foo');
+            agent.route('GET /', 'bar');
+            agent.route('GET /', 'baz');
+
+            agent.ready().done(function () {
+                supertest(agent.getHandler()).
+                    get('/').
+                    expect(502).
+                    expect('o_O').
+                    end(function (err) {
+                        assert.deepEqual(spy, ['foo', 'bar']);
+                        done(err);
+                    });
             });
         });
     });

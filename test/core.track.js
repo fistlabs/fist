@@ -2,10 +2,9 @@
 /*global describe, it*/
 'use strict';
 
-var Logger = require('loggin/core/logger');
-
 var assert = require('assert');
 var inherit = require('inherit');
+var logger = require('loggin');
 
 describe('core/track', function () {
     var Core = require('../core/core');
@@ -13,18 +12,13 @@ describe('core/track', function () {
     var agent = new Core();
 
     it('Should be an instance of Track', function () {
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
         assert.ok(track instanceof Track);
     });
 
-    it('Should have a property "id"', function () {
-        var track = new Track(agent);
-        assert.strictEqual(typeof track.id, 'string');
-    });
-
-    it('Should have a logger', function () {
-        var track = new Track(agent);
-        assert.ok(track.logger instanceof Logger);
+    it('Should take a logger', function () {
+        var track = new Track(agent, logger);
+        assert.strictEqual(track.logger, logger);
     });
 
     describe('track.invoke()', function () {
@@ -36,7 +30,7 @@ describe('core/track', function () {
                 }
             });
             var unit = new Unit();
-            var track = new Track(agent);
+            var track = new Track(agent, logger);
 
             track.invoke(unit).done(function (res) {
                 assert.strictEqual(res.result, 42);
@@ -54,7 +48,7 @@ describe('core/track', function () {
                 }
             });
             var unit = new Unit();
-            var track = new Track(agent);
+            var track = new Track(agent, logger);
 
             track.invoke(unit).done(function (res) {
                 assert.strictEqual(res.result, 42);
@@ -87,7 +81,7 @@ describe('core/track', function () {
                 foo: 'bar'
             };
             var unit = new Unit();
-            var track = new Track(agent);
+            var track = new Track(agent, logger);
 
             track.invoke(unit, args).done(function (res) {
                 assert.strictEqual(res.result, 42);
@@ -113,7 +107,7 @@ describe('core/track', function () {
             });
 
             core.ready().done(function () {
-                var track = new Track(core);
+                var track = new Track(core, logger);
                 track.eject('foo').done(function (res) {
                     assert.strictEqual(res, 42);
                     done();

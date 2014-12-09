@@ -6,7 +6,9 @@ var Agent = require('../core/core');
 var Server = require('../core/server');
 var Track = require('../core/track');
 var Rule = require('finger/core/rule');
+
 var assert = require('assert');
+var logger = require('loggin');
 
 function getAgent(params) {
     var agent = new Agent(params);
@@ -57,7 +59,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
         var agent = getAgent({
             name: 'FRONTEND'
         });
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_asker',
@@ -91,7 +93,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
         var agent = getAgent({
             name: 'FRONTEND'
         });
-        var track = new Track(agent);
+        var track = new Track(agent, logger);
 
         agent.unit({
             base: '_fist_contrib_unit_asker',

@@ -7,6 +7,7 @@ var Track = require('../core/track');
 var Obus = require('obus');
 
 var assert = require('assert');
+var logger = require('loggin');
 
 function getAgent(params) {
     var agent = new Agent(params);
@@ -36,7 +37,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -64,7 +65,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -92,7 +93,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -134,7 +135,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -176,7 +177,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -207,7 +208,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -240,7 +241,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -275,7 +276,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo', {
+            new Track(agent, logger).eject('foo', {
                 x: 1
             }).done(function (res) {
                 assert.strictEqual(res, 42);
@@ -311,18 +312,18 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 assert.strictEqual(foo, 1);
                 assert.strictEqual(bar, 1);
 
-                new Track(agent).eject('foo').done(function () {
+                new Track(agent, logger).eject('foo').done(function () {
                     assert.strictEqual(res, 42);
                     assert.strictEqual(foo, 1);
                     assert.strictEqual(bar, 1);
 
                     setTimeout(function () {
-                        new Track(agent).eject('foo').done(function () {
+                        new Track(agent, logger).eject('foo').done(function () {
                             assert.strictEqual(res, 42);
                             assert.strictEqual(foo, 2);
                             assert.strictEqual(bar, 2);
@@ -360,17 +361,17 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 assert.strictEqual(foo, 1);
                 assert.strictEqual(bar, 1);
 
-                new Track(agent).eject('foo').done(function () {
+                new Track(agent, logger).eject('foo').done(function () {
                     assert.strictEqual(res, 42);
                     assert.strictEqual(foo, 2);
                     assert.strictEqual(bar, 2);
 
-                    new Track(agent).eject('foo').done(function () {
+                    new Track(agent, logger).eject('foo').done(function () {
                         assert.strictEqual(res, 42);
                         assert.strictEqual(foo, 3);
                         assert.strictEqual(bar, 3);
@@ -408,17 +409,17 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         });
 
         agent.ready().done(function () {
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, 42);
                 assert.strictEqual(foo, 1);
                 assert.strictEqual(bar, 1);
 
-                new Track(agent).eject('foo').done(function (res) {
+                new Track(agent, logger).eject('foo').done(function (res) {
                     assert.strictEqual(res, 42);
                     assert.strictEqual(foo, 2);
                     assert.strictEqual(bar, 2);
 
-                    new Track(agent).eject('foo').done(function (res) {
+                    new Track(agent, logger).eject('foo').done(function (res) {
                         assert.strictEqual(res, 42);
                         assert.strictEqual(foo, 3);
                         assert.strictEqual(bar, 3);
@@ -453,7 +454,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
 
         agent.ready().done(function () {
 
-            new Track(agent).eject('foo').done(function (res) {
+            new Track(agent, logger).eject('foo').done(function (res) {
                 assert.strictEqual(res, null);
                 assert.strictEqual(foo, 0);
                 done();
@@ -485,7 +486,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
 
         agent.ready().done(function () {
 
-            new Track(agent).eject('foo').done(function () {
+            new Track(agent, logger).eject('foo').done(function () {
                 assert.strictEqual(foo, 0);
                 done();
             });

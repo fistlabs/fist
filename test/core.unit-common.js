@@ -2,17 +2,18 @@
 /*global describe, it*/
 'use strict';
 
-var assert = require('assert');
-var inherit = require('inherit');
-
 var Logging = require('loggin/core/logging');
 var Logger = require('loggin/core/logger');
 var Context = require('../core/context');
 var Track = require('../core/track');
 var Core = require('../core/core');
 
+var assert = require('assert');
+var inherit = require('inherit');
+var logger = require('loggin');
+
 function getTrack() {
-    return new Track(new Core());
+    return new Track(new Core(), logger);
 }
 
 describe('core/unit-common', function () {
