@@ -61,7 +61,7 @@ Server.prototype.getHandler = function () {
     return function (req, res) {
         var dExecStart = new Date();
         //  TODO tests for this stuff
-        var requestId = req.id || req.headers['x-request-id'] || uniqueId();
+        var requestId = getRequestId(req);
         var logger = self.logger.bind(requestId);
 
         logger.info('Incoming %(method)s %(url)s %s', function () {
@@ -106,7 +106,37 @@ Server.prototype.getHandler = function () {
             logger[type]('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
         });
 
-        self.handle(req, res, logger);
+        self.handle(req, res, logger).done();
+    };
+};
+
+/**
+ * Creates express middleware
+ *
+ * @public
+ * @memberOf {Server}
+ * @method
+ *
+ * @param {String} unit
+ *
+ * @returns {Function}
+ * */
+Server.prototype.express = function (unit) {
+    var self = this;
+
+    return function (req, res, next) {
+        var track = req._fistTrack;
+
+        if (!track) {
+            track = req._fistTrack = new Connect(self, self.logger.bind(getRequestId(req)), req, res);
+            track.params = req.params;
+        }
+
+        self.ready().then(function () {
+            track.eject(unit).then(function () {
+                next();
+            }, next);
+        }, next);
     };
 };
 
@@ -253,5 +283,9 @@ Server.prototype.route = function (ruleString, ruleData) {
 
     return this;
 };
+
+function getRequestId(req) {
+    return req.id || req.headers['x-request-id'] || uniqueId();
+}
 
 module.exports = Server;
