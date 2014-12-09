@@ -60,7 +60,8 @@ Server.prototype.getHandler = function () {
 
     return function (req, res) {
         var dExecStart = new Date();
-        var requestId = req.id || req.headers['x-request-id'] || uniqueId();
+        //  TODO write tests on this stuff
+        var requestId = getReqId(req);
         var logger = self.logger.bind(requestId);
 
         logger.info('Incoming %(method)s %(url)s %s', function () {
@@ -76,40 +77,36 @@ Server.prototype.getHandler = function () {
         }, req);
 
         res.on('finish', function () {
-            var statusCode = res.statusCode;
-            var recordType;
+            var code = res.statusCode;
+            var type;
 
             switch (true) {
 
-                case statusCode >= 500:
+                case code >= 500:
                     //  Server errors
-                    recordType = 'error';
-
+                    type = 'error';
                     break;
 
-                case statusCode >= 400:
+                case code >= 400:
                     //  Client errors
-                    recordType = 'warn';
-
+                    type = 'warn';
                     break;
 
-                case statusCode >= 300:
+                case code >= 300:
                     //  Redirects
-                    recordType = 'log';
-
+                    type = 'log';
                     break;
 
                 default:
                     //  Usual cases
-                    recordType = 'info';
-
+                    type = 'info';
                     break;
             }
 
-            logger[recordType]('%d %s (%dms)', statusCode, STATUS_CODES[statusCode], new Date() - dExecStart);
+            logger[type]('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
         });
 
-        self.handle(req, res, logger).done();
+        self.handle(req, res, logger);
     };
 };
 
@@ -182,7 +179,7 @@ Server.prototype._initTrack = function (req, res, logger) {
  * */
 Server.prototype._nextRun = function (track, matches) {
     var match;
-    var outgoing;
+    var res = track.outgoing;
 
     if (!matches.length) {
         track.logger.warn('There is no matching route');
@@ -193,22 +190,16 @@ Server.prototype._nextRun = function (track, matches) {
     match = matches.shift();
     track.params = match.args;
     track.route = match.data.name;
-    track.logger.note('Match "%(data.name)s" route ~ %(args)j', match);
-    outgoing = track.outgoing;
+    track.logger.note('Match "%(data.name)s", running %(data.unit)s(%(args)j)', match);
 
     /** @this {Server} */
-    return track.eject(match.data.unit).
-        then(function () {
-            if (!outgoing.headersSent) {
-                return this._nextRun(track, matches);
-            }
-
-            return void 0;
-        }, function (err) {
-            if (!outgoing.headersSent) {
-                track.status(500).send(err);
-            }
-        }, this);
+    return track.eject(match.data.unit).then(function () {
+        return res.headersSent ? void 0 :
+            this._nextRun(track, matches);
+    }, function (err) {
+        return res.headersSent ? void 0 :
+            track.status(500).send(err);
+    }, this);
 };
 
 /**
@@ -254,5 +245,10 @@ Server.prototype.route = function (ruleString, ruleData) {
 
     return this;
 };
+
+//  TODO tests for this stuff
+function getReqId(req) {
+    return req.id || req.headers['x-request-id'] || uniqueId();
+}
 
 module.exports = Server;
