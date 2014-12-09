@@ -3,7 +3,7 @@
 var fist = require('../../fist');
 var app = fist();
 
-fist.logging.conf({
+app.logger.conf({
     logLevel: 'NOTSET'
 });
 

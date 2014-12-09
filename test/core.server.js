@@ -134,7 +134,7 @@ describe('core/server', function () {
                 }
             });
 
-            var port = Math.random().toString().slice(3, 8) + 0;
+            var port = Math.min(Number(Math.random().toString().slice(3, 8)), 65535);
             var srv = server.listen(port);
 
             asker({

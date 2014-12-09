@@ -10,6 +10,225 @@ var supertest = require('supertest');
 describe('core/connect', function () {
     var Connect = require('../core/connect');
 
+    describe('connect.getHost()', function () {
+        it('Should return the value of "Host" header', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHost(), 'foo.bar:1234');
+                res.end();
+            }).
+                get('/').
+                set('Host', 'foo.bar:1234').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return the value of "X-Forwarded-Host header"', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server({
+                    trustProxy: '127.0.0.1'
+                }), req, res);
+                assert.strictEqual(connect.getHost(), 'foo.bar.baz:12345');
+                res.end();
+            }).
+                get('/').
+                set('Host', 'foo.bar:1234').
+                set('X-Forwarded-Host', 'foo.bar.baz:12345').
+                expect(200).
+                end(done);
+        });
+
+        it('Should ignore "X-Forwarded-Host" header value', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server({
+                    trustProxy: '222.222.222.222'
+                }), req, res);
+                assert.strictEqual(connect.getHost(), 'foo.bar:1234');
+                res.end();
+            }).
+                get('/').
+                set('Host', 'foo.bar:1234').
+                set('X-Forwarded-Host', 'foo.bar.baz:12345').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return "localhost" if not Host header set', function (done) {
+            supertest(function (req, res) {
+                req.headers.host = void 0;
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHost(), 'localhost');
+                res.end();
+            }).
+                get('/').
+                expect(200).
+                end(done);
+        });
+    });
+
+    describe('connect.getHostname()', function () {
+        it('Should return hostname by host with port', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), 'foo.bar');
+                res.end();
+            }).
+                get('/').
+                set('Host', 'foo.bar:123').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return hostname by host with no port', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), 'foo.bar');
+                res.end();
+            }).
+                get('/').
+                set('Host', 'foo.bar').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return hostname ipv4 literal with port', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), '127.0.0.1');
+                res.end();
+            }).
+                get('/').
+                set('Host', '127.0.0.1:123').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return hostname ipv4 literal with no port', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), '127.0.0.1');
+                res.end();
+            }).
+                get('/').
+                set('Host', '127.0.0.1').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return hostname by ipv6 literal with port', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), '::1');
+                res.end();
+            }).
+                get('/').
+                set('Host', '[::1]:1235').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return hostname by ipv6 literal with no port', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), '::1');
+                res.end();
+            }).
+                get('/').
+                set('Host', '[::1]').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return Host header value on no regexp match (1)', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), '::::::');
+                res.end();
+            }).
+                get('/').
+                set('Host', '::::::').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return Host header value on no regexp match (2)', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getHostname(), '[][][]');
+                res.end();
+            }).
+                get('/').
+                set('Host', '[][][]').
+                expect(200).
+                end(done);
+        });
+    });
+
+    describe('connect.getProtocol()', function () {
+        it('Should return "http" coz connection is not encrypted', function (done) {
+            supertest(function (req, res) {
+                req.connection.encrypted = false;
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getProtocol(), 'http');
+                res.end();
+            }).
+                get('/').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return "https" coz connection is encrypted', function (done) {
+            supertest(function (req, res) {
+                req.connection.encrypted = true;
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getProtocol(), 'https');
+                res.end();
+            }).
+                get('/').
+                expect(200).
+                end(done);
+        });
+
+        it('Should return first value of X-Forwarded-Proto coz proxy trusted', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getProtocol(), 'https');
+                res.end();
+            }).
+                get('/').
+                set('X-Forwarded-Proto', 'https, foo , bar').
+                expect(200).
+                end(done);
+        });
+
+    });
+
+    describe('connect.getIp()', function () {
+        it('Should return remoteAddress', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.strictEqual(connect.getIp(), req.connection.remoteAddress);
+                res.end();
+            }).
+                get('/').
+                expect(200).
+                end(done);
+        });
+    });
+
+    describe('connect.getIp()', function () {
+        it('Should contain remoteAddress', function (done) {
+            supertest(function (req, res) {
+                var connect = new Connect(new Server(), req, res);
+                assert.notStrictEqual(connect.getIps().indexOf(req.connection.remoteAddress), -1);
+                res.end();
+            }).
+                get('/').
+                expect(200).
+                end(done);
+        });
+    });
+
     describe('connect.url', function () {
         it('Should be parsed request url', function (done) {
             supertest(function (req, res) {
@@ -21,10 +240,11 @@ describe('core/connect', function () {
                 assert.strictEqual(url.pathname, '/');
                 assert.ok(url.query);
                 assert.strictEqual(typeof url.query, 'object');
+                assert.strictEqual(url.query.foo, 'bar');
 
                 res.end();
             }).
-                get('/').
+                get('/?foo=bar').
                 expect(200, done);
         });
 
@@ -32,37 +252,44 @@ describe('core/connect', function () {
             supertest(function (req, res) {
                 var connect = new Connect(new Server(), req, res);
                 var url = connect.url;
-                assert.strictEqual(url.hostname, connect.header('Host'));
+                assert.strictEqual(url.hostname, connect.getHostname());
                 assert.strictEqual(url.hostname, 'foo.bar');
+                assert.strictEqual(url.host, connect.getHost());
+                assert.strictEqual(url.host, 'foo.bar:12345');
 
                 res.end();
             }).
                 get('/').
-                set('Host', 'foo.bar').
+                set('Host', 'foo.bar:12345').
                 expect(200, done);
         });
 
         it('Should get url.hostname from X-Forwarded-Host header', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server({
+                    trustProxy: 'loopback'
+                }), req, res);
                 var url = connect.url;
-                assert.strictEqual(url.hostname, connect.header('X-Forwarded-Host'));
-                assert.strictEqual(connect.header('Host'), 'foo.bar');
+                assert.strictEqual(url.host, connect.getHost());
+                assert.strictEqual(url.host, 'foo.bar.baz:1234');
+                assert.strictEqual(url.hostname, connect.getHostname());
                 assert.strictEqual(url.hostname, 'foo.bar.baz');
 
                 res.end();
             }).
                 get('/').
                 set('Host', 'foo.bar').
-                set('x-Forwarded-Host', 'foo.bar.baz').
+                set('x-Forwarded-Host', 'foo.bar.baz:1234').
                 expect(200, done);
         });
 
         it('Should get url.protocol from X-Forwarded-Proto', function (done) {
             supertest(function (req, res) {
-                var connect = new Connect(new Server(), req, res);
+                var connect = new Connect(new Server({
+                    trustProxy: 'loopback'
+                }), req, res);
                 var url = connect.url;
-                assert.strictEqual(url.protocol, connect.header('X-Forwarded-Proto') + ':');
+                assert.strictEqual(url.protocol, connect.getProtocol() + ':');
 
                 res.end();
             }).
@@ -71,13 +298,15 @@ describe('core/connect', function () {
                 expect(200, done);
         });
 
-        it('Should get url.protocol as https: if socket is encrypted', function (done) {
+        it('Should get url.protocol as https: if connection is encrypted', function (done) {
             supertest(function (req, res) {
-                //  -__-
-                req.socket.encrypted = true;
-                var connect = new Connect(new Server(), req, res);
+                req.connection.encrypted = true;
+                var connect = new Connect(new Server({
+                    trustProxy: []
+                }), req, res);
                 var url = connect.url;
                 assert.strictEqual(url.protocol, 'https:');
+                assert.strictEqual(connect.getProtocol(), 'https');
                 assert.strictEqual(connect.header('X-Forwarded-Proto'), 'http');
 
                 res.end();
@@ -86,7 +315,6 @@ describe('core/connect', function () {
                 set('X-Forwarded-Proto', 'http').
                 expect(200, done);
         });
-
     });
 
     describe('connect.header()', function () {

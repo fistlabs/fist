@@ -6,13 +6,21 @@ var Router = /** @type Router */ require('finger/core/router');
 
 var _ = require('lodash-node');
 var http = require('http');
+var proxyAddr = require('proxy-addr');
 
 /**
  * @class Server
  * @extends Core
  * */
 function Server(params) {
+    params = _.extend({
+        trustProxy: 'loopback'
+    }, params);
+
     Core.call(this, params);
+
+    //  compile parameter
+    this.params.trustProxy = proxyAddr.compile(this.params.trustProxy);
 
     /**
      * @public
@@ -132,7 +140,7 @@ Server.prototype.listen = function () {
     var server = http.createServer(this.getHandler());
 
     //  автоматически запускаю инициализацию
-    this.ready();
+    this.ready().done();
 
     server.listen.apply(server, arguments);
 

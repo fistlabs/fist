@@ -22,6 +22,4 @@ function fist(params) {
     return app;
 }
 
-fist.logging = require('./core/core').logging;
-
 module.exports = fist;

@@ -42,7 +42,8 @@ function Core(params) {
      * @property
      * @type {Logger}
      * */
-    this.logger = Core.logging.getLogger(params.name);
+    this.logger = logging.getLogger(params.name).
+        conf(params.logging);
 
     /**
      * @public
@@ -84,15 +85,6 @@ function Core(params) {
      * */
     this._plugs = [];
 }
-
-/**
- * @public
- * @static
- * @memberOf Core
- * @property
- * @type Logging
- * */
-Core.logging = logging;
 
 /**
  * @private
@@ -158,6 +150,8 @@ Core.prototype.unit = function (members, statics) {
     name = members.name;
     version = findClosestVersion(path.resolve(stackTrace.get(this.unit)[0].getFileName())) || '0.0.0';
 
+    this.logger.debug('Installing unit "%s@%s"...', name, version);
+
     if (_.has(ranges, name) && !SemVer.satisfies(version, ranges[name])) {
         this.logger.warn('The unit "%s@%s" is not satisfies the requirement (%s), skipping',
             name, version, ranges[name]);
@@ -168,11 +162,11 @@ Core.prototype.unit = function (members, statics) {
     decl = _.find(this._decls, {members: {name: name}});
 
     if (decl) {
-        this.logger.warn('Found same declaration while installing unit "%s"', name);
+        this.logger.warn('Found the same declaration while installing unit "%s@%s"', name, version);
 
         if (SemVer.lte(version, decl.version)) {
-            this.logger.warn('The version "%s" of unit "%s" is less or equal to existing "%s", skipping',
-                version, name, decl.version);
+            this.logger.warn('The version of unit "%s@%s" is less or equal to existing "%s@%s", skipping',
+                name, version, name, decl.version);
 
             return this;
         }
@@ -187,6 +181,8 @@ Core.prototype.unit = function (members, statics) {
         members: members,
         statics: statics
     });
+
+    this.logger.debug('The unit "%s@%s" is successfully scheduled for initialization', name, version);
 
     return this;
 };
@@ -325,13 +321,13 @@ Core.prototype._getReady = function () {
 
 function createInstaller(moduleName, settings) {
     return function (agent) {
-        var plugin = require(moduleName);
-
         if (settings) {
-            plugin = plugin(settings);
+            agent.logger.debug('Installing plugin %s(%j)', moduleName, settings);
+            agent.plugin(require(moduleName)(settings));
+        } else {
+            agent.logger.debug('Installing plugin %s', moduleName);
+            agent.plugin(require(moduleName));
         }
-
-        agent.plugin(plugin);
     };
 }
 

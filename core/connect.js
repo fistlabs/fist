@@ -1,5 +1,4 @@
 'use strict';
-
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Track = /** @type Track */ require('./track');
@@ -8,6 +7,7 @@ var cookieparser = require('cookieparser');
 var hasProperty = Object.prototype.hasOwnProperty;
 var urlParse = require('url').parse;
 var vow = require('vow');
+var proxyAddr = require('proxy-addr');
 
 /**
  * @class Connect
@@ -132,7 +132,7 @@ Connect.prototype.next = function () {
 
     this.params = match.args;
     this.route = match.data.name;
-    this.logger.info('Match "%(data.name)s" route ~ %(args)j', match);
+    this.logger.note('Match "%(data.name)s" route ~ %(args)j', match);
 
     return this.eject(match.data.unit).
         then(function () {
@@ -395,6 +395,84 @@ Connect.prototype._sendJSON = function (data) {
 };
 
 /**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getIp = function () {
+    return proxyAddr(this.incoming, this._agent.params.trustProxy);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getIps = function () {
+    return proxyAddr.all(this.incoming, this._agent.params.trustProxy);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getHost = function () {
+    var incoming = this.incoming;
+    var connection = incoming.connection;
+    var headers = incoming.headers;
+    var host = headers['x-forwarded-host'];
+
+    if (!host || !this._agent.params.trustProxy(connection.remoteAddress)) {
+        host = headers.host;
+    }
+
+    return host || 'localhost';
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getHostname = function () {
+    var host = this.getHost();
+
+    if (host.charAt(0) === '[') {
+        return (host.match(/\[([^\[\]]+)]/) || [0, host])[1];
+    }
+
+    return (host.match(/([^:]+)/) || [0, host])[1];
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getProtocol = function () {
+    var incoming = this.incoming;
+    var connection = incoming.connection;
+    var protocol = connection.encrypted ? 'https' : 'http';
+
+    if (incoming.headers['x-forwarded-proto'] && this._agent.params.trustProxy(connection.remoteAddress)) {
+        return incoming.headers['x-forwarded-proto'].split(/\s*,\s*/)[0];
+    }
+
+    return protocol;
+};
+
+/**
  * @private
  * @memberOf {Connect}
  * @method
@@ -402,11 +480,6 @@ Connect.prototype._sendJSON = function (data) {
  * @param {String} url
  * */
 Connect.prototype._setUrl = function (url) {
-    var headers = this.incoming.headers;
-    var host = headers['x-forwarded-host'] || headers.host;
-    var protocol = this.incoming.socket.encrypted ?
-        'https' : headers['x-forwarded-proto'] || 'http';
-
     this.params = {};
 
     /**
@@ -415,7 +488,7 @@ Connect.prototype._setUrl = function (url) {
      * @property
      * @type {Object}
      * */
-    this.url = urlParse(protocol + '://' + host + url, true);
+    this.url = urlParse(this.getProtocol() + '://' + this.getHost() + url, true);
 
     /**
      * @public

@@ -81,9 +81,9 @@ function createClass() {
                 var execTime = new Date() - dStartExec;
 
                 if (track.isFlushed()) {
-                    logger.note('Skip result in %dms', execTime);
+                    logger.debug('Skip result in %dms', execTime);
                 } else {
-                    logger.note('Accepted in %dms', execTime);
+                    logger.debug('Accepted in %dms', execTime);
                 }
             }, function (err) {
                 var execTime = new Date() - dStartExec;
@@ -166,7 +166,7 @@ function createClass() {
             if (!memKey) {
                 return main(self, track, context).then(function (result) {
                     if (track.isFlushed()) {
-                        logger.note('The track was flushed during execution');
+                        logger.debug('The track was flushed during execution');
                         return null;
                     }
 
@@ -202,7 +202,7 @@ function createClass() {
                 //  calling unit
                 main(self, track, context).then(function (result) {
                     if (track.isFlushed()) {
-                        logger.note('The track was flushed during execution');
+                        logger.debug('The track was flushed during execution');
                         defer.resolve(null);
                         return;
                     }
