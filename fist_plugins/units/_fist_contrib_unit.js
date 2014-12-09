@@ -317,3 +317,31 @@ Model.prototype.toJSON = function () {
         result: this.result
     };
 };
+
+/**
+ * @public
+ * @memberOf {Model}
+ * @method
+ *
+ * @param {String} path
+ * @param {*} [def]
+ *
+ * @returns {*}
+ * */
+Model.prototype.r = function (path, def) {
+    return this.result.get(path, def);
+};
+
+/**
+ * @public
+ * @memberOf {Model}
+ * @method
+ *
+ * @param {String} path
+ * @param {*} [def]
+ *
+ * @returns {*}
+ * */
+Model.prototype.e = function (path, def) {
+    return this.errors.get(path, def);
+};
