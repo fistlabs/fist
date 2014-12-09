@@ -1,5 +1,5 @@
 'use strict';
-//  TODO move routing to server
+
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Track = /** @type Track */ require('./track');

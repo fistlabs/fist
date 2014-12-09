@@ -21,7 +21,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should parse raw body', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -54,7 +53,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should parse json body', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -87,7 +85,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should parse text body', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -121,7 +118,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
     it('Should be failed on body parsing', function (done) {
         var spy = 0;
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -153,7 +149,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should parse urlencoded body', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -185,7 +180,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should parse multipart body', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -233,7 +227,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should be failed coz no boundary passed', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 
@@ -258,7 +251,6 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
 
     it('Should be failed while parsing multipart', function (done) {
         var back = getAgent({
-            name: 'uploader',
             implicitBase: '_fist_contrib_unit'
         });
 

@@ -60,8 +60,8 @@ Server.prototype.getHandler = function () {
 
     return function (req, res) {
         var dExecStart = new Date();
-        //  TODO write tests on this stuff
-        var requestId = getReqId(req);
+        //  TODO tests for this stuff
+        var requestId = req.id || req.headers['x-request-id'] || uniqueId();
         var logger = self.logger.bind(requestId);
 
         logger.info('Incoming %(method)s %(url)s %s', function () {
@@ -153,21 +153,24 @@ Server.prototype._initTrack = function (req, res, logger) {
 
     matches = router.matchAll(verb, path);
 
-    if (!matches.length) {
-        matches = router.matchVerbs(path);
-
-        if (matches.length) {
-            logger.warn('The method %s is not allowed for resource %s', verb, path);
-            res.statusCode = 405;
-            res.setHeader('Allow', matches.join(', '));
-            res.end(STATUS_CODES[405]);
-            return vow.resolve();
-        }
-
-        //  matches === [] here
+    if (matches.length) {
+        return this._nextRun(new Connect(this, logger, req, res), matches);
     }
 
-    return this._nextRun(new Connect(this, logger, req, res), matches);
+    matches = router.matchVerbs(path);
+
+    if (matches.length) {
+        logger.warn('The method %s is not allowed for resource %s', verb, path);
+        res.statusCode = 405;
+        res.setHeader('Allow', matches.join(', '));
+        res.end(STATUS_CODES[405]);
+    } else {
+        logger.warn('There is no matching route');
+        res.statusCode = 404;
+        res.end(STATUS_CODES[404]);
+    }
+
+    return vow.resolve();
 };
 
 /**
@@ -182,7 +185,7 @@ Server.prototype._nextRun = function (track, matches) {
     var res = track.res;
 
     if (!matches.length) {
-        track.logger.warn('There is no matching route');
+        track.logger.warn('No one controller did responded');
         track.status(404).send();
         return vow.resolve();
     }
@@ -190,12 +193,17 @@ Server.prototype._nextRun = function (track, matches) {
     match = matches.shift();
     track.params = match.args;
     track.route = match.data.name;
-    track.logger.note('Match "%(data.name)s", running %(data.unit)s(%(args)j)', match);
+    track.logger.note('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
 
     /** @this {Server} */
     return track.eject(match.data.unit).then(function () {
-        return res.headersSent ? void 0 :
-            this._nextRun(track, matches);
+        if (res.headersSent) {
+            return void 0;
+        }
+
+        track.logger.note('The "%(data.unit)s" controller did not responded', match);
+
+        return this._nextRun(track, matches);
     }, function (err) {
         return res.headersSent ? void 0 :
             track.status(500).send(err);
@@ -245,10 +253,5 @@ Server.prototype.route = function (ruleString, ruleData) {
 
     return this;
 };
-
-//  TODO tests for this stuff
-function getReqId(req) {
-    return req.id || req.headers['x-request-id'] || uniqueId();
-}
 
 module.exports = Server;

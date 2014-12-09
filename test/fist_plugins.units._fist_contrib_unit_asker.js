@@ -19,9 +19,7 @@ function getAgent(params) {
 }
 
 describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
-    var back = new Server({
-        name: 'BACKEND'
-    });
+    var back = new Server();
 
     back.route('/api/<type>/', {
         name: 'api',
@@ -56,9 +54,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
     });
 
     it('Should do request', function (done) {
-        var agent = getAgent({
-            name: 'FRONTEND'
-        });
+        var agent = getAgent();
         var track = new Track(agent, logger);
 
         agent.unit({
@@ -90,9 +86,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
     });
 
     it('Should post data', function (done) {
-        var agent = getAgent({
-            name: 'FRONTEND'
-        });
+        var agent = getAgent();
         var track = new Track(agent, logger);
 
         agent.unit({
