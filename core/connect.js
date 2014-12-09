@@ -15,19 +15,19 @@ var proxyAddr = require('proxy-addr');
  *
  * @param {Server} agent
  * @param {Logger} logger
- * @param {IncomingMessage} incoming
- * @param {ServerResponse} outgoing
+ * @param {IncomingMessage} req
+ * @param {ServerResponse} res
  * */
-function Connect(agent, logger, incoming, outgoing) {
+function Connect(agent, logger, req, res) {
     var self = this;
 
     Track.call(this, agent, logger);
 
-    outgoing.on('close', function () {
+    res.on('close', function () {
         self._isFlushed = true;
     });
 
-    outgoing.on('finish', function () {
+    res.on('finish', function () {
         self._isFlushed = true;
     });
 
@@ -37,7 +37,7 @@ function Connect(agent, logger, incoming, outgoing) {
      * @property
      * @type {IncomingMessage}
      * */
-    this.incoming = incoming;
+    this.req = req;
 
     /**
      * @public
@@ -45,7 +45,7 @@ function Connect(agent, logger, incoming, outgoing) {
      * @property
      * @type {ServerResponse}
      * */
-    this.outgoing = outgoing;
+    this.res = res;
 
     /**
      * @public
@@ -61,7 +61,7 @@ function Connect(agent, logger, incoming, outgoing) {
      * @property
      * @type {Object}
      * */
-    this.url = urlParse(this.getProtocol() + '://' + this.getHost() + incoming.url, true);
+    this.url = urlParse(this.getProtocol() + '://' + this.getHost() + req.url, true);
 }
 
 Connect.prototype = Object.create(Track.prototype);
@@ -83,7 +83,7 @@ Connect.prototype.constructor = Connect;
  * @returns {Boolean}
  * */
 Connect.prototype.isFlushed = function () {
-    return Track.prototype.isFlushed.call(this) || this.outgoing.headersSent;
+    return Track.prototype.isFlushed.call(this) || this.res.headersSent;
 };
 
 /**
@@ -97,10 +97,10 @@ Connect.prototype.isFlushed = function () {
  * */
 Connect.prototype.status = function (statusCode) {
     if (!arguments.length) {
-        return this.outgoing.statusCode;
+        return this.res.statusCode;
     }
 
-    this.outgoing.statusCode = statusCode;
+    this.res.statusCode = statusCode;
 
     return this;
 };
@@ -118,11 +118,11 @@ Connect.prototype.status = function (statusCode) {
  * @returns {*}
  * */
 Connect.prototype.header = function (name, value) {
-    var incoming = this.incoming;
-    var outgoing = this.outgoing;
+    var req = this.req;
+    var res = this.res;
 
     if (!arguments.length) {
-        return incoming.headers;
+        return req.headers;
     }
 
     if (name && typeof name === 'object') {
@@ -130,7 +130,7 @@ Connect.prototype.header = function (name, value) {
 
         for (name in value) {
             if (hasProperty.call(value, name)) {
-                outgoing.setHeader(name, value[name]);
+                res.setHeader(name, value[name]);
             }
         }
 
@@ -138,10 +138,10 @@ Connect.prototype.header = function (name, value) {
     }
 
     if (arguments.length === 1) {
-        return incoming.headers[String(name).toLowerCase()];
+        return req.headers[String(name).toLowerCase()];
     }
 
-    outgoing.setHeader(name, value);
+    res.setHeader(name, value);
 
     return this;
 };
@@ -156,7 +156,7 @@ Connect.prototype.header = function (name, value) {
  * @param {Object} [opts]
  * */
 Connect.prototype.cookie = function (name, value, opts) {
-    var outgoing = this.outgoing;
+    var res = this.res;
     var setCookie;
     var l = arguments.length;
 
@@ -168,13 +168,13 @@ Connect.prototype.cookie = function (name, value, opts) {
         return this._getCookies()[name];
     }
 
-    setCookie = outgoing.getHeader('Set-Cookie');
+    setCookie = res.getHeader('Set-Cookie');
     value = cookieparser.serialize(name, value, opts);
 
     if (!setCookie) {
-        outgoing.setHeader('Set-Cookie', value);
+        res.setHeader('Set-Cookie', value);
     } else if (!Array.isArray(setCookie)) {
-        outgoing.setHeader('Set-Cookie', [setCookie, value]);
+        res.setHeader('Set-Cookie', [setCookie, value]);
     } else {
         setCookie[setCookie.length] = value;
     }
@@ -222,7 +222,7 @@ Connect.prototype.send = function (data) {
  * */
 Connect.prototype._getCookies = function () {
     if (!this.__cookies) {
-        this.__cookies = cookieparser.parse(this.incoming.headers.cookie || '');
+        this.__cookies = cookieparser.parse(this.req.headers.cookie || '');
     }
 
     return this.__cookies;
@@ -234,7 +234,7 @@ Connect.prototype._getCookies = function () {
  * @method
  */
 Connect.prototype._sendUndefined = function () {
-    return this._sendString(STATUS_CODES[this.outgoing.statusCode]);
+    return this._sendString(STATUS_CODES[this.res.statusCode]);
 };
 
 /**
@@ -245,16 +245,16 @@ Connect.prototype._sendUndefined = function () {
  * @param {String} data
  */
 Connect.prototype._sendString = function (data) {
-    var outgoing = this.outgoing;
+    var res = this.res;
 
-    if (!outgoing.getHeader('Content-Type')) {
-        outgoing.setHeader('Content-Type', 'text/plain');
+    if (!res.getHeader('Content-Type')) {
+        res.setHeader('Content-Type', 'text/plain');
     }
 
-    outgoing.removeHeader('Content-Length');
-    outgoing.setHeader('Content-Length', Buffer.byteLength(data));
+    res.removeHeader('Content-Length');
+    res.setHeader('Content-Length', Buffer.byteLength(data));
 
-    outgoing.end(data);
+    res.end(data);
 };
 
 /**
@@ -265,16 +265,16 @@ Connect.prototype._sendString = function (data) {
  * @param {Buffer} data
  */
 Connect.prototype._sendBuffer = function (data) {
-    var outgoing = this.outgoing;
+    var res = this.res;
 
-    if (!outgoing.getHeader('Content-Type')) {
-        outgoing.setHeader('Content-Type', 'application/octet-stream');
+    if (!res.getHeader('Content-Type')) {
+        res.setHeader('Content-Type', 'application/octet-stream');
     }
 
-    outgoing.removeHeader('Content-Length');
-    outgoing.setHeader('Content-Length', data.length);
+    res.removeHeader('Content-Length');
+    res.setHeader('Content-Length', data.length);
 
-    outgoing.end(data);
+    res.end(data);
 };
 
 /**
@@ -285,13 +285,13 @@ Connect.prototype._sendBuffer = function (data) {
  * @param {Stream.Readable} data
  */
 Connect.prototype._sendReadable = function (data) {
-    var outgoing = this.outgoing;
+    var res = this.res;
 
-    if (!outgoing.getHeader('Content-Type')) {
-        outgoing.setHeader('Content-Type', 'application/octet-stream');
+    if (!res.getHeader('Content-Type')) {
+        res.setHeader('Content-Type', 'application/octet-stream');
     }
 
-    data.pipe(outgoing);
+    data.pipe(res);
 };
 
 /**
@@ -317,7 +317,7 @@ Connect.prototype._sendError = function (data) {
  * @param {*} data
  */
 Connect.prototype._sendJSON = function (data) {
-    var outgoing = this.outgoing;
+    var outgoing = this.res;
 
     data = JSON.stringify(data);
 
@@ -339,7 +339,7 @@ Connect.prototype._sendJSON = function (data) {
  * @returns {String}
  * */
 Connect.prototype.getIp = function () {
-    return proxyAddr(this.incoming, this._agent.params.trustProxy);
+    return proxyAddr(this.req, this._agent.params.trustProxy);
 };
 
 /**
@@ -350,7 +350,7 @@ Connect.prototype.getIp = function () {
  * @returns {String}
  * */
 Connect.prototype.getIps = function () {
-    return proxyAddr.all(this.incoming, this._agent.params.trustProxy);
+    return proxyAddr.all(this.req, this._agent.params.trustProxy);
 };
 
 /**
@@ -361,9 +361,9 @@ Connect.prototype.getIps = function () {
  * @returns {String}
  * */
 Connect.prototype.getHost = function () {
-    var incoming = this.incoming;
-    var connection = incoming.connection;
-    var headers = incoming.headers;
+    var req = this.req;
+    var connection = req.connection;
+    var headers = req.headers;
     var host = headers['x-forwarded-host'];
 
     if (!host || !this._agent.params.trustProxy(connection.remoteAddress)) {
@@ -398,12 +398,12 @@ Connect.prototype.getHostname = function () {
  * @returns {String}
  * */
 Connect.prototype.getProtocol = function () {
-    var incoming = this.incoming;
-    var connection = incoming.connection;
+    var req = this.req;
+    var connection = req.connection;
     var protocol = connection.encrypted ? 'https' : 'http';
 
-    if (incoming.headers['x-forwarded-proto'] && this._agent.params.trustProxy(connection.remoteAddress)) {
-        return incoming.headers['x-forwarded-proto'].split(/\s*,\s*/)[0];
+    if (req.headers['x-forwarded-proto'] && this._agent.params.trustProxy(connection.remoteAddress)) {
+        return req.headers['x-forwarded-proto'].split(/\s*,\s*/)[0];
     }
 
     return protocol;

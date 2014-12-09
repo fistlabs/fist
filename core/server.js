@@ -179,7 +179,7 @@ Server.prototype._initTrack = function (req, res, logger) {
  * */
 Server.prototype._nextRun = function (track, matches) {
     var match;
-    var res = track.outgoing;
+    var res = track.res;
 
     if (!matches.length) {
         track.logger.warn('There is no matching route');

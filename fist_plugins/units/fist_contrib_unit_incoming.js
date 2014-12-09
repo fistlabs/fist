@@ -105,7 +105,7 @@ module.exports = function (agent) {
         _getRawBody: function (track, context, mime) {
             var defer = vow.defer();
 
-            rawBody(track.incoming, {
+            rawBody(track.req, {
                 length: track.header('Content-Length'),
                 limit: Infinity,
                 encoding:  mime.parameters.charset
@@ -260,14 +260,14 @@ module.exports = function (agent) {
                 defer.reject(err);
             });
 
-            track.incoming.pipe(busboy);
+            track.req.pipe(busboy);
 
-            track.incoming.on('data', function (chunk) {
+            track.req.on('data', function (chunk) {
                 fullData[fullData.length] = chunk;
                 actualLength += chunk.length;
             });
 
-            track.incoming.on('end', function () {
+            track.req.on('end', function () {
                 context.logger.info('Incoming data\n%s', Buffer.concat(fullData).toString());
             });
 

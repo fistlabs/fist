@@ -16,7 +16,7 @@ app.unit({
     base: 'base',
     name: 'foo',
     main: function (track) {
-        return track.outgoing.end('foo');
+        return track.res.end('foo');
     }
 });
 
@@ -24,7 +24,7 @@ app.unit({
     base: 'base',
     name: 'bar',
     main: function (track) {
-        return track.outgoing.end('bar');
+        return track.res.end('bar');
     }
 });
 
@@ -32,7 +32,7 @@ app.unit({
     base: 'base',
     name: 'index',
     main: function (track) {
-        return track.outgoing.end('index');
+        return track.res.end('index');
     }
 });
 

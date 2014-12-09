@@ -17,7 +17,7 @@ app.unit({
     name: 'a',
     deps: ['b'],
     main: function (track) {
-        return track.outgoing.end('OK');
+        return track.res.end('OK');
     }
 });
 
