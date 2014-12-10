@@ -24,7 +24,6 @@ function Core(params) {
         parent = parent.parent;
     }
 
-
     params = _.extend({
         root: path.dirname(parent.filename),
         implicitBase: 0
@@ -77,6 +76,14 @@ function Core(params) {
      * @type {Array}
      * */
     this._plugs = [];
+
+    /**
+     * @protected
+     * @memberOf {Core}
+     * @property
+     * @type {Array}
+     * */
+    this._installed = {};
 
     init(this);
 }
@@ -139,10 +146,6 @@ Core.prototype.unit = function (members, statics) {
 
     members = Object(members);
     statics = Object(statics);
-
-    _.remove(this._decls, function (decl) {
-        return decl.members.name === members.name;
-    });
 
     this._decls.push({
         members: members,
@@ -286,6 +289,13 @@ Core.prototype._getReady = function () {
 
 function createInstaller(moduleName, settings) {
     return function (agent) {
+        if (_.has(agent._installed, moduleName)) {
+            agent.logger.warn('The plugin %s has already installed, skipping', moduleName);
+            return;
+        }
+
+        agent._installed[moduleName] = true;
+
         if (settings) {
             agent.logger.debug('Installing plugin %s(%j)', moduleName, settings);
             agent.plugin(require(moduleName)(settings));

@@ -195,6 +195,19 @@ describe('core/core', function () {
                 });
             });
         });
+
+        it('Should not install plugin a twice', function (done) {
+            var agent = new Core();
+
+            agent.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
+            agent.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
+            agent.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
+
+            agent.ready().done(function () {
+                assert.strictEqual(agent.__test__, 1);
+                done();
+            });
+        });
     });
 
     describe('agent.unit()', function () {
