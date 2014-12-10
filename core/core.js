@@ -18,9 +18,15 @@ var vowFs = require('vow-fs');
  * @param {Object} [params]
  * */
 function Core(params) {
+    var parent = module;
+
+    while (parent.parent) {
+        parent = parent.parent;
+    }
+
 
     params = _.extend({
-        root: path.dirname(getMainFileName()),
+        root: path.dirname(parent.filename),
         implicitBase: 0
     }, params);
 
@@ -390,16 +396,6 @@ function createUnitClass(decl) {
         this._class[name] = UnitClass;
         return UnitClass;
     }, this);
-}
-
-function getMainFileName() {
-    var parent = module;
-
-    while (parent.parent) {
-        parent = parent.parent;
-    }
-
-    return parent.filename;
 }
 
 module.exports = Core;
