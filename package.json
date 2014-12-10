@@ -7,12 +7,10 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
-        "consolidate": "0.10.0",
         "proxy-addr": "1.0.4",
         "asker": "0.6.0",
         "raw-body": "1.3.1",
         "busboy": "git://github.com/mscdex/busboy.git#e70d9e462b21f5554c54aa16bc20620e5f5e3eff",
-        "semver": "4.1.0",
         "loggin": "2.1.0",
         "obus": "1.0.0",
         "vow-fs": "0.3.3",
@@ -30,7 +28,6 @@
     "description": "nodejs application framework",
     "devDependencies": {
         "supertest": "0.15.0",
-        "stack-trace": "0.0.9",
         "glob": "4.0.6",
         "benchmark": "1.0.0",
         "lru-cache": "2.5.0",

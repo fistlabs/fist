@@ -3,16 +3,13 @@
 var R_NAME = /^[_a-z]\w*$/;
 
 var FistError = /** @type FistError */ require('./fist-error');
-var SemVer = /** @type SemVer */ require('semver');
 
 var _ = require('lodash-node');
 var f = require('util').format;
-var fs = require('fs');
 var hasProperty = Object.prototype.hasOwnProperty;
 var init = require('./init');
 var logging = require('loggin');
 var path = require('path');
-var stackTrace = require('stack-trace');
 var vow = require('vow');
 var vowFs = require('vow-fs');
 
@@ -24,7 +21,6 @@ function Core(params) {
 
     params = _.extend({
         root: path.dirname(getMainFileName()),
-        unitRanges: {},
         implicitBase: 0
     }, params);
 
@@ -129,9 +125,6 @@ Core.prototype.alias = function (base, name) {
  * @returns {Core}
  * */
 Core.prototype.unit = function (members, statics) {
-    var ranges = Object(this.params.unitRanges);
-    var decl;
-    var version;
     var name = members.name;
 
     if (!(_.has(members, 'name') && _.isString(name) && R_NAME.test(name))) {
@@ -140,42 +133,15 @@ Core.prototype.unit = function (members, statics) {
 
     members = Object(members);
     statics = Object(statics);
-    name = members.name;
-    version = findClosestVersion(path.resolve(stackTrace.get(this.unit)[0].getFileName())) || '0.0.0';
 
-    this.logger.debug('Installing unit "%s@%s"...', name, version);
-
-    if (_.has(ranges, name) && !SemVer.satisfies(version, ranges[name])) {
-        this.logger.warn('The unit "%s@%s" is not satisfies the requirement (%s), skipping',
-            name, version, ranges[name]);
-
-        return this;
-    }
-
-    decl = _.find(this._decls, {members: {name: name}});
-
-    if (decl) {
-        this.logger.warn('Found the same declaration while installing unit "%s@%s"', name, version);
-
-        if (SemVer.lte(version, decl.version)) {
-            this.logger.warn('The version of unit "%s@%s" is less or equal to existing "%s@%s", skipping',
-                name, version, name, decl.version);
-
-            return this;
-        }
-
-        this.logger.warn('Replacing unit "%s@%s" by "%s@%s"', name, decl.version, name, version);
-
-        _.pull(this._decls, decl);
-    }
+    _.remove(this._decls, function (decl) {
+        return decl.members.name === members.name;
+    });
 
     this._decls.push({
-        version: version,
         members: members,
         statics: statics
     });
-
-    this.logger.debug('The unit "%s@%s" is successfully scheduled for initialization', name, version);
 
     return this;
 };
@@ -427,29 +393,13 @@ function createUnitClass(decl) {
 }
 
 function getMainFileName() {
-    var current = module;
+    var parent = module;
 
-    while (current.parent) {
-        current = current.parent;
+    while (parent.parent) {
+        parent = parent.parent;
     }
 
-    return current.filename;
-}
-
-function findClosestVersion(dirname) {
-    var filename;
-
-    do {
-        dirname = path.dirname(dirname);
-        filename = path.join(dirname, 'package.json');
-
-        if (fs.existsSync(filename)) {
-            return require(filename).version;
-        }
-
-    } while (dirname !== '/');
-
-    return void 0;
+    return parent.filename;
 }
 
 module.exports = Core;

@@ -308,59 +308,6 @@ describe('core/core', function () {
             });
         });
 
-        it('Should ignore unit without version', function (done) {
-            var agent = new Core();
-
-            agent.install(path.join(__dirname, 'fixtures/plug/units/*.js'));
-            agent.install(path.join(__dirname, 'fixtures/plug/units/foo-impossible/*.js'));
-
-            agent.ready().done(function () {
-                assert.strictEqual(agent.getUnit('foo').x, 'test');
-                done();
-            });
-        });
-
-        it('Should prefer latest version', function (done) {
-            var agent = new Core();
-
-            agent.install(path.join(__dirname, 'fixtures/plug/units/**/*.js'));
-
-            agent.ready().done(function () {
-                assert.strictEqual(agent.getUnit('foo').x, 'foo2');
-                done();
-            });
-        });
-
-        it('Should ignore not satisfied versions', function (done) {
-            var agent = new Core({
-                unitRanges: {
-                    foo: '< 1.0.1'
-                }
-            });
-
-            agent.install(path.join(__dirname, 'fixtures/plug/units/**/*.js'));
-
-            agent.ready().done(function () {
-                assert.strictEqual(agent.getUnit('foo').x, 'test');
-                done();
-            });
-        });
-
-        it('Should install satisified and latest version unit', function (done) {
-            var agent = new Core({
-                unitRanges: {
-                    foo: '< 2.0.0'
-                }
-            });
-
-            agent.install(path.join(__dirname, 'fixtures/plug/units/**/*.js'));
-
-            agent.ready().done(function () {
-                assert.strictEqual(agent.getUnit('foo').x, 'test-2');
-                done();
-            });
-        });
-
         it('Should use params.implicitBase as implicit base unit', function () {
             var agent = new Core({
                 implicitBase: 'foo'
