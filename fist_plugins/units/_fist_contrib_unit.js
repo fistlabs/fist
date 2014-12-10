@@ -40,7 +40,7 @@ module.exports = function (agent) {
 
     /**
      * @class _fist_contrib_unit
-     * @extends UnitCommon
+     * @extends Unit
      * */
     agent.unit(/** @lends _fist_contrib_unit.prototype */ {
 
@@ -50,7 +50,7 @@ module.exports = function (agent) {
          * @property
          * @type {String}
          * */
-        base: '_fist_contrib_unit_common',
+        base: 0,
 
         /**
          * @public
@@ -115,7 +115,7 @@ module.exports = function (agent) {
          *
          * @returns {vow.Promise}
          * */
-        _execute: function (track, context) {
+        _fetch: function (track, context) {
             var __base = this.__base;
             var args;
             var dDepsStart;
@@ -169,10 +169,10 @@ module.exports = function (agent) {
                     name = deps[pos];
 
                     if (promise.isRejected()) {
-                        context.memKeys[name] = null;
+                        context.depTags[pos] = null;
                         hosting = context.errors;
                     } else {
-                        context.memKeys[name] = value.memKey;
+                        context.depTags[pos] = value.memKey;
                         value = value.result;
                         hosting = context.result;
                     }
@@ -196,24 +196,24 @@ module.exports = function (agent) {
          *
          * @returns {*}
          * */
-        _buildMemKey: function (track, context) {
-            var memKey;
-            var memKeys = context.memKeys;
-            var parts = [this.__base(track, context)];
-            var name;
+        _buildTag: function (track, context) {
+            var tag;
+            var depTags = context.depTags;
+            var l = depTags.length;
+            var parts = new Array(l + 1);
 
-            for (name in memKeys) {
-                if (hasProperty.call(memKeys, name)) {
-                    memKey = memKeys[name];
+            parts[0] = this.__base(track, context);
 
-                    if (memKey) {
-                        parts[parts.length] = memKey;
-                        continue;
-                    }
+            while (l) {
+                l -= 1;
+                tag = depTags[l];
 
-                    //  do not cache if any of dependencies was not cached
-                    return null;
+                if (tag) {
+                    parts[l + 1] = tag;
+                    continue;
                 }
+
+                return null;
             }
 
             return parts.join(',');
@@ -288,7 +288,7 @@ function Model(logger) {
      * @property
      * @type {Object}
      * */
-    this.memKeys = {};
+    this.depTags = [];
 }
 
 Model.prototype = Object.create(Context.prototype);

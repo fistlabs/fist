@@ -72,7 +72,7 @@ Track.prototype.constructor = Track;
 Track.prototype.invoke = function (unit, args) {
     var logger = this.logger.bind(unit.name);
     var context = unit.createContext(logger).setup(unit.params, this.params, args);
-    var hash = unit.name + ', ' + unit.hashCall(this, context);
+    var hash = unit.name + '-' + unit.hashArgs(this, context);
     var calls = this._calls;
 
     logger.debug('Starting invocation, arguments %j hashed as "%s"', context.params, hash);

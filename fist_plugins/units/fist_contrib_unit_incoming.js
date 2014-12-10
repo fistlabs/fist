@@ -18,7 +18,7 @@ module.exports = function (agent) {
 
     /**
      * @class fist_contrib_unit_incoming
-     * @extends UnitCommon
+     * @extends Unit
      * */
     agent.unit({
 
@@ -28,7 +28,7 @@ module.exports = function (agent) {
          * @property
          * @type {String}
          * */
-        base: '_fist_contrib_unit_common',
+        base: 0,
 
         /**
          * @public

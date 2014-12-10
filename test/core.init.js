@@ -16,41 +16,48 @@ function getTrack() {
     return new Track(new Core(), logger);
 }
 
-describe('core/unit-common', function () {
-    var UnitCommon = require('../core/unit-common').createClass();
+describe('core/init', function () {
+    var core = new Core();
 
-    it('Should be an instance of UnitCommon', function () {
-        assert.ok(new UnitCommon() instanceof UnitCommon);
+    it('Should provide "caches.local" cache property', function () {
+        assert.ok(core.caches);
+        assert.ok(core.caches.local);
+        assert.strictEqual(typeof core.caches.local.get, 'function');
+        assert.strictEqual(typeof core.caches.local.set, 'function');
+    });
+
+    it('Should be an instance of core.Unit', function () {
+        assert.ok(new core.Unit() instanceof core.Unit);
     });
 
     it('Should have Object params property', function () {
-        var unit = new UnitCommon();
+        var unit = new core.Unit();
         assert.ok(unit.params);
         assert.strictEqual(typeof unit.params, 'object');
     });
 
     it('Should have Number maxAge property', function () {
-        var unit = new UnitCommon();
+        var unit = new core.Unit();
         assert.strictEqual(typeof unit.maxAge, 'number');
 
     });
 
-    describe('UnitCommon.inherit', function () {
+    describe('core.Unit.inherit', function () {
 
         it('Should have static inherit method', function () {
-            assert.strictEqual(typeof UnitCommon.inherit, 'function');
+            assert.strictEqual(typeof core.Unit.inherit, 'function');
         });
 
         it('Should inherit from self', function () {
-            var MyUnit = UnitCommon.inherit();
+            var MyUnit = core.Unit.inherit();
             var unit = new MyUnit();
-            assert.ok(unit instanceof UnitCommon);
+            assert.ok(unit instanceof core.Unit);
             assert.ok(unit instanceof MyUnit);
             assert.strictEqual(typeof MyUnit.inherit, 'function');
         });
 
         it('Should support own and static members', function () {
-            var MyUnit = UnitCommon.inherit({
+            var MyUnit = core.Unit.inherit({
                 foo: 11
             }, {
                 bar: 12
@@ -65,7 +72,7 @@ describe('core/unit-common', function () {
 
             Mixin.prototype.foo = function () {};
 
-            var MyUnit = UnitCommon.inherit({
+            var MyUnit = core.Unit.inherit({
                 mixins: [Mixin]
             });
             var unit = new MyUnit();
@@ -74,38 +81,26 @@ describe('core/unit-common', function () {
         });
     });
 
-    describe('UnitCommon.cache', function () {
-        it('Should have "cache" property', function () {
-            assert.ok(UnitCommon.cache);
-            assert.ok(typeof UnitCommon.cache, 'object');
-        });
-
-        it('Should be cache-like interface', function () {
-            assert.strictEqual(typeof UnitCommon.cache.set, 'function');
-            assert.strictEqual(typeof UnitCommon.cache.get, 'function');
-        });
-    });
-
     describe('unit.createContext()', function () {
         it('Should have createContext method', function () {
-            var unit = new UnitCommon();
+            var unit = new core.Unit();
             assert.strictEqual(typeof unit.createContext, 'function');
         });
 
         it('Should create Context', function () {
-            var unit = new UnitCommon();
+            var unit = new core.Unit();
             assert.ok(unit.createContext(new Logger(new Logging())) instanceof Context);
         });
     });
 
-    describe('unit.hashCall()', function () {
-        it('Should have hashCall method', function () {
-            var unit = new UnitCommon();
-            assert.strictEqual(typeof unit.hashCall, 'function');
+    describe('unit.hashArgs()', function () {
+        it('Should have hashArgs method', function () {
+            var unit = new core.Unit();
+            assert.strictEqual(typeof unit.hashArgs, 'function');
         });
 
         it('Should return empty string by default', function () {
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo'
             });
 
@@ -114,18 +109,18 @@ describe('core/unit-common', function () {
             var context = new Context(new Logger(new Logging())).
                 setup(unit.params, track.params, {foo: 'bar'});
 
-            assert.strictEqual(unit.hashCall(track, context), '');
+            assert.strictEqual(unit.hashArgs(track, context), '');
         });
     });
 
     describe('unit.call()', function () {
         it('Should have unit.call() method', function () {
-            var unit = new UnitCommon();
+            var unit = new core.Unit();
             assert.strictEqual(typeof unit.call, 'function');
         });
 
         it('Should call .main() method', function (done) {
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
                 main: function () {
                     return 42;
@@ -142,7 +137,7 @@ describe('core/unit-common', function () {
         });
 
         it('Should setup context before calling', function (done) {
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
                 params: {
                     foo: 'bar',
@@ -182,13 +177,13 @@ describe('core/unit-common', function () {
 
         it('Should support cache', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
 
                 name: 'foo',
 
                 maxAge: 0.05,
 
-                hashCall: function () {
+                hashArgs: function () {
                     return 'bar';
                 },
 
@@ -205,16 +200,16 @@ describe('core/unit-common', function () {
 
             unit.call(track, context).done(function (res) {
                 assert.strictEqual(res.result, 1);
-                assert.strictEqual(res.memKey, 'foo, bar');
+                assert.strictEqual(res.memKey, 'foo-bar');
 
                 unit.call(track, context).done(function (res) {
                     assert.strictEqual(res.result, 1);
-                    assert.strictEqual(res.memKey, 'foo, bar');
+                    assert.strictEqual(res.memKey, 'foo-bar');
 
                     setTimeout(function () {
                         unit.call(track, context).done(function (res) {
                             assert.strictEqual(res.result, 2);
-                            assert.strictEqual(res.memKey, 'foo, bar');
+                            assert.strictEqual(res.memKey, 'foo-bar');
 
                             done();
                         });
@@ -223,14 +218,31 @@ describe('core/unit-common', function () {
             });
         });
 
-        it('Should not use cache cache fetch failed', function (done) {
+        it('Should not use cache fetch failed', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var cacheName = Math.random();
+
+            core.caches[cacheName] = {
+                get: function (k, fn) {
+                    setTimeout(function () {
+                        fn(new Error());
+                    }, 0);
+                },
+                set: function (k, v, ttl, fn) {
+                    setTimeout(function () {
+                        fn(new Error());
+                    }, 0);
+                }
+            };
+
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
+
+                cache: cacheName,
 
                 maxAge: 0.05,
 
-                hashCall: function () {
+                hashArgs: function () {
                     return 'bar';
                 },
 
@@ -239,19 +251,6 @@ describe('core/unit-common', function () {
                     return i;
                 }
 
-            }, {
-                cache: {
-                    get: function (k, fn) {
-                        setTimeout(function () {
-                            fn(new Error());
-                        }, 0);
-                    },
-                    set: function (k, v, ttl, fn) {
-                        setTimeout(function () {
-                            fn(new Error());
-                        }, 0);
-                    }
-                }
             });
 
             var track = getTrack();
@@ -261,11 +260,11 @@ describe('core/unit-common', function () {
 
             unit.call(track, context).done(function (res) {
                 assert.strictEqual(res.result, 1);
-                assert.strictEqual(res.memKey, 'foo, bar');
+                assert.strictEqual(res.memKey, 'foo-bar');
 
                 unit.call(track, context).done(function (res) {
                     assert.strictEqual(res.result, 2);
-                    assert.strictEqual(res.memKey, 'foo, bar');
+                    assert.strictEqual(res.memKey, 'foo-bar');
 
                     done();
                 });
@@ -274,7 +273,7 @@ describe('core/unit-common', function () {
 
         it('Should not cache errors', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
 
                 maxAge: 0.05,
@@ -302,10 +301,10 @@ describe('core/unit-common', function () {
 
         it('Should not use cache if memKey is falsy', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
 
-                _buildMemKey: function () {
+                _buildTag: function () {
                     return null;
                 },
 
@@ -334,7 +333,7 @@ describe('core/unit-common', function () {
         });
 
         it('Should not return result if track was flushed', function (done) {
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
                 main: function (track) {
                     track._isFlushed = true;
@@ -353,11 +352,8 @@ describe('core/unit-common', function () {
 
         it('Should not cache if track was flushed', function (done) {
             var i = 0;
-            var Unit = inherit(UnitCommon, {
+            var Unit = inherit(core.Unit, {
                 name: 'foo',
-                getMemKey: function () {
-                    return 'test-control';
-                },
 
                 maxAge: 0.05,
 

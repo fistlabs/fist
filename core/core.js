@@ -3,13 +3,13 @@
 var R_NAME = /^[_a-z]\w*$/;
 
 var FistError = /** @type FistError */ require('./fist-error');
-var UnitCommon = /** @type UnitCommon */ require('./unit-common');
 var SemVer = /** @type SemVer */ require('semver');
 
 var _ = require('lodash-node');
 var f = require('util').format;
 var fs = require('fs');
 var hasProperty = Object.prototype.hasOwnProperty;
+var init = require('./init');
 var logging = require('loggin');
 var path = require('path');
 var stackTrace = require('stack-trace');
@@ -22,18 +22,10 @@ var vowFs = require('vow-fs');
  * */
 function Core(params) {
 
-    /**
-     * @public
-     * @memberOf {Core}
-     * @property
-     * @type {Function}
-     * */
-    this.Unit = UnitCommon.createClass(this);
-
     params = _.extend({
         root: path.dirname(getMainFileName()),
         unitRanges: {},
-        implicitBase: this.Unit.prototype.name
+        implicitBase: 0
     }, params);
 
     /**
@@ -42,8 +34,7 @@ function Core(params) {
      * @property
      * @type {Logger}
      * */
-    this.logger = logging.getLogger(params.name).
-        conf(params.logging);
+    this.logger = logging.getLogger(params.name).conf(params.logging);
 
     /**
      * @public
@@ -84,6 +75,8 @@ function Core(params) {
      * @type {Array}
      * */
     this._plugs = [];
+
+    init(this);
 }
 
 /**
@@ -194,7 +187,7 @@ Core.prototype.unit = function (members, statics) {
  *
  * @param {String} name
  *
- * @returns {UnitCommon}
+ * @returns {Unit}
  * */
 Core.prototype.getUnit = function (name) {
     return this._units[name];
@@ -405,9 +398,9 @@ function createUnitClass(decl) {
     base = members.base;
 
     //  Looking for base
-    if (!base) {
+    if (base === void 0) {
         base = this.params.implicitBase;
-        this.logger.warn('The base for unit "%s" is implicitly defined as "%s"', name, base);
+        this.logger.debug('The base for unit "%s" is implicitly defined as "%s"', name, base);
     }
 
     if (base === this.Unit.prototype.name) {

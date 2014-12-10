@@ -27,6 +27,21 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
                 assert.ok(context);
                 assert.ok(context.errors instanceof Obus);
                 assert.ok(context.result instanceof Obus);
+                assert.strictEqual(typeof context.r, 'function');
+                assert.strictEqual(typeof context.e, 'function');
+
+                context.result.set('foo.bar', 42);
+                context.errors.set('bar.zot', 43);
+
+                assert.strictEqual(context.r('foo.bar'), 42);
+                assert.strictEqual(context.e('bar.zot'), 43);
+
+                assert.strictEqual(context.r('foo.bar.baz'), void 0);
+                assert.strictEqual(context.e('foo.bar.baz'), void 0);
+
+                assert.strictEqual(context.r('foo.bar.baz', 42), 42);
+                assert.strictEqual(context.e('foo.bar.baz', 42), 42);
+
                 assert.deepEqual(context.toJSON(), {
                     params: context.params,
                     errors: context.errors,
@@ -330,53 +345,6 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
                             done();
                         });
                     }, 55);
-                });
-            });
-        });
-    });
-
-    it('Should not cache result if one of deps is not cacheable', function (done) {
-        var agent = getAgent({});
-        var foo = 0;
-        var bar = 0;
-
-        agent.unit({
-            base: '_fist_contrib_unit',
-            name: 'foo',
-            deps: ['bar'],
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 'baz');
-                foo += 1;
-                return 42;
-            },
-            maxAge: 0.05
-        });
-
-        agent.unit({
-            name: 'bar',
-            main: function () {
-                bar += 1;
-                return 'baz';
-            }
-        });
-
-        agent.ready().done(function () {
-            new Track(agent, logger).eject('foo').done(function (res) {
-                assert.strictEqual(res, 42);
-                assert.strictEqual(foo, 1);
-                assert.strictEqual(bar, 1);
-
-                new Track(agent, logger).eject('foo').done(function () {
-                    assert.strictEqual(res, 42);
-                    assert.strictEqual(foo, 2);
-                    assert.strictEqual(bar, 2);
-
-                    new Track(agent, logger).eject('foo').done(function () {
-                        assert.strictEqual(res, 42);
-                        assert.strictEqual(foo, 3);
-                        assert.strictEqual(bar, 3);
-                        done();
-                    });
                 });
             });
         });

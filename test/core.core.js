@@ -182,6 +182,19 @@ describe('core/core', function () {
                 done();
             });
         });
+
+        it('Should install plugin with settings', function () {
+            var agent = new Core();
+            agent.install(path.join(__dirname, 'fixtures/plug/with-settings/plugin.js'), {
+                foo: 'bar'
+            });
+
+            agent.ready().done(function () {
+                assert.deepEqual(agent.settings, {
+                    foo: 'bar'
+                });
+            });
+        });
     });
 
     describe('agent.unit()', function () {
@@ -189,7 +202,7 @@ describe('core/core', function () {
         it('Should declare unit', function (done) {
             var agent = new Core();
             agent.unit({
-                base: '_fist_contrib_unit_common',
+                base: 0,
                 name: 'foo'
             });
 
@@ -215,7 +228,7 @@ describe('core/core', function () {
             var agent = new Core();
 
             agent.unit({
-                base: '_fist_contrib_unit_common',
+                base: 0,
                 name: 'foo'
             });
 
@@ -248,7 +261,7 @@ describe('core/core', function () {
         it('Should ignore the units which names starts with "_"', function (done) {
             var agent = new Core();
             agent.unit({
-                base: '_fist_contrib_unit_common',
+                base: 0,
                 name: '_foo'
             });
 
@@ -278,7 +291,7 @@ describe('core/core', function () {
 
             assert.throws(function () {
                 agent.unit({
-                    name: '0'
+                    name: '1'
                 });
             });
         });
@@ -354,7 +367,7 @@ describe('core/core', function () {
             });
 
             agent.unit({
-                base: '_fist_contrib_unit_common',
+                base: 0,
                 name: 'foo',
                 x: 1
             });

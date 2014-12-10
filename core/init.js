@@ -7,44 +7,81 @@ var _ = require('lodash-node');
 var inherit = require('inherit');
 var vow = require('vow');
 
-function createClass() {
+function init(agent) {
+    /*eslint max-params: 0*/
+
+    /**
+     * @public
+     * @memberOf agent
+     * @property
+     * @type {Object}
+     * */
+    var caches = agent.caches = {
+
+        /**
+         * default cache interface "local"
+         *
+         * @public
+         * @memberOf agent.caches
+         * @property
+         * @type {LRUDictTtlAsync}
+         * */
+        local: new LRUDictTtlAsync(0xffff)
+    };
+
+    function setCache(cache, k, v, ttl, done) {
+        return caches[cache].set(k, v, ttl, done);
+    }
+
+    function getCache(cache, k, done) {
+        return caches[cache].get(k, done);
+    }
 
     /**
      * Common Fist Unit interface
      *
-     * @class UnitCommon
+     * @class Unit
      * */
-    var UnitCommon = inherit(Object, /** @lends UnitCommon.prototype */ {
+    function Unit() {
 
         /**
-         * @private
-         * @memberOf {UnitCommon}
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        this.params = _.extend({}, this.params);
+    }
+
+    Unit.prototype = {
+
+        /**
+         * @public
+         * @memberOf {Unit}
          * @method
          *
          * @constructs
          * */
-        __constructor: function () {
-
-            /**
-             * @public
-             * @memberOf {UnitCommon}
-             * @property
-             * @type {Object}
-             * */
-            this.params = _.extend({}, this.params);
-        },
+        constructor: Unit,
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
+         * @property
+         * */
+        name: 0,
+
+        /**
+         * @public
+         * @memberOf {Unit}
          * @property
          * @type {String}
          * */
-        name: '_fist_contrib_unit_common',
+        cache: 'local',
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @property
          * @type {Number}
          * */
@@ -52,7 +89,7 @@ function createClass() {
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @property
          * @type {Object}
          * */
@@ -60,7 +97,7 @@ function createClass() {
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @method
          *
          * @param {Track} track
@@ -69,13 +106,12 @@ function createClass() {
          * @returns {*}
          * */
         call: function (track, context) {
-            var self = this;
             var dStartExec = new Date();
             var result;
             var logger = context.logger;
 
             logger.debug('Pending...');
-            result = self._execute(track, context);
+            result = this._fetch(track, context);
 
             result.done(function () {
                 var execTime = new Date() - dStartExec;
@@ -100,7 +136,7 @@ function createClass() {
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @method
          *
          * @param {Track} track
@@ -108,14 +144,14 @@ function createClass() {
          *
          * @returns {*}
          * */
-        hashCall: function (track, context) {
+        hashArgs: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return '';
         },
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @method
          *
          * @param {Logger} logger
@@ -128,7 +164,7 @@ function createClass() {
 
         /**
          * @public
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @method
          *
          * @param {Track} track
@@ -142,28 +178,35 @@ function createClass() {
 
         /**
          * @protected
-         * @memberOf {UnitCommon}
+         * @memberOf {Unit}
          * @method
          *
          * @param {Track} track
          * @param {Context} context
+         *
+         * @returns {*}
          * */
-        _execute: function (track, context) {
-            var self = this;
-            var memKey;
+        _buildTag: function (track, context) {
+            return this.name + '-' + this.hashArgs(track, context);
+        },
+
+        /**
+         * @protected
+         * @memberOf {Unit}
+         * @method
+         *
+         * @param {Track} track
+         * @param {Context} context
+         *
+         * @returns {vow.Promise}
+         * */
+        _fetch: function (track, context) {
             var defer;
+            var self = this;
+            var memKey = self._buildTag(track, context);
             var logger = context.logger;
 
-            //  if maxAge is not a number,
-            //  then the expression will return true
-            //  and cache will not be used
-            if (!(self.maxAge > 0)) {
-                memKey = null;
-            } else {
-                memKey = self._buildMemKey(track, context);
-            }
-
-            if (!memKey) {
+            if (!memKey || !(self.maxAge > 0)) {
                 return main(self, track, context).then(function (result) {
                     if (track.isFlushed()) {
                         logger.debug('The track was flushed during execution');
@@ -179,7 +222,7 @@ function createClass() {
 
             defer = vow.defer();
 
-            self.__self.cache.get(memKey, function (err, res) {
+            getCache(self.cache, memKey, function (err, res) {
                 //  has value in cache
                 if (res) {
                     logger.debug('Found in cache');
@@ -216,7 +259,7 @@ function createClass() {
                     result = {data: result};
 
                     //  Try to set cache
-                    self.__self.cache.set(memKey, result, self.maxAge, function (err) {
+                    setCache(self.cache, memKey, result, self.maxAge, function (err) {
                         if (err) {
                             logger.warn('Failed to set cache', err);
                         } else {
@@ -230,56 +273,37 @@ function createClass() {
             });
 
             return defer.promise();
-        },
+        }
+    };
 
-        /**
-         * @protected
-         * @memberOf {UnitCommon}
-         * @method
-         *
-         * @param {Track} track
-         * @param {Context} context
-         *
-         * @returns {*}
-         * */
-        _buildMemKey: function (track, context) {
-            return this.name + ', ' + this.hashCall(track, context);
+    /**
+     * @public
+     * @static
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Object} [members]
+     * @param {Object} [statics]
+     *
+     * @returns {Function}
+     * */
+    Unit.inherit = function (members, statics) {
+        var mixins = Object(members).mixins;
+
+        if (!mixins) {
+            mixins = [];
         }
 
-    }, {
+        return inherit([this].concat(mixins), members, statics);
+    };
 
-        /**
-         * @public
-         * @static
-         * @memberOf {UnitCommon}
-         * @method
-         *
-         * @param {Object} [members]
-         * @param {Object} [statics]
-         *
-         * @returns {Function}
-         * */
-        inherit: function (members, statics) {
-            var mixins = Object(members).mixins;
-
-            if (!mixins) {
-                mixins = [];
-            }
-
-            return inherit([this].concat(mixins), members, statics);
-        },
-
-        /**
-         * @public
-         * @static
-         * @memberOf {UnitCommon}
-         * @property
-         * @type {LRUDictTtlAsync}
-         * */
-        cache: new LRUDictTtlAsync(0xffff)
-    });
-
-    return UnitCommon;
+    /**
+     * @public
+     * @memberOf {Agent}
+     * @property
+     * @type {Unit}
+     * */
+    agent.Unit = Unit;
 }
 
 function main(self, track, context) {
@@ -288,4 +312,4 @@ function main(self, track, context) {
     });
 }
 
-exports.createClass = createClass;
+module.exports = init;

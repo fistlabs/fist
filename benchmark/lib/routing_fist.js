@@ -8,12 +8,7 @@ app.logger.conf({
 });
 
 app.unit({
-    base: '_fist_contrib_unit',
-    name: 'base'
-});
-
-app.unit({
-    base: 'base',
+    base: 0,
     name: 'foo',
     main: function (track) {
         return track.res.end('foo');
@@ -21,7 +16,7 @@ app.unit({
 });
 
 app.unit({
-    base: 'base',
+    base: 0,
     name: 'bar',
     main: function (track) {
         return track.res.end('bar');
@@ -29,7 +24,7 @@ app.unit({
 });
 
 app.unit({
-    base: 'base',
+    base: 0,
     name: 'index',
     main: function (track) {
         return track.res.end('index');
