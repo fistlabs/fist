@@ -286,4 +286,31 @@ describe('fist_plugins/units/fist_contrib_unit_incoming', function () {
             end(done);
     });
 
+    it('Should send 400 for bad media type', function (done) {
+        var back = getAgent({
+            implicitBase: '_fist_contrib_unit'
+        });
+
+        back.route('POST /upload/', {
+            name: 'upload',
+            unit: 'test'
+        });
+
+        back.unit({
+            name: 'test',
+            deps: ['body'],
+            main: function (track) {
+                track.send('bar');
+            }
+        });
+
+        var req = supertest(back.getHandler()).post('/upload/');
+
+        req.
+            set('Content-Type', '|||||').
+            send('foo').
+            expect(400).
+            end(done);
+    });
+
 });

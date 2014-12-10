@@ -26,7 +26,6 @@ module.exports = function (agent) {
          * @public
          * @memberOf {fist_contrib_unit_incoming}
          * @property
-         * @type {String}
          * */
         base: 0,
 
@@ -69,8 +68,15 @@ module.exports = function (agent) {
          * @returns {vow.Promise}
          * */
         main: function (track, context) {
-            var mime = typer.parse(track.header('Content-Type') || 'text/plain');
+            var mime = track.header('Content-Type');
             var promise;
+
+            try {
+                mime = typer.parse(mime);
+            } catch (err) {
+                track.status(400).send();
+                throw err;
+            }
 
             //  the only mimes supported by busboy
             if (mime.type === 'multipart' || mime.type === 'application' && mime.subtype === 'x-www-form-urlencoded') {
