@@ -51,11 +51,7 @@ module.exports = function (agent) {
          * @property
          * @type {Object}
          * */
-        params: {
-            toString: function () {
-                return '';
-            }
-        },
+        params: {},
 
         /**
          * @public

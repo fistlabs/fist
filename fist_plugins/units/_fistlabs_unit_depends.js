@@ -8,7 +8,6 @@ var Obus = /** @type Obus */ require('obus');
 
 var _ = require('lodash-node');
 var f = require('util').format;
-var hasProperty = Object.prototype.hasOwnProperty;
 var vow = require('vow');
 
 module.exports = function (agent) {
@@ -66,18 +65,56 @@ module.exports = function (agent) {
          * @constructs
          * */
         __constructor: function () {
+            var deps;
             this.__base();
-
-            /**
-             * @public
-             * @memberOf {_fist_contrib_unit}
-             * @property
-             * @type {Array<String>}
-             * */
-            this.deps = tuple(_.uniq(this.deps));
 
              //  check dependencies issues
             assertDepsOk(agent.getUnitClass(this.name), []);
+
+            deps = _.uniq(this.deps);
+
+            /**
+             * @protected
+             * @memberOf {_fist_contrib_unit}
+             * @property
+             * @type {Object}
+             * */
+            this._deps = tuple(deps);
+
+            /**
+             * @protected
+             * @memberOf {_fist_contrib_unit}
+             * @property
+             * @type {Object}
+             * */
+            this._depsNames = {};
+
+            _.forEach(deps, function (name) {
+                 this._depsNames[name] = _.has(this.depsMap, name) ?
+                     this.depsMap[name] : name;
+            }, this);
+
+            /**
+             * @protected
+             * @memberOf {_fist_contrib_unit}
+             * @property
+             * @type {Object}
+             * */
+            this._depsArgs = {};
+
+            _.forEach(deps, function (name) {
+                if (_.has(this.depsArgs, name)) {
+                    if (_.isFunction(this.depsArgs[name])) {
+                        this._depsArgs[name] = this.depsArgs[name];
+                    } else {
+                        this._depsArgs[name] = function () {
+                            return this.depsArgs[name];
+                        };
+                    }
+                } else {
+                    this._depsArgs[name] = function () {};
+                }
+            }, this);
         },
 
         /**
@@ -110,44 +147,30 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Track} track
-         * @param {Model} context
+         * @param {Object} context
          *
          * @returns {vow.Promise}
          * */
         _fetch: function (track, context) {
             var __base = this.__base;
-            var args;
             var dDepsStart;
-            var deps;
-            var depsArgs;
-            var depsMap;
+            var deps = this._deps;
             var depsVals;
             var i;
-            var l;
+            var l = deps.length;
             var logger = context.logger;
             var name = this.name;
 
             //  Start deps execution
             dDepsStart = new Date();
-            deps = this.deps;
-            depsArgs = Object(this.depsArgs);
-            depsMap = Object(this.depsMap);
-            depsVals = new Array(deps.length);
+            deps = this._deps;
+            depsVals = new Array(l);
+            context.keys = new Array(l + 1);
 
             //  call dependencies
             for (i = 0, l = deps.length; i < l; i += 1) {
                 name = deps[i];
-                args = void 0;
-
-                if (hasProperty.call(depsArgs, name)) {
-                    args = depsArgs[name];
-
-                    if (typeof args === 'function') {
-                        args = args.call(this, track, context);
-                    }
-                }
-
-                depsVals[i] = agent.callUnit(name, track, args);
+                depsVals[i] = agent.callUnit(name, track, this._depsArgs[name].call(this, track, context));
             }
 
             return vow.allResolved(depsVals).then(function (promises) {
@@ -165,18 +188,18 @@ module.exports = function (agent) {
                 for (pos = 0, size = promises.length; pos < size; pos += 1) {
                     promise = promises[pos];
                     value = promise.valueOf();
-                    name = deps[pos];
 
                     if (promise.isRejected()) {
-                        context.depTags[pos] = null;
+                        context.skipCache = true;
+                        context.keys[pos] = null;
                         hosting = context.errors;
                     } else {
-                        context.depTags[pos] = value.memKey;
+                        context.keys[pos] = value.memKey;
                         value = value.result;
                         hosting = context.result;
                     }
 
-                    Obus.add(hosting, hasProperty.call(depsMap, name) ? depsMap[name] : name, value);
+                    Obus.add(hosting, this._depsNames[deps[pos]], value);
                 }
 
                 logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
@@ -191,31 +214,16 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Track} track
-         * @param {Model} context
+         * @param {Object} context
          *
          * @returns {*}
          * */
         _buildTag: function (track, context) {
-            var tag;
-            var depTags = context.depTags;
-            var l = depTags.length;
-            var parts = new Array(l + 1);
-
-            parts[0] = this.__base(track, context);
-
-            while (l) {
-                l -= 1;
-                tag = depTags[l];
-
-                if (tag) {
-                    parts[l + 1] = tag;
-                    continue;
-                }
-
+            if (context.skipCache) {
                 return null;
             }
 
-            return parts.join(',');
+            return this.__base(track, context) + '-' + context.keys.join('-');
         },
 
         /**
@@ -280,14 +288,6 @@ function Model(logger) {
      * @type {Obus}
      * */
     this.result = new Obus();
-
-    /**
-     * @public
-     * @memberOf {Model}
-     * @property
-     * @type {Object}
-     * */
-    this.depTags = [];
 }
 
 Model.prototype = Object.create(Context.prototype);
