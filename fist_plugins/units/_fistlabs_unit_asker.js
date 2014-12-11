@@ -19,7 +19,7 @@ module.exports = function (agent) {
          * @property
          * @type {String}
          * */
-        base: '_fist_contrib_unit_serial',
+        base: '_fistlabs_unit_serial',
 
         /**
          * @public
@@ -27,7 +27,7 @@ module.exports = function (agent) {
          * @property
          * @type {String}
          * */
-        name: '_fist_contrib_unit_asker',
+        name: '_fistlabs_unit_asker',
 
         /**
          * @public

@@ -15,17 +15,20 @@ describe('fist', function () {
 
     it('Should set params.implicitBase by default', function () {
         var app = fist();
-        assert.strictEqual(app.params.implicitBase, '_fist_contrib_unit');
+        assert.strictEqual(app.params.implicitBase, '_fistlabs_unit_depends');
     });
 
     it('Should automatically install bundled plugins', function (done) {
         var app = fist();
 
         app.ready().done(function () {
-            var units = ['_fist_contrib_unit',
-                '_fist_contrib_unit_asker',
-                '_fist_contrib_unit_serial',
-                'fist_contrib_unit_incoming'];
+            var units = [
+                '_fistlabs_unit_depends',
+                '_fistlabs_unit_asker',
+                '_fistlabs_unit_serial',
+                '_fistlabs_unit_controller',
+                'fistlabs_unit_incoming'
+            ];
 
             units.forEach(function (name) {
                 assert.strictEqual(typeof app.getUnitClass(name), 'function');

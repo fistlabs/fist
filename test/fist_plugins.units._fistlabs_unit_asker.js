@@ -12,13 +12,13 @@ var logger = require('loggin');
 
 function getAgent(params) {
     var agent = new Agent(params);
-    agent.install(require.resolve('../fist_plugins/units/_fist_contrib_unit_asker'));
-    agent.install(require.resolve('../fist_plugins/units/_fist_contrib_unit_serial'));
-    agent.install(require.resolve('../fist_plugins/units/_fist_contrib_unit'));
+    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_asker'));
+    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_serial'));
+    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
     return agent;
 }
 
-describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
+describe('fist_plugins/units/_fistlabs_unit_asker', function () {
     var back = new Server();
 
     back.route('/api/<type>/', {
@@ -58,7 +58,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_asker',
+            base: '_fistlabs_unit_asker',
             name: 'docs',
             options: function (track, context) {
                 return {
@@ -90,7 +90,7 @@ describe('fist_plugins/units/_fist_contrib_unit_asker', function () {
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_asker',
+            base: '_fistlabs_unit_asker',
             name: 'upload',
             options: function (track, context) {
                 return {

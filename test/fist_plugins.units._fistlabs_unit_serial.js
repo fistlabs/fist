@@ -10,18 +10,18 @@ var logger = require('loggin');
 
 function getAgent(params) {
     var agent = new Agent(params);
-    agent.install(require.resolve('../fist_plugins/units/_fist_contrib_unit_serial'));
-    agent.install(require.resolve('../fist_plugins/units/_fist_contrib_unit'));
+    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_serial'));
+    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
     return agent;
 }
 
-describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
+describe('fist_plugins/units/_fistlabs_unit_serial', function () {
     it('Should run unit step by step', function (done) {
         var agent = getAgent();
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_serial',
+            base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
             foo: function () {
@@ -45,7 +45,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_serial',
+            base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
             foo: function (track) {
@@ -70,7 +70,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_serial',
+            base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
             foo: function () {
@@ -98,7 +98,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_serial',
+            base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
             foo: function () {
@@ -122,7 +122,7 @@ describe('fist_plugins/units/_fist_contrib_unit_serial', function () {
         var track = new Track(agent, logger);
 
         agent.unit({
-            base: '_fist_contrib_unit_serial',
+            base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
             foo: function (track, context) {

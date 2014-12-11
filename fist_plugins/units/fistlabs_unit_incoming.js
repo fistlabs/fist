@@ -35,7 +35,7 @@ module.exports = function (agent) {
          * @property
          * @type {String}
          * */
-        name: 'fist_contrib_unit_incoming',
+        name: 'fistlabs_unit_incoming',
 
         /**
          * @public

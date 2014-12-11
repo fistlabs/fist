@@ -8,7 +8,7 @@ app.logger.conf({
 });
 
 app.unit({
-    base: 0,
+    base: '_fistlabs_unit_depends',
     name: 'a',
     deps: ['b'],
     main: function (track) {
@@ -17,7 +17,7 @@ app.unit({
 });
 
 app.unit({
-    base: 0,
+    base: '_fistlabs_unit_depends',
     name: 'b',
     deps: ['c'],
     main: function () {
@@ -26,7 +26,7 @@ app.unit({
 });
 
 app.unit({
-    base: 0,
+    base: '_fistlabs_unit_depends',
     name: 'c',
     main: function () {
         return 'c';

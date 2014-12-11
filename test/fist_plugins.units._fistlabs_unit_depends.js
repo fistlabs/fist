@@ -11,17 +11,17 @@ var logger = require('loggin');
 
 function getAgent(params) {
     var agent = new Agent(params);
-    agent.install(require.resolve('../fist_plugins/units/_fist_contrib_unit'));
+    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
     return agent;
 }
 
-describe('fist_plugins/units/_fist_contrib_unit', function () {
+describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
     it('Should create model context', function (done) {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             main: function (track, context) {
                 assert.ok(context);
@@ -63,7 +63,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             main: function (track, context) {
@@ -91,7 +91,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             main: function (track, context) {
@@ -119,7 +119,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'base',
             deps: ['bar']
         });
@@ -161,7 +161,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'base',
             deps: 'bar'
         });
@@ -203,7 +203,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             depsMap: {
@@ -234,7 +234,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             depsArgs: {
@@ -267,7 +267,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             depsArgs: {
@@ -306,7 +306,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var bar = 0;
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             main: function (track, context) {
@@ -356,7 +356,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var bar = 0;
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             main: function (track, context) {
@@ -403,7 +403,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var foo = 0;
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             main: function () {
@@ -435,7 +435,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var foo = 0;
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
             main: function () {
@@ -465,7 +465,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar']
         });
@@ -480,7 +480,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['foo']
         });
@@ -495,13 +495,13 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar']
         });
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'bar',
             deps: ['foo']
         });
@@ -516,7 +516,7 @@ describe('fist_plugins/units/_fist_contrib_unit', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fist_contrib_unit',
+            base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar']
         });

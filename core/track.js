@@ -64,7 +64,7 @@ Track.prototype.constructor = Track;
  * @memberOf {Track}
  * @method
  *
- * @param {UnitCommon} unit
+ * @param {Unit} unit
  * @param {*} [args]
  *
  * @returns {vow.Promise}
@@ -77,8 +77,9 @@ Track.prototype.invoke = function (unit, args) {
 
     logger.debug('Starting invocation, arguments %j hashed as "%s"', context.params, hash);
 
-    if (!hasProperty.call(calls, hash)) {
+    if (hasProperty.call(calls, hash)) {
         logger.debug('Using memorized result, hash = "%s"', hash);
+    } else {
         calls[hash] = unit.call(this, context);
     }
 

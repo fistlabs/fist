@@ -1,6 +1,6 @@
 'use strict';
 
-var S_UNIT_NAME = '_fist_contrib_unit';
+var S_UNIT_NAME = '_fistlabs_unit_depends';
 
 var Context = /** @type Context */ require('../../core/context');
 var FistError = /** @type FistError */ require('../../core/fist-error');
