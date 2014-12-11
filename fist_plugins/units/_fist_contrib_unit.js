@@ -48,7 +48,6 @@ module.exports = function (agent) {
          * @public
          * @memberOf {_fist_contrib_unit}
          * @property
-         * @type {String}
          * */
         base: 0,
 

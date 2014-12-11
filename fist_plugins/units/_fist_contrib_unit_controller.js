@@ -8,23 +8,87 @@ var hasProperty = Object.prototype.hasOwnProperty;
 var vow = require('vow');
 var path = require('path');
 
-function defaultRender(filename, callback) {
-    callback(new FistError('NO_ENGINE_FOUND',
-        f('There is no engine found for file "%s"', filename)));
-}
-
 /**
  * @class Renderer
+ * @param {Array<String>} roots
  * */
-function Renderer() {
+function Renderer(roots) {
 
     /**
-     * @protected
+     * @public
+     * @memberOf {Renderer}
+     * @property
+     * @type {String}
+     * */
+    this.roots = roots;
+
+    /**
+     * @public
      * @memberOf {Renderer}
      * @property
      * @type {Array}
      * */
-    this.engines = {};
+    this.engines = [];
+
+    /**
+     * @public
+     * @memberOf {Renderer}
+     * @property
+     * @type {Array}
+     * */
+    this.checked = {};
+}
+
+function lookupRenderFunction(self, ending) {
+    var engines;
+    var engine;
+    var filename;
+    var i;
+    var j;
+    var k;
+    var l;
+    var root;
+    var roots;
+
+    if (hasProperty.call(self.checked, ending)) {
+        return self.checked[ending];
+    }
+
+    engines = self.engines;
+    roots = self.roots;
+
+    for (i = 0, l = roots.length; i < l; i += 1) {
+        root = roots[i];
+        filename = path.resolve(root, ending);
+
+        for (j = 0, k = engines.length; j < k; j += 1) {
+            engine = engines[j];
+
+            if (isSuitable(filename, engine.ending)) {
+                self.checked[ending] = engine.render;
+                return engine.render;
+            }
+        }
+    }
+
+    return defaultRender;
+}
+
+function isSuitable(filename, ending) {
+    //  do not use path.extname coz are files like that: "foo.bemhtml.js"
+    //  extname will return ".js" but we want ".bemhtml.js"
+    var i = filename.indexOf(ending);
+
+    if (i === -1) {
+        return false;
+    }
+
+    return i + ending.length === filename.length;
+}
+
+function defaultRender(filename, callback) {
+    callback(new FistError('NO_ENGINE_FOUND',
+        f('There is no engine found for file "%s"', filename)));
 }
 
 /**
@@ -32,13 +96,16 @@ function Renderer() {
  * @memberOf {Renderer}
  * @method
  *
- * @param {String} extname
+ * @param {String} ending
  * @param {Function} render
  *
  * @returns {Renderer}
  * */
-Renderer.prototype.engine = function (extname, render) {
-    this.engines[extname] = render;
+Renderer.prototype.engine = function (ending, render) {
+    this.engines.push({
+        ending: ending,
+        render: render
+    });
 
     return this;
 };
@@ -48,16 +115,14 @@ Renderer.prototype.engine = function (extname, render) {
  * @memberOf {Renderer}
  * @method
  *
- * @param {String} filename
+ * @param {String} ending
  * @param {*} options
  * */
-Renderer.prototype.render = function (filename, options) {
+Renderer.prototype.render = function (ending, options) {
     var defer = vow.defer();
-    var extname = path.extname(filename);
-    var render = hasProperty.call(this.engines, extname) ?
-        this.engines[extname] : defaultRender;
+    var render = lookupRenderFunction(this, ending);
 
-    render(filename, options, function (err, res) {
+    render(ending, options, function (err, res) {
         if (err) {
             defer.reject(err);
         } else {
@@ -69,7 +134,14 @@ Renderer.prototype.render = function (filename, options) {
 };
 
 module.exports = function (agent) {
-    var views = agent.views = new Renderer();
+
+    /**
+     * @public
+     * @memberOf agent
+     * @property
+     * @type {Renderer}
+     * */
+    var views = agent.views = new Renderer([]);
 
     /**
      * @class _fist_contrib_unit_controller
@@ -128,7 +200,7 @@ module.exports = function (agent) {
          *
          * @returns {String}
          * */
-        lookupTemplateFilename: function (track, context) {
+        lookupTemplateNameEnd: function (track, context) {
             /*eslint no-unused-vars: 0*/
             throw new FistError('NOT_IMPLEMENTED', 'You need to implement template lookup function');
         },
@@ -161,10 +233,20 @@ module.exports = function (agent) {
         lookupResponseHeader: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return {
-                'Content-Type': 'text/html'
+                'Content-Type': 'text/html; charset="UTF-8"'
             };
         },
 
+        /**
+         * @public
+         * @memberOf {_fist_contrib_unit_controller}
+         * @method
+         *
+         * @param {Connect} track
+         * @param {Model} context
+         *
+         * @returns {Object}
+         * */
         createTemplateOptions: function (track, context) {
             return context;
         },
@@ -180,11 +262,10 @@ module.exports = function (agent) {
          * @returns {vow.Promise}
          * */
         main: function (track, context) {
-            var filename = this.lookupTemplateFilename(track, context);
+            var fileEnd = this.lookupTemplateNameEnd(track, context);
+            var options = this.createTemplateOptions(track, context);
 
-            context = this.createTemplateOptions(track, context);
-
-            return views.render(filename, context).then(function (result) {
+            return views.render(fileEnd, options).then(function (result) {
                 track.
                     status(this.lookupResponseStatus(track, context)).
                     header(this.lookupResponseHeader(track, context)).
