@@ -74,9 +74,9 @@ module.exports = function (agent) {
              * @property
              * @type {Array<String>}
              * */
-            this.deps = _.uniq(this.deps);
+            this.deps = tuple(_.uniq(this.deps));
 
-            //  check dependencies issues
+             //  check dependencies issues
             assertDepsOk(agent.getUnitClass(this.name), []);
         },
 
@@ -344,3 +344,27 @@ Model.prototype.r = function (path, def) {
 Model.prototype.e = function (path, def) {
     return this.errors.get(path, def);
 };
+
+function tuple(list) {
+    var i;
+    var l = list.length;
+    var result = Object.create(null, {
+        toString: {
+            value: function () {
+                return '(' + Array.prototype.join.call(this, ', ') + ')';
+            }
+        },
+        length: {
+            value: l
+        }
+    });
+
+    for (i = 0; i < l; i += 1) {
+        Object.defineProperty(result, String(i), {
+            value: list[i],
+            enumerable: true
+        });
+    }
+
+    return result;
+}
