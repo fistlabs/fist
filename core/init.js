@@ -3,7 +3,6 @@
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
 
 var _ = require('lodash-node');
-var create = require('./util/create');
 var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var vow = require('vow');
@@ -187,7 +186,7 @@ function init(agent) {
 
             logger.debug('Pending...');
 
-            this._fetch(track, context, function (err, res) {
+            function onFetch(err, res) {
                 var execTime = new Date() - dStartExec;
 
                 if (arguments.length < 2) {
@@ -208,7 +207,9 @@ function init(agent) {
                 }
 
                 done(null, res);
-            });
+            }
+
+            fetch(this, track, context, onFetch);
         },
 
         /**
@@ -236,30 +237,16 @@ function init(agent) {
          * @returns {Object}
          * */
         createContext: function (track, args) {
-            var i;
-            var k;
-            var l;
-            var context = create(track);
-
-            args = [this.params, track.params, args];
-
-            context.logger = track.logger.bind(this.name);
-            context.params = {};
-
-            for (i = 0, l = args.length; i < l; i += 1) {
-                for (k in args[i]) {
-                    if (hasProperty.call(args[i], k)) {
-                        context.params[k] = args[i][k];
-                    }
-                }
-            }
-
-            context.errors = new Obus();
-            context.result = new Obus();
-            context.e = e;
-            context.r = r;
-
-            return context;
+            return {
+                //  Slow.
+                __proto__: track,
+                logger: track.logger.bind(this.name),
+                params: extend({}, this.params, track.params, args),
+                errors: new Obus(),
+                result: new Obus(),
+                e: e,
+                r: r
+            };
         },
 
         /**
@@ -291,78 +278,7 @@ function init(agent) {
             }
 
             return this.name + '-' + this.hashArgs(context) + '-' + context.keys.join('-');
-        },
-
-        /**
-         * @protected
-         * @memberOf {Unit}
-         * @method
-         *
-         * @param {Object} track
-         * @param {Object} context
-         * @param {Function} done
-         * */
-        _fetch: function (track, context, done) {
-            var dDepsStart;
-            var i;
-            var remaining;
-            var l = remaining = this._deps.length;
-            var logger;
-            var wasFlushed = false;
-
-            context.keys = new Array(l + 1);
-            context.skipCache = false;
-
-            if (l === 0) {
-                __base(this, track, context, done);
-                return;
-            }
-
-            dDepsStart = new Date();
-            logger = context.logger;
-
-            function resolveDep(self, pos) {
-                var name = self._deps[pos];
-                var args = self._depsArgs[name].call(self, context);
-
-                if (wasFlushed) {
-                    return;
-                }
-
-                agent.callUnit(track, name, args, function (err, res) {
-                    if (wasFlushed) {
-                        return;
-                    }
-
-                    if (track.isFlushed()) {
-                        wasFlushed = true;
-                        logger.debug('The track was flushed by deps, skip invocation');
-                        done(null, null);
-                        return;
-                    }
-
-                    if (arguments.length < 2) {
-                        context.skipCache = true;
-                        Obus.add(context.errors, self._depsNames[name], err);
-                    } else {
-                        context.keys[pos] = res.memKey;
-                        Obus.add(context.result, self._depsNames[name], res.result);
-                    }
-
-                    if (remaining === 1) {
-                        logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
-                        __base(self, track, context, done);
-                    }
-
-                    remaining -= 1;
-                });
-            }
-
-            for (i = 0; i < l; i += 1) {
-                resolveDep(this, i);
-            }
         }
-
     };
 
     /**
@@ -401,80 +317,6 @@ function init(agent) {
         return inherit([this].concat(mixins), members, statics);
     };
 
-    function __base(self, track, context, done) {
-        var memKey = self._buildTag(context);
-        var logger = context.logger;
-
-        if (!memKey || !(self.maxAge > 0)) {
-            main(self, context, function (err, res) {
-                if (arguments.length < 2) {
-                    done(err);
-                    return;
-                }
-
-                if (track.isFlushed()) {
-                    logger.debug('The track was flushed during execution');
-                    done(null, null);
-                    return;
-                }
-
-                done(null, {
-                    result: res,
-                    memKey: memKey
-                });
-            });
-            return;
-        }
-
-        self._cache.get(memKey, function (err, res) {
-            //  has value in cache
-            if (res) {
-                logger.debug('Found in cache');
-
-                done(null, {
-                    result: res.data,
-                    memKey: memKey
-                });
-                return;
-            }
-
-            //  error while getting value from cache
-            if (err) {
-                logger.warn('Failed to load cache', err);
-            } else {
-                logger.note('Outdated');
-            }
-
-            //  calling unit
-            main(self, context, function (err, res) {
-                if (arguments.length < 2) {
-                    done(err);
-                    return;
-                }
-
-                if (track.isFlushed()) {
-                    logger.debug('The track was flushed during execution');
-                    done(null, null);
-                    return;
-                }
-
-                //  Try to set cache
-                self._cache.set(memKey, {data: res}, self.maxAge, function (err) {
-                    if (err) {
-                        logger.warn('Failed to set cache', err);
-                    } else {
-                        logger.note('Updated');
-                    }
-                });
-
-                done(null, {
-                    result: res,
-                    memKey: memKey
-                });
-            });
-        });
-    }
-
     function assertDepsOk(Unit, trunk) {
 
         if (/^[^a-z]/i.test(Unit.prototype.name)) {
@@ -499,6 +341,67 @@ function init(agent) {
         });
     }
 
+    function fetch(self, track, context, done) {
+        var dDepsStart;
+        var i;
+        var remaining;
+        var l = remaining = self._deps.length;
+        var logger;
+        var wasFlushed = false;
+
+        context.keys = new Array(l + 1);
+        context.skipCache = false;
+
+        if (l === 0) {
+            cache(self, track, context, done);
+            return;
+        }
+
+        dDepsStart = new Date();
+        logger = context.logger;
+
+        function resolveDep(pos) {
+            var name = self._deps[pos];
+            var args = self._depsArgs[name].call(self, context);
+
+            if (wasFlushed) {
+                return;
+            }
+
+            agent.callUnit(track, name, args, function (err, res) {
+                if (wasFlushed) {
+                    return;
+                }
+
+                if (track.isFlushed()) {
+                    wasFlushed = true;
+                    logger.debug('The track was flushed by deps, skip invocation');
+                    done(null, null);
+                    return;
+                }
+
+                if (arguments.length < 2) {
+                    context.skipCache = true;
+                    Obus.add(context.errors, self._depsNames[name], err);
+                } else {
+                    context.keys[pos] = res.memKey;
+                    Obus.add(context.result, self._depsNames[name], res.result);
+                }
+
+                if (remaining === 1) {
+                    logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
+                    cache(self, track, context, done);
+                }
+
+                remaining -= 1;
+            });
+        }
+
+        for (i = 0; i < l; i += 1) {
+            resolveDep(i);
+        }
+    }
+
     /**
      * @public
      * @memberOf {Agent}
@@ -511,6 +414,8 @@ function init(agent) {
 function main(self, track, done) {
     var res;
 
+    //  TODO think how to move try{} to call,
+    // to catch all errors, not only in main method occurs
     try {
         res = self.main(track);
     } catch (err) {
@@ -539,6 +444,98 @@ function e(path, def) {
 
 function r(path, def) {
     return Obus.get(this.result, path, def);
+}
+
+function extend(dst) {
+    var i;
+    var k;
+    var l;
+    var src;
+
+    for (i = 1, l = arguments.length; i < l; i += 1) {
+        src = arguments[i];
+        for (k in src) {
+            if (hasProperty.call(src, k)) {
+                dst[k] = src[k];
+            }
+        }
+    }
+
+    return dst;
+}
+
+function cache(self, track, context, done) {
+    var memKey = self._buildTag(context);
+    var logger = context.logger;
+
+    if (!memKey || !(self.maxAge > 0)) {
+        main(self, context, function (err, res) {
+            if (arguments.length < 2) {
+                done(err);
+                return;
+            }
+
+            if (track.isFlushed()) {
+                logger.debug('The track was flushed during execution');
+                done(null, null);
+                return;
+            }
+
+            done(null, {
+                result: res,
+                memKey: memKey
+            });
+        });
+        return;
+    }
+
+    self._cache.get(memKey, function (err, res) {
+        //  has value in cache
+        if (res) {
+            logger.debug('Found in cache');
+
+            done(null, {
+                result: res.data,
+                memKey: memKey
+            });
+            return;
+        }
+
+        //  error while getting value from cache
+        if (err) {
+            logger.warn('Failed to load cache', err);
+        } else {
+            logger.note('Outdated');
+        }
+
+        //  calling unit
+        main(self, context, function (err, res) {
+            if (arguments.length < 2) {
+                done(err);
+                return;
+            }
+
+            if (track.isFlushed()) {
+                logger.debug('The track was flushed during execution');
+                done(null, null);
+                return;
+            }
+
+            //  Try to set cache
+            self._cache.set(memKey, {data: res}, self.maxAge, function (err) {
+                if (err) {
+                    logger.warn('Failed to set cache', err);
+                } else {
+                    logger.note('Updated');
+                }
+            });
+
+            done(null, {
+                result: res,
+                memKey: memKey
+            });
+        });
+    });
 }
 
 module.exports = init;

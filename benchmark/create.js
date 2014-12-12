@@ -5,7 +5,20 @@
 var Benchmark = require('benchmark').Benchmark;
 var Suite = Benchmark.Suite;
 
-var create = require('../core/util/create');
+function F() {}
+
+function create(proto) {
+    F.prototype = proto;
+    return new F();
+}
+
+var obj = require('http').STATUS_CODES;
+var size = 10;
+
+while (size) {
+    size -= 1;
+    obj = Object.create(obj);
+}
 
 Benchmark.options.minSamples = 100;
 
@@ -13,14 +26,18 @@ new Suite().
     on('cycle', function (e) {
         console.log(String(e.target));
     }).
-    add('create()', function () {
-        global.__test__ = create({foo: 'bar'});
-    }).
-    add('Object.create', function () {
-        global.__test__ = Object.create({foo: 'bar'});
+    add('Object.create()', function () {
+        global.__test__ = Object.create(obj);
     }).
     add('set __proto__', function () {
-        global.__test__ = {__proto__: {foo: 'bar'}};
+        global.__test__ = {__proto__: obj};
+    }).
+    add('create()', function () {
+        global.__test__ = create(obj);
+    }).
+    add('inline create()', function () {
+        F.prototype = obj;
+        global.__test__ = new F();
     }).
     run({
         queued: true,
