@@ -12,7 +12,6 @@ var path = require('path');
 function getAgent(params) {
     var agent = new Server(params);
     agent.install(require.resolve('../fist_plugins/units/fistlabs_unit_incoming'));
-    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
     agent.alias('fistlabs_unit_incoming', 'body');
     return agent;
 }
@@ -20,9 +19,7 @@ function getAgent(params) {
 describe('fist_plugins/units/fistlabs_unit_incoming', function () {
 
     it('Should parse raw body', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent({});
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -52,9 +49,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should parse json body', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -84,9 +79,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should parse text body', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -117,9 +110,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
 
     it('Should be failed on body parsing', function (done) {
         var spy = 0;
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -148,9 +139,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should parse urlencoded body', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -179,9 +168,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should parse multipart body', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -226,9 +213,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should be failed coz no boundary passed', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -250,9 +235,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should be failed while parsing multipart', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',
@@ -287,9 +270,7 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
     });
 
     it('Should send 400 for bad media type', function (done) {
-        var back = getAgent({
-            implicitBase: '_fistlabs_unit_depends'
-        });
+        var back = getAgent();
 
         back.route('POST /upload/', {
             name: 'upload',

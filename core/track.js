@@ -112,7 +112,7 @@ Track.prototype.invoke = function (unit, args, done) {
         func: [done]
     };
 
-    unit.call(context, function () {
+    unit.call(this, context, function () {
         var i;
         var l;
         var func = next.func;

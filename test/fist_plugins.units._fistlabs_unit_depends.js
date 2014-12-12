@@ -1,4 +1,5 @@
-/*eslint max-nested-callbacks: 0*/
+//  TODO move to core.Unit tests
+/*eslint max-nested-callbacks: 0, no-proto: 0*/
 /*global describe, it*/
 'use strict';
 
@@ -11,9 +12,7 @@ var logger = require('loggin');
 var vow = require('vow');
 
 function getAgent(params) {
-    var agent = new Agent(params);
-    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
-    return agent;
+    return new Agent(params);
 }
 
 describe('fist_plugins/units/_fistlabs_unit_depends', function () {
@@ -22,26 +21,26 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
-            main: function (track) {
-                assert.ok(track);
-                assert.ok(track.errors instanceof Obus);
-                assert.ok(track.result instanceof Obus);
-                assert.strictEqual(typeof track.r, 'function');
-                assert.strictEqual(typeof track.e, 'function');
+            main: function (context) {
+                assert.ok(context);
+                assert.ok(context.errors instanceof Obus);
+                assert.ok(context.result instanceof Obus);
+                assert.strictEqual(typeof context.r, 'function');
+                assert.strictEqual(typeof context.e, 'function');
 
-                track.result.set('foo.bar', 42);
-                track.errors.set('bar.zot', 43);
+                context.result.set('foo.bar', 42);
+                context.errors.set('bar.zot', 43);
 
-                assert.strictEqual(track.r('foo.bar'), 42);
-                assert.strictEqual(track.e('bar.zot'), 43);
+                assert.strictEqual(context.r('foo.bar'), 42);
+                assert.strictEqual(context.e('bar.zot'), 43);
 
-                assert.strictEqual(track.r('foo.bar.baz'), void 0);
-                assert.strictEqual(track.e('foo.bar.baz'), void 0);
+                assert.strictEqual(context.r('foo.bar.baz'), void 0);
+                assert.strictEqual(context.e('foo.bar.baz'), void 0);
 
-                assert.strictEqual(track.r('foo.bar.baz', 42), 42);
-                assert.strictEqual(track.e('foo.bar.baz', 42), 42);
+                assert.strictEqual(context.r('foo.bar.baz', 42), 42);
+                assert.strictEqual(context.e('foo.bar.baz', 42), 42);
                 return 42;
             }
         });
@@ -58,11 +57,11 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
-            main: function (track) {
-                assert.strictEqual(track.result.get('bar'), 'baz');
+            main: function (context) {
+                assert.strictEqual(context.result.get('bar'), 'baz');
                 return 42;
             }
         });
@@ -86,11 +85,11 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
-            main: function (track) {
-                assert.strictEqual(track.errors.get('bar'), 'baz');
+            main: function (context) {
+                assert.strictEqual(context.errors.get('bar'), 'baz');
                 return 42;
             }
         });
@@ -114,7 +113,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'base',
             deps: ['bar']
         });
@@ -123,9 +122,9 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 'base',
             name: 'foo',
             deps: ['baz'],
-            main: function (track) {
-                assert.strictEqual(track.result.get('bar'), 'baz');
-                assert.strictEqual(track.result.get('baz'), 'zot');
+            main: function (context) {
+                assert.strictEqual(context.result.get('bar'), 'baz');
+                assert.strictEqual(context.result.get('baz'), 'zot');
                 return 42;
             }
         });
@@ -187,7 +186,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         Mix1.prototype.deps = ['e'];
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             mixins: [null, Mix0, {}, null],
             deps: ['a']
@@ -212,7 +211,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'base',
             deps: 'bar'
         });
@@ -221,9 +220,9 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 'base',
             name: 'foo',
             deps: 'baz',
-            main: function (track) {
-                assert.strictEqual(track.result.get('bar'), 'baz');
-                assert.strictEqual(track.result.get('baz'), 'zot');
+            main: function (context) {
+                assert.strictEqual(context.result.get('bar'), 'baz');
+                assert.strictEqual(context.result.get('baz'), 'zot');
                 return 42;
             }
         });
@@ -254,7 +253,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             depsMap: {
@@ -285,7 +284,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             depsArgs: {
@@ -318,7 +317,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent({});
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             depsArgs: {
@@ -357,7 +356,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var bar = 0;
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             main: function (track) {
@@ -407,7 +406,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var bar = 0;
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             main: function (track) {
@@ -454,7 +453,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var foo = 0;
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             main: function () {
@@ -465,9 +464,9 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
         agent.unit({
             name: 'bar',
-            main: function (track) {
-                track.track._isFlushed = true;
-                assert.ok(track.isFlushed());
+            main: function (context) {
+                context.__proto__._isFlushed = true;
+                assert.ok(context.isFlushed());
                 return 146;
             }
         });
@@ -487,7 +486,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var foo = 0;
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar'],
             main: function () {
@@ -498,8 +497,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
         agent.unit({
             name: 'bar',
-            main: function (track) {
-                track.track._isFlushed = true;
+            main: function (context) {
+                context.__proto__._isFlushed = true;
                 throw new Error();
             }
         });
@@ -517,7 +516,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar']
         });
@@ -532,7 +531,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['foo']
         });
@@ -547,13 +546,13 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         var agent = getAgent();
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar']
         });
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'bar',
             deps: ['foo']
         });
@@ -564,32 +563,12 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         });
     });
 
-    it('Should not check deps of other-base units', function (done) {
-        var agent = getAgent();
-
-        agent.unit({
-            base: '_fistlabs_unit_depends',
-            name: 'foo',
-            deps: ['bar']
-        });
-
-        agent.unit({
-            name: 'bar',
-            //  just prop
-            deps: ['foo']
-        });
-
-        agent.ready().done(function () {
-            done();
-        });
-    });
-
     it('Can stop resolve next deps if one of them flushes the track', function (done) {
         var agent = getAgent();
         var spy = [];
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'foo',
             deps: ['bar', 'moo', 'zot', 'xyz'],
             main: function () {
@@ -598,7 +577,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         });
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'bar',
             main: function () {
                 var defer = vow.defer();
@@ -611,7 +590,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         });
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'moo',
             main: function () {
                 var defer = vow.defer();
@@ -624,16 +603,16 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         });
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'zot',
-            main: function (track) {
-                track.track._isFlushed = true;
+            main: function (context) {
+                context.__proto__._isFlushed = true;
                 spy.push(this.name);
             }
         });
 
         agent.unit({
-            base: '_fistlabs_unit_depends',
+            base: 0,
             name: 'xyz',
             main: function () {
                 spy.push(this.name);

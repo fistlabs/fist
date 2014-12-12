@@ -19,8 +19,8 @@ app.unit({
     base: '_fistlabs_unit_depends',
     name: f('unit_%s', size),
     deps: [f('unit_%s', size - 1)],
-    main: function (track) {
-        track.res.end('OK');
+    main: function (context) {
+        context.res.end('OK');
     }
 });
 

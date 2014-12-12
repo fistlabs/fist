@@ -14,7 +14,6 @@ function getAgent(params) {
     var agent = new Agent(params);
     agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_asker'));
     agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_serial'));
-    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
     return agent;
 }
 

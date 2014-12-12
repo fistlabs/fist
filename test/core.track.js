@@ -3,7 +3,6 @@
 'use strict';
 
 var assert = require('assert');
-var inherit = require('inherit');
 var logger = require('loggin');
 var vow = require('vow');
 
@@ -24,43 +23,53 @@ describe('core/track', function () {
 
     describe('track.invoke()', function () {
         it('Should invoke unit', function (done) {
-            var Unit = inherit(agent.Unit, {
+            var core = new Core();
+            var track = new Track(core, logger);
+
+            core.unit({
                 name: 'foo',
                 main: function () {
                     return 42;
                 }
             });
-            var unit = new Unit();
-            var track = new Track(agent, logger);
 
-            track.invoke(unit, null, function (err, res) {
-                assert.ok(!err);
-                assert.strictEqual(res.result, 42);
-                done();
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+
+                track.invoke(unit, null, function (err, res) {
+                    assert.ok(!err);
+                    assert.strictEqual(res.result, 42);
+                    done();
+                });
             });
         });
 
         it('Should memorize unit calls', function (done) {
             var i = 0;
-            var Unit = inherit(agent.Unit, {
+            var core = new Core();
+            var track = new Track(core, logger);
+
+            core.unit({
                 name: 'foo',
                 main: function () {
                     i += 1;
                     return 42;
                 }
             });
-            var unit = new Unit();
-            var track = new Track(agent, logger);
 
-            track.invoke(unit, null, function (err, res) {
-                assert.ok(!err);
-                assert.strictEqual(res.result, 42);
-                assert.strictEqual(i, 1);
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
 
                 track.invoke(unit, null, function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
-                    done();
+
+                    track.invoke(unit, null, function (err, res) {
+                        assert.strictEqual(res.result, 42);
+                        assert.strictEqual(i, 1);
+                        done();
+                    });
                 });
             });
         });
@@ -68,7 +77,10 @@ describe('core/track', function () {
         it('Should memorize unit calls by args hash', function (done) {
             var i = 0;
             var j = 0;
-            var Unit = inherit(agent.Unit, {
+            var core = new Core();
+            var track = new Track(core, logger);
+
+            core.unit({
                 name: 'foo',
                 main: function (track) {
                     i += 1;
@@ -83,33 +95,37 @@ describe('core/track', function () {
                     return track.param('foo');
                 }
             });
+
             var args = {
                 foo: 'bar'
             };
-            var unit = new Unit();
-            var track = new Track(agent, logger);
 
-            track.invoke(unit, args, function (err, res) {
-                assert.ok(!err);
-                assert.strictEqual(res.result, 42);
-                assert.strictEqual(i, 1);
-                j += 1;
-            });
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
 
-            track.invoke(unit, args, function (err, res) {
-                assert.ok(!err);
-                assert.strictEqual(res.result, 42);
-                assert.strictEqual(i, 1);
-                assert.strictEqual(j, 1);
+                track.invoke(unit, args, function (err, res) {
+                    assert.ok(!err);
+                    assert.strictEqual(res.result, 42);
+                    assert.strictEqual(i, 1);
+                    j += 1;
+                });
 
                 track.invoke(unit, args, function (err, res) {
                     assert.ok(!err);
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
                     assert.strictEqual(j, 1);
-                    done();
+
+                    track.invoke(unit, args, function (err, res) {
+                        assert.ok(!err);
+                        assert.strictEqual(res.result, 42);
+                        assert.strictEqual(i, 1);
+                        assert.strictEqual(j, 1);
+                        done();
+                    });
                 });
             });
+
         });
     });
 

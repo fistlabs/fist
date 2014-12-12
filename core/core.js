@@ -192,7 +192,7 @@ Core.prototype.callUnit = function (track, name, args, done) {
  * @memberOf {Core}
  * @method
  *
- * @param {String} name
+ * @param {*} name
  *
  * @returns {Object}
  * */

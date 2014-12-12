@@ -1,4 +1,4 @@
-/*eslint max-nested-callbacks: 0*/
+/*eslint max-nested-callbacks: 0, no-proto: 0*/
 /*global describe, it*/
 'use strict';
 
@@ -11,7 +11,6 @@ var logger = require('loggin');
 function getAgent(params) {
     var agent = new Agent(params);
     agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_serial'));
-    agent.install(require.resolve('../fist_plugins/units/_fistlabs_unit_depends'));
     return agent;
 }
 
@@ -48,12 +47,12 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
             base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
-            foo: function (track) {
-                track._isFlushed = true;
+            foo: function (context) {
+                context.__proto__._isFlushed = true;
                 return 1;
             },
-            bar: function (track) {
-                return track.prev + 1;
+            bar: function (context) {
+                return context.prev + 1;
             }
         });
 

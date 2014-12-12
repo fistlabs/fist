@@ -7,7 +7,7 @@ var vow = require('vow');
 module.exports = function (agent) {
     /**
      * @class _fist_contrib_unit_serial
-     * @extends _fist_contrib_unit
+     * @extends Depends
      * */
     agent.unit({
 
@@ -17,7 +17,7 @@ module.exports = function (agent) {
          * @property
          * @type {String}
          * */
-        base: '_fistlabs_unit_depends',
+        base: 0,
 
         /**
          * @public

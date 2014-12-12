@@ -8,6 +8,10 @@ var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var vow = require('vow');
 
+var FistError = /** @type FistError */ require('./fist-error');
+var Obus = /** @type Obus */ require('obus');
+var f = require('util').format;
+
 function init(agent) {
     /*eslint max-params: 0*/
 
@@ -102,18 +106,20 @@ function init(agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
+         *
          * @param {Function} done
          *
          * @returns {*}
          * */
-        call: function (track, done) {
+        call: function (track, context, done) {
             var dStartExec = new Date();
             var result;
-            var logger = track.logger;
+            var logger = context.logger;
 
             logger.debug('Pending...');
 
-            this._fetch(track, function (err, res) {
+            this._fetch(track, context, function (err, res) {
                 var execTime = new Date() - dStartExec;
 
                 if (arguments.length < 2) {
@@ -142,11 +148,11 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        hashArgs: function (track) {
+        hashArgs: function (context) {
             /*eslint no-unused-vars: 0*/
             return '';
         },
@@ -168,7 +174,6 @@ function init(agent) {
             var context = create(track);
 
             args = [this.params, track.params, args];
-            context.track = track;
 
             context.logger = track.logger.bind(this.name);
             context.params = {};
@@ -189,11 +194,11 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} track
+         * @param {Track} context
          *
          * @returns {*}
          * */
-        main: /* istanbul ignore next */ function (track) {
+        main: /* istanbul ignore next */ function (context) {
             /*eslint no-unused-vars: 0*/
         },
 
@@ -202,12 +207,12 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} track
+         * @param {Track} context
          *
          * @returns {*}
          * */
-        _buildTag: function (track) {
-            return this.name + '-' + this.hashArgs(track);
+        _buildTag: function (context) {
+            return this.name + '-' + this.hashArgs(context);
         },
 
         /**
@@ -215,16 +220,17 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} track
+         * @param {Object} track
+         * @param {Object} context
          * @param {Function} done
          * */
-        _fetch: function (track, done) {
+        _fetch: function (track, context, done) {
             var self = this;
-            var memKey = self._buildTag(track);
-            var logger = track.logger;
+            var memKey = self._buildTag(context);
+            var logger = context.logger;
 
             if (!memKey || !(self.maxAge > 0)) {
-                main(self, track, function (err, res) {
+                main(self, context, function (err, res) {
                     if (arguments.length < 2) {
                         done(err);
                         return;
@@ -264,7 +270,7 @@ function init(agent) {
                 }
 
                 //  calling unit
-                main(self, track, function (err, res) {
+                main(self, context, function (err, res) {
                     if (arguments.length < 2) {
                         done(err);
                         return;
@@ -315,13 +321,273 @@ function init(agent) {
         return inherit([this].concat(mixins), members, statics);
     };
 
+    function assertDepsOk(Unit, trunk) {
+
+        if (/^[^a-z]/i.test(Unit.prototype.name)) {
+            return;
+        }
+
+        _.forEach(Unit.prototype.deps, function (name) {
+            var Dependency = agent.getUnitClass(name);
+            var branch = trunk.concat(name);
+
+            if (!Dependency) {
+                throw new FistError(FistError.NO_SUCH_UNIT,
+                    f('There is no dependency "%s" for unit "%s"', name, Unit.prototype.name));
+            }
+
+            if (_.contains(trunk, name)) {
+                throw new FistError(FistError.DEPS_CONFLICT,
+                    f('Recursive dependencies found: "%s"', branch.join('" < "')));
+            }
+
+            assertDepsOk(Dependency, branch);
+        });
+    }
+
+    /**
+     * @abstract
+     * @class Depends
+     * @extends Unit
+     * */
+    var Depends = inherit(Unit, {
+
+        /**
+         * @private
+         * @memberOf {Depends}
+         * @method
+         * @constructs
+         * */
+        __constructor: function () {
+            this.__base();
+
+            //  check dependencies issues
+            assertDepsOk(agent.getUnitClass(this.name), []);
+
+            /**
+             * @protected
+             * @memberOf {Depends}
+             * @property
+             * @type {Object}
+             * */
+            this._deps = _.uniq(this.deps);
+
+            /**
+             * @protected
+             * @memberOf {Depends}
+             * @property
+             * @type {Object}
+             * */
+            this._depsNames = {};
+
+            _.forEach(this._deps, function (name) {
+                this._depsNames[name] = _.has(this.depsMap, name) ?
+                    this.depsMap[name] : name;
+            }, this);
+
+            /**
+             * @protected
+             * @memberOf {Depends}
+             * @property
+             * @type {Object}
+             * */
+            this._depsArgs = {};
+
+            _.forEach(this._deps, function (name) {
+                if (_.has(this.depsArgs, name)) {
+                    if (_.isFunction(this.depsArgs[name])) {
+                        this._depsArgs[name] = this.depsArgs[name];
+                    } else {
+                        this._depsArgs[name] = function () {
+                            return this.depsArgs[name];
+                        };
+                    }
+                } else {
+                    this._depsArgs[name] = function () {};
+                }
+            }, this);
+        },
+
+        /**
+         * @public
+         * @memberOf {Depends}
+         * @property
+         * @type {Object}
+         * */
+        depsArgs: {},
+
+        /**
+         * @public
+         * @memberOf {Depends}
+         * @property
+         * @type {Object}
+         * */
+        depsMap: {},
+
+        /**
+         * @public
+         * @memberOf {Depends}
+         * @property
+         * @type {Array}
+         * */
+        deps: [],
+
+        /**
+         * @protected
+         * @memberOf {Depends}
+         * @method
+         *
+         * @param {Object} track
+         * @param {Object} context
+         * @param {Function} done
+         * */
+        _fetch: function (track, context, done) {
+            var __base;
+            var dDepsStart;
+            var i;
+            var remaining;
+            var l = remaining = this._deps.length;
+            var logger;
+            var wasFlushed = false;
+
+            context.keys = new Array(l + 1);
+            context.skipCache = false;
+
+            if (l === 0) {
+                this.__base(track, context, done);
+                return;
+            }
+
+            __base = this.__base;
+            dDepsStart = new Date();
+            logger = context.logger;
+
+            function resolveDep(self, pos) {
+                var name = self._deps[pos];
+                var args = self._depsArgs[name].call(self, context);
+
+                if (wasFlushed) {
+                    return;
+                }
+
+                agent.callUnit(track, name, args, function (err, res) {
+                    if (wasFlushed) {
+                        return;
+                    }
+
+                    if (track.isFlushed()) {
+                        wasFlushed = true;
+                        logger.debug('The track was flushed by deps, skip invocation');
+                        done(null, null);
+                        return;
+                    }
+
+                    if (arguments.length < 2) {
+                        context.skipCache = true;
+                        Obus.add(context.errors, self._depsNames[name], err);
+                    } else {
+                        context.keys[pos] = res.memKey;
+                        Obus.add(context.result, self._depsNames[name], res.result);
+                    }
+
+                    if (remaining === 1) {
+                        logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
+                        __base.call(self, track, context, done);
+                    }
+
+                    remaining -= 1;
+                });
+            }
+
+            for (i = 0; i < l; i += 1) {
+                resolveDep(this, i);
+            }
+        },
+
+        /**
+         * @protected
+         * @memberOf {Depends}
+         * @method
+         *
+         * @param {Object} context
+         *
+         * @returns {*}
+         * */
+        _buildTag: function (context) {
+            if (context.skipCache) {
+                return null;
+            }
+
+            return this.__base(context) + '-' + context.keys.join('-');
+        },
+
+        /**
+         * @public
+         * @memberOf {Depends}
+         * @method
+         *
+         * @param {Track} track
+         * @param {*} [args]
+         *
+         * @returns {Object}
+         * */
+        createContext: function (track, args) {
+            var context = this.__base(track, args);
+
+            context.errors = new Obus();
+            context.result = new Obus();
+            context.e = e;
+            context.r = r;
+
+            return context;
+        }
+
+    }, {
+
+        /**
+         * @public
+         * @static
+         * @memberOf {Depends}
+         *
+         * @param {Object} [members]
+         * @param {Object} [statics]
+         *
+         * @returns {Function}
+         * */
+        inherit: function (members, statics) {
+            var deps = this.prototype.deps;
+            var mixins = [];
+
+            members = Object(members);
+
+            if (members.deps) {
+                deps = deps.concat(members.deps);
+            }
+
+            if (members.mixins) {
+                mixins = mixins.concat(members.mixins);
+            }
+
+            members.deps = _.reduce(mixins, function (deps, Mixin) {
+                if (_.isFunction(Mixin) && Mixin.prototype.deps) {
+                    deps = deps.concat(Mixin.prototype.deps);
+                }
+
+                return deps;
+            }, deps);
+
+            return this.__base(members, statics);
+        }
+
+    });
+
     /**
      * @public
      * @memberOf {Agent}
      * @property
-     * @type {Unit}
+     * @type {Function}
      * */
-    agent.Unit = Unit;
+    agent.Unit = Depends;
 }
 
 function main(self, track, done) {
@@ -347,6 +613,14 @@ function main(self, track, done) {
     }
 
     done(null, res);
+}
+
+function e(path, def) {
+    return Obus.get(this.errors, path, def);
+}
+
+function r(path, def) {
+    return Obus.get(this.result, path, def);
 }
 
 module.exports = init;

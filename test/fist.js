@@ -13,17 +13,11 @@ describe('fist', function () {
         assert.ok(app instanceof Server);
     });
 
-    it('Should set params.implicitBase by default', function () {
-        var app = fist();
-        assert.strictEqual(app.params.implicitBase, '_fistlabs_unit_depends');
-    });
-
     it('Should automatically install bundled plugins', function (done) {
         var app = fist();
 
         app.ready().done(function () {
             var units = [
-                '_fistlabs_unit_depends',
                 '_fistlabs_unit_asker',
                 '_fistlabs_unit_serial',
                 '_fistlabs_unit_controller',

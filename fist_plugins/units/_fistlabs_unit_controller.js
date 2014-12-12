@@ -145,7 +145,7 @@ module.exports = function (agent) {
 
     /**
      * @class _fist_contrib_unit_controller
-     * @extends _fist_contrib_unit
+     * @extends Depends
      * */
     agent.unit({
 
@@ -153,9 +153,8 @@ module.exports = function (agent) {
          * @public
          * @memberOf {_fist_contrib_unit_controller}
          * @property
-         * @type {String}
          * */
-        base: '_fistlabs_unit_depends',
+        base: 0,
 
         /**
          * @public
