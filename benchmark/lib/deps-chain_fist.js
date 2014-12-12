@@ -5,7 +5,7 @@ var app = fist();
 var f = require('util').format;
 
 app.logger.conf({
-    logLevel: 'INTERNAL'
+    logLevel: 'NOTSET'
 });
 
 var size = 40;
