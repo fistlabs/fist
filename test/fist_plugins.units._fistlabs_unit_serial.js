@@ -26,8 +26,8 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
             foo: function () {
                 return 1;
             },
-            bar: function (track) {
-                return track.prev + 1;
+            bar: function (track, context) {
+                return context.prev + 1;
             }
         });
 
@@ -47,11 +47,11 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
             base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
-            foo: function (context) {
-                context.__proto__._isFlushed = true;
+            foo: function (track) {
+                track._isFlushed = true;
                 return 1;
             },
-            bar: function (context) {
+            bar: function (track, context) {
                 return context.prev + 1;
             }
         });
@@ -75,12 +75,12 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
             foo: function () {
                 throw 1;
             },
-            efoo: function (track) {
-                assert.strictEqual(track.prev, 1);
+            efoo: function (track, context) {
+                assert.strictEqual(context.prev, 1);
                 return 42;
             },
-            bar: function (track) {
-                return track.prev + 1;
+            bar: function (track, context) {
+                return context.prev + 1;
             }
         });
 
@@ -103,8 +103,8 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
             foo: function () {
                 throw 1;
             },
-            bar: function (track) {
-                return track.prev + 1;
+            bar: function (track, context) {
+                return context.prev + 1;
             }
         });
 
@@ -124,8 +124,8 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
             base: '_fistlabs_unit_serial',
             name: 'serial',
             series: ['foo', 'bar'],
-            foo: function (track) {
-                track.series.clear();
+            foo: function (track, context) {
+                context.series.clear();
                 return 1;
             },
             bar: function (track) {

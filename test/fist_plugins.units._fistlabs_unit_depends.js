@@ -23,7 +23,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         agent.unit({
             base: 0,
             name: 'foo',
-            main: function (context) {
+            main: function (track, context) {
                 assert.ok(context);
                 assert.ok(context.errors instanceof Obus);
                 assert.ok(context.result instanceof Obus);
@@ -60,7 +60,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 0,
             name: 'foo',
             deps: ['bar'],
-            main: function (context) {
+            main: function (track, context) {
                 assert.strictEqual(context.result.get('bar'), 'baz');
                 return 42;
             }
@@ -88,7 +88,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 0,
             name: 'foo',
             deps: ['bar'],
-            main: function (context) {
+            main: function (track, context) {
                 assert.strictEqual(context.errors.get('bar'), 'baz');
                 return 42;
             }
@@ -122,7 +122,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 'base',
             name: 'foo',
             deps: ['baz'],
-            main: function (context) {
+            main: function (track, context) {
                 assert.strictEqual(context.result.get('bar'), 'baz');
                 assert.strictEqual(context.result.get('baz'), 'zot');
                 return 42;
@@ -220,7 +220,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 'base',
             name: 'foo',
             deps: 'baz',
-            main: function (context) {
+            main: function (track, context) {
                 assert.strictEqual(context.result.get('bar'), 'baz');
                 assert.strictEqual(context.result.get('baz'), 'zot');
                 return 42;
@@ -259,8 +259,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             depsMap: {
                 bar: 'xyz'
             },
-            main: function (track) {
-                assert.strictEqual(track.result.get('xyz'), 'baz');
+            main: function (track, context) {
+                assert.strictEqual(context.result.get('xyz'), 'baz');
                 return 42;
             }
         });
@@ -292,16 +292,16 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
                     x: 'baz'
                 }
             },
-            main: function (track) {
-                assert.strictEqual(track.result.get('bar'), 'baz');
+            main: function (track, context) {
+                assert.strictEqual(context.result.get('bar'), 'baz');
                 return 42;
             }
         });
 
         agent.unit({
             name: 'bar',
-            main: function (track) {
-                return track.param('x');
+            main: function (track, context) {
+                return context.param('x');
             }
         });
 
@@ -321,22 +321,22 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             name: 'foo',
             deps: ['bar'],
             depsArgs: {
-                bar: function (track) {
+                bar: function (track, context) {
                     return {
-                        x: track.param('x') + 1
+                        x: context.param('x') + 1
                     };
                 }
             },
-            main: function (track) {
-                assert.strictEqual(track.result.get('bar'), 2);
+            main: function (track, context) {
+                assert.strictEqual(context.result.get('bar'), 2);
                 return 42;
             }
         });
 
         agent.unit({
             name: 'bar',
-            main: function (track) {
-                return track.param('x');
+            main: function (track, context) {
+                return context.param('x');
             }
         });
 
@@ -359,8 +359,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 0,
             name: 'foo',
             deps: ['bar'],
-            main: function (track) {
-                assert.strictEqual(track.result.get('bar'), 'baz');
+            main: function (track, context) {
+                assert.strictEqual(context.result.get('bar'), 'baz');
                 foo += 1;
                 return 42;
             },
@@ -409,8 +409,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 0,
             name: 'foo',
             deps: ['bar'],
-            main: function (track) {
-                assert.strictEqual(track.errors.get('bar'), 'baz');
+            main: function (track, context) {
+                assert.strictEqual(context.errors.get('bar'), 'baz');
                 foo += 1;
                 return 42;
             },
@@ -464,9 +464,9 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
         agent.unit({
             name: 'bar',
-            main: function (context) {
-                context.__proto__._isFlushed = true;
-                assert.ok(context.isFlushed());
+            main: function (track) {
+                track._isFlushed = true;
+                assert.ok(track.isFlushed());
                 return 146;
             }
         });
@@ -497,8 +497,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
         agent.unit({
             name: 'bar',
-            main: function (context) {
-                context.__proto__._isFlushed = true;
+            main: function (track) {
+                track._isFlushed = true;
                 throw new Error();
             }
         });
@@ -605,8 +605,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         agent.unit({
             base: 0,
             name: 'zot',
-            main: function (context) {
-                context.__proto__._isFlushed = true;
+            main: function (track) {
+                track._isFlushed = true;
                 spy.push(this.name);
             }
         });

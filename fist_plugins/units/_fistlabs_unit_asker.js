@@ -49,10 +49,11 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        options: function (track) {
+        options: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return {};
         },
@@ -63,11 +64,12 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        prepare: function (track) {
-            var opts = Object(track.prev);
+        prepare: function (track, context) {
+            var opts = Object(context.prev);
             var path = opts.path;
 
             if (path && typeof path.build === 'function') {
@@ -83,11 +85,12 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        request: function (track) {
-            var opts = track.prev;
+        request: function (track, context) {
+            var opts = context.prev;
 
             track.logger.info('Outgoing %s %s%s%s', function () {
                 return opts.method || 'GET';
@@ -135,12 +138,13 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        compile: function (track) {
-            track.prev.data = JSON.parse(track.prev.data);
-            return track.prev;
+        compile: function (track, context) {
+            context.prev.data = JSON.parse(context.prev.data);
+            return context.prev;
         },
 
         /**
@@ -149,11 +153,12 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        resolve: function (track) {
-            return track.prev.data;
+        resolve: function (track, context) {
+            return context.prev.data;
         }
 
     });

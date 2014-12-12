@@ -59,10 +59,11 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          *
          * @returns {vow.Promise}
          * */
-        main: function (track) {
+        main: function (track, context) {
             var mime = track.header('Content-Type');
             var promise;
 
@@ -73,14 +74,16 @@ module.exports = function (agent) {
                 throw err;
             }
 
+            context.mime = mime;
+
             //  the only mimes supported by busboy
             if (mime.type === 'multipart' || mime.type === 'application' && mime.subtype === 'x-www-form-urlencoded') {
                 promise = vow.invoke(function (self) {
                     //  may throw during instantiation
-                    return self._busboy(track, mime);
+                    return self._busboy(track, context);
                 }, this);
             } else {
-                promise = this._other(track, mime);
+                promise = this._other(track, context);
             }
 
             return promise.fail(function (err) {
@@ -98,17 +101,17 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
-         * @param {Object} mime
+         * @param {Object} context
          *
          * @returns {vow.Promise}
          * */
-        _getRawBody: function (track, mime) {
+        _getRawBody: function (track, context) {
             var defer = vow.defer();
 
             rawBody(track.req, {
                 length: track.header('Content-Length'),
                 limit: Infinity,
-                encoding:  mime.parameters.charset
+                encoding:  context.mime.parameters.charset
             }, function (err, res) {
                 if (err) {
                     defer.reject(err);
@@ -126,12 +129,13 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
-         * @param {Object} mime
+         * @param {Object} context
          *
          * @returns {vow.Promise}
          * */
-        _other: function (track,  mime) {
-            return this._getRawBody(track, mime).then(function (res) {
+        _other: function (track, context) {
+            return this._getRawBody(track, context).then(function (res) {
+                var mime = context.mime;
                 //  support for application/json
                 if (mime.type === 'application' && mime.subtype === 'json') {
                     return {
@@ -163,11 +167,11 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
-         * @param {Object} mime
+         * @param {Object} context
          *
          * @returns {Busboy}
          * */
-        _createBusboy: function (track, mime) {
+        _createBusboy: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return new Busboy({
                 headers: track.header(),
@@ -190,18 +194,19 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
-         * @param {Object} mime
+         * @param {Object} context
          *
          * @returns {vow.Promise}
          * */
-        _busboy: function (track, mime) {
+        _busboy: function (track, context) {
             var fullData = [];
             var actualLength = 0;
             var expectedLength = Number(track.header('Content-Length'));
-            var busboy = this._createBusboy(track, mime);
+            var busboy = this._createBusboy(track, context);
             var defer = vow.defer();
             var input = {};
             var files = {};
+            var mime = context.mime;
             var result = {
                 type: mime.type === 'multipart' ? mime.type : 'urlencoded',
                 input: input,

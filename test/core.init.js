@@ -165,7 +165,7 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var context = unit.createContext(track);
-                assert.ok(context instanceof Track);
+                assert.ok(context);
                 assert.notStrictEqual(context, track);
                 done();
             });
@@ -198,7 +198,7 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var context = unit.createContext(track);
-                assert.strictEqual(unit.hashArgs(context), '');
+                assert.strictEqual(unit.hashArgs(track, context), '');
                 done();
             });
         });
@@ -402,8 +402,8 @@ describe('core/init', function () {
 
             core.unit({
                 name: 'foo',
-                main: function (context) {
-                    context.__proto__._isFlushed = true;
+                main: function (track) {
+                    track._isFlushed = true;
                     return 42;
                 }
             });
@@ -429,7 +429,7 @@ describe('core/init', function () {
                 maxAge: 0.05,
                 main: function (track) {
                     i += 1;
-                    track.__proto__._isFlushed = true;
+                    track._isFlushed = true;
                     return i;
                 }
             });
@@ -451,7 +451,7 @@ describe('core/init', function () {
             });
         });
 
-        it('Should be rejected event if track was flushed', function (done) {
+        it('Should be rejected even if track was flushed', function (done) {
             var i = 0;
             var core = new Core();
             var track = new Track(core, logger);

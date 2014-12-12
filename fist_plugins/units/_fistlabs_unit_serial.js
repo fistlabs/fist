@@ -15,7 +15,6 @@ module.exports = function (agent) {
          * @public
          * @memberOf {_fist_contrib_unit_serial}
          * @property
-         * @type {String}
          * */
         base: 0,
 
@@ -41,9 +40,10 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Object} track
+         * @param {Object} context
          * */
-        main: function (track) {
-            return next(this, track);
+        main: function (track, context) {
+            return next(this, track, context);
         },
 
         createContext: function (track, args) {
@@ -54,34 +54,34 @@ module.exports = function (agent) {
     });
 };
 
-function next(self, track) {
+function next(self, track, context) {
     var name;
 
-    if (track.series.isEmpty() || track.isFlushed()) {
-        return track.prev;
+    if (context.series.isEmpty() || track.isFlushed()) {
+        return context.prev;
     }
 
-    name = track.series.shift();
+    name = context.series.shift();
 
-    track.logger.debug('Start processing "%s"', name);
+    context.logger.debug('Start processing "%s"', name);
 
     return vow.invoke(function () {
-        return self[name].call(self, track);
+        return self[name].call(self, track, context);
     }).then(function (result) {
-        track.prev = result;
-        return next(self, track);
+        context.prev = result;
+        return next(self, track, context);
     }, function (err) {
         var func = self['e' + name];
 
-        track.prev = err;
-        track.series.clear();
+        context.prev = err;
+        context.series.clear();
 
         if (typeof func === 'function') {
             track.logger.warn('Failed to execute "%s", running "e%s"', name, name);
-            return func.call(self, track);
+            return func.call(self, track, context);
         }
 
-        track.logger.error('Failed to execute "%s"', name);
-        throw track.prev;
+        context.logger.error('Failed to execute "%s"', name);
+        throw context.prev;
     });
 }

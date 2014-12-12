@@ -1,5 +1,6 @@
 'use strict';
 
+var Context = require('./context');
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
 
 var _ = require('lodash-node');
@@ -217,11 +218,12 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
+         * @param {Object} track
          * @param {Object} context
          *
          * @returns {*}
          * */
-        hashArgs: function (context) {
+        hashArgs: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return '';
         },
@@ -237,16 +239,9 @@ function init(agent) {
          * @returns {Object}
          * */
         createContext: function (track, args) {
-            return {
-                //  Slow.
-                __proto__: track,
-                logger: track.logger.bind(this.name),
-                params: extend({}, this.params, track.params, args),
-                errors: new Obus(),
-                result: new Obus(),
-                e: e,
-                r: r
-            };
+            var context = new Context(track.logger.bind(this.name));
+            context.params = extend({}, this.params, track.params, args);
+            return context;
         },
 
         /**
@@ -254,11 +249,12 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} context
+         * @param {Object} track
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        main: /* istanbul ignore next */ function (context) {
+        main: /* istanbul ignore next */ function (track, context) {
             /*eslint no-unused-vars: 0*/
         },
 
@@ -267,17 +263,18 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
+         * @param {Object} track
          * @param {Object} context
          *
          * @returns {*}
          * */
-        _buildTag: function (context) {
+        _buildTag: function (track, context) {
 
             if (context.skipCache) {
                 return null;
             }
 
-            return this.name + '-' + this.hashArgs(context) + '-' + context.keys.join('-');
+            return this.name + '-' + this.hashArgs(track, context) + '-' + context.keys.join('-');
         }
     };
 
@@ -362,7 +359,7 @@ function init(agent) {
 
         function resolveDep(pos) {
             var name = self._deps[pos];
-            var args = self._depsArgs[name].call(self, context);
+            var args = self._depsArgs[name].call(self, track, context);
 
             if (wasFlushed) {
                 return;
@@ -411,13 +408,13 @@ function init(agent) {
     agent.Unit = Unit;
 }
 
-function main(self, track, done) {
+function main(self, track, context, done) {
     var res;
 
     //  TODO think how to move try{} to call,
     // to catch all errors, not only in main method occurs
     try {
-        res = self.main(track);
+        res = self.main(track, context);
     } catch (err) {
         if (vow.isPromise(err)) {
             vow.reject(err).fail(done);
@@ -465,11 +462,11 @@ function extend(dst) {
 }
 
 function cache(self, track, context, done) {
-    var memKey = self._buildTag(context);
+    var memKey = self._buildTag(track, context);
     var logger = context.logger;
 
     if (!memKey || !(self.maxAge > 0)) {
-        main(self, context, function (err, res) {
+        main(self, track, context, function (err, res) {
             if (arguments.length < 2) {
                 done(err);
                 return;
@@ -509,7 +506,7 @@ function cache(self, track, context, done) {
         }
 
         //  calling unit
-        main(self, context, function (err, res) {
+        main(self, track, context, function (err, res) {
             if (arguments.length < 2) {
                 done(err);
                 return;

@@ -82,17 +82,17 @@ describe('core/track', function () {
 
             core.unit({
                 name: 'foo',
-                main: function (track) {
+                main: function (track, context) {
                     i += 1;
-                    assert.strictEqual(track.params.foo, 'bar');
+                    assert.strictEqual(context.params.foo, 'bar');
                     var defer = vow.defer();
                     setTimeout(function () {
                         defer.resolve(42);
                     }, 10);
                     return defer.promise();
                 },
-                hashArgs: function (track) {
-                    return track.param('foo');
+                hashArgs: function (track, context) {
+                    return context.param('foo');
                 }
             });
 

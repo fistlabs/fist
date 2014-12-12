@@ -29,8 +29,8 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
         back.unit({
             name: 'test',
             deps: ['body'],
-            main: function (track) {
-                var body = track.result.get('body');
+            main: function (track, context) {
+                var body = context.r('body');
                 assert.strictEqual(body.type, 'raw');
                 assert.deepEqual(body.input, new Buffer('foo'));
 
@@ -59,8 +59,8 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
         back.unit({
             name: 'test',
             deps: ['body'],
-            main: function (track) {
-                var body = track.result.get('body');
+            main: function (track, context) {
+                var body = context.r('body');
                 assert.strictEqual(body.type, 'json');
                 assert.deepEqual(body.input, {foo: 'bar'});
 
@@ -89,8 +89,8 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
         back.unit({
             name: 'test',
             deps: ['body'],
-            main: function (track) {
-                var body = track.result.get('body');
+            main: function (track, context) {
+                var body = context.r('body');
                 assert.strictEqual(body.type, 'text');
                 assert.deepEqual(body.input, 'foo');
 
@@ -149,8 +149,8 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
         back.unit({
             name: 'test',
             deps: ['body'],
-            main: function (track) {
-                var body = track.result.get('body');
+            main: function (track, context) {
+                var body = context.r('body');
                 assert.strictEqual(body.type, 'urlencoded');
                 assert.deepEqual(body.input, {foo: ['bar', '1', '2'], bar: 'baz'});
                 track.send('bar');
@@ -178,8 +178,8 @@ describe('fist_plugins/units/fistlabs_unit_incoming', function () {
         back.unit({
             name: 'test',
             deps: ['body'],
-            main: function (track) {
-                var body = track.result.get('body');
+            main: function (track, context) {
+                var body = context.r('body');
                 assert.strictEqual(body.type, 'multipart');
                 assert.deepEqual(body.input, {foo: ['1', '2', '3']});
                 assert.ok(Array.isArray(body.files.file));

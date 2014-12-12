@@ -32,15 +32,15 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
 
     back.unit({
         name: 'api',
-        main: function (track) {
-            track.send(track.params);
+        main: function (track, context) {
+            track.send(context.params);
         }
     });
 
     back.unit({
         name: 'upload',
-        main: function (track) {
-            track.send(track.params);
+        main: function (track, context) {
+            track.send(context.params);
         }
     });
 
@@ -59,14 +59,14 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
         agent.unit({
             base: '_fistlabs_unit_asker',
             name: 'docs',
-            options: function (track) {
+            options: function (track, context) {
                 return {
                     timeout: 10000,
                     port: 12345,
                     hostname: 'localhost',
                     path: new Rule('/api/<type>/'),
                     vars: {
-                        type: track.param('type')
+                        type: context.param('type')
                     }
                 };
             }
@@ -91,7 +91,7 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
         agent.unit({
             base: '_fistlabs_unit_asker',
             name: 'upload',
-            options: function (track) {
+            options: function (track, context) {
                 return {
                     timeout: 10000,
                     port: 12345,
@@ -100,7 +100,7 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
                     hostname: 'localhost',
                     body: 'foo',
                     path: '/upload/?bar=baz',
-                    query: track.params,
+                    query: context.params,
                     headers: {
                         'X-Foo': 'bar',
                         'X-Bar': 'baz'

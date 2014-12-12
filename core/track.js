@@ -1,7 +1,5 @@
 'use strict';
 
-var Obus = require('obus');
-
 var hasProperty = Object.prototype.hasOwnProperty;
 var vow = require('vow');
 
@@ -67,20 +65,6 @@ Track.prototype.constructor = Track;
  * @memberOf {Track}
  * @method
  *
- * @param {String} path
- * @param {*} [def]
- *
- * @returns {*}
- * */
-Track.prototype.param = function (path, def) {
-    return Obus.get(this.params, path, def);
-};
-
-/**
- * @public
- * @memberOf {Track}
- * @method
- *
  * @param {Unit} unit
  * @param {*} args
  * @param {Function} done
@@ -88,7 +72,7 @@ Track.prototype.param = function (path, def) {
 Track.prototype.invoke = function (unit, args, done) {
     var context = unit.createContext(this, args);
     var logger = context.logger;
-    var hash = unit.name + '-' + unit.hashArgs(context);
+    var hash = unit.name + '-' + unit.hashArgs(this, context);
     var calls = this._calls;
     var next;
 
