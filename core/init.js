@@ -359,11 +359,14 @@ function init(agent) {
 
         function resolveDep(pos) {
             var name = self._deps[pos];
+            //  TODO prevent throwing user code
             var args = self._depsArgs[name].call(self, track, context);
 
             if (wasFlushed) {
                 return;
             }
+
+            //  TODO if (track.isFlushed()) {}
 
             agent.callUnit(track, name, args, function (err, res) {
                 if (wasFlushed) {
@@ -411,8 +414,6 @@ function init(agent) {
 function main(self, track, context, done) {
     var res;
 
-    //  TODO think how to move try{} to call,
-    // to catch all errors, not only in main method occurs
     try {
         res = self.main(track, context);
     } catch (err) {
@@ -462,6 +463,7 @@ function extend(dst) {
 }
 
 function cache(self, track, context, done) {
+    //  TODO prevent throwing user code...
     var memKey = self._buildTag(track, context);
     var logger = context.logger;
 

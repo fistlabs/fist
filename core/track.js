@@ -72,6 +72,7 @@ Track.prototype.constructor = Track;
 Track.prototype.invoke = function (unit, args, done) {
     var context = unit.createContext(this, args);
     var logger = context.logger;
+    //  TODO prevent throwing user code!
     var hash = unit.name + '-' + unit.hashArgs(this, context);
     var calls = this._calls;
     var next;

@@ -43,14 +43,10 @@ module.exports = function (agent) {
          * @param {Object} context
          * */
         main: function (track, context) {
-            return next(this, track, context);
-        },
-
-        createContext: function (track, args) {
-            var context = this.__base(track, args);
             context.series = new Deque(this.series);
-            return context;
+            return next(this, track, context);
         }
+
     });
 };
 
