@@ -1,5 +1,4 @@
 'use strict';
-//  TODO merge Unit and Depends
 
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
 
@@ -37,10 +36,11 @@ function init(agent) {
 
     /**
      * Common Fist Unit interface
-     *
      * @class Unit
      * */
     function Unit() {
+        //  check dependencies issues
+        assertDepsOk(agent.getUnitClass(this.name), []);
 
         /**
          * @public
@@ -57,6 +57,49 @@ function init(agent) {
          * @property
          * */
         this._cache = agent.caches[this.cache];
+
+        /**
+         * @protected
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        this._deps = _.uniq(this.deps);
+
+        /**
+         * @protected
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        this._depsNames = {};
+
+        _.forEach(this._deps, function (name) {
+            this._depsNames[name] = _.has(this.depsMap, name) ?
+                this.depsMap[name] : name;
+        }, this);
+
+        /**
+         * @protected
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        this._depsArgs = {};
+
+        _.forEach(this._deps, function (name) {
+            if (_.has(this.depsArgs, name)) {
+                if (_.isFunction(this.depsArgs[name])) {
+                    this._depsArgs[name] = this.depsArgs[name];
+                } else {
+                    this._depsArgs[name] = function () {
+                        return this.depsArgs[name];
+                    };
+                }
+            } else {
+                this._depsArgs[name] = function () {};
+            }
+        }, this);
     }
 
     Unit.prototype = {
@@ -100,6 +143,30 @@ function init(agent) {
          * @type {Object}
          * */
         params: {},
+
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        depsArgs: {},
+
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Object}
+         * */
+        depsMap: {},
+
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Array}
+         * */
+        deps: [],
 
         /**
          * @public
@@ -187,6 +254,11 @@ function init(agent) {
                 }
             }
 
+            context.errors = new Obus();
+            context.result = new Obus();
+            context.e = e;
+            context.r = r;
+
             return context;
         },
 
@@ -208,12 +280,17 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} context
+         * @param {Object} context
          *
          * @returns {*}
          * */
         _buildTag: function (context) {
-            return this.name + '-' + this.hashArgs(context);
+
+            if (context.skipCache) {
+                return null;
+            }
+
+            return this.name + '-' + this.hashArgs(context) + '-' + context.keys.join('-');
         },
 
         /**
@@ -226,224 +303,6 @@ function init(agent) {
          * @param {Function} done
          * */
         _fetch: function (track, context, done) {
-            var self = this;
-            var memKey = self._buildTag(context);
-            var logger = context.logger;
-
-            if (!memKey || !(self.maxAge > 0)) {
-                main(self, context, function (err, res) {
-                    if (arguments.length < 2) {
-                        done(err);
-                        return;
-                    }
-
-                    if (track.isFlushed()) {
-                        logger.debug('The track was flushed during execution');
-                        done(null, null);
-                        return;
-                    }
-
-                    done(null, {
-                        result: res,
-                        memKey: memKey
-                    });
-                });
-                return;
-            }
-
-            self._cache.get(memKey, function (err, res) {
-                //  has value in cache
-                if (res) {
-                    logger.debug('Found in cache');
-
-                    done(null, {
-                        result: res.data,
-                        memKey: memKey
-                    });
-                    return;
-                }
-
-                //  error while getting value from cache
-                if (err) {
-                    logger.warn('Failed to load cache', err);
-                } else {
-                    logger.note('Outdated');
-                }
-
-                //  calling unit
-                main(self, context, function (err, res) {
-                    if (arguments.length < 2) {
-                        done(err);
-                        return;
-                    }
-
-                    if (track.isFlushed()) {
-                        logger.debug('The track was flushed during execution');
-                        done(null, null);
-                        return;
-                    }
-
-                    //  Try to set cache
-                    self._cache.set(memKey, {data: res}, self.maxAge, function (err) {
-                        if (err) {
-                            logger.warn('Failed to set cache', err);
-                        } else {
-                            logger.note('Updated');
-                        }
-                    });
-
-                    done(null, {
-                        result: res,
-                        memKey: memKey
-                    });
-                });
-            });
-        }
-    };
-
-    /**
-     * @public
-     * @static
-     * @memberOf {Unit}
-     * @method
-     *
-     * @param {Object} [members]
-     * @param {Object} [statics]
-     *
-     * @returns {Function}
-     * */
-    Unit.inherit = function (members, statics) {
-        var mixins = Object(members).mixins;
-
-        if (!mixins) {
-            mixins = [];
-        }
-
-        return inherit([this].concat(mixins), members, statics);
-    };
-
-    function assertDepsOk(Unit, trunk) {
-
-        if (/^[^a-z]/i.test(Unit.prototype.name)) {
-            return;
-        }
-
-        _.forEach(Unit.prototype.deps, function (name) {
-            var Dependency = agent.getUnitClass(name);
-            var branch = trunk.concat(name);
-
-            if (!Dependency) {
-                throw new FistError(FistError.NO_SUCH_UNIT,
-                    f('There is no dependency "%s" for unit "%s"', name, Unit.prototype.name));
-            }
-
-            if (_.contains(trunk, name)) {
-                throw new FistError(FistError.DEPS_CONFLICT,
-                    f('Recursive dependencies found: "%s"', branch.join('" < "')));
-            }
-
-            assertDepsOk(Dependency, branch);
-        });
-    }
-
-    /**
-     * @abstract
-     * @class Depends
-     * @extends Unit
-     * */
-    var Depends = inherit(Unit, {
-
-        /**
-         * @private
-         * @memberOf {Depends}
-         * @method
-         * @constructs
-         * */
-        __constructor: function () {
-            this.__base();
-
-            //  check dependencies issues
-            assertDepsOk(agent.getUnitClass(this.name), []);
-
-            /**
-             * @protected
-             * @memberOf {Depends}
-             * @property
-             * @type {Object}
-             * */
-            this._deps = _.uniq(this.deps);
-
-            /**
-             * @protected
-             * @memberOf {Depends}
-             * @property
-             * @type {Object}
-             * */
-            this._depsNames = {};
-
-            _.forEach(this._deps, function (name) {
-                this._depsNames[name] = _.has(this.depsMap, name) ?
-                    this.depsMap[name] : name;
-            }, this);
-
-            /**
-             * @protected
-             * @memberOf {Depends}
-             * @property
-             * @type {Object}
-             * */
-            this._depsArgs = {};
-
-            _.forEach(this._deps, function (name) {
-                if (_.has(this.depsArgs, name)) {
-                    if (_.isFunction(this.depsArgs[name])) {
-                        this._depsArgs[name] = this.depsArgs[name];
-                    } else {
-                        this._depsArgs[name] = function () {
-                            return this.depsArgs[name];
-                        };
-                    }
-                } else {
-                    this._depsArgs[name] = function () {};
-                }
-            }, this);
-        },
-
-        /**
-         * @public
-         * @memberOf {Depends}
-         * @property
-         * @type {Object}
-         * */
-        depsArgs: {},
-
-        /**
-         * @public
-         * @memberOf {Depends}
-         * @property
-         * @type {Object}
-         * */
-        depsMap: {},
-
-        /**
-         * @public
-         * @memberOf {Depends}
-         * @property
-         * @type {Array}
-         * */
-        deps: [],
-
-        /**
-         * @protected
-         * @memberOf {Depends}
-         * @method
-         *
-         * @param {Object} track
-         * @param {Object} context
-         * @param {Function} done
-         * */
-        _fetch: function (track, context, done) {
-            var __base;
             var dDepsStart;
             var i;
             var remaining;
@@ -455,11 +314,10 @@ function init(agent) {
             context.skipCache = false;
 
             if (l === 0) {
-                this.__base(track, context, done);
+                __base(this, track, context, done);
                 return;
             }
 
-            __base = this.__base;
             dDepsStart = new Date();
             logger = context.logger;
 
@@ -493,7 +351,7 @@ function init(agent) {
 
                     if (remaining === 1) {
                         logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
-                        __base.call(self, track, context, done);
+                        __base(self, track, context, done);
                     }
 
                     remaining -= 1;
@@ -503,84 +361,143 @@ function init(agent) {
             for (i = 0; i < l; i += 1) {
                 resolveDep(this, i);
             }
-        },
-
-        /**
-         * @protected
-         * @memberOf {Depends}
-         * @method
-         *
-         * @param {Object} context
-         *
-         * @returns {*}
-         * */
-        _buildTag: function (context) {
-            if (context.skipCache) {
-                return null;
-            }
-
-            return this.__base(context) + '-' + context.keys.join('-');
-        },
-
-        /**
-         * @public
-         * @memberOf {Depends}
-         * @method
-         *
-         * @param {Track} track
-         * @param {*} [args]
-         *
-         * @returns {Object}
-         * */
-        createContext: function (track, args) {
-            var context = this.__base(track, args);
-
-            context.errors = new Obus();
-            context.result = new Obus();
-            context.e = e;
-            context.r = r;
-
-            return context;
         }
 
-    }, {
+    };
 
-        /**
-         * @public
-         * @static
-         * @memberOf {Depends}
-         *
-         * @param {Object} [members]
-         * @param {Object} [statics]
-         *
-         * @returns {Function}
-         * */
-        inherit: function (members, statics) {
-            var deps = this.prototype.deps;
-            var mixins = [];
+    /**
+     * @public
+     * @static
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Object} [members]
+     * @param {Object} [statics]
+     *
+     * @returns {Function}
+     * */
+    Unit.inherit = function (members, statics) {
+        var deps = this.prototype.deps;
+        var mixins = [];
 
-            members = Object(members);
+        members = Object(members);
 
-            if (members.deps) {
-                deps = deps.concat(members.deps);
+        if (members.deps) {
+            deps = deps.concat(members.deps);
+        }
+
+        if (members.mixins) {
+            mixins = mixins.concat(members.mixins);
+        }
+
+        members.deps = _.reduce(mixins, function (deps, Mixin) {
+            if (_.isFunction(Mixin) && Mixin.prototype.deps) {
+                deps = deps.concat(Mixin.prototype.deps);
             }
 
-            if (members.mixins) {
-                mixins = mixins.concat(members.mixins);
-            }
+            return deps;
+        }, deps);
 
-            members.deps = _.reduce(mixins, function (deps, Mixin) {
-                if (_.isFunction(Mixin) && Mixin.prototype.deps) {
-                    deps = deps.concat(Mixin.prototype.deps);
+        return inherit([this].concat(mixins), members, statics);
+    };
+
+    function __base(self, track, context, done) {
+        var memKey = self._buildTag(context);
+        var logger = context.logger;
+
+        if (!memKey || !(self.maxAge > 0)) {
+            main(self, context, function (err, res) {
+                if (arguments.length < 2) {
+                    done(err);
+                    return;
                 }
 
-                return deps;
-            }, deps);
+                if (track.isFlushed()) {
+                    logger.debug('The track was flushed during execution');
+                    done(null, null);
+                    return;
+                }
 
-            return this.__base(members, statics);
+                done(null, {
+                    result: res,
+                    memKey: memKey
+                });
+            });
+            return;
         }
 
-    });
+        self._cache.get(memKey, function (err, res) {
+            //  has value in cache
+            if (res) {
+                logger.debug('Found in cache');
+
+                done(null, {
+                    result: res.data,
+                    memKey: memKey
+                });
+                return;
+            }
+
+            //  error while getting value from cache
+            if (err) {
+                logger.warn('Failed to load cache', err);
+            } else {
+                logger.note('Outdated');
+            }
+
+            //  calling unit
+            main(self, context, function (err, res) {
+                if (arguments.length < 2) {
+                    done(err);
+                    return;
+                }
+
+                if (track.isFlushed()) {
+                    logger.debug('The track was flushed during execution');
+                    done(null, null);
+                    return;
+                }
+
+                //  Try to set cache
+                self._cache.set(memKey, {data: res}, self.maxAge, function (err) {
+                    if (err) {
+                        logger.warn('Failed to set cache', err);
+                    } else {
+                        logger.note('Updated');
+                    }
+                });
+
+                done(null, {
+                    result: res,
+                    memKey: memKey
+                });
+            });
+        });
+    }
+
+    function assertDepsOk(Unit, trunk) {
+
+        if (/^[^a-z]/i.test(Unit.prototype.name)) {
+            return;
+        }
+
+        _.forEach(Unit.prototype.deps, function (name) {
+            var Dependency = agent.getUnitClass(name);
+            var branch = trunk.concat(name);
+
+            if (!Dependency) {
+                throw new FistError(FistError.NO_SUCH_UNIT,
+                    f('There is no dependency "%s" for unit "%s"', name, Unit.prototype.name));
+            }
+
+            if (_.contains(trunk, name)) {
+                throw new FistError(FistError.DEPS_CONFLICT,
+                    f('Recursive dependencies found: "%s"', branch.join('" < "')));
+            }
+
+            assertDepsOk(Dependency, branch);
+        });
+    }
 
     /**
      * @public
@@ -588,7 +505,7 @@ function init(agent) {
      * @property
      * @type {Function}
      * */
-    agent.Unit = Depends;
+    agent.Unit = Unit;
 }
 
 function main(self, track, done) {

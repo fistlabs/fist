@@ -145,7 +145,7 @@ module.exports = function (agent) {
 
     /**
      * @class _fist_contrib_unit_controller
-     * @extends Depends
+     * @extends Unit
      * */
     agent.unit({
 
