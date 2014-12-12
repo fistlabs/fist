@@ -40,44 +40,48 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit_serial}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          * */
-        main: function (track, context) {
+        main: function (track) {
+            return next(this, track);
+        },
+
+        createContext: function (track, args) {
+            var context = this.__base(track, args);
             context.series = new Deque(this.series);
-            return next(this, track, context);
+            return context;
         }
     });
 };
 
-function next(self, track, context) {
+function next(self, track) {
     var name;
 
-    if (context.series.isEmpty() || track.isFlushed()) {
-        return context.prev;
+    if (track.series.isEmpty() || track.isFlushed()) {
+        return track.prev;
     }
 
-    name = context.series.shift();
+    name = track.series.shift();
 
-    context.logger.debug('Start processing "%s"', name);
+    track.logger.debug('Start processing "%s"', name);
 
     return vow.invoke(function () {
-        return self[name].call(self, track, context);
+        return self[name].call(self, track);
     }).then(function (result) {
-        context.prev = result;
-        return next(self, track, context);
+        track.prev = result;
+        return next(self, track);
     }, function (err) {
         var func = self['e' + name];
 
-        context.prev = err;
-        context.series.clear();
+        track.prev = err;
+        track.series.clear();
 
         if (typeof func === 'function') {
-            context.logger.warn('Failed to execute "%s", running "e%s"', name, name);
-            return func.call(self, track, context);
+            track.logger.warn('Failed to execute "%s", running "e%s"', name, name);
+            return func.call(self, track);
         }
 
-        context.logger.error('Failed to execute "%s"', name);
-        throw context.prev;
+        track.logger.error('Failed to execute "%s"', name);
+        throw track.prev;
     });
 }

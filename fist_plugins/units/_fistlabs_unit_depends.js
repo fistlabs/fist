@@ -2,7 +2,6 @@
 
 var S_UNIT_NAME = '_fistlabs_unit_depends';
 
-var Context = /** @type Context */ require('../../core/context');
 var FistError = /** @type FistError */ require('../../core/fist-error');
 var Obus = /** @type Obus */ require('obus');
 
@@ -142,11 +141,10 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          * @param {Function} done
          * */
-        _fetch: function (track, context, done) {
+        _fetch: function (track, done) {
             var __base;
             var dDepsStart;
             var i;
@@ -155,26 +153,24 @@ module.exports = function (agent) {
             var logger;
             var wasFlushed = false;
 
-            context.keys = new Array(l + 1);
-
             if (l === 0) {
-                this.__base(track, context, done);
+                this.__base(track, done);
                 return;
             }
 
             __base = this.__base;
             dDepsStart = new Date();
-            logger = context.logger;
+            logger = track.logger;
 
             function resolveDep(self, pos) {
                 var name = self._deps[pos];
-                var args = self._depsArgs[name].call(self, track, context);
+                var args = self._depsArgs[name].call(self, track);
 
                 if (wasFlushed) {
                     return;
                 }
 
-                agent.callUnit(track, name, args, function (err, res) {
+                agent.callUnit(track.track, name, args, function (err, res) {
                     if (wasFlushed) {
                         return;
                     }
@@ -187,16 +183,16 @@ module.exports = function (agent) {
                     }
 
                     if (arguments.length < 2) {
-                        context.skipCache = true;
-                        Obus.add(context.errors, self._depsNames[name], err);
+                        track.skipCache = true;
+                        Obus.add(track.errors, self._depsNames[name], err);
                     } else {
-                        context.keys[pos] = res.memKey;
-                        Obus.add(context.result, self._depsNames[name], res.result);
+                        track.keys[pos] = res.memKey;
+                        Obus.add(track.result, self._depsNames[name], res.result);
                     }
 
                     if (remaining === 1) {
                         logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
-                        __base.call(self, track, context, done);
+                        __base.call(self, track, done);
                     }
 
                     remaining -= 1;
@@ -213,17 +209,16 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          *
          * @returns {*}
          * */
-        _buildTag: function (track, context) {
-            if (context.skipCache) {
+        _buildTag: function (track) {
+            if (track.skipCache) {
                 return null;
             }
 
-            return this.__base(track, context) + '-' + context.keys.join('-');
+            return this.__base(track) + '-' + track.keys.join('-');
         },
 
         /**
@@ -231,12 +226,31 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit}
          * @method
          *
-         * @param {Logger} logger
+         * @param {Track} track
+         * @param {*} [args]
          *
-         * @returns {Model}
+         * @returns {Object}
          * */
-        createContext: function (logger) {
-            return new Model(logger);
+        createContext: function (track, args) {
+            var context = this.__base(track, args);
+
+            context.keys = new Array(this._deps.length + 1);
+
+            context.skipCache = false;
+
+            context.errors = new Obus();
+
+            context.result = new Obus();
+
+            context.e = function (path, def) {
+                return Obus.get(this.errors, path, def);
+            };
+
+            context.r = function (path, def) {
+                return Obus.get(this.result, path, def);
+            };
+
+            return context;
         }
 
     }, {
@@ -277,83 +291,4 @@ module.exports = function (agent) {
         }
 
     });
-};
-
-/**
- * @class Model
- * @extends Context
- * */
-function Model(logger) {
-    Context.call(this, logger);
-
-    /**
-     * @public
-     * @memberOf {Model}
-     * @property
-     * @type {Obus}
-     * */
-    this.errors = new Obus();
-
-    /**
-     * @public
-     * @memberOf {Model}
-     * @property
-     * @type {Obus}
-     * */
-    this.result = new Obus();
-}
-
-Model.prototype = Object.create(Context.prototype);
-
-/**
- * @public
- * @memberOf {Model}
- * @method
- *
- * @constructs
- * */
-Model.prototype.constructor = Model;
-
-/**
- * @public
- * @memberOf {Model}
- * @method
- *
- * @returns {Object}
- * */
-Model.prototype.toJSON = function () {
-
-    return {
-        params: Context.prototype.toJSON.call(this),
-        errors: this.errors,
-        result: this.result
-    };
-};
-
-/**
- * @public
- * @memberOf {Model}
- * @method
- *
- * @param {String} path
- * @param {*} [def]
- *
- * @returns {*}
- * */
-Model.prototype.r = function (path, def) {
-    return this.result.get(path, def);
-};
-
-/**
- * @public
- * @memberOf {Model}
- * @method
- *
- * @param {String} path
- * @param {*} [def]
- *
- * @returns {*}
- * */
-Model.prototype.e = function (path, def) {
-    return this.errors.get(path, def);
 };

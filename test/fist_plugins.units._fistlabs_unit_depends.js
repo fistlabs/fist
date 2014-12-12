@@ -18,36 +18,30 @@ function getAgent(params) {
 
 describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
-    it('Should create model context', function (done) {
+    it('Should create context', function (done) {
         var agent = getAgent({});
 
         agent.unit({
             base: '_fistlabs_unit_depends',
             name: 'foo',
-            main: function (track, context) {
-                assert.ok(context);
-                assert.ok(context.errors instanceof Obus);
-                assert.ok(context.result instanceof Obus);
-                assert.strictEqual(typeof context.r, 'function');
-                assert.strictEqual(typeof context.e, 'function');
+            main: function (track) {
+                assert.ok(track);
+                assert.ok(track.errors instanceof Obus);
+                assert.ok(track.result instanceof Obus);
+                assert.strictEqual(typeof track.r, 'function');
+                assert.strictEqual(typeof track.e, 'function');
 
-                context.result.set('foo.bar', 42);
-                context.errors.set('bar.zot', 43);
+                track.result.set('foo.bar', 42);
+                track.errors.set('bar.zot', 43);
 
-                assert.strictEqual(context.r('foo.bar'), 42);
-                assert.strictEqual(context.e('bar.zot'), 43);
+                assert.strictEqual(track.r('foo.bar'), 42);
+                assert.strictEqual(track.e('bar.zot'), 43);
 
-                assert.strictEqual(context.r('foo.bar.baz'), void 0);
-                assert.strictEqual(context.e('foo.bar.baz'), void 0);
+                assert.strictEqual(track.r('foo.bar.baz'), void 0);
+                assert.strictEqual(track.e('foo.bar.baz'), void 0);
 
-                assert.strictEqual(context.r('foo.bar.baz', 42), 42);
-                assert.strictEqual(context.e('foo.bar.baz', 42), 42);
-
-                assert.deepEqual(context.toJSON(), {
-                    params: context.params,
-                    errors: context.errors,
-                    result: context.result
-                });
+                assert.strictEqual(track.r('foo.bar.baz', 42), 42);
+                assert.strictEqual(track.e('foo.bar.baz', 42), 42);
                 return 42;
             }
         });
@@ -67,8 +61,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 'baz');
+            main: function (track) {
+                assert.strictEqual(track.result.get('bar'), 'baz');
                 return 42;
             }
         });
@@ -95,8 +89,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
-            main: function (track, context) {
-                assert.strictEqual(context.errors.get('bar'), 'baz');
+            main: function (track) {
+                assert.strictEqual(track.errors.get('bar'), 'baz');
                 return 42;
             }
         });
@@ -129,9 +123,9 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 'base',
             name: 'foo',
             deps: ['baz'],
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 'baz');
-                assert.strictEqual(context.result.get('baz'), 'zot');
+            main: function (track) {
+                assert.strictEqual(track.result.get('bar'), 'baz');
+                assert.strictEqual(track.result.get('baz'), 'zot');
                 return 42;
             }
         });
@@ -227,9 +221,9 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: 'base',
             name: 'foo',
             deps: 'baz',
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 'baz');
-                assert.strictEqual(context.result.get('baz'), 'zot');
+            main: function (track) {
+                assert.strictEqual(track.result.get('bar'), 'baz');
+                assert.strictEqual(track.result.get('baz'), 'zot');
                 return 42;
             }
         });
@@ -266,8 +260,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             depsMap: {
                 bar: 'xyz'
             },
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('xyz'), 'baz');
+            main: function (track) {
+                assert.strictEqual(track.result.get('xyz'), 'baz');
                 return 42;
             }
         });
@@ -299,16 +293,16 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
                     x: 'baz'
                 }
             },
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 'baz');
+            main: function (track) {
+                assert.strictEqual(track.result.get('bar'), 'baz');
                 return 42;
             }
         });
 
         agent.unit({
             name: 'bar',
-            main: function (track, context) {
-                return context.param('x');
+            main: function (track) {
+                return track.param('x');
             }
         });
 
@@ -328,22 +322,22 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             name: 'foo',
             deps: ['bar'],
             depsArgs: {
-                bar: function (track, context) {
+                bar: function (track) {
                     return {
-                        x: context.param('x') + 1
+                        x: track.param('x') + 1
                     };
                 }
             },
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 2);
+            main: function (track) {
+                assert.strictEqual(track.result.get('bar'), 2);
                 return 42;
             }
         });
 
         agent.unit({
             name: 'bar',
-            main: function (track, context) {
-                return context.param('x');
+            main: function (track) {
+                return track.param('x');
             }
         });
 
@@ -366,8 +360,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
-            main: function (track, context) {
-                assert.strictEqual(context.result.get('bar'), 'baz');
+            main: function (track) {
+                assert.strictEqual(track.result.get('bar'), 'baz');
                 foo += 1;
                 return 42;
             },
@@ -416,8 +410,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: '_fistlabs_unit_depends',
             name: 'foo',
             deps: ['bar'],
-            main: function (track, context) {
-                assert.strictEqual(context.errors.get('bar'), 'baz');
+            main: function (track) {
+                assert.strictEqual(track.errors.get('bar'), 'baz');
                 foo += 1;
                 return 42;
             },
@@ -472,7 +466,8 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         agent.unit({
             name: 'bar',
             main: function (track) {
-                track._isFlushed = true;
+                track.track._isFlushed = true;
+                assert.ok(track.isFlushed());
                 return 146;
             }
         });
@@ -504,7 +499,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         agent.unit({
             name: 'bar',
             main: function (track) {
-                track._isFlushed = true;
+                track.track._isFlushed = true;
                 throw new Error();
             }
         });
@@ -632,7 +627,7 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
             base: '_fistlabs_unit_depends',
             name: 'zot',
             main: function (track) {
-                track._isFlushed = true;
+                track.track._isFlushed = true;
                 spy.push(this.name);
             }
         });

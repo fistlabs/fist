@@ -58,12 +58,11 @@ module.exports = function (agent) {
          * @memberOf {fist_contrib_unit_incoming}
          * @method
          *
-         * @param {Connect} track
-         * @param {Context} context
+         * @param {Object} track
          *
          * @returns {vow.Promise}
          * */
-        main: function (track, context) {
+        main: function (track) {
             var mime = track.header('Content-Type');
             var promise;
 
@@ -78,10 +77,10 @@ module.exports = function (agent) {
             if (mime.type === 'multipart' || mime.type === 'application' && mime.subtype === 'x-www-form-urlencoded') {
                 promise = vow.invoke(function (self) {
                     //  may throw during instantiation
-                    return self._busboy(track, context, mime);
+                    return self._busboy(track, mime);
                 }, this);
             } else {
-                promise = this._other(track, context, mime);
+                promise = this._other(track, mime);
             }
 
             return promise.fail(function (err) {
@@ -98,13 +97,12 @@ module.exports = function (agent) {
          * @memberOf {fist_contrib_unit_incoming}
          * @method
          *
-         * @param {Connect} track
-         * @param {Context} context
+         * @param {Object} track
          * @param {Object} mime
          *
          * @returns {vow.Promise}
          * */
-        _getRawBody: function (track, context, mime) {
+        _getRawBody: function (track, mime) {
             var defer = vow.defer();
 
             rawBody(track.req, {
@@ -127,14 +125,13 @@ module.exports = function (agent) {
          * @memberOf {fist_contrib_unit_incoming}
          * @method
          *
-         * @param {Connect} track
-         * @param {Context} context
+         * @param {Object} track
          * @param {Object} mime
          *
          * @returns {vow.Promise}
          * */
-        _other: function (track, context, mime) {
-            return this._getRawBody(track, context, mime).then(function (res) {
+        _other: function (track,  mime) {
+            return this._getRawBody(track, mime).then(function (res) {
                 //  support for application/json
                 if (mime.type === 'application' && mime.subtype === 'json') {
                     return {
@@ -165,13 +162,12 @@ module.exports = function (agent) {
          * @memberOf {fist_contrib_unit_incoming}
          * @method
          *
-         * @param {Connect} track
-         * @param {Context} context
+         * @param {Object} track
          * @param {Object} mime
          *
          * @returns {Busboy}
          * */
-        _createBusboy: function (track, context, mime) {
+        _createBusboy: function (track, mime) {
             /*eslint no-unused-vars: 0*/
             return new Busboy({
                 headers: track.header(),
@@ -193,17 +189,16 @@ module.exports = function (agent) {
          * @memberOf {fist_contrib_unit_incoming}
          * @method
          *
-         * @param {Connect} track
-         * @param {Context} context
+         * @param {Object} track
          * @param {Object} mime
          *
          * @returns {vow.Promise}
          * */
-        _busboy: function (track, context, mime) {
+        _busboy: function (track, mime) {
             var fullData = [];
             var actualLength = 0;
             var expectedLength = Number(track.header('Content-Length'));
-            var busboy = this._createBusboy(track, context, mime);
+            var busboy = this._createBusboy(track, mime);
             var defer = vow.defer();
             var input = {};
             var files = {};
@@ -270,7 +265,7 @@ module.exports = function (agent) {
             });
 
             track.req.on('end', function () {
-                context.logger.info('Incoming data\n%s', Buffer.concat(fullData).toString());
+                track.logger.info('Incoming data\n%s', Buffer.concat(fullData).toString());
             });
 
             return defer.promise();

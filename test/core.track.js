@@ -70,17 +70,17 @@ describe('core/track', function () {
             var j = 0;
             var Unit = inherit(agent.Unit, {
                 name: 'foo',
-                main: function (track, context) {
+                main: function (track) {
                     i += 1;
-                    assert.strictEqual(context.params.foo, 'bar');
+                    assert.strictEqual(track.params.foo, 'bar');
                     var defer = vow.defer();
                     setTimeout(function () {
                         defer.resolve(42);
                     }, 10);
                     return defer.promise();
                 },
-                hashArgs: function (track, context) {
-                    return context.param('foo');
+                hashArgs: function (track) {
+                    return track.param('foo');
                 }
             });
             var args = {

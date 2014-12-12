@@ -48,12 +48,11 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit_asker}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          *
          * @returns {*}
          * */
-        options: function (track, context) {
+        options: function (track) {
             /*eslint no-unused-vars: 0*/
             return {};
         },
@@ -63,13 +62,12 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit_asker}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          *
          * @returns {*}
          * */
-        prepare: function (track, context) {
-            var opts = Object(context.prev);
+        prepare: function (track) {
+            var opts = Object(track.prev);
             var path = opts.path;
 
             if (path && typeof path.build === 'function') {
@@ -84,15 +82,14 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit_asker}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          *
          * @returns {*}
          * */
-        request: function (track, context) {
-            var opts = context.prev;
+        request: function (track) {
+            var opts = track.prev;
 
-            context.logger.info('Outgoing %s %s%s%s', function () {
+            track.logger.info('Outgoing %s %s%s%s', function () {
                 return opts.method || 'GET';
             }, function () {
                 if (!opts.pathname) {
@@ -137,14 +134,13 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit_asker}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          *
          * @returns {*}
          * */
-        compile: function (track, context) {
-            context.prev.data = JSON.parse(context.prev.data);
-            return context.prev;
+        compile: function (track) {
+            track.prev.data = JSON.parse(track.prev.data);
+            return track.prev;
         },
 
         /**
@@ -152,13 +148,12 @@ module.exports = function (agent) {
          * @memberOf {_fist_contrib_unit_asker}
          * @method
          *
-         * @param {Track} track
-         * @param {Object} context
+         * @param {Object} track
          *
          * @returns {*}
          * */
-        resolve: function (track, context) {
-            return context.prev.data;
+        resolve: function (track) {
+            return track.prev.data;
         }
 
     });

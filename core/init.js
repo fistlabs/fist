@@ -1,9 +1,10 @@
 'use strict';
 
-var Context = /** @type Context */ require('./context');
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
 
 var _ = require('lodash-node');
+var create = require('./util/create');
+var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var vow = require('vow');
 
@@ -100,20 +101,19 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Track} track
-         * @param {Context} context
+         * @param {Object} track
          * @param {Function} done
          *
          * @returns {*}
          * */
-        call: function (track, context, done) {
+        call: function (track, done) {
             var dStartExec = new Date();
             var result;
-            var logger = context.logger;
+            var logger = track.logger;
 
             logger.debug('Pending...');
 
-            this._fetch(track, context, function (err, res) {
+            this._fetch(track, function (err, res) {
                 var execTime = new Date() - dStartExec;
 
                 if (arguments.length < 2) {
@@ -143,11 +143,10 @@ function init(agent) {
          * @method
          *
          * @param {Track} track
-         * @param {Context} context
          *
          * @returns {*}
          * */
-        hashArgs: function (track, context) {
+        hashArgs: function (track) {
             /*eslint no-unused-vars: 0*/
             return '';
         },
@@ -157,12 +156,32 @@ function init(agent) {
          * @memberOf {Unit}
          * @method
          *
-         * @param {Logger} logger
+         * @param {Object} track
+         * @param {*} [args]
          *
-         * @returns {Context}
+         * @returns {Object}
          * */
-        createContext: function (logger) {
-            return new Context(logger);
+        createContext: function (track, args) {
+            var i;
+            var k;
+            var l;
+            var context = create(track);
+
+            args = [this.params, track.params, args];
+            context.track = track;
+
+            context.logger = track.logger.bind(this.name);
+            context.params = {};
+
+            for (i = 0, l = args.length; i < l; i += 1) {
+                for (k in args[i]) {
+                    if (hasProperty.call(args[i], k)) {
+                        context.params[k] = args[i][k];
+                    }
+                }
+            }
+
+            return context;
         },
 
         /**
@@ -171,11 +190,10 @@ function init(agent) {
          * @method
          *
          * @param {Track} track
-         * @param {Context} context
          *
          * @returns {*}
          * */
-        main: /* istanbul ignore next */ function (track, context) {
+        main: /* istanbul ignore next */ function (track) {
             /*eslint no-unused-vars: 0*/
         },
 
@@ -185,12 +203,11 @@ function init(agent) {
          * @method
          *
          * @param {Track} track
-         * @param {Context} context
          *
          * @returns {*}
          * */
-        _buildTag: function (track, context) {
-            return this.name + '-' + this.hashArgs(track, context);
+        _buildTag: function (track) {
+            return this.name + '-' + this.hashArgs(track);
         },
 
         /**
@@ -199,16 +216,15 @@ function init(agent) {
          * @method
          *
          * @param {Track} track
-         * @param {Context} context
          * @param {Function} done
          * */
-        _fetch: function (track, context, done) {
+        _fetch: function (track, done) {
             var self = this;
-            var memKey = self._buildTag(track, context);
-            var logger = context.logger;
+            var memKey = self._buildTag(track);
+            var logger = track.logger;
 
             if (!memKey || !(self.maxAge > 0)) {
-                main(self, track, context, function (err, res) {
+                main(self, track, function (err, res) {
                     if (arguments.length < 2) {
                         done(err);
                         return;
@@ -248,7 +264,7 @@ function init(agent) {
                 }
 
                 //  calling unit
-                main(self, track, context, function (err, res) {
+                main(self, track, function (err, res) {
                     if (arguments.length < 2) {
                         done(err);
                         return;
@@ -308,11 +324,11 @@ function init(agent) {
     agent.Unit = Unit;
 }
 
-function main(self, track, context, done) {
+function main(self, track, done) {
     var res;
 
     try {
-        res = self.main(track, context);
+        res = self.main(track);
     } catch (err) {
         if (vow.isPromise(err)) {
             vow.reject(err).fail(done);

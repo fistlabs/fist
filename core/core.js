@@ -173,7 +173,7 @@ Core.prototype.getUnit = function (name) {
  * @memberOf {Core}
  * @method
  *
- * @param {Track} track
+ * @param {Object} track
  * @param {String} name
  * @param {Object} args
  * @param {Function} done

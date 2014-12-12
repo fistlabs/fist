@@ -2,9 +2,6 @@
 /*global describe, it*/
 'use strict';
 
-var Logging = require('loggin/core/logging');
-var Logger = require('loggin/core/logger');
-var Context = require('../core/context');
 var Track = require('../core/track');
 var Core = require('../core/core');
 
@@ -90,7 +87,7 @@ describe('core/init', function () {
 
         it('Should create Context', function () {
             var unit = new core.Unit();
-            assert.ok(unit.createContext(new Logger(new Logging())) instanceof Context);
+            assert.ok(unit.createContext(getTrack()) instanceof Track);
         });
     });
 
@@ -107,10 +104,8 @@ describe('core/init', function () {
 
             var unit = new Unit();
             var track = getTrack();
-            var context = new Context(new Logger(new Logging())).
-                setup(unit.params, track.params, {foo: 'bar'});
 
-            assert.strictEqual(unit.hashArgs(track, context), '');
+            assert.strictEqual(unit.hashArgs(track, track), '');
         });
     });
 
@@ -131,49 +126,9 @@ describe('core/init', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.result, 42);
-                done();
-            });
-        });
-
-        it('Should setup context before calling', function (done) {
-            var Unit = inherit(core.Unit, {
-                name: 'foo',
-                params: {
-                    foo: 'bar',
-                    bar: 'baz',
-                    baz: 'zot'
-                },
-                main: function (track, context) {
-
-                    assert.deepEqual(context.params, {
-                        foo: 'bar',
-                        bar: 42,
-                        baz: 12
-                    });
-
-                    return 100500;
-                }
-            });
-
-            var track = getTrack();
-
-            track.params = {
-                bar: 42,
-                baz: 11
-            };
-
-            var unit = new Unit();
-            var context = unit.createContext(track.logger.bind(unit.name)).
-                setup(unit.params, track.params, {
-                    baz: 12
-                });
-
-            unit.call(track, context, function (err, res) {
-                assert.ok(!err);
-                assert.strictEqual(res.result, 100500);
                 done();
             });
         });
@@ -196,23 +151,21 @@ describe('core/init', function () {
                 }
             });
 
-            var track = getTrack();
             var unit = new Unit();
-            var context = unit.createContext(track.logger.bind(unit.name)).
-                setup(unit.params, track.params);
+            var track = getTrack();
 
-            unit.call(track, context, function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, 'foo-bar');
 
-                unit.call(track, context, function (err, res) {
+                unit.call(unit.createContext(track), function (err, res) {
                     assert.ok(!err);
                     assert.strictEqual(res.result, 1);
                     assert.strictEqual(res.memKey, 'foo-bar');
 
                     setTimeout(function () {
-                        unit.call(track, context, function (err, res) {
+                        unit.call(unit.createContext(track), function (err, res) {
                             assert.ok(!err);
                             assert.strictEqual(res.result, 2);
                             assert.strictEqual(res.memKey, 'foo-bar');
@@ -259,17 +212,15 @@ describe('core/init', function () {
 
             });
 
-            var track = getTrack();
             var unit = new Unit();
-            var context = unit.createContext(track.logger.bind(unit.name)).
-                setup(unit.params, track.params);
+            var track = getTrack();
 
-            unit.call(track, context, function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, 'foo-bar');
 
-                unit.call(track, context, function (err, res) {
+                unit.call(unit.createContext(track), function (err, res) {
                     assert.ok(!err);
                     assert.strictEqual(res.result, 2);
                     assert.strictEqual(res.memKey, 'foo-bar');
@@ -293,14 +244,13 @@ describe('core/init', function () {
 
             });
 
-            var track = getTrack();
             var unit = new Unit();
-            var context = unit.createContext(track.logger.bind(unit.name));
+            var track = getTrack();
 
-            unit.call(track, context, function (err) {
+            unit.call(unit.createContext(track), function (err) {
                 assert.strictEqual(err, 1);
 
-                unit.call(track, context, function (err) {
+                unit.call(unit.createContext(track), function (err) {
                     assert.strictEqual(err, 2);
                     done();
                 });
@@ -325,15 +275,15 @@ describe('core/init', function () {
 
             });
 
-            var track = getTrack();
             var unit = new Unit();
+            var track = getTrack();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, null);
 
-                unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                unit.call(unit.createContext(track), function (err, res) {
                     assert.ok(!err);
                     assert.strictEqual(res.result, 2);
                     assert.strictEqual(res.memKey, null);
@@ -351,10 +301,10 @@ describe('core/init', function () {
                 }
             });
 
-            var track = getTrack();
             var unit = new Unit();
+            var track = getTrack();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res, null);
                 done();
@@ -376,15 +326,15 @@ describe('core/init', function () {
 
             });
 
-            var track = getTrack();
             var unit = new Unit();
+            var track = getTrack();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res, null);
                 assert.strictEqual(i, 1);
 
-                unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                unit.call(unit.createContext(track), function (err, res) {
                     assert.ok(!err);
                     assert.strictEqual(res, null);
                     assert.strictEqual(i, 2);
@@ -406,9 +356,8 @@ describe('core/init', function () {
 
             var unit = new Unit();
             var track = getTrack();
-            var context = unit.createContext(track.logger.bind(unit.name));
 
-            unit.call(track, context, function (err) {
+            unit.call(unit.createContext(track), function (err) {
                 assert.strictEqual(err, 1);
                 done();
             });
@@ -424,9 +373,8 @@ describe('core/init', function () {
 
             var unit = new Unit();
             var track = getTrack();
-            var context = unit.createContext(track.logger.bind(unit.name));
 
-            unit.call(track, context, function (err, res) {
+            unit.call(unit.createContext(track), function (err, res) {
                 assert.ok(!err);
                 assert.strictEqual(res.result, 42);
                 done();
@@ -443,9 +391,8 @@ describe('core/init', function () {
 
             var unit = new Unit();
             var track = getTrack();
-            var context = unit.createContext(track.logger.bind(unit.name));
 
-            unit.call(track, context, function (err) {
+            unit.call(unit.createContext(track), function (err) {
                 assert.strictEqual(err, 42);
                 done();
             });
