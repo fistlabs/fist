@@ -8,6 +8,7 @@ var Obus = require('obus');
 
 var assert = require('assert');
 var logger = require('loggin');
+var vow = require('vow');
 
 function getAgent(params) {
     var agent = new Agent(params);
@@ -529,6 +530,73 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
 
         agent.ready().done(function () {
             done();
+        });
+    });
+
+    it('Can stop resolve next deps if one of them flushes the track', function (done) {
+        var agent = getAgent();
+        var spy = [];
+
+        agent.unit({
+            base: '_fistlabs_unit_depends',
+            name: 'foo',
+            deps: ['bar', 'moo', 'zot', 'xyz'],
+            main: function () {
+                spy.push(0);
+            }
+        });
+
+        agent.unit({
+            base: '_fistlabs_unit_depends',
+            name: 'bar',
+            main: function () {
+                var defer = vow.defer();
+                spy.push(this.name);
+                setTimeout(function () {
+                    defer.resolve(42);
+                }, 10);
+                return defer.promise();
+            }
+        });
+
+        agent.unit({
+            base: '_fistlabs_unit_depends',
+            name: 'moo',
+            main: function () {
+                var defer = vow.defer();
+                spy.push(this.name);
+                setTimeout(function () {
+                    defer.resolve(42);
+                }, 20);
+                return defer.promise();
+            }
+        });
+
+        agent.unit({
+            base: '_fistlabs_unit_depends',
+            name: 'zot',
+            main: function (track) {
+                track._isFlushed = true;
+                spy.push(this.name);
+            }
+        });
+
+        agent.unit({
+            base: '_fistlabs_unit_depends',
+            name: 'xyz',
+            main: function () {
+                spy.push(this.name);
+            }
+        });
+
+        agent.ready().done(function () {
+            new Track(agent, logger).eject('foo').done(function (res) {
+                assert.strictEqual(res, null);
+                setTimeout(function () {
+                    assert.deepEqual(spy, ['bar', 'moo', 'zot']);
+                    done();
+                }, 50);
+            });
         });
     });
 });

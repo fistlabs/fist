@@ -1,6 +1,7 @@
 'use strict';
 
 var hasProperty = Object.prototype.hasOwnProperty;
+var vow = require('vow');
 
 /**
  * @class Track
@@ -65,25 +66,48 @@ Track.prototype.constructor = Track;
  * @method
  *
  * @param {Unit} unit
- * @param {*} [args]
- *
- * @returns {vow.Promise}
+ * @param {*} args
+ * @param {Function} done
  * */
-Track.prototype.invoke = function (unit, args) {
+Track.prototype.invoke = function (unit, args, done) {
     var logger = this.logger.bind(unit.name);
     var context = unit.createContext(logger).setup(unit.params, this.params, args);
     var hash = unit.name + '-' + unit.hashArgs(this, context);
     var calls = this._calls;
+    var next;
 
-    logger.debug('Starting invocation, arguments %j hashed as "%s"', context.params, hash);
+    logger.debug('Starting invocation, args %j hashed as "%s"', context.params, hash);
 
     if (hasProperty.call(calls, hash)) {
-        logger.debug('Using memorized result, hash = "%s"', hash);
-    } else {
-        calls[hash] = unit.call(this, context);
+        logger.debug('Using memorized call, hash = "%s"', hash);
+        next = calls[hash];
+        if (next.done) {
+            done.apply(null, next.args);
+        } else {
+            next.func.push(done);
+        }
+
+        return;
     }
 
-    return calls[hash];
+    next = calls[hash] = {
+        done: false,
+        args: [],
+        func: [done]
+    };
+
+    unit.call(this, context, function () {
+        var i;
+        var l;
+        var func = next.func;
+
+        next.done = true;
+        next.args = arguments;
+
+        for (i = 0, l = func.length; i < l; i += 1) {
+            func[i].apply(null, next.args);
+        }
+    });
 };
 
 /**
@@ -97,9 +121,16 @@ Track.prototype.invoke = function (unit, args) {
  * @returns {vow.Promise}
  * */
 Track.prototype.eject = function (name, args) {
-    return this._agent.callUnit(name, this, args).then(function (res) {
-        return res && res.result;
+    var defer = vow.defer();
+    this._agent.callUnit(this, name, args, function (err, res) {
+        if (arguments.length < 2) {
+            defer.reject(err);
+            return;
+        }
+
+        defer.resolve(res && res.result);
     });
+    return defer.promise();
 };
 
 /**

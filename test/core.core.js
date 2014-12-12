@@ -14,98 +14,98 @@ describe('core/core', function () {
 
     describe('new Core()', function () {
         it('Should be an instance of Core', function () {
-            var agent = new Core();
-            assert.ok(agent instanceof Core);
+            var core = new Core();
+            assert.ok(core instanceof Core);
         });
 
-        describe('agent.params', function () {
+        describe('core.params', function () {
             it('Should take params', function () {
                 var args = {foo: 42};
-                var agent = new Core(args);
-                assert.ok(agent.params);
-                assert.strictEqual(agent.params.foo, 42);
+                var core = new Core(args);
+                assert.ok(core.params);
+                assert.strictEqual(core.params.foo, 42);
             });
 
             it('Should have "root" by default', function () {
-                var agent = new Core();
-                assert.ok(agent.params);
-                assert.strictEqual(typeof agent.params.root, 'string');
+                var core = new Core();
+                assert.ok(core.params);
+                assert.strictEqual(typeof core.params.root, 'string');
             });
 
             it('params.root can be overwritten', function () {
-                var agent = new Core({root: '/path/'});
-                assert.strictEqual(agent.params.root, '/path/');
+                var core = new Core({root: '/path/'});
+                assert.strictEqual(core.params.root, '/path/');
             });
         });
 
-        describe('agent.logger', function () {
+        describe('core.logger', function () {
             var Logger = require('loggin/core/logger');
 
             it('Should create logger', function () {
-                var agent = new Core();
-                assert.ok(agent.logger instanceof Logger);
+                var core = new Core();
+                assert.ok(core.logger instanceof Logger);
             });
 
             it('Should bind context from params.name', function () {
-                var agent = new Core({
+                var core = new Core({
                     name: 'foo'
                 });
-                var name = _.last(agent.logger.context.split(/\W+/));
+                var name = _.last(core.logger.context.split(/\W+/));
                 assert.strictEqual(name, 'foo');
             });
 
             it('Should take logging settings', function () {
-                var agent = new Core({
+                var core = new Core({
                     name: 'foo',
                     logging: {
                         logLevel: 'FOO'
                     }
                 });
 
-                assert.strictEqual(agent.logger.logLevel, 'FOO');
+                assert.strictEqual(core.logger.logLevel, 'FOO');
             });
         });
     });
 
-    describe('agent.ready()', function () {
+    describe('core.ready()', function () {
         var vow = require('vow');
 
         it('Should return promise', function () {
-            var agent = new Core();
-            assert.ok(vow.isPromise(agent.ready()));
+            var core = new Core();
+            assert.ok(vow.isPromise(core.ready()));
         });
 
         it('Should be ready once', function () {
-            var agent = new Core();
-            var ready = agent.ready();
-            assert.strictEqual(ready, agent.ready());
+            var core = new Core();
+            var ready = core.ready();
+            assert.strictEqual(ready, core.ready());
         });
     });
 
-    describe('agent.install()', function () {
+    describe('core.install()', function () {
 
         it('Should install plugin by module name', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures', 'plug', 'async-plugin'));
-            agent.ready().done(function () {
-                assert.strictEqual(agent.async, 42);
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures', 'plug', 'async-plugin'));
+            core.ready().done(function () {
+                assert.strictEqual(core.async, 42);
                 done();
             });
         });
 
         it('Should install plugin by file name', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures', 'plug', 'async-plugin.js'));
-            agent.ready().done(function () {
-                assert.strictEqual(agent.async, 42);
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures', 'plug', 'async-plugin.js'));
+            core.ready().done(function () {
+                assert.strictEqual(core.async, 42);
                 done();
             });
         });
 
         it('Should install no function plugin', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures', 'plug', 'no-func-plugin'));
-            agent.ready().done(function () {
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures', 'plug', 'no-func-plugin'));
+            core.ready().done(function () {
                 assert.strictEqual(global.__test_spy__, 'ASYNC');
                 delete global.__test_spy__;
                 done();
@@ -113,24 +113,24 @@ describe('core/core', function () {
         });
 
         it('Should install sync plugin', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures', 'plug', 'sync-plugin'));
-            agent.ready().done(function () {
-                assert.strictEqual(agent.sync, 42);
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures', 'plug', 'sync-plugin'));
+            core.ready().done(function () {
+                assert.strictEqual(core.sync, 42);
                 done();
             });
         });
 
         it('Should install plugins by glob', function (done) {
-            var agent = new Core();
+            var core = new Core();
 
             delete require.cache[require.resolve('./fixtures/plug/no-func-plugin')];
             assert.strictEqual(global.__test_spy__, void 0);
-            agent.install(path.join(__dirname, 'fixtures', 'plug', '*.js'));
+            core.install(path.join(__dirname, 'fixtures', 'plug', '*.js'));
 
-            agent.ready().done(function () {
-                assert.strictEqual(agent.sync, 42);
-                assert.strictEqual(agent.async, 42);
+            core.ready().done(function () {
+                assert.strictEqual(core.sync, 42);
+                assert.strictEqual(core.async, 42);
                 assert.strictEqual(global.__test_spy__, 'ASYNC');
                 delete global.__test_spy__;
                 done();
@@ -138,45 +138,45 @@ describe('core/core', function () {
         });
 
         it('Should be failed on ready by ASYNC error', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures/plug/e/async-error'));
-            agent.ready().done(null, function (err) {
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures/plug/e/async-error'));
+            core.ready().done(null, function (err) {
                 assert.strictEqual(err, 'ASYNC');
                 done();
             });
         });
 
         it('Should be failed on ready by SYNC error', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures/plug/e/sync-error'));
-            agent.ready().done(null, function (err) {
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures/plug/e/sync-error'));
+            core.ready().done(null, function (err) {
                 assert.strictEqual(err, 'SYNC');
                 done();
             });
         });
 
         it('Should be failed on ready by REQUIRE error', function (done) {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures/plug/e/require-error'));
-            agent.ready().done(null, function (err) {
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures/plug/e/require-error'));
+            core.ready().done(null, function (err) {
                 assert.strictEqual(err, 'REQUIRE');
                 done();
             });
         });
 
         it('Plugins can install plugins', function (done) {
-            var agent = new Core();
+            var core = new Core();
 
             delete require.cache[require.resolve('./fixtures/plug/no-func-plugin')];
             assert.strictEqual(global.__test_spy__, void 0);
 
-            agent.install(path.join(__dirname, 'fixtures/plug/complex/bootstrap'));
+            core.install(path.join(__dirname, 'fixtures/plug/complex/bootstrap'));
 
-            agent.ready().done(function () {
-                assert.strictEqual(agent.BOOTSTRAP, 42);
-                assert.strictEqual(agent.INSTALLER, 42);
-                assert.strictEqual(agent.sync, 42);
-                assert.strictEqual(agent.async, 42);
+            core.ready().done(function () {
+                assert.strictEqual(core.BOOTSTRAP, 42);
+                assert.strictEqual(core.INSTALLER, 42);
+                assert.strictEqual(core.sync, 42);
+                assert.strictEqual(core.async, 42);
                 assert.strictEqual(global.__test_spy__, 'ASYNC');
                 delete global.__test_spy__;
                 done();
@@ -184,236 +184,237 @@ describe('core/core', function () {
         });
 
         it('Should install plugin with settings', function () {
-            var agent = new Core();
-            agent.install(path.join(__dirname, 'fixtures/plug/with-settings/plugin.js'), {
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures/plug/with-settings/plugin.js'), {
                 foo: 'bar'
             });
 
-            agent.ready().done(function () {
-                assert.deepEqual(agent.settings, {
+            core.ready().done(function () {
+                assert.deepEqual(core.settings, {
                     foo: 'bar'
                 });
             });
         });
 
         it('Should not install plugin a twice', function (done) {
-            var agent = new Core();
+            var core = new Core();
 
-            agent.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
-            agent.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
-            agent.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
+            core.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
+            core.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
+            core.install(path.join(__dirname, 'fixtures/plug/twice/twice.js'));
 
-            agent.ready().done(function () {
-                assert.strictEqual(agent.__test__, 1);
+            core.ready().done(function () {
+                assert.strictEqual(core.__test__, 1);
                 done();
             });
         });
     });
 
-    describe('agent.unit()', function () {
+    describe('core.unit()', function () {
 
         it('Should declare unit', function (done) {
-            var agent = new Core();
-            agent.unit({
+            var core = new Core();
+            core.unit({
                 base: 0,
                 name: 'foo'
             });
 
-            agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
+            core.ready().done(function () {
+                assert.ok(core.getUnit('foo') instanceof core.Unit);
                 done();
             });
         });
 
         it('Should declare unit with implicit base', function (done) {
-            var agent = new Core();
-            agent.unit({
+            var core = new Core();
+            core.unit({
                 name: 'foo'
             });
 
-            agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
+            core.ready().done(function () {
+                assert.ok(core.getUnit('foo') instanceof core.Unit);
                 done();
             });
         });
 
         it('Should cascade declare units', function (done) {
-            var agent = new Core();
+            var core = new Core();
 
-            agent.unit({
+            core.unit({
                 base: 0,
                 name: 'foo'
             });
 
-            agent.unit({
+            core.unit({
                 base: 'foo',
                 name: 'bar'
             });
 
-            agent.unit({
+            core.unit({
                 base: 'foo',
                 name: 'zot'
             });
 
-            agent.unit({
+            core.unit({
                 base: 'bar',
                 name: 'moo'
             });
 
-            agent.ready().done(function () {
+            core.ready().done(function () {
                 setTimeout(function () {
-                    assert.ok(agent.getUnit('foo') instanceof agent.Unit);
-                    assert.ok(agent.getUnit('bar') instanceof agent.Unit);
-                    assert.ok(agent.getUnit('zot') instanceof agent.Unit);
-                    assert.ok(agent.getUnit('moo') instanceof agent.Unit);
+                    assert.ok(core.getUnit('foo') instanceof core.Unit);
+                    assert.ok(core.getUnit('bar') instanceof core.Unit);
+                    assert.ok(core.getUnit('zot') instanceof core.Unit);
+                    assert.ok(core.getUnit('moo') instanceof core.Unit);
                     done();
                 }, 100);
             });
         });
 
         it('Should ignore the units which names starts with "_"', function (done) {
-            var agent = new Core();
-            agent.unit({
+            var core = new Core();
+            core.unit({
                 base: 0,
                 name: '_foo'
             });
 
-            agent.unit({
+            core.unit({
                 base: '_foo',
                 name: 'bar'
             });
 
-            agent.ready().done(function () {
-                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
-                assert.ok(!agent.getUnit('_foo'));
-                assert.ok(agent.getUnitClass('_foo'));
+            core.ready().done(function () {
+                assert.ok(core.getUnit('bar') instanceof core.Unit);
+                assert.ok(!core.getUnit('_foo'));
+                assert.ok(core.getUnitClass('_foo'));
                 done();
             });
         });
 
         it('Should be rejected because of unit.name is not a string', function () {
-            var agent = new Core();
+            var core = new Core();
 
             assert.throws(function () {
-                agent.unit({});
+                core.unit({});
             });
         });
 
         it('Should be rejected because of unit.name is not an identifier', function () {
-            var agent = new Core();
+            var core = new Core();
 
             assert.throws(function () {
-                agent.unit({
+                core.unit({
                     name: '1'
                 });
             });
         });
 
         it('Should be rejected because of not base found', function (done) {
-            var agent = new Core();
-            agent.unit({
+            var core = new Core();
+            core.unit({
                 name: 'foo',
                 base: 'bar'
             });
 
-            agent.ready().fail(function () {
+            core.ready().fail(function () {
                 done();
             });
         });
 
         it('Should use params.implicitBase as implicit base unit', function () {
-            var agent = new Core({
+            var core = new Core({
                 implicitBase: 'foo'
             });
 
-            agent.unit({
+            core.unit({
                 base: 0,
                 name: 'foo',
                 x: 1
             });
 
-            agent.unit({
+            core.unit({
                 name: 'bar',
                 y: 2
             });
 
-            agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
-                assert.strictEqual(agent.getUnit('foo').x, 1);
-                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
-                assert.ok(agent.getUnit('bar') instanceof agent.getUnitClass('foo'));
-                assert.strictEqual(agent.getUnit('bar').x, 1);
-                assert.strictEqual(agent.getUnit('bar').y, 2);
+            core.ready().done(function () {
+                assert.ok(core.getUnit('foo') instanceof core.Unit);
+                assert.strictEqual(core.getUnit('foo').x, 1);
+                assert.ok(core.getUnit('bar') instanceof core.Unit);
+                assert.ok(core.getUnit('bar') instanceof core.getUnitClass('foo'));
+                assert.strictEqual(core.getUnit('bar').x, 1);
+                assert.strictEqual(core.getUnit('bar').y, 2);
             });
         });
     });
 
-    describe('agent.alias()', function () {
+    describe('core.alias()', function () {
         it('Should inherit from unit with new name', function (done) {
-            var agent = new Core();
-            agent.unit({
+            var core = new Core();
+            core.unit({
                 name: 'foo',
                 x: 42
             });
 
-            agent.alias('foo', 'bar');
+            core.alias('foo', 'bar');
 
-            agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
-                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
-                assert.strictEqual(agent.getUnit('foo').x, 42);
-                assert.strictEqual(agent.getUnit('bar').x, 42);
+            core.ready().done(function () {
+                assert.ok(core.getUnit('foo') instanceof core.Unit);
+                assert.ok(core.getUnit('bar') instanceof core.Unit);
+                assert.strictEqual(core.getUnit('foo').x, 42);
+                assert.strictEqual(core.getUnit('bar').x, 42);
                 done();
             });
         });
 
         it('Should inherit from unit with new name by object', function (done) {
-            var agent = new Core();
+            var core = new Core();
 
-            agent.unit({
+            core.unit({
                 name: 'foo',
                 x: 42
             });
 
-            agent.alias({
+            core.alias({
                 foo: 'bar'
             });
 
-            agent.ready().done(function () {
-                assert.ok(agent.getUnit('foo') instanceof agent.Unit);
-                assert.ok(agent.getUnit('bar') instanceof agent.Unit);
-                assert.strictEqual(agent.getUnit('foo').x, 42);
-                assert.strictEqual(agent.getUnit('bar').x, 42);
+            core.ready().done(function () {
+                assert.ok(core.getUnit('foo') instanceof core.Unit);
+                assert.ok(core.getUnit('bar') instanceof core.Unit);
+                assert.strictEqual(core.getUnit('foo').x, 42);
+                assert.strictEqual(core.getUnit('bar').x, 42);
                 done();
             });
         });
     });
 
-    describe('agent.callUnit()', function () {
+    describe('core.callUnit()', function () {
         it('Should call unit by name', function (done) {
-            var agent = new Core();
-            agent.unit({
+            var core = new Core();
+            core.unit({
                 name: 'foo',
                 main: function () {
                     return 42;
                 }
             });
 
-            agent.ready().done(function () {
-                agent.callUnit('foo', new Track(agent, logger)).done(function (res) {
+            core.ready().done(function () {
+                core.callUnit(new Track(core, logger), 'foo', null, function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res.result, 42);
                     done();
                 });
             });
         });
 
-        it('Should throw error', function (done) {
-            var agent = new Core();
-            agent.ready().done(function () {
-                assert.throws(function () {
-                    agent.callUnit('foo', new Track(agent, logger));
+        it('Should be rejected', function (done) {
+            var core = new Core();
+            core.ready().done(function () {
+                core.callUnit(new Track(core, logger), 'foo', null, function (err) {
+                    assert.ok(err);
+                    done();
                 });
-                done();
             });
         });
     });

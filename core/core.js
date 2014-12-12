@@ -1,6 +1,6 @@
 'use strict';
 
-var R_NAME = /^[_a-z]\w*$/;
+var R_NAME = /^[_a-z]\w*$/i;
 
 var FistError = /** @type FistError */ require('./fist-error');
 
@@ -173,20 +173,18 @@ Core.prototype.getUnit = function (name) {
  * @memberOf {Core}
  * @method
  *
- * @param {String} name
  * @param {Track} track
- * @param {Object} [args]
- *
- * @returns {*}
- *
- * @throws {FistError}
+ * @param {String} name
+ * @param {Object} args
+ * @param {Function} done
  * */
-Core.prototype.callUnit = function (name, track, args) {
+Core.prototype.callUnit = function (track, name, args, done) {
     if (hasProperty.call(this._units, name)) {
-        return track.invoke(this._units[name], args);
+        track.invoke(this._units[name], args, done);
+        return;
     }
 
-    throw new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit "%s"', name));
+    done(new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit "%s"', name)));
 };
 
 /**

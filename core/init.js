@@ -16,7 +16,7 @@ function init(agent) {
      * @property
      * @type {Object}
      * */
-    var caches = agent.caches = {
+    agent.caches = {
 
         /**
          * default cache interface "local"
@@ -28,14 +28,6 @@ function init(agent) {
          * */
         local: new LRUDictTtlAsync(0xffff)
     };
-
-    function setCache(cache, k, v, ttl, done) {
-        return caches[cache].set(k, v, ttl, done);
-    }
-
-    function getCache(cache, k, done) {
-        return caches[cache].get(k, done);
-    }
 
     /**
      * Common Fist Unit interface
@@ -51,6 +43,14 @@ function init(agent) {
          * @type {Object}
          * */
         this.params = _.extend({}, this.params);
+
+        /**
+         * @protected
+         * @memberOf {Unit}
+         * @method
+         * @property
+         * */
+        this._cache = agent.caches[this.cache];
     }
 
     Unit.prototype = {
@@ -102,36 +102,39 @@ function init(agent) {
          *
          * @param {Track} track
          * @param {Context} context
+         * @param {Function} done
          *
          * @returns {*}
          * */
-        call: function (track, context) {
+        call: function (track, context, done) {
             var dStartExec = new Date();
             var result;
             var logger = context.logger;
 
             logger.debug('Pending...');
-            result = this._fetch(track, context);
 
-            result.done(function () {
+            this._fetch(track, context, function (err, res) {
                 var execTime = new Date() - dStartExec;
+
+                if (arguments.length < 2) {
+                    if (track.isFlushed()) {
+                        logger.warn('Skip error in %dms', execTime, err);
+                    } else {
+                        logger.error('Rejected in %dms', execTime, err);
+                    }
+
+                    done(err);
+                    return;
+                }
 
                 if (track.isFlushed()) {
                     logger.debug('Skip result in %dms', execTime);
                 } else {
                     logger.debug('Accepted in %dms', execTime);
                 }
-            }, function (err) {
-                var execTime = new Date() - dStartExec;
 
-                if (track.isFlushed()) {
-                    logger.warn('Skip error in %dms', execTime, err);
-                } else {
-                    logger.error('Rejected in %dms', execTime, err);
-                }
+                done(null, res);
             });
-
-            return result;
         },
 
         /**
@@ -197,41 +200,43 @@ function init(agent) {
          *
          * @param {Track} track
          * @param {Context} context
-         *
-         * @returns {vow.Promise}
+         * @param {Function} done
          * */
-        _fetch: function (track, context) {
-            var defer;
+        _fetch: function (track, context, done) {
             var self = this;
             var memKey = self._buildTag(track, context);
             var logger = context.logger;
 
             if (!memKey || !(self.maxAge > 0)) {
-                return main(self, track, context).then(function (result) {
-                    if (track.isFlushed()) {
-                        logger.debug('The track was flushed during execution');
-                        return null;
+                main(self, track, context, function (err, res) {
+                    if (arguments.length < 2) {
+                        done(err);
+                        return;
                     }
 
-                    return {
-                        result: result,
+                    if (track.isFlushed()) {
+                        logger.debug('The track was flushed during execution');
+                        done(null, null);
+                        return;
+                    }
+
+                    done(null, {
+                        result: res,
                         memKey: memKey
-                    };
+                    });
                 });
+                return;
             }
 
-            defer = vow.defer();
-
-            getCache(self.cache, memKey, function (err, res) {
+            self._cache.get(memKey, function (err, res) {
                 //  has value in cache
                 if (res) {
                     logger.debug('Found in cache');
 
-                    defer.resolve({
+                    done(null, {
                         result: res.data,
                         memKey: memKey
                     });
-
                     return;
                 }
 
@@ -243,36 +248,33 @@ function init(agent) {
                 }
 
                 //  calling unit
-                main(self, track, context).then(function (result) {
-                    if (track.isFlushed()) {
-                        logger.debug('The track was flushed during execution');
-                        defer.resolve(null);
+                main(self, track, context, function (err, res) {
+                    if (arguments.length < 2) {
+                        done(err);
                         return;
                     }
 
-                    //  Use returned value
-                    defer.resolve({
-                        result: result,
-                        memKey: memKey
-                    });
-
-                    result = {data: result};
+                    if (track.isFlushed()) {
+                        logger.debug('The track was flushed during execution');
+                        done(null, null);
+                        return;
+                    }
 
                     //  Try to set cache
-                    setCache(self.cache, memKey, result, self.maxAge, function (err) {
+                    self._cache.set(memKey, {data: res}, self.maxAge, function (err) {
                         if (err) {
                             logger.warn('Failed to set cache', err);
                         } else {
                             logger.note('Updated');
                         }
                     });
-                }, function (err) {
-                    //  Error while calling unit
-                    defer.reject(err);
+
+                    done(null, {
+                        result: res,
+                        memKey: memKey
+                    });
                 });
             });
-
-            return defer.promise();
         }
     };
 
@@ -306,10 +308,29 @@ function init(agent) {
     agent.Unit = Unit;
 }
 
-function main(self, track, context) {
-    return vow.invoke(function () {
-        return self.main(track, context);
-    });
+function main(self, track, context, done) {
+    var res;
+
+    try {
+        res = self.main(track, context);
+    } catch (err) {
+        if (vow.isPromise(err)) {
+            vow.reject(err).fail(done);
+            return;
+        }
+
+        done(err);
+        return;
+    }
+
+    if (vow.isPromise(res)) {
+        vow.resolve(res).then(function (res) {
+            done(null, res);
+        }, done);
+        return;
+    }
+
+    done(null, res);
 }
 
 module.exports = init;

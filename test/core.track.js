@@ -5,6 +5,7 @@
 var assert = require('assert');
 var inherit = require('inherit');
 var logger = require('loggin');
+var vow = require('vow');
 
 describe('core/track', function () {
     var Core = require('../core/core');
@@ -32,7 +33,8 @@ describe('core/track', function () {
             var unit = new Unit();
             var track = new Track(agent, logger);
 
-            track.invoke(unit).done(function (res) {
+            track.invoke(unit, null, function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 42);
                 done();
             });
@@ -50,11 +52,12 @@ describe('core/track', function () {
             var unit = new Unit();
             var track = new Track(agent, logger);
 
-            track.invoke(unit).done(function (res) {
+            track.invoke(unit, null, function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 42);
                 assert.strictEqual(i, 1);
 
-                track.invoke(unit).done(function (res) {
+                track.invoke(unit, null, function (err, res) {
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
                     done();
@@ -62,19 +65,22 @@ describe('core/track', function () {
             });
         });
 
-        it('Should memorize unit calls by args hash if params.toString() defined', function (done) {
+        it('Should memorize unit calls by args hash', function (done) {
             var i = 0;
+            var j = 0;
             var Unit = inherit(agent.Unit, {
                 name: 'foo',
-                params: {
-                    toString: function () {
-                        return this.foo;
-                    }
-                },
                 main: function (track, context) {
                     i += 1;
                     assert.strictEqual(context.params.foo, 'bar');
-                    return 42;
+                    var defer = vow.defer();
+                    setTimeout(function () {
+                        defer.resolve(42);
+                    }, 10);
+                    return defer.promise();
+                },
+                hashArgs: function (track, context) {
+                    return context.param('foo');
                 }
             });
             var args = {
@@ -83,13 +89,24 @@ describe('core/track', function () {
             var unit = new Unit();
             var track = new Track(agent, logger);
 
-            track.invoke(unit, args).done(function (res) {
+            track.invoke(unit, args, function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 42);
                 assert.strictEqual(i, 1);
+                j += 1;
+            });
 
-                track.invoke(unit, args).done(function (res) {
+            track.invoke(unit, args, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.result, 42);
+                assert.strictEqual(i, 1);
+                assert.strictEqual(j, 1);
+
+                track.invoke(unit, args, function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
+                    assert.strictEqual(j, 1);
                     done();
                 });
             });
@@ -110,6 +127,24 @@ describe('core/track', function () {
                 var track = new Track(core, logger);
                 track.eject('foo').done(function (res) {
                     assert.strictEqual(res, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should call unit by name and return only error', function (done) {
+            var core = new Core();
+            core.unit({
+                name: 'foo',
+                main: function () {
+                    throw 42;
+                }
+            });
+
+            core.ready().done(function () {
+                var track = new Track(core, logger);
+                track.eject('foo').done(null, function (err) {
+                    assert.strictEqual(err, 42);
                     done();
                 });
             });

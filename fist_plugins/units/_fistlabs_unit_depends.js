@@ -8,7 +8,6 @@ var Obus = /** @type Obus */ require('obus');
 
 var _ = require('lodash-node');
 var f = require('util').format;
-var vow = require('vow');
 
 module.exports = function (agent) {
 
@@ -65,13 +64,10 @@ module.exports = function (agent) {
          * @constructs
          * */
         __constructor: function () {
-            var deps;
             this.__base();
 
              //  check dependencies issues
             assertDepsOk(agent.getUnitClass(this.name), []);
-
-            deps = _.uniq(this.deps);
 
             /**
              * @protected
@@ -79,7 +75,7 @@ module.exports = function (agent) {
              * @property
              * @type {Object}
              * */
-            this._deps = tuple(deps);
+            this._deps = _.uniq(this.deps);
 
             /**
              * @protected
@@ -89,7 +85,7 @@ module.exports = function (agent) {
              * */
             this._depsNames = {};
 
-            _.forEach(deps, function (name) {
+            _.forEach(this._deps, function (name) {
                  this._depsNames[name] = _.has(this.depsMap, name) ?
                      this.depsMap[name] : name;
             }, this);
@@ -102,7 +98,7 @@ module.exports = function (agent) {
              * */
             this._depsArgs = {};
 
-            _.forEach(deps, function (name) {
+            _.forEach(this._deps, function (name) {
                 if (_.has(this.depsArgs, name)) {
                     if (_.isFunction(this.depsArgs[name])) {
                         this._depsArgs[name] = this.depsArgs[name];
@@ -148,64 +144,68 @@ module.exports = function (agent) {
          *
          * @param {Track} track
          * @param {Object} context
-         *
-         * @returns {vow.Promise}
+         * @param {Function} done
          * */
-        _fetch: function (track, context) {
-            var __base = this.__base;
+        _fetch: function (track, context, done) {
+            var __base;
             var dDepsStart;
-            var deps = this._deps;
-            var depsVals;
             var i;
-            var l = deps.length;
-            var logger = context.logger;
-            var name = this.name;
+            var remaining;
+            var l = remaining = this._deps.length;
+            var logger;
+            var wasFlushed = false;
 
-            //  Start deps execution
-            dDepsStart = new Date();
-            deps = this._deps;
-            depsVals = new Array(l);
             context.keys = new Array(l + 1);
 
-            //  call dependencies
-            for (i = 0, l = deps.length; i < l; i += 1) {
-                name = deps[i];
-                depsVals[i] = agent.callUnit(name, track, this._depsArgs[name].call(this, track, context));
+            if (l === 0) {
+                this.__base(track, context, done);
+                return;
             }
 
-            return vow.allResolved(depsVals).then(function (promises) {
-                var pos;
-                var size;
-                var promise;
-                var value;
-                var hosting;
+            __base = this.__base;
+            dDepsStart = new Date();
+            logger = context.logger;
 
-                if (track.isFlushed()) {
-                    logger.debug('The track was flushed up from dependencies tree, skip invocation');
-                    return null;
+            function resolveDep(self, pos) {
+                var name = self._deps[pos];
+                var args = self._depsArgs[name].call(self, track, context);
+
+                if (wasFlushed) {
+                    return;
                 }
 
-                for (pos = 0, size = promises.length; pos < size; pos += 1) {
-                    promise = promises[pos];
-                    value = promise.valueOf();
-
-                    if (promise.isRejected()) {
-                        context.skipCache = true;
-                        context.keys[pos] = null;
-                        hosting = context.errors;
-                    } else {
-                        context.keys[pos] = value.memKey;
-                        value = value.result;
-                        hosting = context.result;
+                agent.callUnit(track, name, args, function (err, res) {
+                    if (wasFlushed) {
+                        return;
                     }
 
-                    Obus.add(hosting, this._depsNames[deps[pos]], value);
-                }
+                    if (track.isFlushed()) {
+                        wasFlushed = true;
+                        logger.debug('The track was flushed by deps, skip invocation');
+                        done(null, null);
+                        return;
+                    }
 
-                logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
+                    if (arguments.length < 2) {
+                        context.skipCache = true;
+                        Obus.add(context.errors, self._depsNames[name], err);
+                    } else {
+                        context.keys[pos] = res.memKey;
+                        Obus.add(context.result, self._depsNames[name], res.result);
+                    }
 
-                return __base.call(this, track, context);
-            }, this);
+                    if (remaining === 1) {
+                        logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
+                        __base.call(self, track, context, done);
+                    }
+
+                    remaining -= 1;
+                });
+            }
+
+            for (i = 0; i < l; i += 1) {
+                resolveDep(this, i);
+            }
         },
 
         /**
@@ -344,27 +344,3 @@ Model.prototype.r = function (path, def) {
 Model.prototype.e = function (path, def) {
     return this.errors.get(path, def);
 };
-
-function tuple(list) {
-    var i;
-    var l = list.length;
-    var result = Object.create(null, {
-        toString: {
-            value: function () {
-                return '(' + Array.prototype.join.call(this, ', ') + ')';
-            }
-        },
-        length: {
-            value: l
-        }
-    });
-
-    for (i = 0; i < l; i += 1) {
-        Object.defineProperty(result, String(i), {
-            value: list[i],
-            enumerable: true
-        });
-    }
-
-    return result;
-}

@@ -3,13 +3,16 @@
 var express = require('express');
 var app = express();
 
-app.use(function (req, res, next) {
-    next();
-});
+var size = 39;
 
-app.use(function (req, res, next) {
+function noop(req, res, next) {
     next();
-});
+}
+
+while (size) {
+    size -= 1;
+    app.use(noop);
+}
 
 app.get('/:page/', function (req, res) {
     res.end('OK');

@@ -11,6 +11,7 @@ var Core = require('../core/core');
 var assert = require('assert');
 var inherit = require('inherit');
 var logger = require('loggin');
+var vow = require('vow');
 
 function getTrack() {
     return new Track(new Core(), logger);
@@ -130,7 +131,8 @@ describe('core/init', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name))).then(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 42);
                 done();
             });
@@ -169,7 +171,8 @@ describe('core/init', function () {
                     baz: 12
                 });
 
-            unit.call(track, context).done(function (res) {
+            unit.call(track, context, function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 100500);
                 done();
             });
@@ -198,16 +201,19 @@ describe('core/init', function () {
             var context = unit.createContext(track.logger.bind(unit.name)).
                 setup(unit.params, track.params);
 
-            unit.call(track, context).done(function (res) {
+            unit.call(track, context, function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, 'foo-bar');
 
-                unit.call(track, context).done(function (res) {
+                unit.call(track, context, function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res.result, 1);
                     assert.strictEqual(res.memKey, 'foo-bar');
 
                     setTimeout(function () {
-                        unit.call(track, context).done(function (res) {
+                        unit.call(track, context, function (err, res) {
+                            assert.ok(!err);
                             assert.strictEqual(res.result, 2);
                             assert.strictEqual(res.memKey, 'foo-bar');
 
@@ -258,11 +264,13 @@ describe('core/init', function () {
             var context = unit.createContext(track.logger.bind(unit.name)).
                 setup(unit.params, track.params);
 
-            unit.call(track, context).done(function (res) {
+            unit.call(track, context, function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, 'foo-bar');
 
-                unit.call(track, context).done(function (res) {
+                unit.call(track, context, function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res.result, 2);
                     assert.strictEqual(res.memKey, 'foo-bar');
 
@@ -289,10 +297,10 @@ describe('core/init', function () {
             var unit = new Unit();
             var context = unit.createContext(track.logger.bind(unit.name));
 
-            unit.call(track, context).done(null, function (err) {
+            unit.call(track, context, function (err) {
                 assert.strictEqual(err, 1);
 
-                unit.call(track, context).done(null, function (err) {
+                unit.call(track, context, function (err) {
                     assert.strictEqual(err, 2);
                     done();
                 });
@@ -320,11 +328,13 @@ describe('core/init', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res.result, 1);
                 assert.strictEqual(res.memKey, null);
 
-                unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
+                unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res.result, 2);
                     assert.strictEqual(res.memKey, null);
                     done();
@@ -344,7 +354,8 @@ describe('core/init', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res, null);
                 done();
             });
@@ -368,15 +379,75 @@ describe('core/init', function () {
             var track = getTrack();
             var unit = new Unit();
 
-            unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
+            unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                assert.ok(!err);
                 assert.strictEqual(res, null);
                 assert.strictEqual(i, 1);
 
-                unit.call(track, unit.createContext(track.logger.bind(unit.name))).done(function (res) {
+                unit.call(track, unit.createContext(track.logger.bind(unit.name)), function (err, res) {
+                    assert.ok(!err);
                     assert.strictEqual(res, null);
                     assert.strictEqual(i, 2);
                     done();
                 });
+            });
+        });
+
+        it('Should be rejected event if track was flushed', function (done) {
+            var i = 0;
+            var Unit = inherit(core.Unit, {
+                name: 'foo',
+                main: function (track) {
+                    i += 1;
+                    track._isFlushed = true;
+                    throw i;
+                }
+            });
+
+            var unit = new Unit();
+            var track = getTrack();
+            var context = unit.createContext(track.logger.bind(unit.name));
+
+            unit.call(track, context, function (err) {
+                assert.strictEqual(err, 1);
+                done();
+            });
+        });
+
+        it('Should support returned promise in "main" method', function (done) {
+            var Unit = inherit(core.Unit, {
+                name: 'foo',
+                main: function () {
+                    return vow.resolve(42);
+                }
+            });
+
+            var unit = new Unit();
+            var track = getTrack();
+            var context = unit.createContext(track.logger.bind(unit.name));
+
+            unit.call(track, context, function (err, res) {
+                assert.ok(!err);
+                assert.strictEqual(res.result, 42);
+                done();
+            });
+        });
+
+        it('Should support thrown promise in "main" method', function (done) {
+            var Unit = inherit(core.Unit, {
+                name: 'foo',
+                main: function () {
+                    throw vow.resolve(42);
+                }
+            });
+
+            var unit = new Unit();
+            var track = getTrack();
+            var context = unit.createContext(track.logger.bind(unit.name));
+
+            unit.call(track, context, function (err) {
+                assert.strictEqual(err, 42);
+                done();
             });
         });
     });
