@@ -19,17 +19,7 @@ var proxyAddr = require('proxy-addr');
  * @param {ServerResponse} res
  * */
 function Connect(agent, logger, req, res) {
-    var self = this;
-
     Track.call(this, agent, logger);
-
-    res.on('close', function () {
-        self._isFlushed = true;
-    });
-
-    res.on('finish', function () {
-        self._isFlushed = true;
-    });
 
     /**
      * @public

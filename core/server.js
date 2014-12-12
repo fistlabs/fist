@@ -167,6 +167,7 @@ Server.prototype._runTrack = function (req, res, logger) {
     var path = req.url;
     var router = this.router;
     var verb = req.method;
+    var track;
 
     if (!router.isImplemented(verb)) {
         logger.warn('There is no %s handlers', verb);
@@ -178,7 +179,15 @@ Server.prototype._runTrack = function (req, res, logger) {
     matches = router.matchAll(verb, path);
 
     if (matches.length) {
-        this._nextRun(new Connect(this, logger, req, res), matches, 0);
+        track = new Connect(this, logger, req, res);
+        res.on('close', function () {
+            track._isFlushed = true;
+        });
+
+        res.on('finish', function () {
+            track._isFlushed = true;
+        });
+        this._nextRun(track, matches, 0);
         return;
     }
 

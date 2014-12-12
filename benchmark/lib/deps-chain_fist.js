@@ -16,7 +16,7 @@ app.route('/<page>/', {
 });
 
 app.unit({
-    base: '_fistlabs_unit_depends',
+    base: 0,
     name: f('unit_%s', size),
     deps: [f('unit_%s', size - 1)],
     main: function (context) {
@@ -29,7 +29,7 @@ function noop() {}
 
 while (size) {
     app.unit({
-        base: '_fistlabs_unit_depends',
+        base: 0,
         name: f('unit_%s', size),
         deps: size === 1 ? [] : [f('unit_%s', size - 1)],
         main: noop
