@@ -252,13 +252,26 @@ module.exports = function (agent) {
          * @returns {Function}
          * */
         inherit: function (members, statics) {
+            var deps = this.prototype.deps;
+            var mixins = [];
+
             members = Object(members);
 
-            if (!members.deps) {
-                members.deps = this.prototype.deps;
-            } else {
-                members.deps = this.prototype.deps.concat(members.deps);
+            if (members.deps) {
+                deps = deps.concat(members.deps);
             }
+
+            if (members.mixins) {
+                mixins = mixins.concat(members.mixins);
+            }
+
+            members.deps = _.reduce(mixins, function (deps, Mixin) {
+                if (_.isFunction(Mixin) && Mixin.prototype.deps) {
+                    deps = deps.concat(Mixin.prototype.deps);
+                }
+
+                return deps;
+            }, deps);
 
             return this.__base(members, statics);
         }

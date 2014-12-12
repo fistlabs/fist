@@ -158,6 +158,62 @@ describe('fist_plugins/units/_fistlabs_unit_depends', function () {
         });
     });
 
+    it('Should add mixins deps', function (done) {
+        var agent = getAgent({});
+
+        function Mix0() {}
+        function Mix1() {}
+
+        agent.unit({
+            base: 0,
+            name: 'a'
+        });
+
+        agent.unit({
+            base: 0,
+            name: 'b'
+        });
+
+        agent.unit({
+            base: 0,
+            name: 'c'
+        });
+
+        agent.unit({
+            base: 0,
+            name: 'd'
+        });
+
+        agent.unit({
+            base: 0,
+            name: 'e'
+        });
+
+        Mix0.prototype.deps = ['c', 'd'];
+        Mix1.prototype.deps = ['e'];
+
+        agent.unit({
+            base: '_fistlabs_unit_depends',
+            name: 'foo',
+            mixins: [null, Mix0, {}, null],
+            deps: ['a']
+        });
+
+        agent.unit({
+            base: 'foo',
+            name: 'bar',
+            mixins: [Mix1],
+            deps: ['b'],
+            __constructor: function () {
+                this.__base();
+                assert.deepEqual(this.deps, ['a', 'c', 'd', 'b', 'e']);
+                done();
+            }
+        });
+
+        agent.ready();
+    });
+
     it('Should support deps as no-array', function (done) {
         var agent = getAgent({});
 
