@@ -183,10 +183,6 @@ Server.prototype._runTrack = function (req, res, logger) {
         res.on('close', function () {
             track._isFlushed = true;
         });
-
-        res.on('finish', function () {
-            track._isFlushed = true;
-        });
         this._nextRun(track, matches, 0);
         return;
     }

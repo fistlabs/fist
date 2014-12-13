@@ -77,10 +77,10 @@ Track.prototype.invoke = function (unit, args, done) {
     var calls = this._calls;
     var next;
 
-    logger.debug('Starting invocation, args %j hashed as "%s"', context.params, hash);
+    logger.debug('Starting invocation, args %(params)j hashed as "%s"', hash, context);
 
     if (hasProperty.call(calls, hash)) {
-        logger.debug('Using memorized call, hash = "%s"', hash);
+        logger.debug('Using memorized call %(params)j "%s"', hash, context);
         next = calls[hash];
         if (next.done) {
             done.apply(null, next.args);

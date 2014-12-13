@@ -73,7 +73,7 @@ Connect.prototype.constructor = Connect;
  * @returns {Boolean}
  * */
 Connect.prototype.isFlushed = function () {
-    return Track.prototype.isFlushed.call(this) || this.res.headersSent;
+    return Track.prototype.isFlushed.call(this) || this.res.headersSent || !this.req.socket.writable;
 };
 
 /**
