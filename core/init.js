@@ -1,15 +1,15 @@
 'use strict';
 
 var Context = require('./context');
+var FistError = /** @type FistError */ require('./fist-error');
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
+var Obus = /** @type Obus */ require('obus');
 
 var _ = require('lodash-node');
 var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var vow = require('vow');
 
-var FistError = /** @type FistError */ require('./fist-error');
-var Obus = /** @type Obus */ require('obus');
 var f = require('util').format;
 
 function init(agent) {
@@ -49,6 +49,10 @@ function init(agent) {
          * @type {Object}
          * */
         this.params = _.extend({}, this.params);
+
+        if (!_.has(agent.caches, this.cache)) {
+            throw new FistError('UNKNOWN_CACHE', f('You should define app.caches["%s"] interface', this.cache));
+        }
 
         /**
          * @protected
