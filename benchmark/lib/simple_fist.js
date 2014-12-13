@@ -2,7 +2,6 @@
 
 var fist = require('../../fist');
 var app = fist();
-var f = require('util').format;
 
 app.logger.conf({
     logLevel: 'NOTSET'

@@ -72,8 +72,19 @@ Connect.prototype.constructor = Connect;
  *
  * @returns {Boolean}
  * */
+Connect.prototype.wasSent = function () {
+    return this.res.headersSent || !this.req.socket.writable;
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {Boolean}
+ * */
 Connect.prototype.isFlushed = function () {
-    return Track.prototype.isFlushed.call(this) || this.res.headersSent || !this.req.socket.writable;
+    return Track.prototype.isFlushed.call(this) || this.wasSent();
 };
 
 /**

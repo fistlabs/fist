@@ -223,7 +223,7 @@ Server.prototype._nextRun = function (track, matches, pos) {
 
     /** @this {Server} */
     this.callUnit(track, match.data.unit, null, function (err) {
-        if (track.res.headersSent) {
+        if (track.wasSent()) {
             return;
         }
 
