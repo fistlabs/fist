@@ -13,7 +13,7 @@ var routes = 100;
 var uniqueId = require('unique-id');
 var name;
 
-console.log('%d routes', routes);
+console.log('%d routes, last matching', routes);
 
 function send(track) {
     track.res.end(this.name);

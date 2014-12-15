@@ -1,9 +1,11 @@
-/*eslint no-nested-ternary: 0*/
+/*eslint no-console: 0, no-nested-ternary: 0*/
 'use strict';
 
 var fist = require('../../fist');
 var app = fist();
 var f = require('util').format;
+
+console.log('Crazy deps chain, just for speed up debugging');
 
 app.logger.conf({
     logLevel: 'NOTSET'
@@ -49,4 +51,4 @@ while (size) {
     size -= 1;
 }
 
-app.listen(1339);
+app.listen(1337);

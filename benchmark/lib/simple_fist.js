@@ -1,7 +1,10 @@
+/*eslint no-console: 0*/
 'use strict';
 
 var fist = require('../../fist');
 var app = fist();
+
+console.log('1 route, just send OK');
 
 app.logger.conf({
     logLevel: 'NOTSET'
