@@ -1,4 +1,4 @@
-fist [![NPM version](https://badge.fury.io/js/fist.svg)](http://badge.fury.io/js/fist) [![Build Status](https://travis-ci.org/fistlabs/fist.png?branch=master)](https://travis-ci.org/fistlabs/fist) [![Dependency Status](https://david-dm.org/fistlabs/fist.svg)](https://david-dm.org/fistlabs/fist) [![devDependency Status](https://david-dm.org/fistlabs/fist/dev-status.svg)](https://david-dm.org/fistlabs/fist#info=devDependencies)
+fist [![Build Status](https://travis-ci.org/fistlabs/fist.svg?branch=master)](https://travis-ci.org/fistlabs/fist)
 =========
 
 This project is attempt to aggregate common application utility-level cases in one place. ```Fist``` is a standalone server-side  framework for [```nodejs```](https://nodejs.org/)
@@ -12,8 +12,15 @@ This project is attempt to aggregate common application utility-level cases in o
 * Built-in cache strategy (and local cache as default)
 * Plugin system and asynchronous application initialization
 
+#Installation
+```
+$ npm install fist
+```
+
 #Docs
-Wait for 3.0.0 stable
+* [Quick start](/docs/index.md)
+* [Guides](/docs/guides/index.md)
+* [Full API reference](/docs/reference/index.md)
 
 ---------
 LICENSE [MIT](LICENSE)
