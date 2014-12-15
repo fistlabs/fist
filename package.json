@@ -1,8 +1,5 @@
 {
-    "author": {
-        "name": "Golyshev Dmitrii",
-        "email": "golyshev.dmitry@yandex.ru"
-    },
+    "author": "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>",
     "bugs": {
         "url": "https://github.com/fistlabs/fist/issues"
     },
@@ -10,11 +7,14 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
-        "loggin": "1.0.0-4",
-        "obus": "1.0.0-1",
+        "proxy-addr": "1.0.4",
+        "asker": "0.6.0",
+        "raw-body": "1.3.1",
+        "busboy": "git://github.com/mscdex/busboy.git#e70d9e462b21f5554c54aa16bc20620e5f5e3eff",
+        "loggin": "2.1.0",
+        "obus": "1.0.0",
         "vow-fs": "0.3.3",
-        "vow-asker": "0.7.0",
-        "lru-cache": "2.5.0",
+        "vow-asker": "0.8.0",
         "unique-id": "0.0.1",
         "finger": "1.0.0-4",
         "lodash-node": "2.4.1",
@@ -22,14 +22,15 @@
         "inherit": "2.2.2",
         "cookieparser": "0.1.0",
         "media-typer": "0.3.0",
-        "attach-parser": "0.0.1",
-        "glob": "4.0.6",
-        "negotiator": "0.4.9",
         "fast-url-parser": "1.0.6-0",
         "double-ended-queue": "2.0.0-0"
     },
     "description": "nodejs application framework",
     "devDependencies": {
+        "supertest": "0.15.0",
+        "glob": "4.0.6",
+        "benchmark": "1.0.0",
+        "lru-cache": "2.5.0",
         "gulp": "3.8.10",
         "gulp-mocha": "1.1.1",
         "gulp-istanbul": "0.3.1",
@@ -37,9 +38,7 @@
         "gulp-util": "3.0.1",
         "through2": "0.6.3",
         "minimatch": "1.0.0",
-        "gulp-jscs": "1.3.0",
-        "chai": "1.9.2",
-        "express": "4.9.5"
+        "gulp-jscs": "1.3.1"
     },
     "license": "MIT",
     "main": "fist",

@@ -1,219 +1,260 @@
 'use strict';
 
-var Connect = /** @type Connect */ require('./track/connect');
+var Core = /** @type Server */ require('./core');
+var Connect = /** @type Connect */ require('./connect');
 var Router = /** @type Router */ require('finger/core/router');
-var Response = /** @type Response */ require('./track/response');
-var Tracker = /** @type Tracker */ require('./tracker');
 
 var _ = require('lodash-node');
 var http = require('http');
-var inherit = require('inherit');
+var proxyAddr = require('proxy-addr');
+var uniqueId = require('unique-id');
+var vow = require('vow');
+
+var STATUS_CODES = http.STATUS_CODES;
 
 /**
  * @class Server
- * @extends Tracker
+ * @extends Core
  * */
-var Server = inherit(Tracker, /** @lends Server.prototype */ {
+function Server(params) {
+    params = _.extend({
+        trustProxy: 'loopback'
+    }, params);
+
+    Core.call(this, params);
+
+    //  compile parameter
+    this.params.trustProxy = proxyAddr.compile(this.params.trustProxy);
 
     /**
-     * @private
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {Object} [params]
-     *
-     * @constructs
-     * */
-    __constructor: function (params) {
-        this.__base(params);
-
-        /**
-         * TODO remove this behaviour
-         *
-         * Шаблоны для track.render()
-         *
-         * @public
-         * @memberOf {Server}
-         * @property
-         * @type {Object<Function>}
-         * */
-        this.renderers = {};
-
-        /**
-         * @public
-         * @memberOf {Server}
-         * @property
-         * @type {Router}
-         * */
-        this.router = this._createRouter(this.params.router);
-    },
-
-    /**
-     * Возвращает коллбэк для запросов на сервер
-     *
      * @public
      * @memberOf {Server}
-     * @method
-     *
-     * @returns {Function}
+     * @property
+     * @type {Router}
      * */
-    getHandler: function () {
-        var self = this;
+    this.router = new Router(this.params.router);
+}
 
-        return function (req, res) {
-            var execStartDate = new Date();
-            var track = self._createTrack(req, res);
+Server.prototype = Object.create(Core.prototype);
 
-            track.logger.info('Incoming %s %s\n', req.method, req.url, req.headers);
+/**
+ * @public
+ * @memberOf {Server}
+ * @method
+ *
+ * @constructs
+ * */
+Server.prototype.constructor = Server;
 
-            self.handle(track).done(function (resp) {
-                var statusCode = res.statusCode;
-                var statusText = http.STATUS_CODES[statusCode] || String(statusCode);
-                var logRecorder;
+/**
+ * Возвращает коллбэк для запросов на сервер
+ *
+ * @public
+ * @memberOf {Server}
+ * @method
+ *
+ * @returns {Function}
+ * */
+Server.prototype.getHandler = function () {
+    var self = this;
 
-                Response.end(res, resp);
+    return function (req, res) {
+        var dExecStart = new Date();
+        //  TODO tests for this stuff
+        var requestId = getRequestId(req);
+        var logger = self.logger.bind(requestId);
 
-                switch (true) {
-
-                    case statusCode >= 500:
-                        //  Server errors
-                        logRecorder = 'error';
-
-                        break;
-
-                    case statusCode >= 400:
-                        //  Client errors
-                        logRecorder = 'warn';
-
-                        break;
-
-                    case statusCode >= 300:
-                        //  Redirects
-                        logRecorder = 'log';
-
-                        break;
-
-                    default:
-                        //  Usual cases
-                        logRecorder = 'info';
-
-                        break;
+        logger.info('Incoming %(method)s %(url)s %s', function () {
+            var name;
+            var headers = '';
+            for (name in req.headers) {
+                if (req.headers.hasOwnProperty(name)) {
+                    headers += '\n\t' + name + ': ' + req.headers[name];
                 }
+            }
 
-                track.logger[logRecorder]('%d (%s) %dms', statusCode, statusText, new Date() - execStartDate);
-            });
-        };
-    },
+            return headers;
+        }, req);
 
-    /**
-     * @public
-     * @memberOf {Server}
-     * @method
-     *
-     * @returns {vow.Promise}
-     * */
-    handle: function (track) {
-        var promise = this.ready();
+        res.on('finish', function () {
+            var code = res.statusCode;
+            var type;
 
-        //  -1 possible tick
-        if (promise.isFulfilled()) {
-            return track.run();
-        }
+            switch (true) {
 
-        //  wait for init
-        return promise.then(track.run, track.handleReject, track);
-    },
+                case code >= 500:
+                    //  Server errors
+                    type = 'error';
+                    break;
 
-    /**
-     * Запускает сервер и инициализацию приложения
-     *
-     * @public
-     * @memberOf {Server}
-     * @method
-     * */
-    listen: function () {
-        var server = http.createServer(this.getHandler());
+                case code >= 400:
+                    //  Client errors
+                    type = 'warn';
+                    break;
 
-        server.listen.apply(server, arguments);
+                case code >= 300:
+                    //  Redirects
+                    type = 'log';
+                    break;
 
-        //  автоматически запускаю инициализацию
-        this.ready();
+                default:
+                    //  Usual cases
+                    type = 'info';
+                    break;
+            }
 
-        return server;
-    },
+            logger[type]('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
+        });
 
-    /**
-     * Определяет маршрут встроенного роутера
-     *
-     * @public
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {String} ruleString
-     * @param {{unit?:String, name?:String}|String} [ruleData]
-     *
-     * @returns {Server}
-     * */
-    route: function (ruleString, ruleData) {
+        self.handle(req, res, logger).done();
+    };
+};
 
-        if (!_.isObject(ruleData)) {
-            ruleData = {name: ruleData};
-        }
+/**
+ * @public
+ * @memberOf {Server}
+ * @method
+ * */
+Server.prototype.handle = function (req, res, logger) {
+    var promise = this.ready();
 
-        if (_.isUndefined(ruleData.unit) || _.isNull(ruleData.unit)) {
-            ruleData.unit = ruleData.name;
-        }
-
-        this.router.addRule(ruleString, ruleData);
-
-        return this;
-    },
-
-    /**
-     * @protected
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {*} [params]
-     *
-     * @returns {Router}
-     * */
-    _createRouter: function (params) {
-
-        return new Router(params);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Server}
-     * @method
-     *
-     * @returns {Connect}
-     * */
-    _createTrack: function (req, res) {
-
-        return new Connect(this, null, req, res);
-    },
-
-    /**
-     * @protected
-     * @memberOf {Server}
-     * @method
-     *
-     * @param {Function} Unit
-     *
-     * @returns {Unit}
-     * */
-    _instUnit: function (Unit) {
-        var unit = this.__base(Unit);
-
-        if (_.isString(unit.rule)) {
-            this.route(unit.rule, unit.name);
-        }
-
-        return unit;
+    //  -1 possible tick
+    if (promise.isFulfilled()) {
+        return this._runTrack(req, res, logger);
     }
 
-});
+    //  wait for init
+    return promise.then(function () {
+        return this._runTrack(req, res, logger);
+    }, this);
+};
+
+/**
+ * @protected
+ * @memberOf {Server}
+ * @method
+ * */
+Server.prototype._runTrack = function (req, res, logger) {
+    var matches;
+    var path = req.url;
+    var router = this.router;
+    var verb = req.method;
+    var track;
+
+    if (!router.isImplemented(verb)) {
+        logger.warn('There is no %s handlers', verb);
+        res.statusCode = 501;
+        res.end(STATUS_CODES[501]);
+        return vow.resolve();
+    }
+
+    matches = router.matchAll(verb, path);
+
+    if (matches.length) {
+        track = new Connect(this, logger, req, res);
+        res.on('close', function () {
+            track._isFlushed = true;
+        });
+        return this._nextRun(track, matches, 0);
+    }
+
+    matches = router.matchVerbs(path);
+
+    if (matches.length) {
+        logger.warn('The method %s is not allowed for resource %s', verb, path);
+        res.statusCode = 405;
+        res.setHeader('Allow', matches.join(', '));
+        res.end(STATUS_CODES[405]);
+    } else {
+        logger.warn('There is no matching route');
+        res.statusCode = 404;
+        res.end(STATUS_CODES[404]);
+    }
+
+    return vow.resolve();
+};
+
+/**
+ * @private
+ * @memberOf {Connect}
+ * @method
+ * */
+Server.prototype._nextRun = function (track, matches, pos) {
+    var match;
+
+    if (pos === matches.length) {
+        track.logger.warn('No one controller did responded');
+        track.status(404).send();
+        return void 0;
+    }
+
+    match = matches[pos];
+    track.params = match.args;
+    track.route = match.data.name;
+    track.logger.note('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
+
+    /** @this {Server} */
+    return this.callUnit(track, match.data.unit).then(function () {
+        if (track.wasSent()) {
+            return void 0;
+        }
+
+        track.logger.note('The "%(data.unit)s" controller did not responded', match);
+
+        return this._nextRun(track, matches, pos + 1);
+    }, function (err) {
+        if (!track.wasSent()) {
+            track.status(500).send(err);
+        }
+    }, this);
+};
+
+/**
+ * Запускает сервер и инициализацию приложения
+ *
+ * @public
+ * @memberOf {Server}
+ * @method
+ * */
+Server.prototype.listen = function () {
+    var server = http.createServer(this.getHandler());
+
+    //  автоматически запускаю инициализацию
+    this.ready().done();
+
+    server.listen.apply(server, arguments);
+
+    return server;
+};
+
+/**
+ * Определяет маршрут встроенного роутера
+ *
+ * @public
+ * @memberOf {Server}
+ * @method
+ *
+ * @param {String} ruleString
+ * @param {{unit?:String, name?:String}|String} [ruleData]
+ *
+ * @returns {Server}
+ * */
+Server.prototype.route = function (ruleString, ruleData) {
+    if (!_.isObject(ruleData)) {
+        ruleData = {name: ruleData};
+    }
+
+    if (!ruleData.unit) {
+        ruleData.unit = ruleData.name;
+    }
+
+    this.router.addRule(ruleString, ruleData);
+
+    return this;
+};
+
+function getRequestId(req) {
+    return req.id || req.headers['x-request-id'] || uniqueId();
+}
 
 module.exports = Server;

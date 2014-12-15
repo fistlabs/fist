@@ -1,30 +1,34 @@
+/*eslint max-nested-callbacks: 0*/
 /*global describe, it*/
 'use strict';
 
-var assert = require('chai').assert;
-var Server = require('../core/server');
+var assert = require('assert');
 
 describe('fist', function () {
+    var Server = require('../core/server');
     var fist = require('../fist');
 
-    it('Should be a function', function () {
-        assert.isFunction(fist);
+    it('Should be an instance of Server', function () {
+        var app = fist();
+        assert.ok(app instanceof Server);
     });
 
-    it('Should return a Server instance', function () {
-        var app = fist({a: 42}, {test: 'str'}, {st: 0});
+    it('Should automatically install bundled plugins', function (done) {
+        var app = fist();
 
-        assert.instanceOf(app, Server);
-        assert.property(app, 'params');
-        assert.isObject(app.params);
-        assert.strictEqual(app.params.a, 42);
+        app.ready().done(function () {
+            var units = [
+                '_fistlabs_unit_asker',
+                '_fistlabs_unit_serial',
+                '_fistlabs_unit_controller',
+                'fistlabs_unit_incoming'
+            ];
 
-        assert.property(app, 'test');
-        assert.isString(app.test);
-        assert.strictEqual(app.test, 'str');
+            units.forEach(function (name) {
+                assert.strictEqual(typeof app.getUnitClass(name), 'function');
+            });
 
-        assert.property(app.__self, 'st');
-        assert.isNumber(app.__self.st);
-        assert.strictEqual(app.__self.st, 0);
+            done();
+        });
     });
 });

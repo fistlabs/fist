@@ -2,7 +2,6 @@
 
 module.exports = function (app, done) {
     setTimeout(function () {
-        app.async = 42;
-        done();
-    }, 42);
+        done('ASYNC');
+    }, 10);
 };

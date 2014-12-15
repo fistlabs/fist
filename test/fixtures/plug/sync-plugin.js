@@ -1,5 +1,5 @@
 'use strict';
 
-module.exports = function () {
-    this.sync = 42;
+module.exports = function (app) {
+    app.sync = 42;
 };

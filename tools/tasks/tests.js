@@ -15,7 +15,6 @@ function gulpMochaPipe() {
 }
 
 function runUnit() {
-    require('loggin').loggings.global.setHandlers([]);
     var stream = this.src('test/*.js').pipe(gulpMochaPipe());
 
     stream.on('error', function (e) {
@@ -26,8 +25,9 @@ function runUnit() {
 }
 
 function runCover(done) {
+    /*eslint no-extend-native: 0*/
+    Object.prototype.bug = 42;
     var self = this;
-    require('loggin').loggings.global.setHandlers([]);
     this.src([
         'fist.js',
         'core/**/*.js',
