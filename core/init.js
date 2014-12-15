@@ -1,16 +1,15 @@
 'use strict';
 
-var Context = require('./context');
+var Context = /** @type Context */ require('./context');
 var FistError = /** @type FistError */ require('./fist-error');
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
 var Obus = /** @type Obus */ require('obus');
 
 var _ = require('lodash-node');
+var f = require('util').format;
 var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var vow = require('vow');
-
-var f = require('util').format;
 
 function init(agent) {
     /*eslint max-params: 0*/
@@ -51,7 +50,7 @@ function init(agent) {
         this.params = _.extend({}, this.params);
 
         if (!_.has(agent.caches, this.cache)) {
-            throw new FistError('UNKNOWN_CACHE', f('You should define app.caches["%s"] interface', this.cache));
+            throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
         }
 
         /**
@@ -180,41 +179,33 @@ function init(agent) {
          * @param {Object} track
          * @param {Object} context
          *
-         * @param {Function} done
-         *
          * @returns {*}
          * */
-        call: function (track, context, done) {
+        call: function (track, context) {
             var dStartExec = new Date();
             var result;
-            var logger = context.logger;
 
-            logger.debug('Pending...');
+            context.logger.debug('Pending...');
 
-            function onFetch(err, res) {
+            result = fetch(this, track, context);
+
+            result.done(function (res) {
                 var execTime = new Date() - dStartExec;
-
-                if (arguments.length < 2) {
-                    if (track.isFlushed()) {
-                        logger.warn('Skip error in %dms', execTime, err);
-                    } else {
-                        logger.error('Rejected in %dms', execTime, err);
-                    }
-
-                    done(err);
-                    return;
-                }
-
-                if (track.isFlushed()) {
-                    logger.debug('Skip result in %dms', execTime);
+                if (res) {
+                    context.logger.debug('Accepted in %dms', execTime);
                 } else {
-                    logger.debug('Accepted in %dms', execTime);
+                    context.logger.debug('Skip result in %dms', execTime);
                 }
+            }, function (err) {
+                var execTime = new Date() - dStartExec;
+                if (track.isFlushed()) {
+                    context.logger.warn('Skip error in %dms', execTime, err);
+                } else {
+                    context.logger.error('Rejected in %dms', execTime, err);
+                }
+            });
 
-                done(null, res);
-            }
-
-            fetch(this, track, context, onFetch);
+            return result;
         },
 
         /**
@@ -229,7 +220,7 @@ function init(agent) {
          * */
         hashArgs: function (track, context) {
             /*eslint no-unused-vars: 0*/
-            return '';
+            return 'none';
         },
 
         /**
@@ -244,7 +235,8 @@ function init(agent) {
          * */
         createContext: function (track, args) {
             var context = new Context(track.logger.bind(this.name));
-            context.params = extend({}, this.params, track.params, args);
+            context.params = _.extend({}, this.params, track.params, args);
+            context.argsHash = this.hashArgs(track, context);
             return context;
         },
 
@@ -260,26 +252,8 @@ function init(agent) {
          * */
         main: /* istanbul ignore next */ function (track, context) {
             /*eslint no-unused-vars: 0*/
-        },
-
-        /**
-         * @protected
-         * @memberOf {Unit}
-         * @method
-         *
-         * @param {Object} track
-         * @param {Object} context
-         *
-         * @returns {*}
-         * */
-        _buildTag: function (track, context) {
-
-            if (context.skipCache) {
-                return null;
-            }
-
-            return this.name + '-' + this.hashArgs(track, context) + '-' + context.keys.join('-');
         }
+
     };
 
     /**
@@ -318,9 +292,11 @@ function init(agent) {
         return inherit([this].concat(mixins), members, statics);
     };
 
+    var checked = {};
+
     function assertDepsOk(Unit, trunk) {
 
-        if (/^[^a-z]/i.test(Unit.prototype.name)) {
+        if (/^[^a-z]/i.test(Unit.prototype.name) || _.has(checked, Unit.prototype.name)) {
             return;
         }
 
@@ -330,7 +306,7 @@ function init(agent) {
 
             if (!Dependency) {
                 throw new FistError(FistError.NO_SUCH_UNIT,
-                    f('There is no dependency "%s" for unit "%s"', name, Unit.prototype.name));
+                    f('There is no dependency %j for unit %j', name, Unit.prototype.name));
             }
 
             if (_.contains(trunk, name)) {
@@ -340,70 +316,47 @@ function init(agent) {
 
             assertDepsOk(Dependency, branch);
         });
+
+        checked[Unit.prototype.name] = true;
     }
 
-    function fetch(self, track, context, done) {
-        var dDepsStart;
-        var i;
-        var remaining;
-        var l = remaining = self._deps.length;
-        var logger;
-        var wasFlushed = false;
-
-        context.keys = new Array(l + 1);
-        context.skipCache = false;
-
-        if (l === 0) {
-            cache(self, track, context, done);
-            return;
-        }
-
-        dDepsStart = new Date();
-        logger = context.logger;
-
-        function resolveDep(pos) {
-            var name = self._deps[pos];
-            //  TODO prevent throwing user code
+    function fetch(self, track, context) {
+        var dDepsStart = new Date();
+        var deps = _.map(self._deps, function (name) {
             var args = self._depsArgs[name].call(self, track, context);
+            return agent.callUnit(track, name, args);
+        });
 
-            if (wasFlushed) {
-                return;
+        context.keys = new Array(deps.length);
+        context.skipCache = false;
+        context.needUpdate = false;
+
+        return vow.allResolved(deps).then(function (promises) {
+            if (track.isFlushed()) {
+                context.logger.debug('The track was flushed by deps, skip invocation');
+                return null;
             }
 
-            //  TODO if (track.isFlushed()) {}
+            _.forEach(promises, function (promise, i) {
+                var res = promise.valueOf();
+                var name = self._depsNames[self._deps[i]];
 
-            agent.callUnit(track, name, args, function (err, res) {
-                if (wasFlushed) {
-                    return;
-                }
-
-                if (track.isFlushed()) {
-                    wasFlushed = true;
-                    logger.debug('The track was flushed by deps, skip invocation');
-                    done(null, null);
-                    return;
-                }
-
-                if (arguments.length < 2) {
+                if (promise.isRejected()) {
                     context.skipCache = true;
-                    Obus.add(context.errors, self._depsNames[name], err);
+                    Obus.add(context.errors, name, res);
                 } else {
-                    context.keys[pos] = res.memKey;
-                    Obus.add(context.result, self._depsNames[name], res.result);
+                    if (res.updated) {
+                        context.needUpdate = true;
+                    }
+                    context.keys[i] = res.argsHash;
+                    Obus.add(context.result, name, res.result);
                 }
-
-                if (remaining === 1) {
-                    logger.debug('Deps resolved in %dms', new Date() - dDepsStart);
-                    cache(self, track, context, done);
-                }
-
-                remaining -= 1;
             });
-        }
 
-        for (i = 0; i < l; i += 1) {
-            resolveDep(i);
-        }
+            context.logger.debug('Deps %j resolved in %dms', self._deps, new Date() - dDepsStart);
+
+            return cache(self, track, context);
+        });
     }
 
     /**
@@ -415,130 +368,88 @@ function init(agent) {
     agent.Unit = Unit;
 }
 
-function main(self, track, context, done) {
-    var res;
+function cache(self, track, context) {
+    var argsHash = context.argsHash;
 
-    try {
-        res = self.main(track, context);
-    } catch (err) {
-        if (vow.isPromise(err)) {
-            vow.reject(err).fail(done);
-            return;
+    if (!(self.maxAge > 0) || context.skipCache) {
+        return main(self, track, context, argsHash);
+    }
+
+    if (context.needUpdate) {
+        return set(self, track, context, argsHash);
+    }
+
+    return get(self, track, context, argsHash).always(function (promise) {
+        var value = promise.valueOf();
+
+        //  has cache
+        if (promise.isFulfilled() && value) {
+            context.logger.debug('Found in cache');
+            value.updated = false;
+            return value;
         }
 
-        done(err);
-        return;
-    }
-
-    if (vow.isPromise(res)) {
-        vow.resolve(res).then(function (res) {
-            done(null, res);
-        }, done);
-        return;
-    }
-
-    done(null, res);
-}
-
-function e(path, def) {
-    return Obus.get(this.errors, path, def);
-}
-
-function r(path, def) {
-    return Obus.get(this.result, path, def);
-}
-
-function extend(dst) {
-    var i;
-    var k;
-    var l;
-    var src;
-
-    for (i = 1, l = arguments.length; i < l; i += 1) {
-        src = arguments[i];
-        for (k in src) {
-            if (hasProperty.call(src, k)) {
-                dst[k] = src[k];
-            }
-        }
-    }
-
-    return dst;
-}
-
-function cache(self, track, context, done) {
-    //  TODO prevent throwing user code...
-    var memKey = self._buildTag(track, context);
-    var logger = context.logger;
-
-    if (!memKey || !(self.maxAge > 0)) {
-        main(self, track, context, function (err, res) {
-            if (arguments.length < 2) {
-                done(err);
-                return;
-            }
-
-            if (track.isFlushed()) {
-                logger.debug('The track was flushed during execution');
-                done(null, null);
-                return;
-            }
-
-            done(null, {
-                result: res,
-                memKey: memKey
-            });
-        });
-        return;
-    }
-
-    self._cache.get(memKey, function (err, res) {
-        //  has value in cache
-        if (res) {
-            logger.debug('Found in cache');
-
-            done(null, {
-                result: res.data,
-                memKey: memKey
-            });
-            return;
-        }
-
-        //  error while getting value from cache
-        if (err) {
-            logger.warn('Failed to load cache', err);
+        if (promise.isRejected()) {
+            context.logger.warn('Failed to load cache', value);
         } else {
-            logger.note('Outdated');
+            context.logger.note('Outdated');
         }
 
-        //  calling unit
-        main(self, track, context, function (err, res) {
-            if (arguments.length < 2) {
-                done(err);
-                return;
-            }
+        return set(self, track, context, argsHash);
+    });
+}
 
-            if (track.isFlushed()) {
-                logger.debug('The track was flushed during execution');
-                done(null, null);
-                return;
-            }
+function main(self, track, context, argsHash) {
+    return vow.invoke(function () {
+        return self.main(track, context);
+    }).then(function (result) {
+        if (track.isFlushed()) {
+            context.logger.debug('The track was flushed during execution');
+            return null;
+        }
 
-            //  Try to set cache
-            self._cache.set(memKey, {data: res}, self.maxAge, function (err) {
+        return {
+            updated: true,
+            result: result,
+            argsHash: argsHash
+        };
+    });
+}
+
+function set(self, track, context, argsHash) {
+    var promise = main(self, track, context, argsHash);
+
+    promise.then(function (result) {
+        var memKey;
+
+        if (result) {
+            memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
+            self._cache.set(memKey, result, self.maxAge, function (err) {
                 if (err) {
-                    logger.warn('Failed to set cache', err);
+                    context.logger.warn('Failed to set cache', err);
                 } else {
-                    logger.note('Updated');
+                    context.logger.note('Updated');
                 }
             });
-
-            done(null, {
-                result: res,
-                memKey: memKey
-            });
-        });
+        }
     });
+
+    return promise;
+}
+
+function get(self, track, context, argsHash) {
+    var defer = vow.defer();
+    var memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
+
+    self._cache.get(memKey, function (err, res) {
+        if (arguments.length < 2) {
+            defer.reject(err);
+        } else {
+            defer.resolve(res);
+        }
+    });
+
+    return defer.promise();
 }
 
 module.exports = init;

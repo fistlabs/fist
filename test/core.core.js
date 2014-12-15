@@ -1,4 +1,3 @@
-//  TODO create context setup tests
 /*eslint max-nested-callbacks: 0*/
 /*global describe, it*/
 'use strict';
@@ -401,8 +400,7 @@ describe('core/core', function () {
             });
 
             core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo', null, function (err, res) {
-                    assert.ok(!err);
+                core.callUnit(new Track(core, logger), 'foo').done(function (res) {
                     assert.strictEqual(res.result, 42);
                     done();
                 });
@@ -412,7 +410,7 @@ describe('core/core', function () {
         it('Should be rejected', function (done) {
             var core = new Core();
             core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo', null, function (err) {
+                core.callUnit(new Track(core, logger), 'foo').done(null, function (err) {
                     assert.ok(err);
                     done();
                 });

@@ -175,16 +175,14 @@ Core.prototype.getUnit = function (name) {
  *
  * @param {Object} track
  * @param {String} name
- * @param {Object} args
- * @param {Function} done
+ * @param {Object} [args]
  * */
-Core.prototype.callUnit = function (track, name, args, done) {
+Core.prototype.callUnit = function (track, name, args) {
     if (hasProperty.call(this._units, name)) {
-        track.invoke(this._units[name], args, done);
-        return;
+        return track.invoke(this._units[name], args);
     }
 
-    done(new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit "%s"', name)));
+    return vow.reject(new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit %j', name)));
 };
 
 /**
@@ -345,21 +343,19 @@ function callPlugin(func) {
 }
 
 function createUnits() {
-
     return _.reduce(this._decls, function (promise, decl) {
         return promise.then(function () {
             return createUnitClass.call(this, decl);
         }, this);
     }, vow.resolve(), this).then(function () {
-        return _.reduce(this._class, function (units, UnitClass) {
+        _.forOwn(this._class, function (UnitClass) {
             var name = UnitClass.prototype.name;
 
             if (/^[a-z]/i.test(name)) {
                 this._units[name] = new UnitClass();
             }
 
-            return units;
-        }, {}, this);
+        }, this);
     }, this);
 }
 

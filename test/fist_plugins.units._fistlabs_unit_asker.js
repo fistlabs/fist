@@ -66,7 +66,7 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
                     hostname: 'localhost',
                     path: new Rule('/api/<type>/'),
                     vars: {
-                        type: context.param('type')
+                        type: context.p('type')
                     }
                 };
             }

@@ -1,7 +1,6 @@
 'use strict';
 
 var hasProperty = Object.prototype.hasOwnProperty;
-var vow = require('vow');
 
 /**
  * @class Track
@@ -66,49 +65,23 @@ Track.prototype.constructor = Track;
  * @method
  *
  * @param {Unit} unit
- * @param {*} args
- * @param {Function} done
+ * @param {*} [args]
  * */
-Track.prototype.invoke = function (unit, args, done) {
+Track.prototype.invoke = function (unit, args) {
     var context = unit.createContext(this, args);
     var logger = context.logger;
-    //  TODO prevent throwing user code!
-    var hash = unit.name + '-' + unit.hashArgs(this, context);
+    var hash = unit.name + '-' + context.argsHash;
     var calls = this._calls;
-    var next;
 
     logger.debug('Starting invocation, args %(params)j hashed as "%s"', hash, context);
 
     if (hasProperty.call(calls, hash)) {
-        logger.debug('Using memorized call %(params)j "%s"', hash, context);
-        next = calls[hash];
-        if (next.done) {
-            done.apply(null, next.args);
-        } else {
-            next.func.push(done);
-        }
-
-        return;
+        logger.debug('Using memorized call with %(params)j as "%s"', hash, context);
+    } else {
+        calls[hash] = unit.call(this, context);
     }
 
-    next = calls[hash] = {
-        done: false,
-        args: [],
-        func: [done]
-    };
-
-    unit.call(this, context, function () {
-        var i;
-        var l;
-        var func = next.func;
-
-        next.done = true;
-        next.args = arguments;
-
-        for (i = 0, l = func.length; i < l; i += 1) {
-            func[i].apply(null, next.args);
-        }
-    });
+    return calls[hash];
 };
 
 /**
@@ -122,16 +95,9 @@ Track.prototype.invoke = function (unit, args, done) {
  * @returns {vow.Promise}
  * */
 Track.prototype.eject = function (name, args) {
-    var defer = vow.defer();
-    this._agent.callUnit(this, name, args, function (err, res) {
-        if (arguments.length < 2) {
-            defer.reject(err);
-            return;
-        }
-
-        defer.resolve(res && res.result);
+    return this._agent.callUnit(this, name, args).then(function (res) {
+        return res && res.result;
     });
-    return defer.promise();
 };
 
 /**

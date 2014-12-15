@@ -36,8 +36,7 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.invoke(unit, null, function (err, res) {
-                    assert.ok(!err);
+                track.invoke(unit).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     done();
                 });
@@ -60,12 +59,11 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.invoke(unit, null, function (err, res) {
-                    assert.ok(!err);
+                track.invoke(unit).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
 
-                    track.invoke(unit, null, function (err, res) {
+                    track.invoke(unit).done(function (res) {
                         assert.strictEqual(res.result, 42);
                         assert.strictEqual(i, 1);
                         done();
@@ -92,7 +90,7 @@ describe('core/track', function () {
                     return defer.promise();
                 },
                 hashArgs: function (track, context) {
-                    return context.param('foo');
+                    return context.p('foo');
                 }
             });
 
@@ -103,21 +101,18 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.invoke(unit, args, function (err, res) {
-                    assert.ok(!err);
+                track.invoke(unit, args).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
                     j += 1;
                 });
 
-                track.invoke(unit, args, function (err, res) {
-                    assert.ok(!err);
+                track.invoke(unit, args).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     assert.strictEqual(i, 1);
                     assert.strictEqual(j, 1);
 
-                    track.invoke(unit, args, function (err, res) {
-                        assert.ok(!err);
+                    track.invoke(unit, args).done(function (res) {
                         assert.strictEqual(res.result, 42);
                         assert.strictEqual(i, 1);
                         assert.strictEqual(j, 1);

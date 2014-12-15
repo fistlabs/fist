@@ -9,7 +9,7 @@ for benchmark in $*; do
 
     sleep 2;
 
-    wrk "http://localhost:1337/index/?foo=bar&baz=zot" -d 20 -c 50 -t 8 | grep "/sec";
+    ab -c 50 -t 60 -n 50000 "http://localhost:1337/index/?foo=bar&baz=zot" | grep "/sec";
 
     kill ${pid};
 

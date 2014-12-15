@@ -4,20 +4,12 @@
 
 var Track = require('../core/track');
 var Core = require('../core/core');
+var Obus = require('obus');
 
 var assert = require('assert');
 var logger = require('loggin');
-var vow = require('vow');
 
 describe('core/init', function () {
-
-    it('Should provide "caches.local" cache property', function () {
-        var core = new Core();
-        assert.ok(core.caches);
-        assert.ok(core.caches.local);
-        assert.strictEqual(typeof core.caches.local.get, 'function');
-        assert.strictEqual(typeof core.caches.local.set, 'function');
-    });
 
     it('Should be an instance of core.Unit', function (done) {
         var core = new Core();
@@ -29,7 +21,6 @@ describe('core/init', function () {
             assert.ok(core.getUnit('foo') instanceof core.Unit);
             done();
         });
-
     });
 
     it('Should have Object params property', function (done) {
@@ -65,6 +56,57 @@ describe('core/init', function () {
             var unit = core.getUnit('foo');
             assert.strictEqual(typeof unit.maxAge, 'number');
             assert.strictEqual(unit.maxAge, 0);
+            done();
+        });
+    });
+
+    it('Should fail initialization if dependency is undefined', function (done) {
+        var core = new Core();
+
+        core.unit({
+            base: 0,
+            name: 'foo',
+            deps: ['bar']
+        });
+
+        core.ready().done(null, function (err) {
+            assert.ok(err);
+            done();
+        });
+    });
+
+    it('Should fail initialization one of deps is self', function (done) {
+        var core = new Core();
+
+        core.unit({
+            base: 0,
+            name: 'foo',
+            deps: ['foo']
+        });
+
+        core.ready().done(null, function (err) {
+            assert.ok(err);
+            done();
+        });
+    });
+
+    it('Should fail initialization if recursive deps found', function (done) {
+        var core = new Core();
+
+        core.unit({
+            base: 0,
+            name: 'foo',
+            deps: ['bar']
+        });
+
+        core.unit({
+            base: 0,
+            name: 'bar',
+            deps: ['foo']
+        });
+
+        core.ready().done(null, function (err) {
+            assert.ok(err);
             done();
         });
     });
@@ -137,10 +179,150 @@ describe('core/init', function () {
                 done();
             });
         });
+
+        it('Should add mixins deps', function (done) {
+            var core = new Core();
+
+            function Mix0() {}
+            function Mix1() {}
+
+            core.unit({
+                base: 0,
+                name: 'a'
+            });
+
+            core.unit({
+                base: 0,
+                name: 'b'
+            });
+
+            core.unit({
+                base: 0,
+                name: 'c'
+            });
+
+            core.unit({
+                base: 0,
+                name: 'd'
+            });
+
+            core.unit({
+                base: 0,
+                name: 'e'
+            });
+
+            Mix0.prototype.deps = ['c', 'd'];
+            Mix1.prototype.deps = ['e'];
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                mixins: [null, Mix0, {}, null],
+                deps: ['a']
+            });
+
+            core.unit({
+                base: 'foo',
+                name: 'bar',
+                mixins: [Mix1],
+                deps: ['b'],
+                __constructor: function () {
+                    this.__base();
+                    assert.deepEqual(this.deps, ['a', 'c', 'd', 'b', 'e']);
+                    done();
+                }
+            });
+
+            core.ready();
+        });
+
+        it('Should support deps as no-array', function (done) {
+            var core = new Core();
+
+            core.unit({
+                base: 0,
+                name: 'base',
+                deps: 'bar'
+            });
+
+            core.unit({
+                base: 'base',
+                name: 'foo',
+                deps: 'baz',
+                main: function (track, context) {
+                    assert.strictEqual(context.result.get('bar'), 'baz');
+                    assert.strictEqual(context.result.get('baz'), 'zot');
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function () {
+                    return 'baz';
+                }
+            });
+
+            core.unit({
+                name: 'baz',
+                main: function () {
+                    return 'zot';
+                }
+            });
+
+            core.ready().done(function () {
+                new Track(core, logger).eject('foo').done(function (res) {
+                    assert.strictEqual(res, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should automatically add base deps', function (done) {
+            var core = new Core();
+
+            core.unit({
+                base: 0,
+                name: 'base',
+                deps: ['bar']
+            });
+
+            core.unit({
+                base: 'base',
+                name: 'foo',
+                deps: ['baz'],
+                main: function (track, context) {
+                    assert.strictEqual(context.result.get('bar'), 'baz');
+                    assert.strictEqual(context.result.get('baz'), 'zot');
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function () {
+                    return 'baz';
+                }
+            });
+
+            core.unit({
+                name: 'baz',
+                main: function () {
+                    return 'zot';
+                }
+            });
+
+            core.ready().done(function () {
+                new Track(core, logger).eject('foo').done(function (res) {
+                    assert.strictEqual(res, 42);
+                    done();
+                });
+            });
+        });
+
     });
 
     describe('unit.createContext()', function () {
-        //  TODO TESTS
         it('Should have createContext method', function (done) {
             var core = new Core();
             core.unit({
@@ -169,7 +351,39 @@ describe('core/init', function () {
                 assert.notStrictEqual(context, track);
                 done();
             });
+        });
 
+        it('Should mix unit, track and local arguments', function (done) {
+            var core = new Core();
+            var track = new Track(core, logger);
+
+            track.params = {
+                bar: 'bar1',
+                baz: 'baz1'
+            };
+
+            core.unit({
+                name: 'foo',
+                params: {
+                    foo: 'foo',
+                    bar: 'bar',
+                    baz: 'baz'
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var context = unit.createContext(track, {
+                    baz: 'baz2'
+                });
+
+                assert.deepEqual(context.params, {
+                    foo: 'foo',
+                    bar: 'bar1',
+                    baz: 'baz2'
+                });
+                done();
+            });
         });
     });
 
@@ -187,7 +401,7 @@ describe('core/init', function () {
             });
         });
 
-        it('Should return empty string by default', function (done) {
+        it('Should return default key by default', function (done) {
             var core = new Core();
             var track = new Track(core, logger);
 
@@ -198,7 +412,7 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var context = unit.createContext(track);
-                assert.strictEqual(unit.hashArgs(track, context), '');
+                assert.strictEqual(unit.hashArgs(track, context), 'none');
                 done();
             });
         });
@@ -218,7 +432,7 @@ describe('core/init', function () {
             });
         });
 
-        it('Should call .main() method', function (done) {
+        it('Should call unit.main() method', function (done) {
             var core = new Core();
             var track = new Track(core, logger);
 
@@ -231,169 +445,11 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track)).done(function (res) {
                     assert.strictEqual(res.result, 42);
                     done();
                 });
             });
-        });
-
-        it('Should support cache', function (done) {
-            var i = 0;
-            var core = new Core();
-            var track = new Track(core, logger);
-
-            core.unit({
-                name: 'foo',
-                maxAge: 0.05,
-                hashArgs: function () {
-                    return 'bar';
-                },
-                main: function () {
-                    i += 1;
-                    return i;
-                }
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
-                    assert.strictEqual(res.result, 1);
-                    assert.strictEqual(res.memKey, 'foo-bar-');
-
-                    unit.call(track, unit.createContext(track), function (err, res) {
-                        assert.ok(!err);
-                        assert.strictEqual(res.result, 1);
-                        assert.strictEqual(res.memKey, 'foo-bar-');
-
-                        setTimeout(function () {
-                            unit.call(track, unit.createContext(track), function (err, res) {
-                                assert.ok(!err);
-                                assert.strictEqual(res.result, 2);
-                                assert.strictEqual(res.memKey, 'foo-bar-');
-
-                                done();
-                            });
-                        }, 70);
-                    });
-                });
-            });
-
-        });
-
-        it('Should not use cache fetch failed', function (done) {
-            var i = 0;
-            var core = new Core();
-            var track = new Track(core, logger);
-
-            core.caches.xyz = {
-                get: function (k, fn) {
-                    setTimeout(function () {
-                        fn(new Error());
-                    }, 0);
-                },
-                set: function (k, v, ttl, fn) {
-                    setTimeout(function () {
-                        fn(new Error());
-                    }, 0);
-                }
-            };
-
-            core.unit({
-                name: 'foo',
-                cache: 'xyz',
-                maxAge: 0.05,
-                hashArgs: function () {
-                    return 'bar';
-                },
-                main: function () {
-                    i += 1;
-                    return i;
-                }
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
-                    assert.strictEqual(res.result, 1);
-                    assert.strictEqual(res.memKey, 'foo-bar-');
-
-                    unit.call(track, unit.createContext(track), function (err, res) {
-                        assert.ok(!err);
-                        assert.strictEqual(res.result, 2);
-                        assert.strictEqual(res.memKey, 'foo-bar-');
-
-                        done();
-                    });
-                });
-            });
-        });
-
-        it('Should not cache errors', function (done) {
-            var i = 0;
-            var core = new Core();
-            var track = new Track(core, logger);
-
-            core.unit({
-                name: 'foo',
-                maxAge: 0.05,
-                main: function () {
-                    i += 1;
-                    throw i;
-                }
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track), function (err) {
-                    assert.strictEqual(err, 1);
-
-                    unit.call(track, unit.createContext(track), function (err) {
-                        assert.strictEqual(err, 2);
-                        done();
-                    });
-                });
-            });
-        });
-
-        it('Should not use cache if memKey is falsy', function (done) {
-            var i = 0;
-            var core = new Core();
-            var track = new Track(core, logger);
-
-            core.unit({
-                name: 'foo',
-                _buildTag: function () {
-                    return null;
-                },
-                maxAge: 0.05,
-                main: function () {
-                    i += 1;
-                    return i;
-                }
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
-                    assert.strictEqual(res.result, 1);
-                    assert.strictEqual(res.memKey, null);
-
-                    unit.call(track, unit.createContext(track), function (err, res) {
-                        assert.ok(!err);
-                        assert.strictEqual(res.result, 2);
-                        assert.strictEqual(res.memKey, null);
-                        done();
-                    });
-                });
-            });
-
         });
 
         it('Should not return result if track was flushed', function (done) {
@@ -410,114 +466,570 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track)).done(function (res) {
                     assert.strictEqual(res, null);
                     done();
                 });
             });
-
         });
 
-        it('Should not cache if track was flushed', function (done) {
-            var i = 0;
+        it('Should support deps', function (done) {
             var core = new Core();
             var track = new Track(core, logger);
 
             core.unit({
                 name: 'foo',
-                maxAge: 0.05,
-                main: function (track) {
-                    i += 1;
-                    track._isFlushed = true;
-                    return i;
+                deps: ['bar'],
+                main: function (track, context) {
+                    assert.ok(context);
+                    assert.ok(context.errors instanceof Obus);
+                    assert.ok(context.result instanceof Obus);
+                    assert.strictEqual(typeof context.r, 'function');
+                    assert.strictEqual(typeof context.e, 'function');
+                    assert.strictEqual(context.r('bar'), 42);
+                    return 11;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function () {
+                    return 42;
                 }
             });
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
-                    assert.strictEqual(res, null);
-                    assert.strictEqual(i, 1);
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val.result, 11);
+                    done();
+                });
+            });
+        });
 
-                    unit.call(track, unit.createContext(track), function (err, res) {
-                        assert.ok(!err);
-                        assert.strictEqual(res, null);
-                        assert.strictEqual(i, 2);
-                        done();
+        it('Deps can be rejected', function (done) {
+            var core = new Core();
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar'],
+                main: function (track, context) {
+                    assert.strictEqual(context.errors.get('bar'), 'baz');
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function () {
+                    throw 'baz';
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val.result, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should support deps map', function (done) {
+            var core = new Core();
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar'],
+                depsMap: {
+                    bar: 'xyz'
+                },
+                main: function (track, context) {
+                    assert.strictEqual(context.result.get('xyz'), 'baz');
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function () {
+                    return 'baz';
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val.result, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should support static deps args', function (done) {
+            var core = new Core();
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar'],
+                depsArgs: {
+                    bar: {
+                        x: 'baz'
+                    }
+                },
+                main: function (track, context) {
+                    assert.strictEqual(context.result.get('bar'), 'baz');
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function (track, context) {
+                    return context.p('x');
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val.result, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should support deps args as function', function (done) {
+            var core = new Core();
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar'],
+                depsArgs: {
+                    bar: function (track, context) {
+                        return {
+                            x: context.p('x') + 1
+                        };
+                    }
+                },
+                main: function (track, context) {
+                    assert.strictEqual(context.result.get('bar'), 2);
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function (track, context) {
+                    return context.p('x');
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
+                unit.call(track, unit.createContext(track, {
+                    x: 1
+                })).done(function (val) {
+                    assert.strictEqual(val.result, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should not call unit if one of deps flushes track and returns', function (done) {
+            var core = new Core();
+            var foo = 0;
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar'],
+                main: function () {
+                    foo += 1;
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function (track) {
+                    track._isFlushed = true;
+                    assert.ok(track.isFlushed());
+                    return 146;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val, null);
+                    assert.strictEqual(foo, 0);
+                    done();
+                });
+            });
+        });
+
+        it('Should not call unit if one of deps flushes track and throws', function (done) {
+            var core = new Core();
+            var foo = 0;
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar'],
+                main: function () {
+                    foo += 1;
+                    return 42;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                main: function (track) {
+                    track._isFlushed = true;
+                    assert.ok(track.isFlushed());
+                    throw 146;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val, null);
+                    assert.strictEqual(foo, 0);
+                    done();
+                });
+            });
+        });
+
+    });
+
+    describe('Cache strategy', function () {
+        var Cache = require('../core/cache/lru-dict-ttl-async');
+        function getCachingCore() {
+            var core = new Core();
+            core.caches.local = new Cache();
+            return core;
+        }
+
+        it('Should provide "caches.local" property as default cache', function () {
+            var core = new Core();
+            assert.ok(core.caches);
+            assert.ok(core.caches.local);
+            assert.strictEqual(typeof core.caches.local.get, 'function');
+            assert.strictEqual(typeof core.caches.local.set, 'function');
+        });
+
+        it('Should fail initialization on unknown cache link', function (done) {
+            var core = new Core();
+            core.unit({
+                name: 'foo',
+                cache: 'bar'
+            });
+
+            core.ready().done(null, function (err) {
+                assert.ok(err);
+                done();
+            });
+        });
+
+        it('Should cache result by `argsHash` for `maxAge` time', function (done) {
+            var core = getCachingCore();
+            var spy = 0;
+
+            core.unit({
+                name: 'foo',
+                maxAge: 0.05,
+                main: function () {
+                    spy += 1;
+                    return spy;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(spy, val.result);
+
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        assert.strictEqual(spy, 1);
+                        assert.strictEqual(spy, val.result);
+
+                        setTimeout(function () {
+                            unit.call(track, unit.createContext(track)).done(function (val) {
+                                assert.strictEqual(spy, 2);
+                                assert.strictEqual(spy, val.result);
+
+                                done();
+                            });
+                        }, 60);
                     });
                 });
             });
         });
 
-        it('Should be rejected even if track was flushed', function (done) {
-            var i = 0;
-            var core = new Core();
-            var track = new Track(core, logger);
+        it('Should not cache result if the track was flushed', function (done) {
+            var core = getCachingCore();
+            var spy = 0;
 
             core.unit({
                 name: 'foo',
+                maxAge: 0.05,
                 main: function (track) {
-                    i += 1;
+                    spy += 1;
                     track._isFlushed = true;
-                    throw i;
+                    return spy;
                 }
             });
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err) {
-                    assert.strictEqual(err, 1);
-                    done();
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    track = new Track(core, logger);
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(val, null);
+
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        track = new Track(core, logger);
+                        assert.strictEqual(spy, 2);
+                        assert.strictEqual(val, null);
+                        unit.call(track, unit.createContext(track)).done(function (val) {
+                            assert.strictEqual(spy, 3);
+                            assert.strictEqual(val, null);
+                            done();
+                        });
+                    });
                 });
             });
         });
 
-        it('Should support returned promise in "main" method', function (done) {
-            var core = new Core();
-            var track = new Track(core, logger);
+        it('Should update result if dependency was updated', function (done) {
+            var core = getCachingCore();
+            var spy = 0;
 
             core.unit({
                 name: 'foo',
+                deps: ['bar'],
+                maxAge: 0.05,
                 main: function () {
-                    return vow.resolve(42);
+                    spy += 1;
+                    return spy;
                 }
+            });
+
+            core.unit({
+                name: 'bar'
             });
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, res) {
-                    assert.ok(!err);
-                    assert.strictEqual(res.result, 42);
-                    done();
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(val.result, spy);
+
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        assert.strictEqual(spy, 2);
+                        assert.strictEqual(val.result, spy);
+                        unit.call(track, unit.createContext(track)).done(function (val) {
+                            assert.strictEqual(spy, 3);
+                            assert.strictEqual(val.result, spy);
+                            done();
+                        });
+                    });
                 });
             });
-
         });
 
-        it('Should support thrown promise in "main" method', function (done) {
-            var core = new Core();
-            var track = new Track(core, logger);
+        it('Should not check cache if one of deps was rejected', function (done) {
+            var core = getCachingCore();
+            var spy = 0;
 
             core.unit({
                 name: 'foo',
+                deps: ['bar'],
+                maxAge: 0.10,
                 main: function () {
-                    throw vow.resolve(42);
+                    spy += 1;
+                    return spy;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                count: 0,
+                maxAge: 0.05,
+                main: function () {
+                    throw 'ERR'
                 }
             });
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err) {
-                    assert.strictEqual(err, 42);
-                    done();
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(val.result, spy);
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        assert.strictEqual(spy, 2);
+                        assert.strictEqual(val.result, spy);
+                        unit.call(track, unit.createContext(track)).done(function (val) {
+                            assert.strictEqual(spy, 3);
+                            assert.strictEqual(val.result, spy);
+                            done();
+                        });
+                    });
                 });
             });
+        });
 
+        it('Should update result if cache fetch failed', function (done) {
+            var core = new Core();
+            var spy = 0;
+
+            core.caches.local = {
+                get: function (k, fn) {
+                    setTimeout(function () {
+                        fn(new Error('O_O'));
+                    }, 0);
+                },
+                set: function (k, v, ttl, fn) {
+                    setTimeout(function () {
+                        fn(null, 'OK');
+                    }, 0);
+                }
+            };
+
+            core.unit({
+                name: 'foo',
+                maxAge: 0.10,
+                main: function () {
+                    spy += 1;
+                    return spy;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(val.result, spy);
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        assert.strictEqual(spy, 2);
+                        assert.strictEqual(val.result, spy);
+                        unit.call(track, unit.createContext(track)).done(function (val) {
+                            assert.strictEqual(spy, 3);
+                            assert.strictEqual(val.result, spy);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('Should ignore cache setting fails', function (done) {
+            var core = new Core();
+            var spy = 0;
+
+            core.caches.local = {
+                get: function (k, fn) {
+                    setTimeout(function () {
+                        fn(null, null);
+                    }, 0);
+                },
+                set: function (k, v, ttl, fn) {
+                    setTimeout(function () {
+                        fn(new Error());
+                    }, 0);
+                }
+            };
+
+            core.unit({
+                name: 'foo',
+                maxAge: 0.10,
+                main: function () {
+                    spy += 1;
+                    return spy;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(val.result, spy);
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        assert.strictEqual(spy, 2);
+                        assert.strictEqual(val.result, spy);
+                        unit.call(track, unit.createContext(track)).done(function (val) {
+                            assert.strictEqual(spy, 3);
+                            assert.strictEqual(val.result, spy);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('Should cache result if deps are actual', function (done) {
+            var core = getCachingCore();
+
+            core.unit({
+                name: 'foo',
+                deps: ['bar'],
+                maxAge: 0.10,
+                main: function (track, context) {
+                    return context.r('bar');
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                count: 0,
+                maxAge: 0.05,
+                main: function () {
+                    this.count += 1;
+                    return this.count;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
+                unit.call(track, unit.createContext(track)).done(function (val) {
+                    assert.strictEqual(val.result, 1);
+                    unit.call(track, unit.createContext(track)).done(function (val) {
+                        assert.strictEqual(val.result, 1);
+                        unit.call(track, unit.createContext(track)).done(function (val) {
+                            assert.strictEqual(val.result, 1);
+                            done();
+                        });
+                    });
+                });
+            });
         });
     });
 

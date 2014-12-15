@@ -8,6 +8,7 @@ var _ = require('lodash-node');
 var http = require('http');
 var proxyAddr = require('proxy-addr');
 var uniqueId = require('unique-id');
+var vow = require('vow');
 
 var STATUS_CODES = http.STATUS_CODES;
 
@@ -105,35 +106,7 @@ Server.prototype.getHandler = function () {
             logger[type]('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
         });
 
-        self.handle(req, res, logger);
-    };
-};
-
-/**
- * Creates express middleware
- *
- * @public
- * @memberOf {Server}
- * @method
- *
- * @param {String} unit
- *
- * @returns {Function}
- * */
-Server.prototype.express = function (unit) {
-    var self = this;
-
-    return function (req, res, next) {
-        var track = req._fistTrack;
-
-        if (!track) {
-            track = req._fistTrack = new Connect(self, self.logger.bind(getRequestId(req)), req, res);
-            track.params = req.params;
-        }
-
-        self.ready().then(function () {
-            self.callUnit(track, unit, null, next);
-        }, next);
+        self.handle(req, res, logger).done();
     };
 };
 
@@ -147,13 +120,12 @@ Server.prototype.handle = function (req, res, logger) {
 
     //  -1 possible tick
     if (promise.isFulfilled()) {
-        this._runTrack(req, res, logger);
-        return;
+        return this._runTrack(req, res, logger);
     }
 
     //  wait for init
-    promise.done(function () {
-        this._runTrack(req, res, logger);
+    return promise.then(function () {
+        return this._runTrack(req, res, logger);
     }, this);
 };
 
@@ -173,7 +145,7 @@ Server.prototype._runTrack = function (req, res, logger) {
         logger.warn('There is no %s handlers', verb);
         res.statusCode = 501;
         res.end(STATUS_CODES[501]);
-        return;
+        return vow.resolve();
     }
 
     matches = router.matchAll(verb, path);
@@ -183,8 +155,7 @@ Server.prototype._runTrack = function (req, res, logger) {
         res.on('close', function () {
             track._isFlushed = true;
         });
-        this._nextRun(track, matches, 0);
-        return;
+        return this._nextRun(track, matches, 0);
     }
 
     matches = router.matchVerbs(path);
@@ -199,6 +170,8 @@ Server.prototype._runTrack = function (req, res, logger) {
         res.statusCode = 404;
         res.end(STATUS_CODES[404]);
     }
+
+    return vow.resolve();
 };
 
 /**
@@ -208,12 +181,11 @@ Server.prototype._runTrack = function (req, res, logger) {
  * */
 Server.prototype._nextRun = function (track, matches, pos) {
     var match;
-    var self = this;
 
     if (pos === matches.length) {
         track.logger.warn('No one controller did responded');
         track.status(404).send();
-        return;
+        return void 0;
     }
 
     match = matches[pos];
@@ -222,20 +194,19 @@ Server.prototype._nextRun = function (track, matches, pos) {
     track.logger.note('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
 
     /** @this {Server} */
-    this.callUnit(track, match.data.unit, null, function (err) {
+    return this.callUnit(track, match.data.unit).then(function () {
         if (track.wasSent()) {
-            return;
-        }
-
-        if (arguments.length < 2) {
-            track.status(500).send(err);
-            return;
+            return void 0;
         }
 
         track.logger.note('The "%(data.unit)s" controller did not responded', match);
 
-        self._nextRun(track, matches, pos + 1);
-    });
+        return this._nextRun(track, matches, pos + 1);
+    }, function (err) {
+        if (!track.wasSent()) {
+            track.status(500).send(err);
+        }
+    }, this);
 };
 
 /**
