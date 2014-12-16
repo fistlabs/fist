@@ -308,7 +308,7 @@ Core.prototype._installPlugin = function (func) {
 function createInstaller(moduleName, settings) {
     return function (agent) {
         if (_.has(agent._installed, moduleName)) {
-            agent.logger.warn('The plugin %s has already installed, skipping', moduleName);
+            agent.logger.debug('The plugin %s has already installed, skipping', moduleName);
             return;
         }
 
