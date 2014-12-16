@@ -208,6 +208,20 @@ describe('core/core', function () {
                 done();
             });
         });
+
+        it('Should install plugins in right order', function (done) {
+            var core = new Core();
+            core.install(path.join(__dirname, 'fixtures/plug/plugin-tree/index.js'));
+            core.ready().done(function () {
+                assert.deepEqual(core.order, [
+                    1,
+                    'plug1',
+                    'sub',
+                    'plug2'
+                ]);
+                done();
+            });
+        });
     });
 
     describe('core.unit()', function () {

@@ -279,8 +279,30 @@ Core.prototype.install = function (moduleName, settings) {
  * @returns {vow.Promise}
  * */
 Core.prototype._getReady = function () {
-    return shiftPlugins.call(this, vow.resolve()).
-        then(createUnits, this);
+    return this._installPlugin(function () {}).then(createUnits, this);
+};
+
+/**
+ * @protected
+ * @memberOf {Core}
+ * @method
+ *
+ * @param {Function} func
+ *
+ * @returns {vow.Promise}
+ * */
+Core.prototype._installPlugin = function (func) {
+    return callPlugin.call(this, func).then(function () {
+        //  install children plugins
+        var plugs = this._plugs;
+        this._plugs = [];
+        return _.reduce(plugs, function (promise, func) {
+            return promise.then(function () {
+                return this._installPlugin(func);
+            }, this);
+        }, vow.resolve(), this);
+    }, this);
+
 };
 
 function createInstaller(moduleName, settings) {
@@ -300,17 +322,6 @@ function createInstaller(moduleName, settings) {
             agent.plugin(require(moduleName));
         }
     };
-}
-
-function shiftPlugins(promise) {
-    return promise.then(function () {
-        //  plugins can install other plugins
-        if (!_.size(this._plugs)) {
-            return void 0;
-        }
-
-        return shiftPlugins.call(this, callPlugin.call(this, this._plugs.shift()));
-    }, this);
 }
 
 function callPlugin(func) {
