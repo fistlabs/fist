@@ -354,11 +354,13 @@ function callPlugin(func) {
 }
 
 function createUnits() {
+    Object.freeze(this._decls);
     return _.reduce(this._decls, function (promise, decl) {
         return promise.then(function () {
             return createUnitClass.call(this, decl);
         }, this);
     }, vow.resolve(), this).then(function () {
+        Object.freeze(this._class);
         _.forOwn(this._class, function (UnitClass) {
             var name = UnitClass.prototype.name;
 
@@ -367,6 +369,7 @@ function createUnits() {
             }
 
         }, this);
+        Object.freeze(this._units);
     }, this);
 }
 

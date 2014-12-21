@@ -62,47 +62,46 @@ function init(agent) {
         this._cache = agent.caches[this.cache];
 
         /**
-         * @protected
+         * @public
          * @memberOf {Unit}
          * @property
          * @type {Object}
          * */
-        this._deps = _.uniq(this.deps);
+        this.deps = _.uniq(this.deps);
+
+        Object.freeze(this.deps);
 
         /**
-         * @protected
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
+         * @this {Unit}
          * */
-        this._depsNames = {};
-
-        _.forEach(this._deps, function (name) {
-            this._depsNames[name] = _.has(this.depsMap, name) ?
-                this.depsMap[name] : name;
-        }, this);
-
-        /**
-         * @protected
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        this._depsArgs = {};
-
-        _.forEach(this._deps, function (name) {
-            if (_.has(this.depsArgs, name)) {
-                if (_.isFunction(this.depsArgs[name])) {
-                    this._depsArgs[name] = this.depsArgs[name];
-                } else {
-                    this._depsArgs[name] = function () {
-                        return this.depsArgs[name];
-                    };
-                }
+        this.depsMap = _.reduce(this.deps, function (depsMap, name) {
+            if (_.has(this.depsMap, name)) {
+                depsMap[name] = this.depsMap[name];
             } else {
-                this._depsArgs[name] = function () {};
+                depsMap[name] = name;
             }
-        }, this);
+
+            return depsMap;
+        }, {}, this);
+
+        Object.freeze(this.depsMap);
+
+        /**
+         * @this {Unit}
+         * */
+        this.depsArgs = _.reduce(this.deps, function (depsArgs, name) {
+            var args = this.depsArgs[name];
+            if (_.isFunction(args)) {
+                depsArgs[name] = args;
+            } else {
+                depsArgs[name] = function () {
+                    return args;
+                };
+            }
+            return depsArgs;
+        }, {}, this);
+
+        Object.freeze(this.depsArgs);
     }
 
     Unit.prototype = {
@@ -322,8 +321,8 @@ function init(agent) {
 
     function fetch(self, track, context) {
         var dDepsStart = new Date();
-        var deps = _.map(self._deps, function (name) {
-            var args = self._depsArgs[name].call(self, track, context);
+        var deps = _.map(self.deps, function (name) {
+            var args = self.depsArgs[name].call(self, track, context);
             return agent.callUnit(track, name, args);
         });
 
@@ -338,22 +337,22 @@ function init(agent) {
             }
 
             _.forEach(promises, function (promise, i) {
-                var res = promise.valueOf();
-                var name = self._depsNames[self._deps[i]];
+                var value = promise.valueOf();
+                var name = self.depsMap[self.deps[i]];
 
                 if (promise.isRejected()) {
                     context.skipCache = true;
-                    Obus.add(context.errors, name, res);
+                    Obus.add(context.errors, name, value);
                 } else {
-                    if (res.updated) {
+                    if (value.updated) {
                         context.needUpdate = true;
                     }
-                    context.keys[i] = res.argsHash;
-                    Obus.add(context.result, name, res.result);
+                    context.keys[i] = value.argsHash;
+                    Obus.add(context.result, name, value.result);
                 }
             });
 
-            context.logger.debug('Deps %j resolved in %dms', self._deps, new Date() - dDepsStart);
+            context.logger.debug('Deps %j resolved in %dms', self.deps, new Date() - dDepsStart);
 
             return cache(self, track, context);
         });
