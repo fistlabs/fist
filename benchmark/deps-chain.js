@@ -11,6 +11,8 @@ var Track = require('../core/track');
 
 var app = new Core();
 var f = require('util').format;
+var uniqueId = require('unique-id');
+var size = SIZE;
 
 function noop() {
     return this.name;
@@ -18,7 +20,7 @@ function noop() {
 
 Benchmark.options.minSamples = 100;
 
-console.log('Crazy deps chain, just for speed up debugging');
+console.log('Crazy deps chain, just for performance debugging');
 
 app.logger.conf({
     logLevel: 'NOTSET'
@@ -26,28 +28,32 @@ app.logger.conf({
 
 app.unit({
     base: 0,
-    name: f('unit_%s', SIZE),
-    deps: [f('unit_%s', SIZE - 1), f('unit_%s', SIZE - 2)],
+    name: f('unit_%s', size),
+    deps: [f('unit_%s', size - 1), f('unit_%s', size - 2)],
     main: noop
+    // ,
+    // maxAge: 100
 });
 
-SIZE -= 1;
+size -= 1;
 
-while (SIZE) {
+while (size) {
     app.unit({
         base: 0,
-        name: f('unit_%s', SIZE),
-        deps: SIZE < 2 ?
+        name: f('unit_%s', size),
+        deps: size < 2 ?
             [] :
-            SIZE < 3 ?
-                [f('unit_%s', SIZE - 1)] :
+            size < 3 ?
+                [f('unit_%s', size - 1)] :
                 [
-                    f('unit_%s', SIZE - 1),
-                    f('unit_%s', SIZE - 2)
+                    f('unit_%s', size - 1),
+                    f('unit_%s', size - 2)
                 ],
         main: noop
+        // ,
+        // maxAge: 100
     });
-    SIZE -= 1;
+    size -= 1;
 }
 
 var suite = new Suite().
@@ -55,12 +61,20 @@ var suite = new Suite().
         console.log(String(e.target));
     }).
     add('test', function (defer) {
-        app.callUnit(new Track(app, app.logger.bind('foo')), 'unit_40', null, function () {
+        run(function () {
             defer.resolve();
         });
     }, {
         defer: true
     });
+
+function run(done) {
+    var logger = app.logger.bind(uniqueId());
+    var track = new Track(app, logger);
+    app.callUnit(track, 'unit_40', null, function () {
+        done();
+    });
+}
 
 app.ready().done(function () {
     suite.run({
