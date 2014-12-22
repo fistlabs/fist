@@ -2,7 +2,7 @@
 
 var Context = /** @type Context */ require('./context');
 var FistError = /** @type FistError */ require('./fist-error');
-var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('./cache/lru-dict-ttl-async');
+var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('lru-dict/core/lru-dict-ttl-async');
 var Obus = /** @type Obus */ require('obus');
 
 var _ = require('lodash-node');
@@ -62,47 +62,46 @@ function init(agent) {
         this._cache = agent.caches[this.cache];
 
         /**
-         * @protected
+         * @public
          * @memberOf {Unit}
          * @property
          * @type {Object}
          * */
-        this._deps = _.uniq(this.deps);
+        this.deps = _.uniq(this.deps);
+
+        Object.freeze(this.deps);
 
         /**
-         * @protected
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
+         * @this {Unit}
          * */
-        this._depsNames = {};
-
-        _.forEach(this._deps, function (name) {
-            this._depsNames[name] = _.has(this.depsMap, name) ?
-                this.depsMap[name] : name;
-        }, this);
-
-        /**
-         * @protected
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        this._depsArgs = {};
-
-        _.forEach(this._deps, function (name) {
-            if (_.has(this.depsArgs, name)) {
-                if (_.isFunction(this.depsArgs[name])) {
-                    this._depsArgs[name] = this.depsArgs[name];
-                } else {
-                    this._depsArgs[name] = function () {
-                        return this.depsArgs[name];
-                    };
-                }
+        this.depsMap = _.reduce(this.deps, function (depsMap, name) {
+            if (_.has(this.depsMap, name)) {
+                depsMap[name] = this.depsMap[name];
             } else {
-                this._depsArgs[name] = function () {};
+                depsMap[name] = name;
             }
-        }, this);
+
+            return depsMap;
+        }, {}, this);
+
+        Object.freeze(this.depsMap);
+
+        /**
+         * @this {Unit}
+         * */
+        this.depsArgs = _.reduce(this.deps, function (depsArgs, name) {
+            var args = this.depsArgs[name];
+            if (_.isFunction(args)) {
+                depsArgs[name] = args;
+            } else {
+                depsArgs[name] = function () {
+                    return args;
+                };
+            }
+            return depsArgs;
+        }, {}, this);
+
+        Object.freeze(this.depsArgs);
     }
 
     Unit.prototype = {
@@ -321,42 +320,73 @@ function init(agent) {
     }
 
     function fetch(self, track, context) {
-        var dDepsStart = new Date();
-        var deps = _.map(self._deps, function (name) {
-            var args = self._depsArgs[name].call(self, track, context);
-            return agent.callUnit(track, name, args);
-        });
+        var dDepsStart;
+        var defer;
+        var deps = self.deps;
+        var i;
+        var l;
+        var remaining = l = self.deps.length;
 
         context.keys = new Array(deps.length);
         context.skipCache = false;
         context.needUpdate = false;
 
-        return vow.allResolved(deps).then(function (promises) {
-            if (track.isFlushed()) {
-                context.logger.debug('The track was flushed by deps, skip invocation');
-                return null;
-            }
+        if (remaining === 0) {
+            return cache(self, track, context);
+        }
 
-            _.forEach(promises, function (promise, i) {
-                var res = promise.valueOf();
-                var name = self._depsNames[self._deps[i]];
+        dDepsStart = new Date();
+        defer = vow.defer();
+
+        function fetchDep(i) {
+            var name = deps[i];
+            var args = self.depsArgs[name].call(self, track, context);
+            var promise = agent.callUnit(track, name, args);
+
+            function onPromiseResolved(promise) {
+                var value;
+                var path;
+
+                if (track.isFlushed()) {
+                    context.logger.debug('The track was flushed by deps, skip invocation');
+                    defer.resolve(null);
+                    return;
+                }
+
+                value = promise.valueOf();
+                path = self.depsMap[name];
 
                 if (promise.isRejected()) {
                     context.skipCache = true;
-                    Obus.add(context.errors, name, res);
+                    Obus.add(context.errors, path, value);
                 } else {
-                    if (res.updated) {
+                    if (value.updated) {
                         context.needUpdate = true;
                     }
-                    context.keys[i] = res.argsHash;
-                    Obus.add(context.result, name, res.result);
+                    context.keys[i] = value.argsHash;
+                    Obus.add(context.result, path, value.result);
                 }
-            });
 
-            context.logger.debug('Deps %j resolved in %dms', self._deps, new Date() - dDepsStart);
+                remaining -= 1;
 
-            return cache(self, track, context);
-        });
+                if (remaining === 0) {
+                    context.logger.debug('Deps %j resolved in %dms', deps, new Date() - dDepsStart);
+                    defer.resolve(cache(self, track, context));
+                }
+            }
+
+            if (promise.isResolved()) {
+                onPromiseResolved(promise);
+            } else {
+                promise.always(onPromiseResolved);
+            }
+        }
+
+        for (i = 0; i < l; i += 1) {
+            fetchDep(i);
+        }
+
+        return defer.promise();
     }
 
     /**

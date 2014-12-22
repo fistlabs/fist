@@ -7,6 +7,7 @@
         "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
     ],
     "dependencies": {
+        "lru-dict": "0.0.1",
         "proxy-addr": "1.0.4",
         "asker": "0.6.0",
         "raw-body": "1.3.1",
