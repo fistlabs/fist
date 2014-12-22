@@ -716,7 +716,7 @@ describe('core/init', function () {
     });
 
     describe('Cache strategy', function () {
-        var Cache = require('../core/cache/lru-dict-ttl-async');
+        var Cache = require('lru-dict/core//lru-dict-ttl-async');
         function getCachingCore() {
             var core = new Core();
             core.caches.local = new Cache();
