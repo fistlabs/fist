@@ -45,9 +45,7 @@ while (SIZE) {
                     f('unit_%s', SIZE - 1),
                     f('unit_%s', SIZE - 2)
                 ],
-        main: noop,
-        maxAge: 100,
-        identify: noop
+        main: noop
     });
     SIZE -= 1;
 }
