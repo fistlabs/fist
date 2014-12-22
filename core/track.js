@@ -104,7 +104,7 @@ Track.prototype.invoke = function (unit, args, done) {
         return;
     }
 
-    unit.call(this, context, function (err, res) {
+    unit.call(this, context, function (err, val) {
         var i = 0;
         var l = calls.onOk.length;
 
@@ -117,7 +117,7 @@ Track.prototype.invoke = function (unit, args, done) {
             }
         } else {
             for (; i < l; i += 1) {
-                calls.onOk[i](null, res);
+                calls.onOk[i](null, val);
             }
         }
     });

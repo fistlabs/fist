@@ -238,9 +238,30 @@ function init(agent) {
          * @returns {Object}
          * */
         createContext: function (track, args) {
-            var context = new Context(track.logger.bind(this.name));
-            context.params = _.extend({}, this.params, track.params, args);
+            /*eslint complexity: 0*/
+            var context = new Context(track.logger.bind(/** @type {String} */ this.name));
+            var k;
+
+            for (k in this.params) {
+                if (hasProperty.call(this.params, k)) {
+                    context.params[k] = this.params[k];
+                }
+            }
+
+            for (k in track.params) {
+                if (hasProperty.call(track.params, k)) {
+                    context.params[k] = track.params[k];
+                }
+            }
+
+            for (k in args) {
+                if (hasProperty.call(args, k)) {
+                    context.params[k] = args[k];
+                }
+            }
+
             context.argsHash = this.hashArgs(track, context);
+
             return context;
         },
 
@@ -328,10 +349,10 @@ function init(agent) {
         var dDepsStart;
         var deps = self.deps;
         var i;
-        var l;
-        var remaining = l = self.deps.length;
+        var l = deps.length;
+        var remaining = l;
 
-        context.keys = new Array(deps.length);
+        context.keys = new Array(l);
         context.skipCache = false;
         context.needUpdate = false;
 
@@ -401,7 +422,7 @@ function cache(self, track, context, done) {
     memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
 
     if (context.needUpdate) {
-        set(self, track, context, argsHash, memKey, done);
+        update(self, track, context, argsHash, memKey, done);
         return;
     }
 
@@ -425,7 +446,7 @@ function cache(self, track, context, done) {
             context.logger.note('Outdated');
         }
 
-        set(self, track, context, argsHash, memKey, done);
+        update(self, track, context, argsHash, memKey, done);
     });
 }
 
@@ -466,9 +487,8 @@ function main(self, track, context, argsHash, done) {
     done(null, makeVal(res));
 }
 
-function set(self, track, context, argsHash, memKey,  done) {
+function update(self, track, context, argsHash, memKey,  done) {
     main(self, track, context, argsHash, function (err, val) {
-
         if (err) {
             done(err);
             return;
