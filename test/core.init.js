@@ -8,6 +8,7 @@ var Obus = require('obus');
 
 var assert = require('assert');
 var logger = require('loggin');
+var vow = require('vow');
 
 describe('core/init', function () {
 
@@ -445,8 +446,29 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track)).done(function (res) {
-                    assert.strictEqual(res.result, 42);
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
+                    assert.strictEqual(val.result, 42);
+                    done();
+                });
+            });
+        });
+
+        it('Should be rejected by thrown promise', function (done) {
+            var core = new Core();
+            var track = new Track(core, logger);
+
+            core.unit({
+                name: 'foo',
+                main: function () {
+                    throw vow.reject(42);
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                unit.call(track, unit.createContext(track), function (err) {
+                    assert.strictEqual(err, 42);
                     done();
                 });
             });
@@ -466,7 +488,8 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track)).done(function (res) {
+                unit.call(track, unit.createContext(track), function (err, res) {
+                    assert.strictEqual(err, null);
                     assert.strictEqual(res, null);
                     done();
                 });
@@ -500,7 +523,8 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(val.result, 11);
                     done();
                 });
@@ -530,7 +554,8 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     done();
                 });
@@ -563,7 +588,8 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     done();
                 });
@@ -598,7 +624,8 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     done();
                 });
@@ -636,9 +663,8 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track, {
-                    x: 1
-                })).done(function (val) {
+                unit.call(track, unit.createContext(track, {x: 1}), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     done();
                 });
@@ -671,7 +697,8 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.strictEqual(err, null);
                     assert.strictEqual(val, null);
                     assert.strictEqual(foo, 0);
                     done();
@@ -705,7 +732,8 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.strictEqual(err, null);
                     assert.strictEqual(val, null);
                     assert.strictEqual(foo, 0);
                     done();
@@ -761,16 +789,19 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(spy, 1);
                     assert.strictEqual(spy, val.result);
 
-                    unit.call(track, unit.createContext(track)).done(function (val) {
+                    unit.call(track, unit.createContext(track), function (err, val) {
+                        assert.ok(!err);
                         assert.strictEqual(spy, 1);
                         assert.strictEqual(spy, val.result);
 
                         setTimeout(function () {
-                            unit.call(track, unit.createContext(track)).done(function (val) {
+                            unit.call(track, unit.createContext(track), function (err, val) {
+                                assert.ok(!err);
                                 assert.strictEqual(spy, 2);
                                 assert.strictEqual(spy, val.result);
 
@@ -798,20 +829,67 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                var track = new Track(core, logger);
+                var t0 = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
-                    track = new Track(core, logger);
+                unit.call(t0, unit.createContext(t0), function (err, val) {
+                    var t1 = new Track(core, logger);
+                    assert.ok(!err);
                     assert.strictEqual(spy, 1);
                     assert.strictEqual(val, null);
 
-                    unit.call(track, unit.createContext(track)).done(function (val) {
-                        track = new Track(core, logger);
+                    unit.call(t1, unit.createContext(t1), function (err, val) {
+                        var t2 = new Track(core, logger);
+                        assert.ok(!err);
                         assert.strictEqual(spy, 2);
                         assert.strictEqual(val, null);
-                        unit.call(track, unit.createContext(track)).done(function (val) {
+                        unit.call(t2, unit.createContext(t2), function (err, val) {
+                            assert.ok(!err);
                             assert.strictEqual(spy, 3);
                             assert.strictEqual(val, null);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        it('Should cache result if all of deps was not updated', function (done) {
+            var core = getCachingCore();
+            var spy = 0;
+
+            core.unit({
+                name: 'foo',
+                deps: ['bar'],
+                maxAge: 10,
+                main: function () {
+                    spy += 1;
+                    return spy;
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                maxAge: 10
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var t0 = new Track(core, logger);
+
+                unit.call(t0, unit.createContext(t0), function (err, val) {
+                    var t1 = new Track(core, logger);
+                    assert.ok(!err);
+                    assert.strictEqual(spy, 1);
+                    assert.strictEqual(val.result, spy);
+                    unit.call(t1, unit.createContext(t1), function (err, val) {
+                        var t2 = new Track(core, logger);
+                        assert.ok(!err);
+                        assert.strictEqual(spy, 1);
+                        assert.strictEqual(val.result, spy);
+                        unit.call(t2, unit.createContext(t2), function (err, val) {
+                            assert.ok(!err);
+                            assert.strictEqual(spy, 1);
+                            assert.strictEqual(val.result, spy);
                             done();
                         });
                     });
@@ -841,16 +919,21 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(spy, 1);
                     assert.strictEqual(val.result, spy);
 
-                    unit.call(track, unit.createContext(track)).done(function (val) {
+                    unit.call(track, unit.createContext(track), function (err, val) {
+                        assert.ok(!err);
                         assert.strictEqual(spy, 2);
                         assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track)).done(function (val) {
+
+                        unit.call(track, unit.createContext(track), function (err, val) {
+                            assert.ok(!err);
                             assert.strictEqual(spy, 3);
                             assert.strictEqual(val.result, spy);
+
                             done();
                         });
                     });
@@ -885,13 +968,16 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(spy, 1);
                     assert.strictEqual(val.result, spy);
-                    unit.call(track, unit.createContext(track)).done(function (val) {
+                    unit.call(track, unit.createContext(track), function (err, val) {
+                        assert.ok(!err);
                         assert.strictEqual(spy, 2);
                         assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track)).done(function (val) {
+                        unit.call(track, unit.createContext(track), function (err, val) {
+                            assert.ok(!err);
                             assert.strictEqual(spy, 3);
                             assert.strictEqual(val.result, spy);
                             done();
@@ -931,13 +1017,16 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(spy, 1);
                     assert.strictEqual(val.result, spy);
-                    unit.call(track, unit.createContext(track)).done(function (val) {
+                    unit.call(track, unit.createContext(track), function (err, val) {
+                        assert.ok(!err);
                         assert.strictEqual(spy, 2);
                         assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track)).done(function (val) {
+                        unit.call(track, unit.createContext(track), function (err, val) {
+                            assert.ok(!err);
                             assert.strictEqual(spy, 3);
                             assert.strictEqual(val.result, spy);
                             done();
@@ -977,13 +1066,16 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(spy, 1);
                     assert.strictEqual(val.result, spy);
-                    unit.call(track, unit.createContext(track)).done(function (val) {
+                    unit.call(track, unit.createContext(track), function (err, val) {
+                        assert.ok(!err);
                         assert.strictEqual(spy, 2);
                         assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track)).done(function (val) {
+                        unit.call(track, unit.createContext(track), function (err, val) {
+                            assert.ok(!err);
                             assert.strictEqual(spy, 3);
                             assert.strictEqual(val.result, spy);
                             done();
@@ -1019,12 +1111,16 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track)).done(function (val) {
+                unit.call(track, unit.createContext(track), function (err, val) {
+                    assert.ok(!err);
                     assert.strictEqual(val.result, 1);
-                    unit.call(track, unit.createContext(track)).done(function (val) {
+                    unit.call(track, unit.createContext(track), function (err, val) {
+                        assert.ok(!err);
                         assert.strictEqual(val.result, 1);
-                        unit.call(track, unit.createContext(track)).done(function (val) {
+                        unit.call(track, unit.createContext(track), function (err, val) {
+                            assert.ok(!err);
                             assert.strictEqual(val.result, 1);
+
                             done();
                         });
                     });
@@ -1032,5 +1128,4 @@ describe('core/init', function () {
             });
         });
     });
-
 });

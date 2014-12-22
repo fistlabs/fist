@@ -177,13 +177,13 @@ function init(agent) {
          *
          * @param {Object} track
          * @param {Object} context
+         * @param {Function} done
          *
          * @returns {*}
          * */
-        call: function (track, context) {
+        call: function (track, context, done) {
             var dStartExec = new Date();
             var result;
-            var defer = vow.defer();
 
             context.logger.debug('Pending...');
 
@@ -191,27 +191,25 @@ function init(agent) {
                 var execTime = new Date() - dStartExec;
 
                 if (err) {
-                    defer.reject(err);
-
                     if (track.isFlushed()) {
                         context.logger.warn('Skip error in %dms', execTime, err);
                     } else {
                         context.logger.error('Rejected in %dms', execTime, err);
                     }
 
+                    done(err);
+
                     return;
                 }
-
-                defer.resolve(res);
 
                 if (res) {
                     context.logger.debug('Accepted in %dms', execTime);
                 } else {
                     context.logger.debug('Skip result in %dms', execTime);
                 }
-            });
 
-            return defer.promise();
+                done(null, res);
+            });
         },
 
         /**
@@ -347,11 +345,9 @@ function init(agent) {
         function fetchDep(i) {
             var name = deps[i];
             var args = self.depsArgs[name].call(self, track, context);
-            var promise = agent.callUnit(track, name, args);
+            var path = self.depsMap[name];
 
-            function onPromiseResolved(promise) {
-                var value;
-                var path;
+            agent.callUnit(track, name, args, function (err, val) {
 
                 if (track.isFlushed()) {
                     context.logger.debug('The track was flushed by deps, skip invocation');
@@ -359,18 +355,15 @@ function init(agent) {
                     return;
                 }
 
-                value = promise.valueOf();
-                path = self.depsMap[name];
-
-                if (promise.isRejected()) {
+                if (err) {
                     context.skipCache = true;
-                    Obus.add(context.errors, path, value);
+                    Obus.add(context.errors, path, err);
                 } else {
-                    if (value.updated) {
+                    if (val.updated) {
                         context.needUpdate = true;
                     }
-                    context.keys[i] = value.argsHash;
-                    Obus.add(context.result, path, value.result);
+                    context.keys[i] = val.argsHash;
+                    Obus.add(context.result, path, val.result);
                 }
 
                 remaining -= 1;
@@ -379,13 +372,7 @@ function init(agent) {
                     context.logger.debug('Deps %j resolved in %dms', deps, new Date() - dDepsStart);
                     cache(self, track, context, done);
                 }
-            }
-
-            if (promise.isResolved()) {
-                onPromiseResolved(promise);
-            } else {
-                promise.always(onPromiseResolved);
-            }
+            });
         }
 
         for (i = 0; i < l; i += 1) {
@@ -418,17 +405,17 @@ function cache(self, track, context, done) {
         return;
     }
 
-    self._cache.get(memKey, function (err, res) {
-        if (!err && res) {
+    self._cache.get(memKey, function (err, val) {
+        if (!err && val) {
             context.logger.debug('Found in cache');
 
-            res = {
-                result: res.result,
+            val = {
+                result: val.result,
                 updated: false,
-                argsHash: res.argsHash
+                argsHash: val.argsHash
             };
 
-            done(null, res);
+            done(null, val);
             return;
         }
 
@@ -443,10 +430,10 @@ function cache(self, track, context, done) {
 }
 
 function main(self, track, context, argsHash, done) {
-    var value;
+    var res;
 
     try {
-        value = self.main(track, context);
+        res = self.main(track, context);
     } catch (err) {
         if (vow.isPromise(err)) {
             vow.reject(err).fail(done);
@@ -456,7 +443,7 @@ function main(self, track, context, argsHash, done) {
         return;
     }
 
-    function success(result) {
+    function makeVal(res) {
         if (track.isFlushed()) {
             context.logger.debug('The track was flushed during execution');
             return null;
@@ -464,31 +451,31 @@ function main(self, track, context, argsHash, done) {
 
         return {
             updated: true,
-            result: result,
+            result: res,
             argsHash: argsHash
         };
     }
 
-    if (vow.isPromise(value)) {
-        vow.resolve(value).then(function (value) {
-            done(null, success(value));
+    if (vow.isPromise(res)) {
+        vow.resolve(res).then(function (res) {
+            done(null, makeVal(res));
         }, done);
         return;
     }
 
-    done(null, success(value));
+    done(null, makeVal(res));
 }
 
 function set(self, track, context, argsHash, memKey,  done) {
-    main(self, track, context, argsHash, function (err, res) {
+    main(self, track, context, argsHash, function (err, val) {
 
         if (err) {
             done(err);
             return;
         }
 
-        if (res) {
-            self._cache.set(memKey, res, self.maxAge, function (err) {
+        if (val) {
+            self._cache.set(memKey, val, self.maxAge, function (err) {
                 if (err) {
                     context.logger.warn('Failed to set cache', err);
                 } else {
@@ -497,7 +484,7 @@ function set(self, track, context, argsHash, memKey,  done) {
             });
         }
 
-        done(null, res);
+        done(null, val);
     });
 }
 

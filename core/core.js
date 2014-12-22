@@ -175,14 +175,15 @@ Core.prototype.getUnit = function (name) {
  *
  * @param {Object} track
  * @param {String} name
- * @param {Object} [args]
+ * @param {Object} args
+ * @param {Function} done
  * */
-Core.prototype.callUnit = function (track, name, args) {
+Core.prototype.callUnit = function (track, name, args, done) {
     if (hasProperty.call(this._units, name)) {
-        return track.invoke(this._units[name], args);
+        track.invoke(this._units[name], args, done);
+    } else {
+        done(new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit %j', name)));
     }
-
-    return vow.reject(new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit %j', name)));
 };
 
 /**

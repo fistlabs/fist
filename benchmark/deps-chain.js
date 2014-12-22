@@ -57,8 +57,7 @@ var suite = new Suite().
         console.log(String(e.target));
     }).
     add('test', function (defer) {
-        var track = new Track(app, app.logger.bind('foo'));
-        track.invoke(app.getUnit('unit_40')).done(function () {
+        app.callUnit(new Track(app, app.logger.bind('foo')), 'unit_40', null, function () {
             defer.resolve();
         });
     }, {
