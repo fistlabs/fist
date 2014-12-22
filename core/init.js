@@ -421,7 +421,13 @@ function cache(self, track, context, done) {
     self._cache.get(memKey, function (err, res) {
         if (!err && res) {
             context.logger.debug('Found in cache');
-            res.updated = false;
+
+            res = {
+                result: res.result,
+                updated: false,
+                argsHash: res.argsHash
+            };
+
             done(null, res);
             return;
         }
