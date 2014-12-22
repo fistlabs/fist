@@ -183,28 +183,35 @@ function init(agent) {
         call: function (track, context) {
             var dStartExec = new Date();
             var result;
+            var defer = vow.defer();
 
             context.logger.debug('Pending...');
 
-            result = fetch(this, track, context);
-
-            result.done(function (res) {
+            fetch(this, track, context, function (err, res) {
                 var execTime = new Date() - dStartExec;
+
+                if (err) {
+                    defer.reject(err);
+
+                    if (track.isFlushed()) {
+                        context.logger.warn('Skip error in %dms', execTime, err);
+                    } else {
+                        context.logger.error('Rejected in %dms', execTime, err);
+                    }
+
+                    return;
+                }
+
+                defer.resolve(res);
+
                 if (res) {
                     context.logger.debug('Accepted in %dms', execTime);
                 } else {
                     context.logger.debug('Skip result in %dms', execTime);
                 }
-            }, function (err) {
-                var execTime = new Date() - dStartExec;
-                if (track.isFlushed()) {
-                    context.logger.warn('Skip error in %dms', execTime, err);
-                } else {
-                    context.logger.error('Rejected in %dms', execTime, err);
-                }
             });
 
-            return result;
+            return defer.promise();
         },
 
         /**
@@ -319,9 +326,8 @@ function init(agent) {
         checked[Unit.prototype.name] = true;
     }
 
-    function fetch(self, track, context) {
+    function fetch(self, track, context, done) {
         var dDepsStart;
-        var defer;
         var deps = self.deps;
         var i;
         var l;
@@ -332,11 +338,11 @@ function init(agent) {
         context.needUpdate = false;
 
         if (remaining === 0) {
-            return cache(self, track, context);
+            cache(self, track, context, done);
+            return;
         }
 
         dDepsStart = new Date();
-        defer = vow.defer();
 
         function fetchDep(i) {
             var name = deps[i];
@@ -349,7 +355,7 @@ function init(agent) {
 
                 if (track.isFlushed()) {
                     context.logger.debug('The track was flushed by deps, skip invocation');
-                    defer.resolve(null);
+                    done(null, null);
                     return;
                 }
 
@@ -371,7 +377,7 @@ function init(agent) {
 
                 if (remaining === 0) {
                     context.logger.debug('Deps %j resolved in %dms', deps, new Date() - dDepsStart);
-                    defer.resolve(cache(self, track, context));
+                    cache(self, track, context, done);
                 }
             }
 
@@ -385,8 +391,6 @@ function init(agent) {
         for (i = 0; i < l; i += 1) {
             fetchDep(i);
         }
-
-        return defer.promise();
     }
 
     /**
@@ -398,41 +402,55 @@ function init(agent) {
     agent.Unit = Unit;
 }
 
-function cache(self, track, context) {
+function cache(self, track, context, done) {
     var argsHash = context.argsHash;
+    var memKey;
 
     if (!(self.maxAge > 0) || context.skipCache) {
-        return main(self, track, context, argsHash);
+        main(self, track, context, argsHash, done);
+        return;
     }
+
+    memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
 
     if (context.needUpdate) {
-        return set(self, track, context, argsHash);
+        set(self, track, context, argsHash, memKey, done);
+        return;
     }
 
-    return get(self, track, context, argsHash).always(function (promise) {
-        var value = promise.valueOf();
-
-        //  has cache
-        if (promise.isFulfilled() && value) {
+    self._cache.get(memKey, function (err, res) {
+        if (!err && res) {
             context.logger.debug('Found in cache');
-            value.updated = false;
-            return value;
+            res.updated = false;
+            done(null, res);
+            return;
         }
 
-        if (promise.isRejected()) {
-            context.logger.warn('Failed to load cache', value);
+        if (err) {
+            context.logger.warn('Failed to load cache', err);
         } else {
             context.logger.note('Outdated');
         }
 
-        return set(self, track, context, argsHash);
+        set(self, track, context, argsHash, memKey, done);
     });
 }
 
-function main(self, track, context, argsHash) {
-    return vow.invoke(function () {
-        return self.main(track, context);
-    }).then(function (result) {
+function main(self, track, context, argsHash, done) {
+    var value;
+
+    try {
+        value = self.main(track, context);
+    } catch (err) {
+        if (vow.isPromise(err)) {
+            vow.reject(err).fail(done);
+        } else {
+            done(err);
+        }
+        return;
+    }
+
+    function success(result) {
         if (track.isFlushed()) {
             context.logger.debug('The track was flushed during execution');
             return null;
@@ -443,18 +461,28 @@ function main(self, track, context, argsHash) {
             result: result,
             argsHash: argsHash
         };
-    });
+    }
+
+    if (vow.isPromise(value)) {
+        vow.resolve(value).then(function (value) {
+            done(null, success(value));
+        }, done);
+        return;
+    }
+
+    done(null, success(value));
 }
 
-function set(self, track, context, argsHash) {
-    var promise = main(self, track, context, argsHash);
+function set(self, track, context, argsHash, memKey,  done) {
+    main(self, track, context, argsHash, function (err, res) {
 
-    promise.then(function (result) {
-        var memKey;
+        if (err) {
+            done(err);
+            return;
+        }
 
-        if (result) {
-            memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
-            self._cache.set(memKey, result, self.maxAge, function (err) {
+        if (res) {
+            self._cache.set(memKey, res, self.maxAge, function (err) {
                 if (err) {
                     context.logger.warn('Failed to set cache', err);
                 } else {
@@ -462,24 +490,9 @@ function set(self, track, context, argsHash) {
                 }
             });
         }
+
+        done(null, res);
     });
-
-    return promise;
-}
-
-function get(self, track, context, argsHash) {
-    var defer = vow.defer();
-    var memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
-
-    self._cache.get(memKey, function (err, res) {
-        if (arguments.length < 2) {
-            defer.reject(err);
-        } else {
-            defer.resolve(res);
-        }
-    });
-
-    return defer.promise();
 }
 
 module.exports = init;
