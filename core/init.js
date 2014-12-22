@@ -92,7 +92,7 @@ function init(agent) {
         this.depsArgs = _.reduce(this.deps, function (depsArgs, name) {
             var args = this.depsArgs[name];
             if (_.isFunction(args)) {
-                depsArgs[name] = args;
+                depsArgs[name] = args.bind(this);
             } else {
                 depsArgs[name] = function () {
                     return args;
@@ -187,7 +187,7 @@ function init(agent) {
 
             context.logger.debug('Pending...');
 
-            fetch(this, track, context, function (err, res) {
+            fetch(this, track, context, function (err, val) {
                 var execTime = new Date() - dStartExec;
 
                 if (err) {
@@ -202,13 +202,13 @@ function init(agent) {
                     return;
                 }
 
-                if (res) {
+                if (val) {
                     context.logger.debug('Accepted in %dms', execTime);
                 } else {
                     context.logger.debug('Skip result in %dms', execTime);
                 }
 
-                done(null, res);
+                done(null, val);
             });
         },
 
@@ -218,13 +218,13 @@ function init(agent) {
          * @method
          *
          * @param {Object} track
-         * @param {Object} context
+         * @param {Object} args
          *
          * @returns {*}
          * */
-        hashArgs: function (track, context) {
+        identify: function (track, args) {
             /*eslint no-unused-vars: 0*/
-            return 'none';
+            return 'static';
         },
 
         /**
@@ -259,8 +259,6 @@ function init(agent) {
                     context.params[k] = args[k];
                 }
             }
-
-            context.argsHash = this.hashArgs(track, context);
 
             return context;
         },
@@ -365,7 +363,7 @@ function init(agent) {
 
         function fetchDep(i) {
             var name = deps[i];
-            var args = self.depsArgs[name].call(self, track, context);
+            var args = self.depsArgs[name](track, context);
             var path = self.depsMap[name];
 
             agent.callUnit(track, name, args, function (err, val) {
@@ -383,7 +381,7 @@ function init(agent) {
                     if (val.updated) {
                         context.needUpdate = true;
                     }
-                    context.keys[i] = val.argsHash;
+                    context.keys[i] = val.identity;
                     Obus.add(context.result, path, val.result);
                 }
 
@@ -411,29 +409,29 @@ function init(agent) {
 }
 
 function cache(self, track, context, done) {
-    var argsHash = context.argsHash;
-    var memKey;
+    var identity = context.identity;
+    var cacheKey;
 
     if (!(self.maxAge > 0) || context.skipCache) {
-        main(self, track, context, argsHash, done);
+        main(self, track, context, identity, done);
         return;
     }
 
-    memKey = self.name + '-' + argsHash + '-' + context.keys.join('-');
+    cacheKey = self.name + '-' + identity + '-' + context.keys.join('-');
 
     if (context.needUpdate) {
-        update(self, track, context, argsHash, memKey, done);
+        update(self, track, context, identity, cacheKey, done);
         return;
     }
 
-    self._cache.get(memKey, function (err, val) {
+    self._cache.get(cacheKey, function (err, val) {
         if (!err && val) {
             context.logger.debug('Found in cache');
 
             val = {
                 result: val.result,
                 updated: false,
-                argsHash: val.argsHash
+                identity: val.identity
             };
 
             done(null, val);
@@ -446,11 +444,11 @@ function cache(self, track, context, done) {
             context.logger.note('Outdated');
         }
 
-        update(self, track, context, argsHash, memKey, done);
+        update(self, track, context, identity, cacheKey, done);
     });
 }
 
-function main(self, track, context, argsHash, done) {
+function main(self, track, context, identity, done) {
     var res;
 
     try {
@@ -473,7 +471,7 @@ function main(self, track, context, argsHash, done) {
         return {
             updated: true,
             result: res,
-            argsHash: argsHash
+            identity: identity
         };
     }
 
@@ -487,15 +485,15 @@ function main(self, track, context, argsHash, done) {
     done(null, makeVal(res));
 }
 
-function update(self, track, context, argsHash, memKey,  done) {
-    main(self, track, context, argsHash, function (err, val) {
+function update(self, track, context, identity, cacheKey,  done) {
+    main(self, track, context, identity, function (err, val) {
         if (err) {
             done(err);
             return;
         }
 
         if (val) {
-            self._cache.set(memKey, val, self.maxAge, function (err) {
+            self._cache.set(cacheKey, val, self.maxAge, function (err) {
                 if (err) {
                     context.logger.warn('Failed to set cache', err);
                 } else {

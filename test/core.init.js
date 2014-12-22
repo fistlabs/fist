@@ -388,8 +388,8 @@ describe('core/init', function () {
         });
     });
 
-    describe('unit.hashArgs()', function () {
-        it('Should have hashArgs method', function (done) {
+    describe('unit.identify()', function () {
+        it('Should have identify method', function (done) {
             var core = new Core();
             core.unit({
                 name: 'foo'
@@ -397,7 +397,7 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
-                assert.strictEqual(typeof unit.hashArgs, 'function');
+                assert.strictEqual(typeof unit.identify, 'function');
                 done();
             });
         });
@@ -413,7 +413,7 @@ describe('core/init', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
                 var context = unit.createContext(track);
-                assert.strictEqual(unit.hashArgs(track, context), 'none');
+                assert.strictEqual(unit.identify(track, context), 'static');
                 done();
             });
         });

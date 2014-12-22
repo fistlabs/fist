@@ -92,8 +92,8 @@ describe('core/track', function () {
                     }, 10);
                     return defer.promise();
                 },
-                hashArgs: function (track, context) {
-                    return context.p('foo');
+                identify: function (track, args) {
+                    return args.foo;
                 }
             });
 

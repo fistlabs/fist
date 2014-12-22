@@ -70,15 +70,17 @@ Track.prototype.constructor = Track;
  * @param {Function} done
  * */
 Track.prototype.invoke = function (unit, args, done) {
-    var context = unit.createContext(this, args);
-    var logger = context.logger;
-    var hash = unit.name + '-' + context.argsHash;
+    var context;
+    var identity = unit.identify(this, Object(args));
+    var logger = this.logger;
+    var name = unit.name;
+    var hash = name + '-' + identity;
     var calls = this._calls;
 
-    logger.debug('Starting invocation, args %(params)j hashed as "%s"', hash, context);
+    logger.debug('Starting "%s" as "%s"', name, hash);
 
     if (hasProperty.call(calls, hash)) {
-        logger.debug('Using memorized call with %(params)j as "%s"', hash, context);
+        logger.debug('Identity "%s" found for "%s"', hash, name);
     } else {
         calls[hash] = {
             done: false,
@@ -103,6 +105,9 @@ Track.prototype.invoke = function (unit, args, done) {
     if (calls.onOk.length > 1) {
         return;
     }
+
+    context = unit.createContext(this, args);
+    context.identity = identity;
 
     unit.call(this, context, function (err, val) {
         var i = 0;

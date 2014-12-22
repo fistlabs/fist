@@ -47,7 +47,7 @@ while (SIZE) {
                 ],
         main: noop,
         maxAge: 100,
-        hashArgs: noop
+        identify: noop
     });
     SIZE -= 1;
 }
