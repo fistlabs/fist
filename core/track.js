@@ -69,7 +69,7 @@ Track.prototype.constructor = Track;
  * @param {*} args
  * @param {Function} done
  * */
-Track.prototype.invoke = function (unit, args, done) {
+Track.prototype.eject = function (unit, args, done) {
     var context;
     var identity = unit.identify(this, Object(args));
     var logger = this.logger;
@@ -138,7 +138,7 @@ Track.prototype.invoke = function (unit, args, done) {
  *
  * @returns {vow.Promise}
  * */
-Track.prototype.eject = function (name, args) {
+Track.prototype.invoke = function (name, args) {
     var defer = vow.defer();
 
     this._agent.callUnit(this, name, args, function (err, res) {

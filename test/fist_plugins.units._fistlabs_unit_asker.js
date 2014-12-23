@@ -73,7 +73,7 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('docs', {
+            track.invoke('docs', {
                 type: 'index'
             }).done(function (res) {
                 assert.deepEqual(res, {
@@ -110,7 +110,7 @@ describe('fist_plugins/units/_fistlabs_unit_asker', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('upload', {
+            track.invoke('upload', {
                 foo: 'bar'
             }).done(function (res) {
                 assert.strictEqual(res.foo, 'bar');

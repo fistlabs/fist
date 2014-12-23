@@ -32,7 +32,7 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('serial').done(function (res) {
+            track.invoke('serial').done(function (res) {
                 assert.strictEqual(res, 2);
                 done();
             });
@@ -57,7 +57,7 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('serial').done(function (res) {
+            track.invoke('serial').done(function (res) {
                 assert.strictEqual(res, null);
                 done();
             });
@@ -85,7 +85,7 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('serial').done(function (res) {
+            track.invoke('serial').done(function (res) {
                 assert.strictEqual(res, 42);
                 done();
             });
@@ -109,7 +109,7 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('serial').done(null, function (err) {
+            track.invoke('serial').done(null, function (err) {
                 assert.strictEqual(err, 1);
                 done();
             });
@@ -134,7 +134,7 @@ describe('fist_plugins/units/_fistlabs_unit_serial', function () {
         });
 
         agent.ready().done(function () {
-            track.eject('serial').done(function (res) {
+            track.invoke('serial').done(function (res) {
                 assert.strictEqual(res, 1);
                 done();
             });

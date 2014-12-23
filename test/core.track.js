@@ -21,7 +21,7 @@ describe('core/track', function () {
         assert.strictEqual(track.logger, logger);
     });
 
-    describe('track.invoke()', function () {
+    describe('track.eject()', function () {
         it('Should invoke unit', function (done) {
             var core = new Core();
             var track = new Track(core, logger);
@@ -36,7 +36,7 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.invoke(unit, null, function (err, val) {
+                track.eject(unit, null, function (err, val) {
                     assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     done();
@@ -60,12 +60,12 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.invoke(unit, null, function (err, val) {
+                track.eject(unit, null, function (err, val) {
                     assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     assert.strictEqual(i, 1);
 
-                    track.invoke(unit, null, function (err, val) {
+                    track.eject(unit, null, function (err, val) {
                         assert.ok(!err);
                         assert.strictEqual(val.result, 42);
                         assert.strictEqual(i, 1);
@@ -104,20 +104,20 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.invoke(unit, args, function (err, val) {
+                track.eject(unit, args, function (err, val) {
                     assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     assert.strictEqual(i, 1);
                     j += 1;
                 });
 
-                track.invoke(unit, args, function (err, val) {
+                track.eject(unit, args, function (err, val) {
                     assert.ok(!err);
                     assert.strictEqual(val.result, 42);
                     assert.strictEqual(i, 1);
                     assert.strictEqual(j, 1);
 
-                    track.invoke(unit, args, function (err, val) {
+                    track.eject(unit, args, function (err, val) {
                         assert.ok(!err);
                         assert.strictEqual(val.result, 42);
                         assert.strictEqual(i, 1);
@@ -130,7 +130,7 @@ describe('core/track', function () {
         });
     });
 
-    describe('track.eject()', function () {
+    describe('track.invoke()', function () {
         it('Should call unit by name and return only result', function (done) {
             var core = new Core();
             core.unit({
@@ -142,7 +142,7 @@ describe('core/track', function () {
 
             core.ready().done(function () {
                 var track = new Track(core, logger);
-                track.eject('foo').done(function (res) {
+                track.invoke('foo').done(function (res) {
                     assert.strictEqual(res, 42);
                     done();
                 });
@@ -160,7 +160,7 @@ describe('core/track', function () {
 
             core.ready().done(function () {
                 var track = new Track(core, logger);
-                track.eject('foo').done(null, function (err) {
+                track.invoke('foo').done(null, function (err) {
                     assert.strictEqual(err, 42);
                     done();
                 });

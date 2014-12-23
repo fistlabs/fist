@@ -180,7 +180,7 @@ Core.prototype.getUnit = function (name) {
  * */
 Core.prototype.callUnit = function (track, name, args, done) {
     if (hasProperty.call(this._units, name)) {
-        track.invoke(this._units[name], args, done);
+        track.eject(this._units[name], args, done);
     } else {
         done(new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit %j', name)));
     }
