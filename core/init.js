@@ -449,20 +449,8 @@ function cache(self, track, context, done) {
 }
 
 function main(self, track, context, identity, done) {
-    var res;
 
-    try {
-        res = self.main(track, context);
-    } catch (err) {
-        if (vow.isPromise(err)) {
-            vow.reject(err).fail(done);
-        } else {
-            done(err);
-        }
-        return;
-    }
-
-    function makeVal(res) {
+    function makeVal(result) {
         if (track.isFlushed()) {
             context.logger.debug('The track was flushed during execution');
             return null;
@@ -470,19 +458,16 @@ function main(self, track, context, identity, done) {
 
         return {
             updated: true,
-            result: res,
+            result: result,
             identity: identity
         };
     }
 
-    if (vow.isPromise(res)) {
-        vow.resolve(res).then(function (res) {
-            done(null, makeVal(res));
-        }, done);
-        return;
-    }
-
-    done(null, makeVal(res));
+    vow.invoke(function () {
+        return self.main(track, context);
+    }).then(function (res) {
+        done(null, makeVal(res));
+    }, done);
 }
 
 function update(self, track, context, identity, cacheKey,  done) {
