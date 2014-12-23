@@ -1,6 +1,7 @@
 'use strict';
 
 var hasProperty = Object.prototype.hasOwnProperty;
+var vow = require('vow');
 
 /**
  * @class Track
@@ -65,23 +66,66 @@ Track.prototype.constructor = Track;
  * @method
  *
  * @param {Unit} unit
- * @param {*} [args]
+ * @param {*} args
+ * @param {Function} done
  * */
-Track.prototype.invoke = function (unit, args) {
-    var context = unit.createContext(this, args);
-    var logger = context.logger;
-    var hash = unit.name + '-' + context.argsHash;
+Track.prototype.invoke = function (unit, args, done) {
+    var context;
+    var identity = unit.identify(this, Object(args));
+    var logger = this.logger;
+    var name = unit.name;
+    var hash = name + '-' + identity;
     var calls = this._calls;
 
-    logger.debug('Starting invocation, args %(params)j hashed as "%s"', hash, context);
+    logger.debug('Starting "%s" as "%s"', name, hash);
 
     if (hasProperty.call(calls, hash)) {
-        logger.debug('Using memorized call with %(params)j as "%s"', hash, context);
+        logger.debug('Identity "%s" found for "%s"', hash, name);
     } else {
-        calls[hash] = unit.call(this, context);
+        calls[hash] = {
+            done: false,
+            onOk: [],
+            args: []
+        };
     }
 
-    return calls[hash];
+    calls = calls[hash];
+
+    if (calls.done) {
+        if (calls.args[0]) {
+            done(calls.args[0]);
+        } else {
+            done(calls.args[0], calls.args[1]);
+        }
+        return;
+    }
+
+    calls.onOk.push(done);
+
+    if (calls.onOk.length > 1) {
+        return;
+    }
+
+    context = unit.createContext(this, args);
+    context.identity = identity;
+
+    unit.call(this, context, function (err, val) {
+        var i = 0;
+        var l = calls.onOk.length;
+
+        calls.done = true;
+        calls.args = arguments;
+
+        if (err) {
+            for (; i < l; i += 1) {
+                calls.onOk[i](err);
+            }
+        } else {
+            for (; i < l; i += 1) {
+                calls.onOk[i](null, val);
+            }
+        }
+    });
 };
 
 /**
@@ -95,9 +139,17 @@ Track.prototype.invoke = function (unit, args) {
  * @returns {vow.Promise}
  * */
 Track.prototype.eject = function (name, args) {
-    return this._agent.callUnit(this, name, args).then(function (res) {
-        return res && res.result;
+    var defer = vow.defer();
+
+    this._agent.callUnit(this, name, args, function (err, res) {
+        if (err) {
+            defer.reject(err);
+        } else {
+            defer.resolve(res && res.result);
+        }
     });
+
+    return defer.promise();
 };
 
 /**

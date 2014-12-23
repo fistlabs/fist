@@ -414,8 +414,9 @@ describe('core/core', function () {
             });
 
             core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo').done(function (res) {
-                    assert.strictEqual(res.result, 42);
+                core.callUnit(new Track(core, logger), 'foo', null, function (err, val) {
+                    assert.ok(!err);
+                    assert.strictEqual(val.result, 42);
                     done();
                 });
             });
@@ -424,7 +425,7 @@ describe('core/core', function () {
         it('Should be rejected', function (done) {
             var core = new Core();
             core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo').done(null, function (err) {
+                core.callUnit(new Track(core, logger), 'foo', null, function (err) {
                     assert.ok(err);
                     done();
                 });

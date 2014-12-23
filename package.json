@@ -31,7 +31,6 @@
         "supertest": "0.15.0",
         "glob": "4.0.6",
         "benchmark": "1.0.0",
-        "lru-cache": "2.5.0",
         "gulp": "3.8.10",
         "gulp-mocha": "1.1.1",
         "gulp-istanbul": "0.3.1",
