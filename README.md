@@ -20,7 +20,7 @@ $ npm install fist
 #Docs
 * [Quick start](/docs/index.md)
 * [Guides](/docs/guides/index.md)
-* [Full API reference](/docs/reference/index.md)
+* [API reference](/docs/reference/index.md)
 
 ---------
 LICENSE [MIT](LICENSE)
