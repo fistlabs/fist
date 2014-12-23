@@ -125,7 +125,6 @@
         "space-in-brackets": 0,
         "space-infix-ops": 0,
         "space-return-throw-case": 0,
-        "space-unary-word-ops": 2,
         "max-nested-callbacks": [2, 3],
         "one-var": 0,
         "wrap-regex": 0,
