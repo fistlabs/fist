@@ -18,7 +18,7 @@ function Renderer(roots) {
      * @public
      * @memberOf {Renderer}
      * @property
-     * @type {String}
+     * @type {Array<String>}
      * */
     this.roots = roots;
 
@@ -39,7 +39,7 @@ function Renderer(roots) {
     this.checked = {};
 }
 
-function lookupRenderFunction(self, ending) {
+function lookupRenderFunction(self, extname) {
     var engines;
     var engine;
     var filename;
@@ -50,8 +50,8 @@ function lookupRenderFunction(self, ending) {
     var root;
     var roots;
 
-    if (hasProperty.call(self.checked, ending)) {
-        return self.checked[ending];
+    if (hasProperty.call(self.checked, extname)) {
+        return self.checked[extname];
     }
 
     engines = self.engines;
@@ -59,13 +59,13 @@ function lookupRenderFunction(self, ending) {
 
     for (i = 0, l = roots.length; i < l; i += 1) {
         root = roots[i];
-        filename = path.resolve(root, ending);
+        filename = path.resolve(root, extname);
 
         for (j = 0, k = engines.length; j < k; j += 1) {
             engine = engines[j];
 
-            if (isSuitable(filename, engine.ending)) {
-                self.checked[ending] = engine.render;
+            if (isSuitable(filename, engine.extname)) {
+                self.checked[extname] = engine.render;
                 return engine.render;
             }
         }
@@ -74,16 +74,16 @@ function lookupRenderFunction(self, ending) {
     return defaultRender;
 }
 
-function isSuitable(filename, ending) {
-    //  do not use path.extname coz are files like that: "foo.bemhtml.js"
+function isSuitable(filename, extname) {
+    //  do not use path.extname coz for files like that: "foo.bemhtml.js"
     //  extname will return ".js" but we want ".bemhtml.js"
-    var i = filename.indexOf(ending);
+    var i = filename.indexOf(extname);
 
     if (i === -1) {
         return false;
     }
 
-    return i + ending.length === filename.length;
+    return i + extname.length === filename.length;
 }
 
 function defaultRender(filename, callback) {
@@ -96,14 +96,14 @@ function defaultRender(filename, callback) {
  * @memberOf {Renderer}
  * @method
  *
- * @param {String} ending
+ * @param {String} extname
  * @param {Function} render
  *
  * @returns {Renderer}
  * */
-Renderer.prototype.engine = function (ending, render) {
+Renderer.prototype.engine = function (extname, render) {
     this.engines.push({
-        ending: ending,
+        extname: extname,
         render: render
     });
 
@@ -115,14 +115,14 @@ Renderer.prototype.engine = function (ending, render) {
  * @memberOf {Renderer}
  * @method
  *
- * @param {String} ending
+ * @param {String} filename
  * @param {*} options
  * */
-Renderer.prototype.render = function (ending, options) {
+Renderer.prototype.render = function (filename, options) {
     var defer = vow.defer();
-    var render = lookupRenderFunction(this, ending);
+    var render = lookupRenderFunction(this, filename);
 
-    render(ending, options, function (err, res) {
+    render(filename, options, function (err, res) {
         if (err) {
             defer.reject(err);
         } else {
@@ -195,11 +195,11 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Connect} track
-         * @param {Model} context
+         * @param {Context} context
          *
          * @returns {String}
          * */
-        lookupTemplateNameEnd: function (track, context) {
+        lookupTemplateFilename: function (track, context) {
             /*eslint no-unused-vars: 0*/
             throw new FistError('NOT_IMPLEMENTED', 'You need to implement template lookup function');
         },
@@ -210,11 +210,11 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Connect} track
-         * @param {Model} context
+         * @param {Context} context
          *
          * @returns {Number}
          * */
-        lookupResponseStatus: function (track, context) {
+        createResponseStatus: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return track.status();
         },
@@ -225,11 +225,11 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Connect} track
-         * @param {Model} context
+         * @param {Context} context
          *
          * @returns {Object}
          * */
-        lookupResponseHeader: function (track, context) {
+        createResponseHeader: function (track, context) {
             /*eslint no-unused-vars: 0*/
             return {
                 'Content-Type': 'text/html; charset="UTF-8"'
@@ -242,7 +242,7 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Connect} track
-         * @param {Model} context
+         * @param {Context} context
          *
          * @returns {Object}
          * */
@@ -256,18 +256,18 @@ module.exports = function (agent) {
          * @method
          *
          * @param {Connect} track
-         * @param {Model} context
+         * @param {Context} context
          *
          * @returns {vow.Promise}
          * */
         main: function (track, context) {
-            var fileEnd = this.lookupTemplateNameEnd(track, context);
+            var filename = this.lookupTemplateFilename(track, context);
             var options = this.createTemplateOptions(track, context);
 
-            return views.render(fileEnd, options).then(function (result) {
+            return views.render(filename, options).then(function (result) {
                 track.
-                    status(this.lookupResponseStatus(track, context)).
-                    header(this.lookupResponseHeader(track, context)).
+                    status(this.createResponseStatus(track, context)).
+                    header(this.createResponseHeader(track, context)).
                     send(result);
             }, this);
         }
