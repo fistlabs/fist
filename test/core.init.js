@@ -272,7 +272,7 @@ describe('core/init', function () {
             });
 
             core.ready().done(function () {
-                new Track(core, logger).eject('foo').done(function (res) {
+                new Track(core, logger).invoke('foo').done(function (res) {
                     assert.strictEqual(res, 42);
                     done();
                 });
@@ -314,7 +314,7 @@ describe('core/init', function () {
             });
 
             core.ready().done(function () {
-                new Track(core, logger).eject('foo').done(function (res) {
+                new Track(core, logger).invoke('foo').done(function (res) {
                     assert.strictEqual(res, 42);
                     done();
                 });
