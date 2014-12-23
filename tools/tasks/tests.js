@@ -32,9 +32,10 @@ function runCover(done) {
         'fist.js',
         'core/**/*.js',
         'fist_plugins/**/*.js'
-    ])
-        .pipe(gulpIstanbul())
-        .on('finish', function () {
+    ]).
+        pipe(gulpIstanbul()).
+        pipe(gulpIstanbul.hookRequire()).
+        on('finish', function () {
             self.src('test/*.js')
                 .pipe(gulpMochaPipe())
                 .pipe(gulpIstanbul.writeReports())
