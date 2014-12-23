@@ -185,7 +185,7 @@ Server.prototype._nextRun = function (track, matches, pos) {
     if (pos === matches.length) {
         track.logger.warn('No one controller did responded');
         track.status(404).send();
-        return void 0;
+        return;
     }
 
     match = matches[pos];
