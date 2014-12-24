@@ -1,5 +1,6 @@
 'use strict';
 
+var R_PATH = /^(?:\w+:\/\/[^\/]*)?([\s\S]*)$/;
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Track = /** @type Track */ require('./track');
@@ -51,7 +52,8 @@ function Connect(agent, logger, req, res) {
      * @property
      * @type {Object}
      * */
-    this.url = urlParse(this.getProtocol() + '://' + this.getHost() + req.url, true);
+    this.url = urlParse(this.getProtocol() +
+        '://' + this.getHost() + R_PATH.exec(req.url)[1], true);
 }
 
 Connect.prototype = Object.create(Track.prototype);
