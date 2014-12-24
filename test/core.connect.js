@@ -316,6 +316,23 @@ describe('core/connect', function () {
                 set('X-Forwarded-Proto', 'http').
                 expect(200, done);
         });
+
+        it('Should correctly handle not only path urls', function (done) {
+            var spy = 0;
+            supertest(function (req, res) {
+                req.url = 'http://localhost:1337/foo';
+                var connect = new Connect(new Server(), logger, req, res);
+                assert.strictEqual(connect.url.path, '/foo');
+                spy = 1;
+                res.end();
+            }).
+                get('/').
+                expect(200).
+                end(function () {
+                    assert.strictEqual(spy, 1);
+                    done();
+                });
+        });
     });
 
     describe('connect.header()', function () {
