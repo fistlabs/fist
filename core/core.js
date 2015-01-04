@@ -1,6 +1,6 @@
 'use strict';
 
-var R_NAME = /^[_a-z]\w*$/i;
+var R_NAME = /^[_a-z]\w*(?:\.[_a-z]\w*)*$/i;
 
 var FistError = /** @type FistError */ require('./fist-error');
 
