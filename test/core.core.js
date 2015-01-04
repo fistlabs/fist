@@ -316,6 +316,12 @@ describe('core/core', function () {
         it('Should be rejected because of unit.name is not an identifier', function () {
             var core = new Core();
 
+            assert.doesNotThrow(function () {
+                core.unit({
+                    name: 'foo.bar'
+                });
+            });
+
             assert.throws(function () {
                 core.unit({
                     name: '1'
