@@ -11,7 +11,7 @@ var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var vow = require('vow');
 
-function init(agent) {
+function init(app) {
     /*eslint max-params: 0*/
 
     /**
@@ -20,7 +20,7 @@ function init(agent) {
      * @property
      * @type {Object}
      * */
-    agent.caches = {
+    app.caches = {
 
         /**
          * default cache interface "local"
@@ -39,7 +39,7 @@ function init(agent) {
      * */
     function Unit() {
         //  check dependencies issues
-        assertDepsOk(agent.getUnitClass(this.name), []);
+        assertDepsOk(app.getUnitClass(this.name), []);
 
         /**
          * @public
@@ -49,7 +49,7 @@ function init(agent) {
          * */
         this.params = _.extend({}, this.params);
 
-        if (!_.has(agent.caches, this.cache)) {
+        if (!_.has(app.caches, this.cache)) {
             throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
         }
 
@@ -59,7 +59,7 @@ function init(agent) {
          * @method
          * @property
          * */
-        this._cache = agent.caches[this.cache];
+        this._cache = app.caches[this.cache];
 
         /**
          * @public
@@ -322,7 +322,7 @@ function init(agent) {
         }
 
         _.forEach(UnitClass.prototype.deps, function (depName) {
-            var Dependency = agent.getUnitClass(depName);
+            var Dependency = app.getUnitClass(depName);
             var branch = trunk.concat(depName);
 
             if (!Dependency) {
@@ -348,10 +348,6 @@ function init(agent) {
         var l = deps.length;
         var remaining = l;
 
-        context.keys = new Array(l);
-        context.skipCache = false;
-        context.needUpdate = false;
-
         if (remaining === 0) {
             cache(self, track, context, done);
             return;
@@ -364,7 +360,7 @@ function init(agent) {
             var args = self.depsArgs[name](track, context);
             var path = self.depsMap[name];
 
-            agent.callUnit(track, name, args, function (err, val) {
+            app.callUnit(track, name, args, function (err, val) {
 
                 if (track.isFlushed()) {
                     context.logger.debug('The track was flushed by deps, skip invocation');
@@ -403,7 +399,7 @@ function init(agent) {
      * @property
      * @type {Function}
      * */
-    agent.Unit = Unit;
+    app.Unit = Unit;
 }
 
 function cache(self, track, context, done) {

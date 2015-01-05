@@ -18,7 +18,7 @@ function noop() {
     return this.name;
 }
 
-Benchmark.options.minSamples = 100;
+Benchmark.options.minSamples = 500;
 
 console.log('Crazy deps chain, just for performance debugging');
 
