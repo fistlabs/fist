@@ -386,6 +386,42 @@ describe('core/init', function () {
                 done();
             });
         });
+
+        it('Should not overwrite existing params by undefined values', function (done) {
+            var core = new Core();
+            var track = new Track(core, logger);
+
+            core.unit({
+                name: 'foo',
+                params: {
+                    foo: 'foo1',
+                    bar: 'bar1',
+                    baz: 'baz1'
+                }
+            });
+
+            track.params = {
+                foo: 'foo2',
+                bar: 'bar2',
+                baz: void 0
+            };
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                var context = unit.createContext(track, {
+                    foo: 'foo3',
+                    bar: void 0,
+                    baz: void 0
+                });
+
+                assert.deepEqual(context.params, {
+                    foo: 'foo3',
+                    bar: 'bar2',
+                    baz: 'baz1'
+                });
+                done();
+            });
+        });
     });
 
     describe('unit.identify()', function () {

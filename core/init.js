@@ -240,23 +240,20 @@ function init(agent) {
         createContext: function (track, args) {
             /*eslint complexity: 0*/
             var context = new Context(track.logger.bind(/** @type {String} */ this.name));
+            var i;
             var k;
+            var l;
+            var params;
 
-            for (k in this.params) {
-                if (hasProperty.call(this.params, k)) {
-                    context.params[k] = this.params[k];
-                }
-            }
+            args = [this.params, track.params, args];
 
-            for (k in track.params) {
-                if (hasProperty.call(track.params, k)) {
-                    context.params[k] = track.params[k];
-                }
-            }
+            for (i = 0, l = args.length; i < l; i += 1) {
+                params = args[i];
 
-            for (k in args) {
-                if (hasProperty.call(args, k)) {
-                    context.params[k] = args[k];
+                for (k in params) {
+                    if (hasProperty.call(params, k) && params[k] !== void 0) {
+                        context.params[k] = params[k];
+                    }
                 }
             }
 
