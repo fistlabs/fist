@@ -304,12 +304,12 @@ function init(agent) {
             mixins = mixins.concat(members.mixins);
         }
 
-        members.deps = _.reduce(mixins, function (deps, Mixin) {
+        members.deps = _.reduce(mixins, function (fullDeps, Mixin) {
             if (_.isFunction(Mixin) && Mixin.prototype.deps) {
-                deps = deps.concat(Mixin.prototype.deps);
+                fullDeps = fullDeps.concat(Mixin.prototype.deps);
             }
 
-            return deps;
+            return fullDeps;
         }, deps);
 
         return inherit([this].concat(mixins), members, statics);
@@ -317,22 +317,23 @@ function init(agent) {
 
     var checked = {};
 
-    function assertDepsOk(Unit, trunk) {
+    function assertDepsOk(UnitClass, trunk) {
+        var unitName = UnitClass.prototype.name;
 
-        if (/^[^a-z]/i.test(Unit.prototype.name) || _.has(checked, Unit.prototype.name)) {
+        if (/^[^a-z]/i.test(unitName) || _.has(checked, unitName)) {
             return;
         }
 
-        _.forEach(Unit.prototype.deps, function (name) {
-            var Dependency = agent.getUnitClass(name);
-            var branch = trunk.concat(name);
+        _.forEach(UnitClass.prototype.deps, function (depName) {
+            var Dependency = agent.getUnitClass(depName);
+            var branch = trunk.concat(depName);
 
             if (!Dependency) {
                 throw new FistError(FistError.NO_SUCH_UNIT,
-                    f('There is no dependency %j for unit %j', name, Unit.prototype.name));
+                    f('There is no dependency %j for unit %j', depName, unitName));
             }
 
-            if (_.contains(trunk, name)) {
+            if (_.contains(trunk, depName)) {
                 throw new FistError(FistError.DEPS_CONFLICT,
                     f('Recursive dependencies found: "%s"', branch.join('" < "')));
             }
@@ -340,7 +341,7 @@ function init(agent) {
             assertDepsOk(Dependency, branch);
         });
 
-        checked[Unit.prototype.name] = true;
+        checked[unitName] = true;
     }
 
     function fetch(self, track, context, done) {
@@ -361,8 +362,8 @@ function init(agent) {
 
         dDepsStart = new Date();
 
-        function fetchDep(i) {
-            var name = deps[i];
+        function fetchDep(pos) {
+            var name = deps[pos];
             var args = self.depsArgs[name](track, context);
             var path = self.depsMap[name];
 
@@ -381,7 +382,7 @@ function init(agent) {
                     if (val.updated) {
                         context.needUpdate = true;
                     }
-                    context.keys[i] = val.identity;
+                    context.keys[pos] = val.identity;
                     Obus.add(context.result, path, val.result);
                 }
 
@@ -478,9 +479,9 @@ function update(self, track, context, identity, cacheKey,  done) {
         }
 
         if (val) {
-            self._cache.set(cacheKey, val, self.maxAge, function (err) {
-                if (err) {
-                    context.logger.warn('Failed to set cache', err);
+            self._cache.set(cacheKey, val, self.maxAge, function (setCacheErr) {
+                if (setCacheErr) {
+                    context.logger.warn('Failed to set cache', setCacheErr);
                 } else {
                     context.logger.note('Updated');
                 }

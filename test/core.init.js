@@ -476,18 +476,22 @@ describe('core/init', function () {
 
         it('Should not return result if track was flushed', function (done) {
             var core = new Core();
-            var track = new Track(core, logger);
 
             core.unit({
                 name: 'foo',
                 main: function (track) {
-                    track._isFlushed = true;
+                    track.isFlushed = function () {
+                        return true;
+                    };
+
                     return 42;
                 }
             });
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
                 unit.call(track, unit.createContext(track), function (err, res) {
                     assert.strictEqual(err, null);
                     assert.strictEqual(res, null);
@@ -498,7 +502,6 @@ describe('core/init', function () {
 
         it('Should support deps', function (done) {
             var core = new Core();
-            var track = new Track(core, logger);
 
             core.unit({
                 name: 'foo',
@@ -523,6 +526,8 @@ describe('core/init', function () {
 
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
+
                 unit.call(track, unit.createContext(track), function (err, val) {
                     assert.ok(!err);
                     assert.strictEqual(val.result, 11);
@@ -789,21 +794,21 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, val) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track), function (e1, v1) {
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(spy, val.result);
+                    assert.strictEqual(spy, v1.result);
 
-                    unit.call(track, unit.createContext(track), function (err, val) {
-                        assert.ok(!err);
+                    unit.call(track, unit.createContext(track), function (e2, v2) {
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 1);
-                        assert.strictEqual(spy, val.result);
+                        assert.strictEqual(spy, v2.result);
 
                         setTimeout(function () {
-                            unit.call(track, unit.createContext(track), function (err, val) {
-                                assert.ok(!err);
+                            unit.call(track, unit.createContext(track), function (e3, v3) {
+                                assert.ok(!e3);
                                 assert.strictEqual(spy, 2);
-                                assert.strictEqual(spy, val.result);
+                                assert.strictEqual(spy, v3.result);
 
                                 done();
                             });
@@ -831,21 +836,21 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var t0 = new Track(core, logger);
 
-                unit.call(t0, unit.createContext(t0), function (err, val) {
+                unit.call(t0, unit.createContext(t0), function (e1, v1) {
                     var t1 = new Track(core, logger);
-                    assert.ok(!err);
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(val, null);
+                    assert.strictEqual(v1, null);
 
-                    unit.call(t1, unit.createContext(t1), function (err, val) {
+                    unit.call(t1, unit.createContext(t1), function (e2, v2) {
                         var t2 = new Track(core, logger);
-                        assert.ok(!err);
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 2);
-                        assert.strictEqual(val, null);
-                        unit.call(t2, unit.createContext(t2), function (err, val) {
-                            assert.ok(!err);
+                        assert.strictEqual(v2, null);
+                        unit.call(t2, unit.createContext(t2), function (e3, v3) {
+                            assert.ok(!e3);
                             assert.strictEqual(spy, 3);
-                            assert.strictEqual(val, null);
+                            assert.strictEqual(v3, null);
                             done();
                         });
                     });
@@ -876,20 +881,20 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var t0 = new Track(core, logger);
 
-                unit.call(t0, unit.createContext(t0), function (err, val) {
+                unit.call(t0, unit.createContext(t0), function (e1, v1) {
                     var t1 = new Track(core, logger);
-                    assert.ok(!err);
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(val.result, spy);
-                    unit.call(t1, unit.createContext(t1), function (err, val) {
+                    assert.strictEqual(v1.result, spy);
+                    unit.call(t1, unit.createContext(t1), function (e2, v2) {
                         var t2 = new Track(core, logger);
-                        assert.ok(!err);
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 1);
-                        assert.strictEqual(val.result, spy);
-                        unit.call(t2, unit.createContext(t2), function (err, val) {
-                            assert.ok(!err);
+                        assert.strictEqual(v2.result, spy);
+                        unit.call(t2, unit.createContext(t2), function (e3, v3) {
+                            assert.ok(!e3);
                             assert.strictEqual(spy, 1);
-                            assert.strictEqual(val.result, spy);
+                            assert.strictEqual(v3.result, spy);
                             done();
                         });
                     });
@@ -919,20 +924,20 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, val) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track), function (e1, v1) {
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(val.result, spy);
+                    assert.strictEqual(v1.result, spy);
 
-                    unit.call(track, unit.createContext(track), function (err, val) {
-                        assert.ok(!err);
+                    unit.call(track, unit.createContext(track), function (e2, v2) {
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 2);
-                        assert.strictEqual(val.result, spy);
+                        assert.strictEqual(v2.result, spy);
 
-                        unit.call(track, unit.createContext(track), function (err, val) {
-                            assert.ok(!err);
+                        unit.call(track, unit.createContext(track), function (e3, v3) {
+                            assert.ok(!e3);
                             assert.strictEqual(spy, 3);
-                            assert.strictEqual(val.result, spy);
+                            assert.strictEqual(v3.result, spy);
 
                             done();
                         });
@@ -968,18 +973,18 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, val) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track), function (e1, v1) {
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(val.result, spy);
-                    unit.call(track, unit.createContext(track), function (err, val) {
-                        assert.ok(!err);
+                    assert.strictEqual(v1.result, spy);
+                    unit.call(track, unit.createContext(track), function (e2, v2) {
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 2);
-                        assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track), function (err, val) {
-                            assert.ok(!err);
+                        assert.strictEqual(v2.result, spy);
+                        unit.call(track, unit.createContext(track), function (e3, v3) {
+                            assert.ok(!e3);
                             assert.strictEqual(spy, 3);
-                            assert.strictEqual(val.result, spy);
+                            assert.strictEqual(v3.result, spy);
                             done();
                         });
                     });
@@ -1017,18 +1022,18 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, val) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track), function (e1, v1) {
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(val.result, spy);
-                    unit.call(track, unit.createContext(track), function (err, val) {
-                        assert.ok(!err);
+                    assert.strictEqual(v1.result, spy);
+                    unit.call(track, unit.createContext(track), function (e2, v2) {
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 2);
-                        assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track), function (err, val) {
-                            assert.ok(!err);
+                        assert.strictEqual(v2.result, spy);
+                        unit.call(track, unit.createContext(track), function (e3, v3) {
+                            assert.ok(!e3);
                             assert.strictEqual(spy, 3);
-                            assert.strictEqual(val.result, spy);
+                            assert.strictEqual(v3.result, spy);
                             done();
                         });
                     });
@@ -1066,18 +1071,18 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, val) {
-                    assert.ok(!err);
+                unit.call(track, unit.createContext(track), function (e1, v1) {
+                    assert.ok(!e1);
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(val.result, spy);
-                    unit.call(track, unit.createContext(track), function (err, val) {
-                        assert.ok(!err);
+                    assert.strictEqual(v1.result, spy);
+                    unit.call(track, unit.createContext(track), function (e2, v2) {
+                        assert.ok(!e2);
                         assert.strictEqual(spy, 2);
-                        assert.strictEqual(val.result, spy);
-                        unit.call(track, unit.createContext(track), function (err, val) {
-                            assert.ok(!err);
+                        assert.strictEqual(v2.result, spy);
+                        unit.call(track, unit.createContext(track), function (e3, v3) {
+                            assert.ok(!e3);
                             assert.strictEqual(spy, 3);
-                            assert.strictEqual(val.result, spy);
+                            assert.strictEqual(v3.result, spy);
                             done();
                         });
                     });
@@ -1111,15 +1116,15 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                unit.call(track, unit.createContext(track), function (err, val) {
-                    assert.ok(!err);
-                    assert.strictEqual(val.result, 1);
-                    unit.call(track, unit.createContext(track), function (err, val) {
-                        assert.ok(!err);
-                        assert.strictEqual(val.result, 1);
-                        unit.call(track, unit.createContext(track), function (err, val) {
-                            assert.ok(!err);
-                            assert.strictEqual(val.result, 1);
+                unit.call(track, unit.createContext(track), function (e1, v1) {
+                    assert.ok(!e1);
+                    assert.strictEqual(v1.result, 1);
+                    unit.call(track, unit.createContext(track), function (e2, v2) {
+                        assert.ok(!e2);
+                        assert.strictEqual(v2.result, 1);
+                        unit.call(track, unit.createContext(track), function (e3, v3) {
+                            assert.ok(!e3);
+                            assert.strictEqual(v3.result, 1);
 
                             done();
                         });

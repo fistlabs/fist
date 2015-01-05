@@ -53,31 +53,29 @@ function eslintPromise(paths, configPath) {
     });
 }
 
-function runEslint(done) {
+function runEslint() {
     /*eslint no-console: 0*/
-    var paths = _.reduce(linterPaths, function (paths, globPattern) {
-        return paths.concat(glob.sync(globPattern));
+    var paths = _.reduce(linterPaths, function (allPaths, globPattern) {
+        return allPaths.concat(glob.sync(globPattern));
     }, []);
 
-    eslintPromise(paths, '.eslintrc')
-        .done(function (results) {
+    return eslintPromise(paths, '.eslintrc')
+        .then(function (results) {
             var message;
 
             if (_.isEmpty(results)) {
-                return done();
+                return;
             }
 
             message = eslintStylishFormatter(results);
 
             //  среди сообщений есть ОШИБКИ (там могут быть просто ворнинги)
             if (_.find(results, {messages: [{severity: 2}]})) {
-                return done(new gutil.PluginError('eslint-linter', message));
+                throw new gutil.PluginError('eslint-linter', message);
             }
 
             console.log(message);
-
-            done();
-        }, done);
+        });
 }
 
 module.exports = function () {
