@@ -102,14 +102,14 @@ Core.prototype.constructor = Core;
  * @memberOf {Core}
  * @method
  *
- * @param {Object|String} base
- * @param {String} [name]
+ * @param {Object|String} aliasFrom
+ * @param {String} [aliasTo]
  *
  * @returns {Core}
  * */
-Core.prototype.alias = function (base, name) {
-    if (_.isObject(base)) {
-        _.forOwn(base, function (name, base) {
+Core.prototype.alias = function (aliasFrom, aliasTo) {
+    if (_.isObject(aliasFrom)) {
+        _.forOwn(aliasFrom, function (name, base) {
             this.unit({
                 base: base,
                 name: name
@@ -120,8 +120,8 @@ Core.prototype.alias = function (base, name) {
     }
 
     this.unit({
-        base: base,
-        name: name
+        base: aliasFrom,
+        name: aliasTo
     });
 
     return this;
@@ -288,18 +288,18 @@ Core.prototype._getReady = function () {
  * @memberOf {Core}
  * @method
  *
- * @param {Function} func
+ * @param {Function} plug
  *
  * @returns {vow.Promise}
  * */
-Core.prototype._installPlugin = function (func) {
-    return callPlugin.call(this, func).then(function () {
+Core.prototype._installPlugin = function (plug) {
+    return callPlugin.call(this, plug).then(function () {
         //  install children plugins
         var plugs = this._plugs;
         this._plugs = [];
-        return _.reduce(plugs, function (promise, func) {
+        return _.reduce(plugs, function (promise, childPlug) {
             return promise.then(function () {
-                return this._installPlugin(func);
+                return this._installPlugin(childPlug);
             }, this);
         }, vow.resolve(), this);
     }, this);

@@ -12,23 +12,4 @@ describe('fist', function () {
         var app = fist();
         assert.ok(app instanceof Server);
     });
-
-    it.skip('Should automatically install bundled plugins', function (done) {
-        var app = fist();
-
-        app.ready().done(function () {
-            var units = [
-                '_fistlabs_unit_asker',
-                '_fistlabs_unit_serial',
-                '_fistlabs_unit_controller',
-                'fistlabs_unit_incoming'
-            ];
-
-            units.forEach(function (name) {
-                assert.strictEqual(typeof app.getUnitClass(name), 'function');
-            });
-
-            done();
-        });
-    });
 });

@@ -60,14 +60,14 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.eject(unit, null, function (err, val) {
-                    assert.ok(!err);
-                    assert.strictEqual(val.result, 42);
+                track.eject(unit, null, function (e1, v1) {
+                    assert.ok(!e1);
+                    assert.strictEqual(v1.result, 42);
                     assert.strictEqual(i, 1);
 
-                    track.eject(unit, null, function (err, val) {
-                        assert.ok(!err);
-                        assert.strictEqual(val.result, 42);
+                    track.eject(unit, null, function (e2, v2) {
+                        assert.ok(!e2);
+                        assert.strictEqual(v2.result, 42);
                         assert.strictEqual(i, 1);
                         done();
                     });
@@ -78,8 +78,10 @@ describe('core/track', function () {
         it('Should memorize unit calls by args hash', function (done) {
             var i = 0;
             var j = 0;
+            var args = {
+                foo: 'bar'
+            };
             var core = new Core();
-            var track = new Track(core, logger);
 
             core.unit({
                 name: 'foo',
@@ -92,17 +94,14 @@ describe('core/track', function () {
                     }, 10);
                     return defer.promise();
                 },
-                identify: function (track, args) {
-                    return args.foo;
+                identify: function (track, params) {
+                    return params.foo;
                 }
             });
 
-            var args = {
-                foo: 'bar'
-            };
-
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
+                var track = new Track(core, logger);
 
                 track.eject(unit, args, function (err, val) {
                     assert.ok(!err);
@@ -111,15 +110,15 @@ describe('core/track', function () {
                     j += 1;
                 });
 
-                track.eject(unit, args, function (err, val) {
-                    assert.ok(!err);
-                    assert.strictEqual(val.result, 42);
+                track.eject(unit, args, function (e1, v1) {
+                    assert.ok(!e1);
+                    assert.strictEqual(v1.result, 42);
                     assert.strictEqual(i, 1);
                     assert.strictEqual(j, 1);
 
-                    track.eject(unit, args, function (err, val) {
-                        assert.ok(!err);
-                        assert.strictEqual(val.result, 42);
+                    track.eject(unit, args, function (e2, v2) {
+                        assert.ok(!e2);
+                        assert.strictEqual(v2.result, 42);
                         assert.strictEqual(i, 1);
                         assert.strictEqual(j, 1);
                         done();
