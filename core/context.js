@@ -1,6 +1,6 @@
 'use strict';
 
-var Obus = require('obus');
+var Obus = /** @type Obus */ require('obus');
 
 /**
  * @class Context
@@ -39,6 +39,30 @@ function Context(logger) {
      * @type {Obus}
      * */
     this.result = new Obus();
+
+    /**
+     * @public
+     * @memberOf {Context}
+     * @property
+     * @type {Array}
+     * */
+    this.keys = [];
+
+    /**
+     * @public
+     * @memberOf {Context}
+     * @property
+     * @type {Boolean}
+     * */
+    this.skipCache = false;
+
+    /**
+     * @public
+     * @memberOf {Context}
+     * @property
+     * @type {Boolean}
+     * */
+    this.needUpdate = false;
 }
 
 Context.prototype = {
