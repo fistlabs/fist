@@ -11,6 +11,8 @@ var gutil = require('gulp-util');
 var linterPaths = [
     'benchmark/**/*.js',
     'core/**/*.js',
+    'examples/*/fist_plugins/**/*.js',
+    'examples/*/*.js',
     'fist_plugins/**/*.js',
     'test/**/*.js',
     'tools/**/*.js',

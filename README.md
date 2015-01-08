@@ -1,16 +1,15 @@
 fist [![Build Status](https://travis-ci.org/fistlabs/fist.svg?branch=master)](https://travis-ci.org/fistlabs/fist)
 =========
 
-This project is attempt to aggregate common application utility-level cases in one place. ```Fist``` is a standalone server-side  framework for [```nodejs```](https://nodejs.org/)
+```Fist``` is a [```nodejs```](https://nodejs.org/) framework designed to help create scalable server applications.
 
 #Features
-* Native (framework-level) modules
-* Built-in scalable context logging
-* Low coupling of application units
-* Native data models
+* Loosely coupled architecture
+* Plugin system
+* Data models
 * Thin controllers
-* Built-in cache strategy (and local cache as default)
-* Plugin system and asynchronous application initialization
+* Built-in logging tools
+* Built-in cache
 
 #Installation
 ```

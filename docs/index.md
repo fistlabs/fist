@@ -2,86 +2,71 @@
 
 This is a quick reference to start writing right now
 
-##Creating an application
+First, you need to install ```fist``` npm module
+
+```
+$ npm install fist
+```
+
+Now, you ready to start develop your ```hello world```.
+
+_app.js:_
 ```js
+'use strict';
+
 var fist = require('fist');
 var app = fist();
+
 app.listen(1337);
 ```
-Your application server is done
 
 Read the full [```Application``` reference](/docs/reference/application.md)
 
-##Creating unit
+Fist application consists of many modules, called plugins. The plugins placed in fist_plugins directory inside your project will be loaded automatically.
+
+Let's write a plugin that installs a controller unit to the application.
+
+_fist_plugins/units/controllers/hello.js:_
+
 ```js
-app.unit({
-    name: 'news', // <- name of the unit
-    main: function (track, context) {
-        /*
-            It is a main method that will be called during unit invocation.
-            Track is a IncomingMessage+ServerResponse abstraction.
-            Context is a unit execution context.
-        */
-        track.send('Okay');
-    }
-});
-```
+'use strict';
 
-See all unit features at [```Unit``` reference](/docs/reference/unit.md), also [```Track``` reference](/docs/reference/track.md) and [```Context``` reference](/docs/reference/context.md)
-
-##Handling requests
-```js
-app.route('/news/'/* route pattern */, 'news' /* Route name (unit name) */);
-```
-
-```Fist``` uses [```Finger```](https://github.com/fistlabs/finger) as router. See the full pattern writing reference there.
-But it is important to know that ```fist``` uses extended version of ```Finger``` supporting describing request methods.
-
-Read the full [```Router``` reference](/docs/reference/router.md)
-
-##Unit dependencies
-Any unit may have dependencies
-```js
-app.unit({
-    name: 'news',
-    deps: ['news.list'],
-    main: function (track, context) {
-        var error = context.e('news.list'); 
-        //  check if `news.list` was errorer
-        if (error) {
-            track.status(500).send(error);
-        } else {
-            track.send(context.r('news.list'));
-        }
-    }
-});
-
-app.unit({
-    name: 'news.list',
-    //  Cache result for 5 seconds
-    maxAge: 5,
-    main: function (track, context) {
-        return [
-            // news list
-        ];
-    }
-});
-```
-[Read](/docs/guides/using-cache.mg) the full cache guide also [Effective using dependencies](/docs/guides/using-deps.md) guide
-
-##Writing plugin
-Create file ```<app-root>/fist_plugins/my-plugin.js```
-```js
 module.exports = function (app) {
-    // E.g installing unit from plugin
     app.unit({
-        name: 'news.list'
+        name: 'hello',
+        main: function (track, context) {
+            track.send('Hello ' + context.p('name'));
+        },
+        params: {
+            // default
+            name: 'nobody'
+        }
     });
 };
 ```
 
-The plugins from ```fist_plugins``` directory will be installed automatically.
-Read [Plugin guide](/docs/guides/using-plugins.md)
+[Track](/docs/reference/track.md) is an abstraction over IncomingMesage and ServerResponse. This object is created once for each incoming request.
+[Context](/docs/reference/context.md) is a unit execution context. This object is created for each unit invocation and consists of unit dependencies results and execution parameters.
+
+[Read more](/docs/reference/unit.md) about unit interface.
+
+Now, we need to assign the unit to the route. Let's create routes plugin where we will configure all the server routes.
+
+_fist_plugins/routes.js:_
+```js
+'use strict';
+
+module.exports = function (app) {
+    // assign request rule with 'hello' controller
+    app.route('GET /hello/(<name>/)', 'hello');
+};
+```
+
+Read the full [```Router``` reference](/docs/reference/router.md)
+
+That is all. Now we ere only need to ```$ node app.js```
+
+See the [example code](/examples/hello)
 
 --------
 This is an ultra short guide. See the full [API reference](/docs/reference/index.md) and [Guides](/docs/guides/index.md) for more details.
