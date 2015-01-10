@@ -45,6 +45,12 @@ function Core(params) {
      * */
     this.params = params;
 
+    params.unitSettings = Object(params.unitSettings);
+
+    _.forOwn(params.unitSettings, function (settings, unitName) {
+        params.unitSettings[unitName] = _.extend({}, settings);
+    });
+
     /**
      * @protected
      * @memberOf {Core}
@@ -366,7 +372,7 @@ function createUnits() {
             var name = UnitClass.prototype.name;
 
             if (/^[a-z]/i.test(name)) {
-                this._units[name] = new UnitClass();
+                this._units[name] = new UnitClass(this.params.unitSettings[name]);
             }
 
         }, this);
