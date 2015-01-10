@@ -18,24 +18,7 @@ var vowFs = require('vow-fs');
  * @param {Object} [params]
  * */
 function Core(params) {
-    var parent = module;
-
-    while (parent.parent) {
-        parent = parent.parent;
-    }
-
-    params = _.extend({
-        root: path.dirname(parent.filename),
-        implicitBase: 0
-    }, params);
-
-    /**
-     * @public
-     * @memberOf {Core}
-     * @property
-     * @type {Logger}
-     * */
-    this.logger = logging.getLogger(params.name).conf(params.logging);
+    params = this._createParams(params);
 
     /**
      * @public
@@ -45,11 +28,13 @@ function Core(params) {
      * */
     this.params = params;
 
-    params.unitSettings = Object(params.unitSettings);
-
-    _.forOwn(params.unitSettings, function (settings, unitName) {
-        params.unitSettings[unitName] = _.extend({}, settings);
-    });
+    /**
+     * @public
+     * @memberOf {Core}
+     * @property
+     * @type {Logger}
+     * */
+    this.logger = logging.getLogger(params.name).conf(params.logging);
 
     /**
      * @protected
@@ -276,6 +261,36 @@ Core.prototype.install = function (moduleName, settings) {
     }
 
     return this;
+};
+
+/**
+ * @protected
+ * @memberOf {Core}
+ * @method
+ *
+ * @param {*} [params]
+ *
+ * @returns {Object}
+ * */
+Core.prototype._createParams = function (params) {
+    var parent = module;
+
+    while (parent.parent) {
+        parent = parent.parent;
+    }
+
+    params = _.extend({
+        root: path.dirname(parent.filename),
+        implicitBase: 0
+    }, params);
+
+    params.unitSettings = Object(params.unitSettings);
+
+    _.forOwn(params.unitSettings, function (settings, unitName) {
+        params.unitSettings[unitName] = _.extend({}, settings);
+    });
+
+    return params;
 };
 
 /**

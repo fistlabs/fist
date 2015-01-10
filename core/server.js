@@ -16,14 +16,7 @@ var STATUS_CODES = http.STATUS_CODES;
  * @extends Core
  * */
 function Server(params) {
-    params = _.extend({
-        trustProxy: 'loopback'
-    }, params);
-
     Core.call(this, params);
-
-    //  compile parameter
-    this.params.trustProxy = proxyAddr.compile(this.params.trustProxy);
 
     /**
      * @public
@@ -127,6 +120,27 @@ Server.prototype.handle = function (req, res, logger) {
     promise.then(function () {
         this._runTrack(req, res, logger);
     }, this);
+};
+
+/**
+ * @protected
+ * @memberOf {Server}
+ * @method
+ *
+ * @param {*} [params]
+ *
+ * @returns {Object}
+ * */
+Server.prototype._createParams = function (params) {
+    params = _.extend({
+        trustProxy: 'loopback'
+    }, params);
+
+    params = Core.prototype._createParams.call(this, params);
+
+    params.trustProxy = proxyAddr.compile(params.trustProxy);
+
+    return params;
 };
 
 /**
