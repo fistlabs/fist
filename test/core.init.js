@@ -321,6 +321,36 @@ describe('core/init', function () {
             });
         });
 
+        it('Should inherit unit.settings', function (done) {
+            var core = new Core();
+
+            core.unit({
+                name: 'foo',
+                settings: {
+                    foo: 'bar'
+                }
+            });
+
+            core.unit({
+                name: 'bar',
+                base: 'foo',
+                settings: {
+                    bar: 'baz'
+                }
+            });
+
+            core.ready().done(function () {
+                assert.deepEqual(core.getUnit('foo').settings, {
+                    foo: 'bar'
+                });
+
+                assert.deepEqual(core.getUnit('bar').settings, {
+                    foo: 'bar',
+                    bar: 'baz'
+                });
+                done();
+            });
+        });
     });
 
     describe('unit.createContext()', function () {

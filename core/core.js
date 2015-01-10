@@ -284,10 +284,8 @@ Core.prototype._createParams = function (params) {
         implicitBase: 0
     }, params);
 
-    params.unitSettings = Object(params.unitSettings);
-
-    _.forOwn(params.unitSettings, function (settings, unitName) {
-        params.unitSettings[unitName] = _.extend({}, settings);
+    params.unitSettings = _.mapValues(params.unitSettings, function (settings) {
+        return _.clone(settings);
     });
 
     return params;

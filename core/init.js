@@ -325,6 +325,8 @@ function init(app) {
             return fullDeps;
         }, deps);
 
+        members.settings = _.extend({}, this.prototype.settings, members.settings);
+
         return inherit([this].concat(mixins), members, statics);
     };
 
