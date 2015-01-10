@@ -36,6 +36,18 @@ describe('core/core', function () {
                 var core = new Core({root: '/path/'});
                 assert.strictEqual(core.params.root, '/path/');
             });
+
+            it('Should support core.params.unitSettings', function () {
+                var fooSettings = {foo: 'bar'};
+                var core = new Core({unitSettings: {foo: fooSettings}});
+                assert.deepEqual(core.params.unitSettings, {
+                    foo: {
+                        foo: 'bar'
+                    }
+                });
+
+                assert.notStrictEqual(core.params.unitSettings.foo, fooSettings);
+            });
         });
 
         describe('core.logger', function () {

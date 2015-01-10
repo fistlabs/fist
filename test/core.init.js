@@ -1169,4 +1169,99 @@ describe('core/init', function () {
             });
         });
     });
+
+    describe('unit.settings', function () {
+        it('Should support static unit settings as unit member', function (done) {
+            var core = new Core();
+            var settings = {
+                foo: 'bar'
+            };
+
+            core.unit({
+                name: 'foo',
+                settings: settings
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                assert.deepEqual(unit.settings, {
+                    foo: 'bar'
+                });
+
+                assert.notStrictEqual(unit.settings, settings);
+                done();
+            });
+        });
+
+        it('Should support static unit settings as core.params.unitSettings', function (done) {
+            var settings = {
+                foo: 'bar'
+            };
+
+            var core = new Core({
+                unitSettings: {
+                    foo: settings
+                }
+            });
+
+            core.unit({
+                name: 'foo'
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                assert.deepEqual(unit.settings, {
+                    foo: 'bar'
+                });
+
+                assert.notStrictEqual(unit.settings, settings);
+                done();
+            });
+        });
+
+        it('core.params.unitSettings should overwrite unit.settings', function (done) {
+            var settings = {
+                foo: 'bar'
+            };
+
+            var core = new Core({
+                unitSettings: {
+                    foo: settings
+                }
+            });
+
+            core.unit({
+                name: 'foo',
+                settings: {
+                    bar: 'baz'
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                assert.deepEqual(unit.settings, {
+                    foo: 'bar',
+                    bar: 'baz'
+                });
+
+                assert.notStrictEqual(unit.settings, settings);
+                assert.notStrictEqual(core.params.unitSettings.foo, settings);
+                done();
+            });
+        });
+
+        it('Should not fail if core.params.settings is not an object', function (done) {
+            var core = new Core({
+                unitSettings: null
+            });
+
+            core.unit({
+                name: 'foo'
+            });
+
+            core.ready().done(function () {
+                done();
+            });
+        });
+    });
 });
