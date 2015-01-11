@@ -236,7 +236,7 @@ describe('core/server', function () {
                 supertest(agent.getHandler()).
                     get('/').
                     expect(500).
-                    expect('baz').
+                    expect(STATUS_CODES[500]).
                     end(function (err) {
                         assert.deepEqual(spy, ['foo', 'bar']);
                         done(err);

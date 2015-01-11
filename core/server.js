@@ -214,7 +214,7 @@ Server.prototype._nextRun = function (track, matches, pos) {
         }
 
         if (err) {
-            track.status(500).send(err);
+            track.status(500).send();
             return;
         }
 
