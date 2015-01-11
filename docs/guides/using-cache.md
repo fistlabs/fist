@@ -7,11 +7,11 @@
 * ```Number unit.maxAge```
 * ```String unit.cache```
 
-It is you main tools to provide caching in your units.
+It is your main tools to provide caching of your units.
 
 First, ```app.caches```. It is an object, containing cache engines instances by keys as instance names. By default there are just ```"local"``` cache. Local cache is a fast local lru-cache.
 
-If you want any other cache mechainsm yout should provide an object with supported interface:
+If you want any other cache mechanism your should provide an object with supported interface:
 ```js
 cache.get(String key, Function done);
 cache.set(String key, * value, Number ttl, Function done);
@@ -21,14 +21,14 @@ cache.set(String key, * value, Number ttl, Function done);
 ```ttl``` max age of current cache entry (Seconds). It should be a Number.
 ```done``` done callback should be called with (error) as single argument id operation was failed or as (null, result) if operation successfully done. Both for get and set
 
-E.g. you can get [memcached](https://www.npmjs.com/package/memcached) client that provides that interface by defauilt.
+E.g. you can get [memcached](https://www.npmjs.com/package/memcached) client that provides that interface by default.
 Then you need to add this object to ```app.caches```:
 
 Example as plugin:
 ```js
-var Mamcached = require('memcached');
+var Memcached = require('memcached');
 module.exports = function (app) {
-    app.caches.memcached = new Mamcached(app.params.memcached);
+    app.caches.memcached = new Memcached(app.params.memcached);
 };
 ```
 
@@ -37,12 +37,12 @@ By default it is ```"local"```, you may do not specify ```unit.cache``` property
 
 ```js
 app.unit({
-    cache: 'memcached',
-    name: 'foo'
+    name: 'foo',
+    cache: 'memcached'
 });
 ```
 
-Now unit knows that it should use ```memcached``` instance, but to enable cache you should specify ```unit.maxAge``` > 0:
+Now unit knows that it should use ```memcached``` instance, but to enable cache you should specify ```unit.maxAge > 0```:
 
 ```js
 app.unit({
@@ -55,7 +55,7 @@ app.unit({
 done! Now, unit ```foo``` will be cached for 5 seconds.
 
 ##Cache key
-```Unit``` have special method ```unit.identify```. It should provide unique key as hash of all result affecting parameters. If your unit use any execution parameters that you must override this method to avoid cache collisions and other hard-to-find bugs.
+```Unit``` have special method ```unit.identify(track, args)```. It should provide unique key as dict of all result affecting arguments. If your unit use any execution parameters that you must override this method to avoid cache collisions and other hard-to-find application bugs.
 
 In other words this method should return result identity for current call. Returned value will be used to generate cache key. You should not be care about unit deps inside this method. Their keys will be used for generate cache key. By default this method returns ```"static"``` String.
 
@@ -79,7 +79,7 @@ Unit execution result directly depends on its deps results. Because of that unit
 There are many restrictions, but it is all to avoid many problems with incorrect caching.
 
 ##Also
-You should know that ```unit.identify``` used not only for generating cache keys. Call identity also used for during-request unit invocations mimorization. You can call your units with different arguments, and in this case you shout correcly provide this method.
+You should know that ```unit.identify``` used not only for generating cache keys. Identity also used for during-request unit invocations memorization. You can call your units with different arguments, and in this case you shout correctly provide this method.
 
 ##Totally
-Use cache! But be careful with generating keys. Use local cache for simple dependencies, e.g. some parsers, helpers. It is makes no sense to store its results in memcache or database. Use memcached for caching http-apis, returning static data, eg. news, articles. Do not use cache for dynamic apis like athorization or outgoing modifying requests.
+Use cache! But be careful with generating keys. Use local cache for simple dependencies, e.g. some parsers, helpers. It is makes no sense to store its results in memcached or database. Use memcached for caching http-apis, returning static data, eg. news, articles. Do not use cache for dynamic apis like authentication or outgoing modifying requests.

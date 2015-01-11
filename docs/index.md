@@ -11,6 +11,7 @@ $ npm install fist
 Now, you ready to start develop your ```hello world```.
 
 _app.js:_
+
 ```js
 'use strict';
 
@@ -20,9 +21,7 @@ var app = fist();
 app.listen(1337);
 ```
 
-Read the full [```Application``` reference](/docs/reference/application.md)
-
-Fist application consists of many modules, called plugins. The plugins placed in fist_plugins directory inside your project will be loaded automatically.
+Fist application consists of many modules, called plugins. The plugins placed in ```fist_plugins``` directory inside your project will be loaded automatically.
 
 Let's write a plugin that installs a controller unit to the application.
 
@@ -45,14 +44,10 @@ module.exports = function (app) {
 };
 ```
 
-[Track](/docs/reference/track.md) is an abstraction over IncomingMesage and ServerResponse. This object is created once for each incoming request.
-[Context](/docs/reference/context.md) is a unit execution context. This object is created for each unit invocation and consists of unit dependencies results and execution parameters.
-
-[Read more](/docs/reference/unit.md) about unit interface.
-
 Now, we need to assign the unit to the route. Let's create routes plugin where we will configure all the server routes.
 
 _fist_plugins/routes.js:_
+
 ```js
 'use strict';
 
@@ -62,11 +57,9 @@ module.exports = function (app) {
 };
 ```
 
-Read the full [```Router``` reference](/docs/reference/router.md)
-
-That is all. Now we ere only need to ```$ node app.js```
-
-See the [example code](/examples/hello)
+That is all. Now we are only need to ```$ node app.js```
 
 --------
-This is an ultra short guide. See the full [API reference](/docs/reference/index.md) and [Guides](/docs/guides/index.md) for more details.
+See the [example code](/examples/hello)
+
+This is an extremely short guide. See the full [API reference](/docs/reference/index.md) and [Guides](/docs/guides/index.md) for more details.

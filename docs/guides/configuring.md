@@ -38,17 +38,17 @@ var app = require('fist')({
 });
 ```
 
-Also I advise you to store all your confuguration at one place in separate file.
+Also I advise you to store all your configuration at one place in separate file.
 ```js
 var app = require('fist')(require('./configs'));
-app.listen(app.params.sock);
+app.listen(app.params.port);
 ```
 
-Is not it clear? It is really enought for app.js! =)
+It is really enough for app.js! =)
 
 You can ask me, what about any application business logic? Where it will be installed?
 
-I strictly recommend you to do not write any code in your main server-up file. Please, devide your code to plugins.
+I strictly recommend you to do not write any code in your main server-up file. Please, divide your code to plugins.
 Now my app.js is done. Next, I want to configure my router.
 
 I just should create plugin file in ```fist_plugins``` directory.
@@ -67,20 +67,29 @@ module.exports = function (app) {
 
 Router plugin is done. Next I should write units to handle my routes. Units also may be installed from plugins.
 
+_fist_plugins/units/controllers/index.js:_
+
+```js
+module.exports = function (app) {
+    app.unit({
+        name: 'index',
+        main: function (track, context) {
+            track.send('Hello, world!');
+        }
+    });
+};
+```
+
 ##Configuring plugins
 Once you could see code like that:
+
 ```js
 app.use(require('some-plugin')({plugin: 'config'}));
 ```
 
-Fist plugins also supports configuration like above:
-```js
-app.install('some-plugin', {plugin: 'config'});
-```
-
 But i think it is not good. Why do not like below?
 
-```configs.js``` :
+_configs.js:_
 
 ```js
 module.exports = {
@@ -90,14 +99,14 @@ module.exports = {
 };
 ```
 
-```app.js``` :
+_app.js:_
 
 ```js
 var app = require('fist')(require('./configs'));
 app.install('path/to/some-plugin');
 ```
 
-```path/to/some-plugin.js``` :
+_fist_plugins/some-plugin.js:_
 
 ```js
 var _ = require('lodash-node');
@@ -110,7 +119,32 @@ module.exports = function (app) {
 };
 ```
 
-Is not it more clear? Single place configuration looking good. Plugins may provide default configuration if no configuration directly specified, but it is separate guide.
+Single place configuration looking good. Also you can provide settings to pass in unit internal constructor:
+
+_config.js_
+
+```js
+module.exports = {
+    unitSettings: {
+        'news.list': {
+            postsCount: 10
+        }
+    }
+};
+```
+
+_fist_plugins/units/models/news.list.js:_
+
+```js
+module.exports = function (app) {
+    app.unit({
+        name: 'news.list',
+        main: function (track, context) {
+            assert.strictEqual(this.settings.postsCount, 10);
+        }
+    });
+};
+```
 
 ##Totally
 ```fistlabs``` recommend you to keep your project configs in one place, excluding really special cases when it makes no sense to keep some constants in global project configuration.
