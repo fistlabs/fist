@@ -195,19 +195,6 @@ describe('core/core', function () {
             });
         });
 
-        it('Should install plugin with settings', function () {
-            var core = new Core();
-            core.install(path.join(__dirname, 'fixtures/plug/with-settings/plugin.js'), {
-                foo: 'bar'
-            });
-
-            core.ready().done(function () {
-                assert.deepEqual(core.settings, {
-                    foo: 'bar'
-                });
-            });
-        });
-
         it('Should not install plugin a twice', function (done) {
             var core = new Core();
 

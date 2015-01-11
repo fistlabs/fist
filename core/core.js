@@ -237,24 +237,23 @@ Core.prototype.plugin = function (plugin) {
  * @method
  *
  * @param {String} moduleName
- * @param {*} [settings]
  *
  * @returns {Core}
  * */
-Core.prototype.install = function (moduleName, settings) {
+Core.prototype.install = function (moduleName) {
 
     try {
         //  is module
         moduleName = require.resolve(moduleName);
 
-        this.plugin(createInstaller(moduleName, settings));
+        this.plugin(createInstaller(moduleName));
 
     } catch (err) {
         this.plugin(function (agent) {
             var opts = {silent: true, cwd: agent.params.root};
             return vowFs.glob(moduleName, opts).then(function (paths) {
                 _.forEach(paths, function (fileName) {
-                    agent.plugin(createInstaller(fileName, settings));
+                    agent.plugin(createInstaller(fileName));
                 });
             });
         });
@@ -325,7 +324,7 @@ Core.prototype._installPlugin = function (plug) {
 
 };
 
-function createInstaller(moduleName, settings) {
+function createInstaller(moduleName) {
     return function (agent) {
         if (_.has(agent._installed, moduleName)) {
             agent.logger.debug('The plugin %s has already installed, skipping', moduleName);
@@ -334,13 +333,8 @@ function createInstaller(moduleName, settings) {
 
         agent._installed[moduleName] = true;
 
-        if (settings) {
-            agent.logger.debug('Installing plugin %s(%j)', moduleName, settings);
-            agent.plugin(require(moduleName)(settings));
-        } else {
-            agent.logger.debug('Installing plugin %s', moduleName);
-            agent.plugin(require(moduleName));
-        }
+        agent.logger.debug('Installing plugin %s', moduleName);
+        agent.plugin(require(moduleName));
     };
 }
 
