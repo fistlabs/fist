@@ -12,6 +12,14 @@ function Context(logger) {
      * @public
      * @memberOf {Context}
      * @property
+     * @type {String}
+     * */
+    this.identity = null;
+
+    /**
+     * @public
+     * @memberOf {Context}
+     * @property
      * @type {Logger}
      * */
     this.logger = logger;

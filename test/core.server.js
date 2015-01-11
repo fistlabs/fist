@@ -307,7 +307,8 @@ describe('core/server', function () {
             asker({
                 host: 'localhost',
                 path: '/',
-                port: port
+                port: port,
+                timeout: 10000
             }).done(function (res) {
                 assert.deepEqual(res.data, new Buffer('foo'));
                 srv.close();
