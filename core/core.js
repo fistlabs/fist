@@ -385,7 +385,7 @@ function createUnits() {
             var name = UnitClass.prototype.name;
 
             if (/^[a-z]/i.test(name)) {
-                this._units[name] = new UnitClass(this.params.unitSettings[name]);
+                this._units[name] = new UnitClass();
             }
 
         }, this);

@@ -322,12 +322,18 @@ describe('core/init', function () {
         });
 
         it('Should inherit unit.settings', function (done) {
-            var core = new Core();
+            var core = new Core({
+                unitSettings: {
+                    foo: {
+                        foo: 'bar'
+                    }
+                }
+            });
 
             core.unit({
                 name: 'foo',
                 settings: {
-                    foo: 'bar'
+                    foo: ':('
                 }
             });
 
@@ -339,6 +345,11 @@ describe('core/init', function () {
                 }
             });
 
+            core.unit({
+                name: 'baz',
+                base: 'foo'
+            });
+
             core.ready().done(function () {
                 assert.deepEqual(core.getUnit('foo').settings, {
                     foo: 'bar'
@@ -348,6 +359,11 @@ describe('core/init', function () {
                     foo: 'bar',
                     bar: 'baz'
                 });
+
+                assert.deepEqual(core.getUnit('baz').settings, {
+                    foo: 'bar'
+                });
+
                 done();
             });
         });
@@ -1251,7 +1267,8 @@ describe('core/init', function () {
 
         it('core.params.unitSettings should overwrite unit.settings', function (done) {
             var settings = {
-                foo: 'bar'
+                foo: 'bar',
+                bar: 'baz'
             };
 
             var core = new Core({
@@ -1263,7 +1280,7 @@ describe('core/init', function () {
             core.unit({
                 name: 'foo',
                 settings: {
-                    bar: 'baz'
+                    bar: ':('
                 }
             });
 
