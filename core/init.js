@@ -37,7 +37,7 @@ function init(app) {
      * Common Fist Unit interface
      * @class Unit
      * */
-    function Unit(settings) {
+    function Unit() {
         //  check dependencies issues
         assertDepsOk(app.getUnitClass(this.name), []);
 
@@ -52,14 +52,6 @@ function init(app) {
         if (!_.has(app.caches, this.cache)) {
             throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
         }
-
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        this.settings = _.extend({}, this.settings, settings);
 
         /**
          * @protected
@@ -325,7 +317,10 @@ function init(app) {
             return fullDeps;
         }, deps);
 
-        members.settings = _.extend({}, this.prototype.settings, members.settings);
+        members.settings = _.extend({},
+            this.prototype.settings,
+            members.settings,
+            app.params.unitSettings[members.name]);
 
         return inherit([this].concat(mixins), members, statics);
     };
