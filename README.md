@@ -11,11 +11,6 @@ fist [![Build Status](https://travis-ci.org/fistlabs/fist.svg?branch=master)](ht
 * Built-in logging tools
 * Built-in cache
 
-#Installation
-```
-$ npm install fist
-```
-
 #Docs
 * [Quick start](/docs/index.md)
 * [Guides](/docs/guides/index.md)
