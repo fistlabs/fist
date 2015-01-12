@@ -189,8 +189,8 @@ app.unit({
         return loadPost(context.p('postId'));
     },
     //   say fist that the result of this unit depends on args.postId
-    identify: function (track, args) {
-        return args.postId;
+    identify: function (track, context) {
+        return context.p('postId');
     }
 });
 ```

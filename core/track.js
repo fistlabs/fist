@@ -70,8 +70,8 @@ Track.prototype.constructor = Track;
  * @param {Function} done
  * */
 Track.prototype.eject = function (unit, args, done) {
-    var context;
-    var identity = unit.identify(this, Object(args));
+    var context = unit.createContext(this, args);
+    var identity = context.identity = unit.identify(this, context);
     var logger = this.logger;
     var name = unit.name;
     var hash = name + '-' + identity;
@@ -105,9 +105,6 @@ Track.prototype.eject = function (unit, args, done) {
     if (calls.onOk.length > 1) {
         return;
     }
-
-    context = unit.createContext(this, args);
-    context.identity = identity;
 
     unit.call(this, context, function (err, val) {
         var i = 0;

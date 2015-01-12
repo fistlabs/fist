@@ -55,7 +55,7 @@ app.unit({
 done! Now, unit ```foo``` will be cached for 5 seconds.
 
 ##Cache key
-```Unit``` have special method ```unit.identify(track, args)```. It should provide unique key as dict of all result affecting arguments. If your unit use any execution parameters that you must override this method to avoid cache collisions and other hard-to-find application bugs.
+```Unit``` have special method ```unit.identify(track, context)```. It should provide unique key as dict of all result affecting arguments. If your unit use any execution parameters that you must override this method to avoid cache collisions and other hard-to-find application bugs.
 
 In other words this method should return result identity for current call. Returned value will be used to generate cache key. You should not be care about unit deps inside this method. Their keys will be used for generate cache key. By default this method returns ```"static"``` String.
 
@@ -66,8 +66,8 @@ app.unit({
     main: function (track, context) {
         return context.p('x') * 42;
     },
-    identify: function (track, args) {
-        return args.x;
+    identify: function (track, context) {
+        return context.p('x');
     }
 });
 ```
