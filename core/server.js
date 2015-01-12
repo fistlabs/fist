@@ -6,6 +6,7 @@ var Router = /** @type Router */ require('finger/core/router');
 
 var _ = require('lodash-node');
 var http = require('http');
+
 var proxyAddr = require('proxy-addr');
 var uniqueId = require('unique-id');
 
@@ -156,13 +157,12 @@ Server.prototype._runTrack = function (req, res, logger) {
     var track;
 
     if (!router.isImplemented(verb)) {
-        logger.warn('There is no %s handlers', verb);
         res.statusCode = 501;
         res.end(STATUS_CODES[501]);
         return;
     }
 
-    matches = router.matchAll(verb, path);
+    matches = router.matchAll(path, verb);
 
     if (matches.length) {
         track = new Connect(this, logger, req, res);
@@ -176,12 +176,10 @@ Server.prototype._runTrack = function (req, res, logger) {
     matches = router.matchVerbs(path);
 
     if (matches.length) {
-        logger.warn('The method %s is not allowed for resource %s', verb, path);
         res.statusCode = 405;
         res.setHeader('Allow', matches.join(', '));
         res.end(STATUS_CODES[405]);
     } else {
-        logger.warn('There is no matching route');
         res.statusCode = 404;
         res.end(STATUS_CODES[404]);
     }
