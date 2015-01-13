@@ -104,7 +104,7 @@ module.exports = function (app) {
         options: function (track, context) {
             return {
                 hostname: 'nodejs.org',
-                // use execution parameter as part of outgoing request part
+                // use execution parameter as part of outgoing request path
                 path: '/api/' + context.p('doc').toLowerCase() + '.json',
                 timeout: 10000
             };
