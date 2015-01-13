@@ -4,7 +4,7 @@ This is a quick reference to start writing right now
 
 Let's write custom face for [https://nodejs.org/api/](https://nodejs.org/api/) as example
 
-_package.json:_
+_[package.json](/examples/njsdoc/package.json):_
 
 ```js
 {
@@ -25,7 +25,7 @@ $ npm install
 
 Project configuration:
 
-_configs.js:_
+_[configs.js](/examples/njsdoc/configs.js):_
 
 ```js
 module.exports = {
@@ -52,7 +52,7 @@ _Read the [configuration guide](/docs/guides/configuring.md)_
 
 In the main application file we only need to instantiate the framework and run http server. All plugins will be included automatically.
 
-_app.js:_
+_[app.js](/examples/njsdoc/app.js):_
 
 ```js
 var configs = require('./configs');
@@ -67,7 +67,7 @@ Fist application consists of many modules, called plugins. The plugins placed in
 
 In our project we need to use some plugins. Let's write the plugin which installs theirs
 
-_fist_plugins/setup.js:_
+_[fist_plugins/setup.js](/examples/njsdoc/fist_plugins/setup.js):_
 
 ```js
 module.exports = function (app) {
@@ -83,7 +83,7 @@ _Read the [plugins guide](/docs/guides/using-plugins.md)_
 
 Now we should to create model unit for our documentation pages. The pages are so similar, therefore we only need to create one general model.
 
-_fist_plugins/units/models/document.js:_
+_[fist_plugins/units/models/document.js](/examples/njsdoc/fist_plugins/units/models/document.js):_
 
 ```js
 module.exports = function (app) {
@@ -120,6 +120,8 @@ module.exports = function (app) {
 _Read [power of units](/docs/guides/power-of-units.md) guide_
 
 Now, we ready to write the controller for our page
+
+_[fist_plugins/units/controllers/doc_page.js](/examples/njsdoc/fist_plugins/units/controllers/doc_page.js)_
 
 ```js
 var marked = require('marked');
