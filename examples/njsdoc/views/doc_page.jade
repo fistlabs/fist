@@ -1,0 +1,26 @@
+doctype html
+html
+    head: title=result.get('document.source')
+
+    body
+        each item in result.get('document.desc', [])
+            case item.type
+                when 'list_start'
+                    if item.ordered
+                        ol
+                    else
+                        ul
+                when 'text'
+                    li!=md(item.text)
+
+        each module in result.get('document.modules', [])
+            h1=module.textRaw
+            if module.stability
+                i='Stability: ' + module.stability + ' (' + module.stabilityText + ')'
+
+            !=module.desc
+
+            each method in module.methods || []
+                h2=method.textRaw
+                !=method.desc
+

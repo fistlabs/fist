@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "fist": "3.2",
+    "fist-fistlabs_unit_asker": "0.0.1",
+    "fist-fistlabs_unit_controller": "0.0.2",
+    "jade": "1.8.2",
+    "consolidate": "0.10.0",
+    "marked": "0.3.2"
+  }
+}
