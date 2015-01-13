@@ -159,4 +159,7 @@ $ node app.js
 
 --------
 See the full [example code](/examples/njsdoc)
-See the full [API reference](/docs/reference/index.md) and [Guides](/docs/guides/index.md) for more details.
+
+Read more:
+* [API reference](/docs/reference/index.md)
+* [Guides](/docs/guides/index.md)
