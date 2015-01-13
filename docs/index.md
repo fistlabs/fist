@@ -48,7 +48,7 @@ module.exports = {
 };
 ```
 
-Read the [configuration guide](/docs/guides/configuring.md)
+_Read the [configuration guide](/docs/guides/configuring.md)_
 
 In the main application file we only need to instantiate the framework and run http server. All plugins will be included automatically.
 
@@ -79,7 +79,7 @@ module.exports = function (app) {
 };
 ```
 
-Read the [plugins guide](/docs/guides/using-plugins.md)
+_Read the [plugins guide](/docs/guides/using-plugins.md)_
 
 Now we should to create model unit for our documentation pages. The pages are so similar, therefore we only need to create one general model.
 
@@ -117,6 +117,8 @@ module.exports = function (app) {
 };
 ```
 
+_Read [power of units](/docs/guides/power-of-units.md) guide_
+
 Now, we ready to write the controller for our page
 
 ```js
@@ -153,7 +155,7 @@ module.exports = function (app) {
 };
 ```
 
-Now we only need to create [_views/doc_page.jade_](/examples/njsdoc/views/doc_page.jade).
+Now we only need to create [views/doc_page.jade](/examples/njsdoc/views/doc_page.jade).
 
 ```js
 $ node app.js

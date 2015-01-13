@@ -53,8 +53,9 @@ module.exports = function (app) {
 
 See the [full example code](/examples/hello/)
 
+#[Quick start](/docs/index.md)
+
 #Docs
-* [Quick start](/docs/index.md)
 * [Guides](/docs/guides/index.md)
 * [API reference](/docs/reference/index.md)
 
