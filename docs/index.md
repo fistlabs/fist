@@ -150,7 +150,7 @@ module.exports = function (app) {
             //  Need to use marked module in our jade templates.
             //  Add it to context which will pe passed to view template
             context.md = marked;
-            //  Cass base method to render template
+            //  Call base method to render template
             return this.__base(track, context);
         }
     });
