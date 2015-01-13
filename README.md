@@ -53,7 +53,7 @@ module.exports = function (app) {
 
 See the [full example code](/examples/hello/)
 
-#[Quick start](/docs/index.md)
+###[Quick start](/docs/index.md)
 
 #Docs
 * [Guides](/docs/guides/index.md)
