@@ -63,6 +63,8 @@ app.listen(app.params.port);
 
 It is really enough for main application file.
 
+Fist application consists of many modules, called plugins. The plugins placed in ```fist_plugins``` directory inside your project will be loaded automatically.
+
 In our project we need to use some plugins. Let's write the plugin which installs theirs
 
 _fist_plugins/setup.js:_

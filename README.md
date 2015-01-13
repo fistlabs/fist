@@ -25,10 +25,6 @@ var app = fist();
 app.listen(1337);
 ```
 
-Fist application consists of many modules, called plugins. The plugins placed in ```fist_plugins``` directory inside your project will be loaded automatically.
-
-Let's write a plugin that installs a controller unit to the application.
-
 _fist_plugins/units/controllers/hello.js:_
 
 ```js
@@ -44,8 +40,6 @@ module.exports = function (app) {
     });
 };
 ```
-
-Now, we need to assign the unit to the route. Let's create routes plugin where we will configure all the server routes.
 
 _fist_plugins/routes.js:_
 
