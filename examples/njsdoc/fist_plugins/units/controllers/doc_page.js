@@ -22,7 +22,7 @@ module.exports = function (app) {
 
             context.md = marked;
 
-            this.__base(track, context);
+            return this.__base(track, context);
         }
     });
 };

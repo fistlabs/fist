@@ -145,7 +145,7 @@ module.exports = function (app) {
             //  Add it to context which will pe passed to view template
             context.md = marked;
             //  Cass base method to render template
-            this.__base(track, context);
+            return this.__base(track, context);
         }
     });
 };
