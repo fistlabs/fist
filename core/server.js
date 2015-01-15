@@ -206,12 +206,12 @@ Server.prototype._nextRun = function (track, matches, pos) {
     track.logger.note('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
 
     /** @this {Server} */
-    this.callUnit(track, match.data.unit, null, function (err) {
+    this.callUnit(track, match.data.unit, null, function (ctx) {
         if (track.wasSent()) {
             return;
         }
 
-        if (err) {
+        if (ctx.isRejected()) {
             track.status(500).send();
             return;
         }

@@ -65,43 +65,25 @@ function init(app) {
          * @public
          * @memberOf {Unit}
          * @property
-         * @type {Object}
+         * @type {Array<String>}
          * */
-        this.deps = _.uniq(this.deps);
-
-        Object.freeze(this.deps);
+        this.deps = buildDeps(this);
 
         /**
-         * @this {Unit}
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Array<String>}
          * */
-        this.depsMap = _.reduce(this.deps, function (depsMap, name) {
-            if (_.has(this.depsMap, name)) {
-                depsMap[name] = this.depsMap[name];
-            } else {
-                depsMap[name] = name;
-            }
-
-            return depsMap;
-        }, {}, this);
-
-        Object.freeze(this.depsMap);
+        this.depsMap = buildDepsMap(this);
 
         /**
-         * @this {Unit}
+         * @public
+         * @memberOf {Unit}
+         * @property
+         * @type {Array<String>}
          * */
-        this.depsArgs = _.reduce(this.deps, function (depsArgs, name) {
-            var args = this.depsArgs[name];
-            if (_.isFunction(args)) {
-                depsArgs[name] = args.bind(this);
-            } else {
-                depsArgs[name] = function () {
-                    return args;
-                };
-            }
-            return depsArgs;
-        }, {}, this);
-
-        Object.freeze(this.depsArgs);
+        this.depsArgs = buildDepsArgs(this);
     }
 
     Unit.prototype = {
@@ -190,33 +172,32 @@ function init(app) {
          * @returns {*}
          * */
         call: function (track, context, done) {
-            var dStartExec = new Date();
             var result;
 
             context.logger.debug('Pending...');
 
-            fetch(this, track, context, function (err, val) {
-                var execTime = new Date() - dStartExec;
+            fetch(this, track, context, function () {
+                var execTime = context.getTimePassed();
 
-                if (err) {
-                    if (track.isFlushed()) {
-                        context.logger.warn('Skip error in %dms', execTime, err);
+                if (context.isRejected()) {
+                    if (context.skipped) {
+                        context.logger.warn('Skip error in %dms', execTime, context.valueOf());
                     } else {
-                        context.logger.error('Rejected in %dms', execTime, err);
+                        context.logger.error('Rejected in %dms', execTime, context.valueOf());
                     }
 
-                    done(err);
+                    done(context);
 
                     return;
                 }
 
-                if (val) {
+                if (context.isAccepted()) {
                     context.logger.debug('Accepted in %dms', execTime);
                 } else {
                     context.logger.debug('Skip result in %dms', execTime);
                 }
 
-                done(null, val);
+                done(context);
             });
         },
 
@@ -226,13 +207,13 @@ function init(app) {
          * @method
          *
          * @param {Object} track
-         * @param {Object} args
+         * @param {Object} context
          *
          * @returns {*}
          * */
-        identify: function (track, args) {
+        identify: function (track, context) {
             /*eslint no-unused-vars: 0*/
-            return 'static';
+            return context.identity;
         },
 
         /**
@@ -355,55 +336,60 @@ function init(app) {
     }
 
     function fetch(self, track, context, done) {
-        var dDepsStart;
-        var deps = self.deps;
+        var paths = self.deps;
         var i;
-        var l = deps.length;
-        var remaining = l;
+        var l = paths.length;
 
-        if (remaining === 0) {
+        if (l === 0) {
             cache(self, track, context, done);
             return;
         }
 
-        dDepsStart = new Date();
-
-        function fetchDep(pos) {
-            var name = deps[pos];
-            var args = self.depsArgs[name](track, context);
-            var path = self.depsMap[name];
-
-            app.callUnit(track, name, args, function (err, val) {
-
-                if (track.isFlushed()) {
-                    context.logger.debug('The track was flushed by deps, skip invocation');
-                    done(null, null);
-                    return;
-                }
-
-                if (err) {
-                    context.skipCache = true;
-                    Obus.add(context.errors, path, err);
-                } else {
-                    if (val.updated) {
-                        context.needUpdate = true;
-                    }
-                    context.keys[pos] = val.identity;
-                    Obus.add(context.result, path, val.result);
-                }
-
-                remaining -= 1;
-
-                if (remaining === 0) {
-                    context.logger.debug('Deps %j resolved in %dms', deps, new Date() - dDepsStart);
-                    cache(self, track, context, done);
-                }
-            });
-        }
+        context.paths = paths;
+        context.pathsLeft = l;
 
         for (i = 0; i < l; i += 1) {
-            fetchDep(i);
+            resolvePath(self, track, context, i, done);
         }
+    }
+
+    function resolvePath(self, track, context, i, done) {
+        var name = context.paths[i];
+        var args = self.depsArgs[name](track, context);
+        var path = self.depsMap[name];
+
+        app.callUnit(track, name, args, function (depCtx) {
+
+            if (context.skipped) {
+                return;
+            }
+
+            if (depCtx.skipped) {
+                context.skipped = true;
+                context.logger.debug('The track was flushed by deps, skip invocation');
+                done(context);
+                return;
+            }
+
+            if (depCtx.isRejected()) {
+                context.skipCache = true;
+                Obus.add(context.errors, path, depCtx.valueOf());
+            } else {
+                if (depCtx.updated) {
+                    context.needUpdate = true;
+                }
+                context.keys[i] = depCtx.identity;
+                Obus.add(context.result, path, depCtx.valueOf());
+            }
+
+            context.pathsLeft -= 1;
+
+            if (context.pathsLeft === 0) {
+                context.logger.debug('Deps %(paths)j resolved in %dms',
+                    context.getTimePassed(), context);
+                cache(self, track, context, done);
+            }
+        });
     }
 
     /**
@@ -416,32 +402,25 @@ function init(app) {
 }
 
 function cache(self, track, context, done) {
-    var identity = context.identity;
-    var cacheKey;
 
     if (!(self.maxAge > 0) || context.skipCache) {
-        main(self, track, context, identity, done);
+        main(self, track, context, done);
         return;
     }
 
-    cacheKey = self.name + '-' + identity + '-' + context.keys.join('-');
+    context.cacheKey = self.name + '-' + context.identity + '-' + context.keys.join('-');
 
     if (context.needUpdate) {
-        update(self, track, context, identity, cacheKey, done);
+        update(self, track, context, done);
         return;
     }
 
-    self._cache.get(cacheKey, function (err, val) {
-        if (!err && val) {
+    self._cache.get(context.cacheKey, function (err, data) {
+        if (!err && data) {
             context.logger.debug('Found in cache');
-
-            val = {
-                result: val.result,
-                updated: false,
-                identity: val.identity
-            };
-
-            done(null, val);
+            context.value = data.value;
+            context.status = 'ACCEPTED';
+            done(context);
             return;
         }
 
@@ -451,51 +430,88 @@ function cache(self, track, context, done) {
             context.logger.note('Outdated');
         }
 
-        update(self, track, context, identity, cacheKey, done);
+        update(self, track, context, done);
     });
 }
 
-function main(self, track, context, identity, done) {
+function main(self, track, context, done) {
 
-    function makeVal(result) {
+    function makeVal(result, status) {
         if (track.isFlushed()) {
+            context.skipped = true;
             context.logger.debug('The track was flushed during execution');
-            return null;
+            return context;
         }
 
-        return {
-            updated: true,
-            result: result,
-            identity: identity
-        };
+        context.value = result;
+        context.updated = true;
+        context.status = status;
+
+        return context;
     }
 
     vow.invoke(function () {
         return self.main(track, context);
-    }).then(function (res) {
-        done(null, makeVal(res));
-    }, done);
+    }).done(function (res) {
+        done(makeVal(res, 'ACCEPTED'));
+    }, function (err) {
+        done(makeVal(err, 'REJECTED'));
+    });
 }
 
-function update(self, track, context, identity, cacheKey,  done) {
-    main(self, track, context, identity, function (err, val) {
-        if (err) {
-            done(err);
+function update(self, track, context, done) {
+    main(self, track, context, function () {
+        if (context.isRejected()) {
+            done(context);
             return;
         }
 
-        if (val) {
-            self._cache.set(cacheKey, val, self.maxAge, function (setCacheErr) {
-                if (setCacheErr) {
-                    context.logger.warn('Failed to set cache', setCacheErr);
+        if (context.isAccepted()) {
+            self._cache.set(context.cacheKey, {value: context.valueOf()}, self.maxAge, function (err) {
+                if (err) {
+                    context.logger.warn('Failed to set cache', err);
                 } else {
                     context.logger.note('Updated');
                 }
             });
         }
 
-        done(null, val);
+        done(context);
     });
+}
+
+function buildDepsArgs(self) {
+    var depsArgs = _.reduce(self.deps, function (accum, name) {
+        var args = self.depsArgs[name];
+        if (_.isFunction(args)) {
+            accum[name] = args.bind(self);
+        } else {
+            accum[name] = function () {
+                return args;
+            };
+        }
+        return accum;
+    }, {});
+
+    return Object.freeze(depsArgs);
+}
+
+function buildDepsMap(self) {
+    var result = _.reduce(self.deps, function (accum, name) {
+        if (_.has(self.depsMap, name)) {
+            accum[name] = self.depsMap[name];
+        } else {
+            accum[name] = name;
+        }
+
+        return accum;
+    }, {});
+
+    return Object.freeze(result);
+}
+
+function buildDeps(self) {
+    return Object.freeze(_.uniq(self.deps));
 }
 
 module.exports = init;

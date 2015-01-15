@@ -36,9 +36,9 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.eject(unit, null, function (err, val) {
-                    assert.ok(!err);
-                    assert.strictEqual(val.result, 42);
+                track.eject(unit, null, function (ctx) {
+                    assert.ok(ctx.isAccepted());
+                    assert.strictEqual(ctx.valueOf(), 42);
                     done();
                 });
             });
@@ -60,14 +60,14 @@ describe('core/track', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                track.eject(unit, null, function (e1, v1) {
-                    assert.ok(!e1);
-                    assert.strictEqual(v1.result, 42);
+                track.eject(unit, null, function (c1) {
+                    assert.ok(c1.isAccepted());
+                    assert.strictEqual(c1.valueOf(), 42);
                     assert.strictEqual(i, 1);
 
-                    track.eject(unit, null, function (e2, v2) {
-                        assert.ok(!e2);
-                        assert.strictEqual(v2.result, 42);
+                    track.eject(unit, null, function (c2) {
+                        assert.ok(c2.isAccepted());
+                        assert.strictEqual(c2.valueOf(), 42);
                         assert.strictEqual(i, 1);
                         done();
                     });
@@ -103,22 +103,22 @@ describe('core/track', function () {
                 var unit = core.getUnit('foo');
                 var track = new Track(core, logger);
 
-                track.eject(unit, args, function (err, val) {
-                    assert.ok(!err);
-                    assert.strictEqual(val.result, 42);
+                track.eject(unit, args, function (ctx) {
+                    assert.ok(ctx.isAccepted());
+                    assert.strictEqual(ctx.valueOf(), 42);
                     assert.strictEqual(i, 1);
                     j += 1;
                 });
 
-                track.eject(unit, args, function (e1, v1) {
-                    assert.ok(!e1);
-                    assert.strictEqual(v1.result, 42);
+                track.eject(unit, args, function (c1) {
+                    assert.ok(c1.isAccepted());
+                    assert.strictEqual(c1.valueOf(), 42);
                     assert.strictEqual(i, 1);
                     assert.strictEqual(j, 1);
 
-                    track.eject(unit, args, function (e2, v2) {
-                        assert.ok(!e2);
-                        assert.strictEqual(v2.result, 42);
+                    track.eject(unit, args, function (c2) {
+                        assert.ok(c2.isAccepted());
+                        assert.strictEqual(c2.valueOf(), 42);
                         assert.strictEqual(i, 1);
                         assert.strictEqual(j, 1);
                         done();

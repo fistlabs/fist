@@ -77,26 +77,22 @@ Track.prototype.eject = function (unit, args, done) {
     var hash = name + '-' + identity;
     var calls = this._calls;
 
-    logger.debug('Starting "%s" as "%s"', name, hash);
+    logger.debug('Starting %j as %j', name, hash);
 
     if (hasProperty.call(calls, hash)) {
-        logger.debug('Identity "%s" found for "%s"', hash, name);
+        logger.debug('Identity %j found for %j', hash, name);
     } else {
         calls[hash] = {
             done: false,
             onOk: [],
-            args: []
+            ctxt: null
         };
     }
 
     calls = calls[hash];
 
     if (calls.done) {
-        if (calls.args[0]) {
-            done(calls.args[0]);
-        } else {
-            done(calls.args[0], calls.args[1]);
-        }
+        done(calls.ctxt);
         return;
     }
 
@@ -106,21 +102,15 @@ Track.prototype.eject = function (unit, args, done) {
         return;
     }
 
-    unit.call(this, context, function (err, val) {
+    unit.call(this, context, function () {
         var i = 0;
         var l = calls.onOk.length;
 
         calls.done = true;
-        calls.args = arguments;
+        calls.ctxt = context;
 
-        if (err) {
-            for (; i < l; i += 1) {
-                calls.onOk[i](err);
-            }
-        } else {
-            for (; i < l; i += 1) {
-                calls.onOk[i](null, val);
-            }
+        for (; i < l; i += 1) {
+            calls.onOk[i](calls.ctxt);
         }
     });
 };
@@ -138,11 +128,11 @@ Track.prototype.eject = function (unit, args, done) {
 Track.prototype.invoke = function (name, args) {
     var defer = vow.defer();
 
-    this._agent.callUnit(this, name, args, function (err, res) {
-        if (err) {
-            defer.reject(err);
+    this._agent.callUnit(this, name, args, function (context) {
+        if (context.isRejected()) {
+            defer.reject(context.valueOf());
         } else {
-            defer.resolve(res && res.result);
+            defer.resolve(context.valueOf());
         }
     });
 

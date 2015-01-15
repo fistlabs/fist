@@ -419,21 +419,21 @@ describe('core/core', function () {
             });
 
             core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo', null, function (err, val) {
-                    assert.ok(!err);
-                    assert.strictEqual(val.result, 42);
+                core.callUnit(new Track(core, logger), 'foo', null, function (context) {
+                    assert.ok(context.isAccepted());
+                    assert.strictEqual(context.valueOf(), 42);
                     done();
                 });
             });
         });
 
-        it('Should be rejected', function (done) {
+        it('Should throw an error', function (done) {
             var core = new Core();
             core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo', null, function (err) {
-                    assert.ok(err);
-                    done();
+                assert.throws(function () {
+                    core.callUnit(new Track(core, logger), 'foo', null, function () {});
                 });
+                done();
             });
         });
     });
