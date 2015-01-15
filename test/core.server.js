@@ -70,6 +70,15 @@ describe('core/server', function () {
             var server = new Server();
             server.route('GET /', 'index');
             server.route('POST /foo/', 'foo');
+
+            server.unit({
+                name: 'index'
+            });
+
+            server.unit({
+                name: 'foo'
+            });
+
             supertest(server.getHandler()).
                 get('/foo/').
                 expect('Allow', 'POST').
@@ -80,7 +89,11 @@ describe('core/server', function () {
 
         it('Should handle request and return 404', function (done) {
             var server = new Server();
-            server.route('GET /foo/');
+            server.route('GET /foo/', 'foo');
+            server.unit({
+                name: 'foo'
+            });
+
             supertest(server.getHandler()).
                 get('/').
                 expect(404).
@@ -315,6 +328,30 @@ describe('core/server', function () {
                 done();
             }, done);
 
+        });
+    });
+
+    describe('server.ready()', function () {
+        it('Should be ready', function (done) {
+            var server = new Server();
+            server.unit({
+                name: 'foo'
+            });
+            server.route('/', 'foo');
+            server.ready().done(function () {
+                assert.ok(server.getUnit('foo'));
+                assert.ok(server.router.getRule('foo'));
+                done();
+            });
+        });
+
+        it('Should be failed on ready', function (done) {
+            var server = new Server();
+            server.route('/', 'foo');
+            server.ready().done(null, function (err) {
+                assert.ok(err);
+                done();
+            });
         });
     });
 });

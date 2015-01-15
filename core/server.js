@@ -2,9 +2,11 @@
 
 var Core = /** @type Server */ require('./core');
 var Connect = /** @type Connect */ require('./connect');
+var FistError = /** @type FistError */ require('./fist-error');
 var Router = /** @type Router */ require('finger/core/router');
 
 var _ = require('lodash-node');
+var f = require('util').format;
 var http = require('http');
 
 var proxyAddr = require('proxy-addr');
@@ -264,6 +266,26 @@ Server.prototype.route = function (ruleString, ruleData) {
     this.router.addRule(ruleString, ruleData);
 
     return this;
+};
+
+/**
+ * @protected
+ * @memberOf {Server}
+ * @method
+ *
+ * @returns {vow.Promise}
+ * */
+Server.prototype._getReady = function () {
+    return Core.prototype._getReady.call(this).then(function () {
+        _.forEach(this.router.rules, function (rule) {
+            var controller = this.getUnit(rule.data.unit);
+            if (controller instanceof this.Unit) {
+                return;
+            }
+            throw new FistError(FistError.NO_SUCH_UNIT,
+                f('There is no controller %j for route %j', rule.data.unit, rule.data.name));
+        }, this);
+    }, this);
 };
 
 function getRequestId(req) {
