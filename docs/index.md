@@ -2,7 +2,9 @@
 
 This is a quick reference to start writing right now
 
-Let's write custom face for [https://nodejs.org/api/](https://nodejs.org/api/) as example
+Let's write custom face for [https://nodejs.org/api/](https://nodejs.org/api/) as example. We will not make accent on beauty of our html pages. This example is called to show you nodejs code, but is is not the example how to mark up html.
+
+First, let's install application dependencies
 
 _[package.json](/examples/njsdoc/package.json):_
 
@@ -19,11 +21,11 @@ _[package.json](/examples/njsdoc/package.json):_
 }
 ```
 
-```js
+```bash
 $ npm install
 ```
 
-Project configuration:
+Next we should little configure the application:
 
 _[configs.js](/examples/njsdoc/configs.js):_
 
@@ -35,7 +37,7 @@ module.exports = {
     logging: {
         logLevel: 'DEBUG'
     },
-    //  unit settings
+    //  settings for units
     unitSettings: {
         //  configuration for `_fistlabs_unit_controller` unit
         _fistlabs_unit_controller: {
@@ -63,9 +65,9 @@ app.listen(app.params.port);
 
 It is really enough for main application file.
 
-Fist application consists of many modules, called plugins. The plugins placed in ```fist_plugins``` directory inside your project will be loaded automatically.
+```Fist``` application consists of many modules, called plugins. The plugins placed in ```fist_plugins``` directory inside your project will be loaded automatically.
 
-In our project we need to use some plugins. Let's write the plugin which installs theirs
+In our project we need to use some plugins. Let's write the plugin which installs theirs. Yes, plugin can istall other plugins.
 
 _[fist_plugins/setup.js](/examples/njsdoc/fist_plugins/setup.js):_
 
@@ -81,7 +83,7 @@ module.exports = function (app) {
 
 _Read the [plugins guide](/docs/guides/using-plugins.md)_
 
-Now we should to create model unit for our documentation pages. The pages are so similar, therefore we only need to create one general model.
+Now we should to create model unit for our documentation pages. The pages are so similar, therefore we only need to create just one general model.
 
 _[fist_plugins/units/models/document.js](/examples/njsdoc/fist_plugins/units/models/document.js):_
 
@@ -96,7 +98,7 @@ module.exports = function (app) {
         params: {
             doc: 'index'
         },
-        //   use local built-in cache
+        //  use local built-in cache
         cache: 'local',
         //  store cached result for 5 seconds
         maxAge: 5000,
@@ -109,7 +111,7 @@ module.exports = function (app) {
                 timeout: 10000
             };
         },
-        //  provide unique cache key
+        //  provide unique cache & memorization creteria
         identify: function (track, context) {
             return context.p('doc');
         }
@@ -119,7 +121,7 @@ module.exports = function (app) {
 
 _Read [power of units](/docs/guides/power-of-units.md) guide_
 
-Now, we ready to write the controller for our page
+Now, we ready to write the controller for our page. It it just the unit related to route, which will be called if route will be matched.
 
 _[fist_plugins/units/controllers/doc_page.js](/examples/njsdoc/fist_plugins/units/controllers/doc_page.js)_
 
@@ -159,7 +161,7 @@ module.exports = function (app) {
 
 Now we only need to create [views/doc_page.jade](/examples/njsdoc/views/doc_page.jade).
 
-```js
+```bash
 $ node app.js
 ```
 
