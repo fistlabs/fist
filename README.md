@@ -25,27 +25,43 @@ var app = fist();
 app.listen(1337);
 ```
 
-_fist_plugins/units/controllers/hello.js:_
+_fist_plugins/routes.js:_
+
+```js
+module.exports = function (app) {
+    app.route('GET /hello/(<name>/)', 'hello_page');
+};
+```
+
+_fist_plugins/units/controllers/hello_page.js:_
 
 ```js
 module.exports = function (app) {
     app.unit({
-        name: 'hello',
+        name: 'hello_page',
+        deps: ['greeting_data'],
         main: function (track, context) {
-            track.send('Hello ' + context.p('name'));
-        },
-        params: {
-            name: 'nobody'
+            track.send(context.r('greeting_data.helloText'));
         }
     });
 };
 ```
 
-_fist_plugins/routes.js:_
+_fist_plugins/units/models/greeting_data.js:_
 
 ```js
 module.exports = function (app) {
-    app.route('GET /hello/(<name>/)', 'hello');
+    app.unit({
+        name: 'greeting_data',
+        main: function (track, context) {
+            return {
+                helloText: 'Hello, ' + context.p('name')
+            };
+        },
+        params: {
+            name: 'what is your name?'
+        }
+    });
 };
 ```
 
