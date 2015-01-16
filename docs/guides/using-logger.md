@@ -9,7 +9,7 @@ Your application provides you a logger in any context.
 
 ##Contextual logs
 
-* ```app.logger``` - global application logger. You can pass ```options.name``` to ```fist(options)``` to give your application name, different from default.
+* ```app.logger``` - global application logger. You can pass ```options.name``` to ```fist(options)``` to give your application name, different from default to create unique applicatoin global logging context.
 
 The best place to use ```app.logger``` is plugin.
 
@@ -32,6 +32,7 @@ app.unit({
     }
 });
 ```
+
 But it will be better to use ```context.logger``` to log the message above.
 
 * ```context.logger``` - unit execution runtime context logger. Use this logger to log any actions happened during handling request by unit.
@@ -51,22 +52,18 @@ Also, you can create your own contexts for logger if there are not enough.
 app.unit({
     name: 'foo',
     main: function (track, context) {
-        context.logger.log('This message is bound to current unit runtime!');
-        this.foo(track, context);
-        this.bar(track, context);
-    },
-    foo: function (track, context) {
+        context.logger.log('This message is bound to current unit execution runtime!');
         var logger = context.logger.bind('foo');
-        logger.log('Bound to current runtime and foo');
-        //  do stuff
-    },
-    bar: function (track, context) {
-        var logger = context.logger.bind('bar');
-        logger.log('Bound to current runtime and bar');
-        //  do stuff
+        logger.log('Also bound to "foo"');
     }
 });
 ```
 
 ##Also
 You can fine tune your application logger, it is fantastic flexible. Read the full [loggin documentation](https://github.com/fistlabs/loggin/blob/master/README.md)
+
+---------
+Read more:
+
+* [How to configure my app](/docs/guides/configuring.md)
+* [Power of units](/docs/guides/power-of-units.md)
