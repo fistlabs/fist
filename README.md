@@ -4,12 +4,12 @@ fist [![Build Status](https://travis-ci.org/fistlabs/fist.svg?branch=master)](ht
 ```Fist``` is a [```nodejs```](https://nodejs.org/) framework designed to help create scalable server applications.
 
 #Features
-* Loosely coupled architecture
-* Plugin system
-* Data models
-* Thin controllers
-* Built-in logging tools
-* Built-in cache
+* **Loosely coupled architecture** _(No need to think about how to link project's components)_
+* **Plugin system** _(Don't need to think how to organize project's files)_
+* **Data models** _(Do not need to think about format of object to pass to the view)_
+* **Thin controllers** _(Just check that your models are valid)_
+* **Built-in logging tools** _(Always clear what happens and where)_
+* **Built-in cache** _(Just specify what parts of your program can be cached)_
 
 #Usage
 
