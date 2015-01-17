@@ -1,19 +1,80 @@
-fist [![Build Status](https://travis-ci.org/fistlabs/fist.svg?branch=master)](https://travis-ci.org/fistlabs/fist)
+fist the framework [![Build Status](https://travis-ci.org/fistlabs/fist.svg?branch=master)](https://travis-ci.org/fistlabs/fist)
 =========
 
-```Fist``` is a [```nodejs```](https://nodejs.org/) framework designed to help create scalable server applications.
+`Fist` is a [`nodejs`](https://nodejs.org/) framework designed to help create scalable server applications.
 
-#Features
-* **Loosely coupled architecture** _(No need to think about how to link project's components)_
-* **Plugin system** _(Don't need to think how to organize project's files)_
-* **Data models** _(Do not need to think about format of object to pass to the view)_
-* **Thin controllers** _(Just check that your models are valid)_
-* **Built-in logging tools** _(Always clear what happens and where)_
-* **Built-in cache** _(Just specify what parts of your program can be cached)_
+##What do I get?
 
-#Usage
+#####Plugin system
+_Modular application structure. Automatic project files loading._
 
 ```
+fist_plugins/
+    models/
+        user.sessionid.js
+        news.list.js
+        news.available_list.js
+    controllers/
+        news_page.js
+```
+
+#####Loosely coupled architecture
+_Focus on unit development. Encapsulated business logic._
+
+```js
+app.unit({
+    name: 'news.available_list',
+    deps: ['news.list', 'user.sessionid'],
+```
+
+#####Data models
+_Simple and intuitive data structures. Unobtrusive data typing._
+
+```js
+{
+    errors: {},
+    result: {
+        news: {
+            available_list: [
+                {
+                    type: "post",
+                    visibility: "all",
+```
+
+#####Thin controllers
+_Just check that your models are valid._
+
+```js
+app.unit({
+    name: 'news_page',
+    deps: ['news.available_list'],
+    main: function (track, context) {
+        if (context.e('news.available_list')) {
+            track.status(500).send();
+```
+
+#####Built-in logging tools
+_Always clear what happening and where. More reliability._
+
+```js
+app.unit({
+    name: 'user.sessionid',
+    main: function (track, context) {
+        context.logger.debug('Starting to check session by cookie\n"%s"', track.cookie('sessid'));
+```
+
+#####Built-in cache
+_Just specify what parts of your program can be cached. Less loading. More responsiveness._
+
+```js
+app.unit({
+    name: 'news.list',
+    maxAge: 5000,
+```
+
+##Hello, world!
+
+```bash
 $ npm install fist
 ```
 
@@ -65,13 +126,15 @@ module.exports = function (app) {
 };
 ```
 
-```$ node app.js```
+```bash
+$ node app.js
+```
 
 See the [full example code](/examples/hello/)
 
 ###[Quick start](/docs/index.md)
 
-#Docs
+##Docs
 * [Guides](/docs/guides/index.md)
 * [API reference](/docs/reference/index.md)
 
