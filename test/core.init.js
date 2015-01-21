@@ -499,6 +499,27 @@ describe('core/init', function () {
                 done();
             });
         });
+
+        it('Should reuse existing context', function (done) {
+            var core = new Core();
+
+            core.unit({
+                name: 'foo',
+                identify: function () {
+                    return 'static';
+                }
+            });
+
+            core.ready().done(function () {
+                var track = new Track(core, logger);
+                core.callUnit(track, 'foo', null, function (c1) {
+                    core.callUnit(track, 'foo', null, function (c2) {
+                        assert.strictEqual(c1, c2);
+                        done();
+                    });
+                });
+            });
+        });
     });
 
     describe('unit.call()', function () {
@@ -552,32 +573,6 @@ describe('core/init', function () {
                 unit.call(track, unit.createContext(track), function (ctx) {
                     assert.ok(ctx.isRejected());
                     assert.strictEqual(ctx.valueOf(), 42);
-                    done();
-                });
-            });
-        });
-
-        it('Should not return result if track was flushed', function (done) {
-            var core = new Core();
-
-            core.unit({
-                name: 'foo',
-                main: function (track) {
-                    track.isFlushed = function () {
-                        return true;
-                    };
-
-                    return 42;
-                }
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-                var track = new Track(core, logger);
-
-                unit.call(track, unit.createContext(track), function (ctx) {
-                    assert.ok(!ctx.isResolved());
-                    assert.strictEqual(ctx.valueOf(), null);
                     done();
                 });
             });
@@ -810,8 +805,9 @@ describe('core/init', function () {
             core.unit({
                 name: 'bar',
                 main: function (track) {
-                    track._isFlushed = true;
-                    assert.ok(track.isFlushed());
+                    track.isFlushed = function () {
+                        return true;
+                    };
                     return this.name;
                 }
             });
@@ -819,8 +815,9 @@ describe('core/init', function () {
             core.unit({
                 name: 'baz',
                 main: function (track) {
-                    track._isFlushed = true;
-                    assert.ok(track.isFlushed());
+                    track.isFlushed = function () {
+                        return true;
+                    };
                     return this.name;
                 }
             });
@@ -955,7 +952,9 @@ describe('core/init', function () {
                 maxAge: 0.05,
                 main: function (track) {
                     spy += 1;
-                    track._isFlushed = true;
+                    track.isFlushed = function () {
+                        return true;
+                    };
                     return spy;
                 }
             });
@@ -964,21 +963,15 @@ describe('core/init', function () {
                 var unit = core.getUnit('foo');
                 var t0 = new Track(core, logger);
 
-                unit.call(t0, unit.createContext(t0), function (c1) {
+                unit.call(t0, unit.createContext(t0), function () {
                     var t1 = new Track(core, logger);
-                    assert.ok(!c1.isResolved());
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(c1.valueOf(), null);
 
-                    unit.call(t1, unit.createContext(t1), function (c2) {
+                    unit.call(t1, unit.createContext(t1), function () {
                         var t2 = new Track(core, logger);
-                        assert.ok(!c2.isResolved());
                         assert.strictEqual(spy, 2);
-                        assert.strictEqual(c2.valueOf(), null);
-                        unit.call(t2, unit.createContext(t2), function (c3) {
-                            assert.ok(!c3.isResolved());
+                        unit.call(t2, unit.createContext(t2), function () {
                             assert.strictEqual(spy, 3);
-                            assert.strictEqual(c3.valueOf(), null);
                             done();
                         });
                     });

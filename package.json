@@ -9,7 +9,7 @@
     "dependencies": {
         "lru-dict": "0.0.1",
         "proxy-addr": "1.0.4",
-        "loggin": "2.1.0",
+        "loggin": "2.2.1",
         "obus": "1.0.0",
         "vow-fs": "0.3.4",
         "vow-asker": "0.8.0",

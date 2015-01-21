@@ -73,32 +73,7 @@ Server.prototype.getHandler = function () {
 
         res.on('finish', function () {
             var code = res.statusCode;
-            var type;
-
-            switch (true) {
-
-                case code >= 500:
-                    //  Server errors
-                    type = 'error';
-                    break;
-
-                case code >= 400:
-                    //  Client errors
-                    type = 'warn';
-                    break;
-
-                case code >= 300:
-                    //  Redirects
-                    type = 'log';
-                    break;
-
-                default:
-                    //  Usual cases
-                    type = 'info';
-                    break;
-            }
-
-            logger[type]('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
+            logger.info('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
         });
 
         self.handle(req, res, logger);
@@ -197,7 +172,7 @@ Server.prototype._nextRun = function (track, matches, pos) {
     var self = this;
 
     if (pos === matches.length) {
-        track.logger.warn('No one controller did responded');
+        track.logger.debug('No one controller did responded');
         track.status(404).send();
         return;
     }
@@ -205,7 +180,7 @@ Server.prototype._nextRun = function (track, matches, pos) {
     match = matches[pos];
     track.params = match.args;
     track.route = match.data.name;
-    track.logger.note('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
+    track.logger.debug('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
 
     /** @this {Server} */
     this.callUnit(track, match.data.unit, null, function (ctx) {
@@ -218,7 +193,7 @@ Server.prototype._nextRun = function (track, matches, pos) {
             return;
         }
 
-        track.logger.note('The "%(data.unit)s" controller did not responded', match);
+        track.logger.debug('The "%(data.unit)s" controller did not responded', match);
 
         self._nextRun(track, matches, pos + 1);
     });

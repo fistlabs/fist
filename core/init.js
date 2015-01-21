@@ -13,6 +13,7 @@ var vow = require('vow');
 
 function init(app) {
     /*eslint max-params: 0*/
+    var assertDepsOk = createDepsOkAssertion(app);
 
     /**
      * @public
@@ -171,30 +172,18 @@ function init(app) {
          *
          * @returns {*}
          * */
-        call: function (track, context, done) {
-            var result;
-
+        call: function _$Unit$prototype$call(track, context, done) {
             context.logger.debug('Pending...');
 
-            fetch(this, track, context, function () {
+            _$Unit$fetch(this, track, context, function () {
                 var execTime = context.getTimePassed();
 
                 if (context.isRejected()) {
-                    if (context.skipped) {
-                        context.logger.warn('Skip error in %dms', execTime, context.valueOf());
-                    } else {
-                        context.logger.error('Rejected in %dms', execTime, context.valueOf());
-                    }
-
-                    done(context);
-
-                    return;
-                }
-
-                if (context.isAccepted()) {
+                    context.logger.debug('Rejected in %dms', execTime);
+                } else if (context.isAccepted()) {
                     context.logger.debug('Accepted in %dms', execTime);
                 } else {
-                    context.logger.debug('Skip result in %dms', execTime);
+                    context.logger.debug('Skipping in %dms', execTime);
                 }
 
                 done(context);
@@ -211,8 +200,7 @@ function init(app) {
          *
          * @returns {*}
          * */
-        identify: function (track, context) {
-            /*eslint no-unused-vars: 0*/
+        identify: function _$Unit$prototype$identify(track, context) {
             return context.identity;
         },
 
@@ -226,25 +214,12 @@ function init(app) {
          *
          * @returns {Object}
          * */
-        createContext: function (track, args) {
-            /*eslint complexity: 0*/
+        createContext: function $Unit$prototype$createContext(track, args) {
             var context = new Context(track.logger.bind(/** @type {String} */ this.name));
-            var i;
-            var k;
-            var l;
-            var params;
 
-            args = [this.params, track.params, args];
-
-            for (i = 0, l = args.length; i < l; i += 1) {
-                params = args[i];
-
-                for (k in params) {
-                    if (hasProperty.call(params, k) && params[k] !== void 0) {
-                        context.params[k] = params[k];
-                    }
-                }
-            }
+            _$Unit$extendContextParams(context.params, this.params);
+            _$Unit$extendContextParams(context.params, track.params);
+            _$Unit$extendContextParams(context.params, args);
 
             return context;
         },
@@ -306,67 +281,45 @@ function init(app) {
         return inherit([this].concat(mixins), members, statics);
     };
 
-    var checked = {};
-
-    function assertDepsOk(UnitClass, trunk) {
-        var unitName = UnitClass.prototype.name;
-
-        if (/^[^a-z]/i.test(unitName) || _.has(checked, unitName)) {
-            return;
-        }
-
-        _.forEach(UnitClass.prototype.deps, function (depName) {
-            var Dependency = app.getUnitClass(depName);
-            var branch = trunk.concat(depName);
-
-            if (!Dependency) {
-                throw new FistError(FistError.NO_SUCH_UNIT,
-                    f('There is no dependency %j for unit %j', depName, unitName));
-            }
-
-            if (_.contains(trunk, depName)) {
-                throw new FistError(FistError.DEPS_CONFLICT,
-                    f('Recursive dependencies found: "%s"', branch.join('" < "')));
-            }
-
-            assertDepsOk(Dependency, branch);
-        });
-
-        checked[unitName] = true;
-    }
-
-    function fetch(self, track, context, done) {
+    function _$Unit$fetch(self, track, context, done) {
         var paths = self.deps;
-        var i;
         var l = paths.length;
 
         if (l === 0) {
-            cache(self, track, context, done);
+            _$Unit$syncCache(self, track, context, done);
             return;
         }
 
         context.paths = paths;
         context.pathsLeft = l;
 
-        for (i = 0; i < l; i += 1) {
-            resolvePath(self, track, context, i, done);
+        function allResolved(ctxt) {
+            if (ctxt.skipped) {
+                done(ctxt);
+                return;
+            }
+
+            _$Unit$syncCache(self, track, ctxt, done);
+        }
+
+        while (l) {
+            l -= 1;
+            _$Unit$resolveDepNo(self, track, context, l, allResolved);
         }
     }
 
-    function resolvePath(self, track, context, i, done) {
+    function _$Unit$resolveDepNo(self, track, context, i, done) {
         var name = context.paths[i];
         var args = self.depsArgs[name](track, context);
         var path = self.depsMap[name];
 
         app.callUnit(track, name, args, function (depCtx) {
-
             if (context.skipped) {
                 return;
             }
 
             if (depCtx.skipped) {
                 context.skipped = true;
-                context.logger.debug('The track was flushed by deps, skip invocation');
                 done(context);
                 return;
             }
@@ -385,9 +338,7 @@ function init(app) {
             context.pathsLeft -= 1;
 
             if (context.pathsLeft === 0) {
-                context.logger.debug('Deps %(paths)j resolved in %dms',
-                    context.getTimePassed(), context);
-                cache(self, track, context, done);
+                done(context);
             }
         });
     }
@@ -401,20 +352,23 @@ function init(app) {
     app.Unit = Unit;
 }
 
-function cache(self, track, context, done) {
-
+function _$Unit$syncCache(self, track, context, done) {
     if (!(self.maxAge > 0) || context.skipCache) {
-        main(self, track, context, done);
+        _$Unit$main(self, track, context, done);
         return;
     }
 
     context.cacheKey = self.name + '-' + context.identity + '-' + context.keys.join('-');
 
     if (context.needUpdate) {
-        update(self, track, context, done);
+        _$Unit$updateCache(self, track, context, done);
         return;
     }
 
+    _$Unit$getFromCache(self, track, context, done);
+}
+
+function _$Unit$getFromCache(self, track, context, done) {
     self._cache.get(context.cacheKey, function (err, data) {
         if (!err && data) {
             context.logger.debug('Found in cache');
@@ -425,59 +379,83 @@ function cache(self, track, context, done) {
         }
 
         if (err) {
-            context.logger.warn('Failed to load cache', err);
+            context.logger.warn(err);
         } else {
-            context.logger.note('Outdated');
+            context.logger.debug('Outdated');
         }
 
-        update(self, track, context, done);
+        _$Unit$updateCache(self, track, context, done);
     });
 }
 
-function main(self, track, context, done) {
-
-    function makeVal(result, status) {
-        if (track.isFlushed()) {
-            context.skipped = true;
-            context.logger.debug('The track was flushed during execution');
-            return context;
-        }
-
-        context.value = result;
-        context.updated = true;
-        context.status = status;
-
-        return context;
-    }
-
+function _$Unit$main(self, track, context, done) {
     vow.invoke(function () {
         return self.main(track, context);
     }).done(function (res) {
-        done(makeVal(res, 'ACCEPTED'));
+        done(_$Unit$setValue(track, context, res, 'ACCEPTED'));
     }, function (err) {
-        done(makeVal(err, 'REJECTED'));
+        context.logger.error(err);
+        done(_$Unit$setValue(track, context, err, 'REJECTED'));
     });
 }
 
-function update(self, track, context, done) {
-    main(self, track, context, function () {
+function _$Unit$setValue(track, context, value, status) {
+    context.skipped = track.isFlushed();
+    context.value = value;
+    context.updated = true;
+    context.status = status;
+
+    return context;
+}
+
+function _$Unit$updateCache(self, track, context, done) {
+    _$Unit$main(self, track, context, function () {
         if (context.isRejected()) {
             done(context);
             return;
         }
 
-        if (context.isAccepted()) {
+        if (!context.skipped) {
             self._cache.set(context.cacheKey, {value: context.valueOf()}, self.maxAge, function (err) {
                 if (err) {
-                    context.logger.warn('Failed to set cache', err);
+                    context.logger.warn(err);
                 } else {
-                    context.logger.note('Updated');
+                    context.logger.debug('Updated');
                 }
             });
         }
 
         done(context);
     });
+}
+
+function _$Unit$extendContextParams(obj, src) {
+    var k;
+    var i;
+    var keys;
+
+    if (!src || typeof src !== 'object') {
+        return obj;
+    }
+
+    keys = Object.keys(src);
+    i = keys.length;
+
+    while (i) {
+        i -= 1;
+        k = keys[i];
+        if (src[k] !== void 0) {
+            obj[k] = src[k];
+        }
+    }
+
+    //for (k in src) {
+    //    if (hasProperty.call(src, k) && src[k] !== void 0) {
+    //        obj[k] = src[k];
+    //    }
+    //}
+
+    return obj;
 }
 
 function buildDepsArgs(self) {
@@ -512,6 +490,44 @@ function buildDepsMap(self) {
 
 function buildDeps(self) {
     return Object.freeze(_.uniq(self.deps));
+}
+
+function createDepsOkAssertion(app) {
+    var checked = {};
+
+    return function ok(UnitClass, trunk) {
+        var unitName = UnitClass.prototype.name;
+
+        if (/^[^a-z]/i.test(unitName) || _.has(checked, unitName)) {
+            return;
+        }
+
+        _.forEach(UnitClass.prototype.deps, function (depName) {
+            var Dependency = app.getUnitClass(depName);
+            var branch = trunk.concat(depName);
+
+            if (!Dependency) {
+                throw new FistError(FistError.NO_SUCH_UNIT,
+                    f('There is no dependency %j for unit %j', depName, unitName));
+            }
+
+            if (_.contains(trunk, depName)) {
+                throw new FistError(FistError.DEPS_CONFLICT,
+                    f('Recursive dependencies found: "%s"', branch.join('" < "')));
+            }
+
+            ok(Dependency, branch);
+        });
+
+        checked[unitName] = true;
+    };
+}
+
+function Runtime(app, unit, track, done) {
+    this.app = app;
+    this.unit = unit;
+    this.track = track;
+    this.done = done;
 }
 
 module.exports = init;

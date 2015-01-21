@@ -69,7 +69,7 @@ Track.prototype.constructor = Track;
  * @param {*} args
  * @param {Function} done
  * */
-Track.prototype.eject = function (unit, args, done) {
+Track.prototype.eject = function $Track$prototype$eject(unit, args, done) {
     var context = unit.createContext(this, args);
     var identity = context.identity = unit.identify(this, context);
     var logger = this.logger;
@@ -82,37 +82,16 @@ Track.prototype.eject = function (unit, args, done) {
     if (hasProperty.call(calls, hash)) {
         logger.debug('Identity %j found for %j', hash, name);
     } else {
-        calls[hash] = {
-            done: false,
-            onOk: [],
-            ctxt: null
-        };
+        calls[hash] = new CallWait();
     }
 
     calls = calls[hash];
 
-    if (calls.done) {
-        done(calls.ctxt);
-        return;
+    if (calls.wait(done)) {
+        unit.call(this, context, function () {
+            calls.emitDone(context);
+        });
     }
-
-    calls.onOk.push(done);
-
-    if (calls.onOk.length > 1) {
-        return;
-    }
-
-    unit.call(this, context, function () {
-        var i = 0;
-        var l = calls.onOk.length;
-
-        calls.done = true;
-        calls.ctxt = context;
-
-        for (; i < l; i += 1) {
-            calls.onOk[i](calls.ctxt);
-        }
-    });
 };
 
 /**
@@ -148,6 +127,34 @@ Track.prototype.invoke = function (name, args) {
  * */
 Track.prototype.isFlushed = function () {
     return this._isFlushed;
+};
+
+function CallWait() {
+    this.done = false;
+    this.ctxt = null;
+    this.onOk = [];
+}
+
+CallWait.prototype.wait = function $CallWait$prototype$wait(done) {
+    if (this.done) {
+        done(this.ctxt);
+        return false;
+    }
+
+    this.onOk.push(done);
+
+    return this.onOk.length < 2;
+};
+
+CallWait.prototype.emitDone = function $CallWait$prototype$emitDone(ctxt) {
+    var i;
+    var l = this.onOk.length;
+    this.done = true;
+    this.ctxt = ctxt;
+
+    for (i = 0; i < l; i += 1) {
+        this.onOk[i](this.ctxt);
+    }
 };
 
 module.exports = Track;

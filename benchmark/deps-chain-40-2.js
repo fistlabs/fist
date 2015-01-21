@@ -4,7 +4,7 @@
 
 var Benchmark = require('benchmark');
 var Suite = Benchmark.Suite;
-var buildDepsTest = require('./util/build-deps-test');
+var buildDepsTest = require('../tools/build-deps-test');
 
 Benchmark.options.minSamples = 500;
 

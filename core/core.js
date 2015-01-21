@@ -169,7 +169,7 @@ Core.prototype.getUnit = function (name) {
  * @param {Object} args
  * @param {Function} done
  * */
-Core.prototype.callUnit = function (track, name, args, done) {
+Core.prototype.callUnit = function $Core$prototype$callUnit(track, name, args, done) {
     if (hasProperty.call(this._units, name)) {
         track.eject(this._units[name], args, done);
         return;
@@ -204,15 +204,15 @@ Core.prototype.ready = function () {
         return this.__readyPromise;
     }
 
-    this.logger.debug('Pending...');
+    this.logger.debug('Starting...');
 
     this.__readyPromise = this._getReady();
 
     /** @this {Core} */
     this.__readyPromise.done(function () {
-        this.logger.note('Ready.');
+        this.logger.debug('Ready.');
     }, function (err) {
-        this.logger.fatal('Failed to start application', err);
+        this.logger.fatal(err);
     }, this);
 
     return this.__readyPromise;

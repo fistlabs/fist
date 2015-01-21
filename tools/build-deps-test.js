@@ -1,7 +1,7 @@
 'use strict';
 
-var Core = require('../../core/core');
-var Track = require('../../core/track');
+var Core = require('../core/core');
+var Track = require('../core/track');
 
 var f = require('util').format;
 var uniqueId = require('unique-id');
