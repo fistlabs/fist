@@ -6,6 +6,20 @@ function buildDeps(unit) {
     return Object.freeze(_.uniq(unit.deps));
 }
 
+function buildDepsMap(unit) {
+    var depsMap = {};
+
+    _.forEach(unit.deps, function (name) {
+        if (_.has(unit.depsMap, name)) {
+            depsMap[name] = unit.depsMap[name];
+        } else {
+            depsMap[name] = name;
+        }
+    });
+
+    return Object.freeze(depsMap);
+}
+
 function buildDepsArgs(unit) {
     var depsArgs = {};
 
@@ -21,20 +35,6 @@ function buildDepsArgs(unit) {
     });
 
     return Object.freeze(depsArgs);
-}
-
-function buildDepsMap(unit) {
-    var depsMap = {};
-
-    _.forEach(unit.deps, function (name) {
-        if (_.has(unit.depsMap, name)) {
-            depsMap[name] = unit.depsMap[name];
-        } else {
-            depsMap[name] = name;
-        }
-    });
-
-    return Object.freeze(depsMap);
 }
 
 function buildDepsIndexMap(unit) {

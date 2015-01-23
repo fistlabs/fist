@@ -6,7 +6,7 @@
 var assert = require('assert');
 var inherit = require('inherit');
 
-function Unit () {}
+function Unit() {}
 
 Unit.prototype.name = 0;
 

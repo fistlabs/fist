@@ -39,8 +39,6 @@ function createUnitClass(self, decl) {
         return decl.__class;
     }
 
-    //console.log(name);
-
     base = members.base;
 
     //  Looking for base
