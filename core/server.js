@@ -183,12 +183,12 @@ Server.prototype._nextRun = function (track, matches, pos) {
     track.logger.debug('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
 
     /** @this {Server} */
-    this.callUnit(track, match.data.unit, null, function (ctx) {
+    this.getUnit(match.data.unit).run(track, null, function () {
         if (track.wasSent()) {
             return;
         }
 
-        if (ctx.isRejected()) {
+        if (this.isRejected()) {
             track.status(500).send();
             return;
         }

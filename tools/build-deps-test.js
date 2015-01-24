@@ -13,7 +13,7 @@ function noop() {
 function buildDeps(unitsCount, depsPerUnit, onInit) {
     var app = new Core({
         logging: {
-            logLevel: 'NOTSET'
+            logLevel: 'SILENT'
         }
     });
     var deps;
@@ -42,7 +42,8 @@ function buildDeps(unitsCount, depsPerUnit, onInit) {
         onInit(function run(done) {
             var logger = app.logger.bind(uniqueId());
             var track = new Track(app, logger);
-            app.callUnit(track, unitName, null, function () {
+            var unit = app.getUnit(unitName);
+            unit.run(track, null, function () {
                 done();
             });
         });

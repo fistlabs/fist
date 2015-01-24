@@ -2,11 +2,8 @@
 /*global describe, it*/
 'use strict';
 
-var Track = require('../core/track');
-
 var _ = require('lodash-node');
 var assert = require('assert');
-var logger = require('loggin');
 var path = require('path');
 
 describe('core/core', function () {
@@ -403,36 +400,6 @@ describe('core/core', function () {
                 assert.ok(core.getUnit('bar') instanceof core.Unit);
                 assert.strictEqual(core.getUnit('foo').x, 42);
                 assert.strictEqual(core.getUnit('bar').x, 42);
-                done();
-            });
-        });
-    });
-
-    describe('core.callUnit()', function () {
-        it('Should call unit by name', function (done) {
-            var core = new Core();
-            core.unit({
-                name: 'foo',
-                main: function () {
-                    return 42;
-                }
-            });
-
-            core.ready().done(function () {
-                core.callUnit(new Track(core, logger), 'foo', null, function (context) {
-                    assert.ok(context.isAccepted());
-                    assert.strictEqual(context.valueOf(), 42);
-                    done();
-                });
-            });
-        });
-
-        it('Should throw an error', function (done) {
-            var core = new Core();
-            core.ready().done(function () {
-                assert.throws(function () {
-                    core.callUnit(new Track(core, logger), 'foo', null, function () {});
-                });
                 done();
             });
         });

@@ -129,9 +129,9 @@
         "one-var": 0,
         "wrap-regex": 0,
 
-        "max-depth": [2, 4],
+        "max-depth": [2, 3],
         "max-len": 0,
-        "max-params": [2, 4],
+        "max-params": [2, 5],
         "max-statements": 0,
         "no-bitwise": 0,
         "no-plusplus": 2

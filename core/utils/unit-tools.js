@@ -45,6 +45,14 @@ function buildDepsIndexMap(unit) {
     return Object.freeze(depsIndexMap);
 }
 
+function buildRuntimeInitBits(unit) {
+    if (!(unit.maxAge > 0)) {
+        return parseInt('00000010', 2);
+    }
+
+    return 0;
+}
+
 exports.buildDeps = buildDeps;
 
 exports.buildDepsArgs = buildDepsArgs;
@@ -52,3 +60,5 @@ exports.buildDepsArgs = buildDepsArgs;
 exports.buildDepsMap = buildDepsMap;
 
 exports.buildDepsIndexMap = buildDepsIndexMap;
+
+exports.buildRuntimeInitBits = buildRuntimeInitBits;

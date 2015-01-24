@@ -6,12 +6,12 @@ var FistError = /** @type FistError */ require('./fist-error');
 
 var _ = require('lodash-node');
 var f = require('util').format;
-var hasProperty = Object.prototype.hasOwnProperty;
 var init = require('./init');
 var logging = require('loggin');
 var path = require('path');
 var vow = require('vow');
 var vowFs = require('vow-fs');
+var ctools = require('./utils/core-tools');
 
 /**
  * @class Core
@@ -164,25 +164,6 @@ Core.prototype.getUnit = function (name) {
  * @memberOf {Core}
  * @method
  *
- * @param {Object} track
- * @param {String} name
- * @param {Object} args
- * @param {Function} done
- * */
-Core.prototype.callUnit = function $Core$prototype$callUnit(track, name, args, done) {
-    if (hasProperty.call(this._units, name)) {
-        track.eject(this._units[name], args, done);
-        return;
-    }
-
-    throw new FistError(FistError.NO_SUCH_UNIT, f('Can not call unknown unit %j', name));
-};
-
-/**
- * @public
- * @memberOf {Core}
- * @method
- *
  * @param {*} name
  *
  * @returns {Object}
@@ -299,7 +280,17 @@ Core.prototype._createParams = function (params) {
  * @returns {vow.Promise}
  * */
 Core.prototype._getReady = function () {
-    return this._installPlugin(function () {}).then(createUnits, this);
+    var noop = Function.prototype;
+    return this._installPlugin(noop).
+        then(function () {
+            this._class = ctools.createUnitClasses(this);
+        }, this).
+        then(function () {
+            this._units = ctools.createUnits(this);
+        }, this).
+        then(function () {
+            return ctools.assertAllUnitDepsOk(this);
+        }, this);
 };
 
 /**
@@ -365,69 +356,6 @@ function callPlugin(func) {
         });
 
         return defer.promise();
-    }, this);
-}
-
-function createUnits() {
-    Object.freeze(this._decls);
-    return _.reduce(this._decls, function (promise, decl) {
-        return promise.then(function () {
-            return createUnitClass.call(this, decl);
-        }, this);
-    }, vow.resolve(), this).then(function () {
-        Object.freeze(this._class);
-        _.forOwn(this._class, function (UnitClass) {
-            var name = UnitClass.prototype.name;
-
-            if (/^[a-z]/i.test(name)) {
-                this._units[name] = new UnitClass();
-            }
-
-        }, this);
-        Object.freeze(this._units);
-    }, this);
-}
-
-function createUnitClass(decl) {
-    var members = decl.members;
-    var statics = decl.statics;
-    var name = members.name;
-    var base;
-    var promise;
-
-    if (_.has(this._class, name)) {
-        //  Was already created
-        return vow.resolve(this._class[name]);
-    }
-
-    base = members.base;
-
-    //  Looking for base
-    if (base === void 0) {
-        base = this.params.implicitBase;
-        this.logger.debug('The base for unit "%s" is implicitly defined as "%s"', name, base);
-    }
-
-    if (base === this.Unit.prototype.name) {
-        promise = vow.invoke(function (self) {
-            return self.Unit.inherit(members, statics);
-        }, this);
-    } else {
-        promise = _.find(this._decls, {members: {name: base}});
-
-        if (!promise) {
-            return vow.reject(new FistError(FistError.NO_SUCH_UNIT,
-                f('No base found for unit "%s" ("%s")', name, base)));
-        }
-
-        promise = createUnitClass.call(this, promise).then(function (Base) {
-            return Base.inherit(members, statics);
-        });
-    }
-
-    return promise.then(function (UnitClass) {
-        this._class[name] = UnitClass;
-        return UnitClass;
     }, this);
 }
 

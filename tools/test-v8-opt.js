@@ -5,7 +5,7 @@ var buildDepsTest = require('../tools/build-deps-test');
 var samples = 50000;
 
 buildDepsTest(40, 2, function (run) {
-    run(function done () {
+    run(function done() {
         if (!samples) {
             return;
         }

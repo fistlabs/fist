@@ -4,7 +4,6 @@ var FistError = /** @type FistError */ require('../fist-error');
 
 var _ = require('lodash-node');
 var f = require('util').format;
-var vow = require('vow');
 
 function createUnits(self) {
     var units = {};
