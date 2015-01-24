@@ -198,7 +198,7 @@ function init(app) {
         },
 
         run: function $Unit$ptototype$run(track, args, done) {
-            new Runtime(app, this, track, null, done).run(args);
+            new Runtime(app, this, track, null, args, done).run();
         }
     };
 

@@ -4,9 +4,13 @@ var Obus = /** @type Obus */ require('obus');
 
 /**
  * @class Context
+ *
+ * @param {Object} params
  * @param {Logger} logger
+ * @param {Object} result
+ * @param {Object} errors
  * */
-function Context(logger) {
+function Context(params, logger, result, errors) {
 
     /**
      * @public
@@ -22,26 +26,35 @@ function Context(logger) {
      * @property
      * @type {Object}
      * */
-    this.params = new Obus();
+    this.params = params;
 
     /**
      * @public
      * @memberOf {Context}
      * @property
-     * @type {Obus}
+     * @type {Object}
      * */
-    this.errors = new Obus();
+    this.errors = errors;
 
     /**
      * @public
      * @memberOf {Context}
      * @property
-     * @type {Obus}
+     * @type {Object}
      * */
-    this.result = new Obus();
+    this.result = result;
 }
 
 Context.prototype = {
+
+    setParams: function () {
+        var i;
+        var argc = arguments.length;
+        for (i = 0; i < argc; i += 1) {
+            _$Context$extendParams(this.params, arguments[i]);
+        }
+        return this;
+    },
 
     /**
      * @public
@@ -108,5 +121,28 @@ Context.prototype = {
         };
     }
 };
+
+function _$Context$extendParams(obj, src) {
+    var k;
+    var i;
+    var keys;
+
+    if (!src || typeof src !== 'object') {
+        return obj;
+    }
+
+    keys = Object.keys(src);
+    i = keys.length;
+
+    while (i) {
+        i -= 1;
+        k = keys[i];
+        if (src[k] !== void 0) {
+            obj[k] = src[k];
+        }
+    }
+
+    return obj;
+}
 
 module.exports = Context;

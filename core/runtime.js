@@ -1,7 +1,6 @@
 'use strict';
 
 //  TODO separate tests
-//  TODO dump!
 
 // resolved
 var B01100000 = parseInt('01100000', 2);
@@ -70,9 +69,8 @@ CallWait.prototype.emitDone = function $CallWait$prototype$emitDone(runtime) {
  * @class Runtime
  * @extends Context
  * */
-function Runtime(app, unit, track, parent, done) {
-    Context.call(this, track.logger.bind(unit.name));
-
+function Runtime(app, unit, track, parent, args, done) {
+    /*eslint max-params: 0*/
     this.app = app;
     this.unit = unit;
     this.track = track;
@@ -89,11 +87,9 @@ function Runtime(app, unit, track, parent, done) {
 
     this.status = unit.runtimeInitBits;
 
-    _$Runtime$extendParams(this.params, unit.params);
-    _$Runtime$extendParams(this.params, track.params);
+    this.context = new Context(new Obus(), track.logger.bind(unit.name), new Obus(), new Obus()).
+        setParams(unit.params, track.params, args);
 }
-
-Runtime.prototype = Object.create(Context.prototype);
 
 Runtime.prototype.constructor = Runtime;
 
@@ -117,21 +113,19 @@ Runtime.prototype.valueOf = function () {
     return this.value;
 };
 
-Runtime.prototype.run = function $Runtime$prototype$run(args) {
+Runtime.prototype.run = function $Runtime$prototype$run() {
     var i;
     var l;
     var name;
 
-    _$Runtime$extendParams(this.params, args);
-
-    this.identity = this.unit.identify(this.track, this);
+    this.identity = this.unit.identify(this.track, this.context);
 
     this.runId = this.unit.name + '-' + this.identity;
 
-    this.logger.debug('Starting %(runId)j', this);
+    this.context.logger.debug('Starting %(runId)j', this);
 
     if (this.track.calls.hasOwnProperty(this.runId)) {
-        this.logger.debug('Identity %(runId)j found', this);
+        this.context.logger.debug('Identity %(runId)j found', this);
     } else {
         this.track.calls[this.runId] = new CallWait();
     }
@@ -143,7 +137,7 @@ Runtime.prototype.run = function $Runtime$prototype$run(args) {
 
     l = this.pathsLeft;
 
-    this.logger.debug('Pending...');
+    this.context.logger.debug('Pending...');
 
     //  no any deps
     if (l === 0) {
@@ -153,13 +147,12 @@ Runtime.prototype.run = function $Runtime$prototype$run(args) {
 
     for (i = 0; i < l; i += 1) {
         name = this.unit.deps[i];
-        new Runtime(this.app, this.app.getUnit(name), this.track, this, this.asDependency).
-            run(this.unit.depsArgs[name](this.track, this));
+        new Runtime(this.app, this.app.getUnit(name), this.track, this,
+            this.unit.depsArgs[name](this.track, this.context), this.asDependency).run();
     }
 };
 
 Runtime.prototype.asDependency = function $Runtime$prototype$asDependency() {
-    var path;
 
     //  parent skipped
     if (this.parent.status & B00010000) {
@@ -174,18 +167,16 @@ Runtime.prototype.asDependency = function $Runtime$prototype$asDependency() {
         return;
     }
 
-    path = this.parent.unit.depsMap[this.unit.name];
-
     // is rejected
     if (this.status & B00100000) {
         // set parent skip cache
         this.parent.status |= B00000010;
-        Obus.add(this.parent.errors, path, this.valueOf());
+        Obus.add(this.parent.context.errors, this.parent.unit.depsMap[this.unit.name], this.valueOf());
     } else {
         //  set need update to parent if this is updated
         this.parent.status |= (this.status & B00001000) >> 1;
         this.parent.keys[this.parent.unit.depsIndexMap[this.parent.unit.name]] = this.identity;
-        Obus.add(this.parent.result, path, this.valueOf());
+        Obus.add(this.parent.context.result, this.parent.unit.depsMap[this.unit.name], this.valueOf());
     }
 
     this.parent.pathsLeft -= 1;
@@ -196,16 +187,14 @@ Runtime.prototype.asDependency = function $Runtime$prototype$asDependency() {
 };
 
 Runtime.prototype.finish = function $Runtime$prototype$finish() {
-    var execTime = this.getTimePassed();
-
     if (this.status & B00100000) {
         // is rejected
-        this.logger.debug('Rejected in %dms', execTime);
+        this.context.logger.debug('Rejected in %dms', this.getTimePassed());
     } else if (this.status & B01000000) {
         // is accepted
-        this.logger.debug('Accepted in %dms', execTime);
+        this.context.logger.debug('Accepted in %dms', this.getTimePassed());
     } else {
-        this.logger.debug('Skipping in %dms', execTime);
+        this.context.logger.debug('Skipping in %dms', this.getTimePassed());
     }
 
     this.track.calls[this.runId].emitDone(this);
@@ -229,7 +218,7 @@ Runtime.prototype.getFromCache = function $Runtime$prototype$getFromCache() {
     //  closure...
     this.unit.cache.get(this.cacheKey, function (err, data) {
         if (!err && data) {
-            self.logger.debug('Found in cache');
+            self.context.logger.debug('Found in cache');
             self.value = data.value;
             // set is accepted
             self.status |= B01000000;
@@ -238,9 +227,9 @@ Runtime.prototype.getFromCache = function $Runtime$prototype$getFromCache() {
         }
 
         if (err) {
-            self.logger.warn(err);
+            self.context.logger.warn(err);
         } else {
-            self.logger.debug('Outdated');
+            self.context.logger.debug('Outdated');
         }
 
         // set need update
@@ -253,11 +242,11 @@ Runtime.prototype.getFromCache = function $Runtime$prototype$getFromCache() {
 Runtime.prototype.callUnitMain = function $Runtime$prototype$callUnitMain() {
     /** @this {Runtime} */
     vow.invoke(function (self) {
-        return self.unit.main(self.track, self);
+        return self.unit.main(self.track, self.context);
     }, this).done(function (res) {
         this.afterMainCalled(res, B01000000);
     }, function (err) {
-        this.logger.error(err);
+        this.context.logger.error(err);
         this.afterMainCalled(err, B00100000);
     }, this);
 };
@@ -279,43 +268,14 @@ Runtime.prototype.afterMainCalled = function $Runtime$prototype$afterMainCalled(
         //  closure ....
         this.unit.cache.set(this.cacheKey, {value: value}, this.unit.maxAge, function (err) {
             if (err) {
-                self.logger.warn(err);
+                self.context.logger.warn(err);
             } else {
-                self.logger.debug('Updated');
+                self.context.logger.debug('Updated');
             }
         });
     }
 
     this.finish();
 };
-
-function _$Runtime$extendParams(obj, src) {
-    var k;
-    var i;
-    var keys;
-
-    if (!src || typeof src !== 'object') {
-        return obj;
-    }
-
-    keys = Object.keys(src);
-    i = keys.length;
-
-    while (i) {
-        i -= 1;
-        k = keys[i];
-        if (src[k] !== void 0) {
-            obj[k] = src[k];
-        }
-    }
-
-    // for (k in src) {
-    //    if (hasProperty.call(src, k) && src[k] !== void 0) {
-    //        obj[k] = src[k];
-    //    }
-    // }
-
-    return obj;
-}
 
 module.exports = Runtime;
