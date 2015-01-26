@@ -228,7 +228,7 @@ Runtime.prototype.fbind = function $Runtime$prototype$fbind(func) {
  * @memberOf {Runtime}
  * @method
  * */
-Runtime.prototype.run = function $Runtime$prototype$run() {
+Runtime.prototype.start = function $Runtime$prototype$run() {
     var i;
     var l;
 
@@ -251,7 +251,7 @@ Runtime.prototype.run = function $Runtime$prototype$run() {
     }
 
     for (i = 0; i < l; i += 1) {
-        this.createDependency(this.unit.deps[i]).run();
+        this.createDependency(this.unit.deps[i]).start();
     }
 };
 

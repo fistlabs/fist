@@ -209,7 +209,7 @@ function init(app) {
      * @param {Function} done
      * */
     Unit.prototype.run = function $Unit$prototype$run(track, args, done) {
-        new Runtime(app, this, track, null, args, done).run();
+        new Runtime(app, this, track, null, args, done).start();
     };
 
     /**

@@ -170,14 +170,14 @@ describe('core/runtime', function () {
         });
     });
 
-    describe('runtime.run()', function () {
-        it('Should run syncCache()', function () {
+    describe('runtime.start()', function () {
+        it('Should start syncCache()', function () {
             var runtime = fakeRuntime();
             var spy = 0;
             runtime.syncCache = function () {
                 spy += 1;
             };
-            runtime.run();
+            runtime.start();
             assert.strictEqual(spy, 1);
         });
 
@@ -191,12 +191,12 @@ describe('core/runtime', function () {
             runtime.syncCache = function () {
                 this.track.calls[this.runId].emitDone(this);
             };
-            runtime.run();
+            runtime.start();
             var runtime2 = fakeRuntime(runtime.app, runtime.unit, runtime.track, null, null, function () {
                 assert.strictEqual(this, runtime);
                 spy.push(2);
             });
-            runtime2.run();
+            runtime2.start();
             assert.deepEqual(spy, [1, 2]);
         });
 
@@ -215,11 +215,11 @@ describe('core/runtime', function () {
             runtime.createDependency = function (name) {
                 spy.push(name);
                 return {
-                    run: function () {}
+                    start: function () {}
                 };
             };
 
-            runtime.run();
+            runtime.start();
             assert.deepEqual(spy, ['a', 'b']);
         });
     });
