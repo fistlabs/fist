@@ -150,16 +150,6 @@ function Runtime(app, unit, track, parent, args, done) {
     this.statusBits = unit.runtimeInitBits;
 
     /**
-     * Runtime logger
-     *
-     * @public
-     * @memberOf {Runtime}
-     * @property
-     * @type {Context}
-     * */
-    this.logger = unit.logger.bind(track.id);
-
-    /**
      * Runtime context
      *
      * @public
@@ -167,8 +157,8 @@ function Runtime(app, unit, track, parent, args, done) {
      * @property
      * @type {Context}
      * */
-    this.context = new Context(new Obus(), new Obus(), new Obus(), this.logger).
-        setParams(unit.params, track.params, args);
+    this.context = new Context(new Obus(), new Obus(), new Obus(),
+        unit.logger.bind(track.id)).setParams(unit.params, track.params, args);
 
     /**
      * Runtime identity is a part of cacheKey and memorization key
@@ -181,6 +171,16 @@ function Runtime(app, unit, track, parent, args, done) {
     this.identity = unit.identify(track, this.context);
 
     /**
+     * Runtime logger
+     *
+     * @public
+     * @memberOf {Runtime}
+     * @property
+     * @type {Context}
+     * */
+    this.logger = this.context.logger = this.context.logger.bind(this.identity);
+
+    /**
      * The id of this runtime
      *
      * @public
@@ -189,8 +189,6 @@ function Runtime(app, unit, track, parent, args, done) {
      * @type {String}
      * */
     this.runId = unit.name + '-' + this.identity;
-
-    this.logger = this.context.logger = this.logger.bind(this.identity);
 }
 
 /**
