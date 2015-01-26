@@ -1,9 +1,9 @@
 'use strict';
 
-var Runtime = /** @type Runtime */ require('./runtime');
 var FistError = /** @type FistError */ require('./fist-error');
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('lru-dict/core/lru-dict-ttl-async');
 var Obus = /** @type Obus */ require('obus');
+var Runtime = /** @type Runtime */ require('./runtime');
 
 var _ = require('lodash-node');
 var f = require('util').format;
@@ -13,10 +13,10 @@ var utools = require('./utils/unit-tools');
 var vow = require('vow');
 
 function init(app) {
-    /*eslint max-params: 0*/
+
     /**
      * @public
-     * @memberOf agent
+     * @memberOf app
      * @property
      * @type {Object}
      * */
@@ -26,7 +26,7 @@ function init(app) {
          * default cache interface "local"
          *
          * @public
-         * @memberOf agent.caches
+         * @memberOf app.caches
          * @property
          * @type {LRUDictTtlAsync}
          * */
@@ -37,6 +37,7 @@ function init(app) {
      * @class Unit
      * */
     function Unit() {
+
         /**
          * @public
          * @memberOf {Unit}
@@ -52,7 +53,6 @@ function init(app) {
         /**
          * @public
          * @memberOf {Unit}
-         * @method
          * @property
          * */
         this.cache = app.caches[this.cache];
@@ -98,108 +98,118 @@ function init(app) {
         this.runtimeInitBits = utools.buildRuntimeInitBits(this);
     }
 
-    Unit.prototype = {
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @method
+     *
+     * @constructs
+     * */
+    Unit.prototype.constructor = Unit;
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @method
-         *
-         * @constructs
-         * */
-        constructor: Unit,
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {String}
+     * */
+    Unit.prototype.name = 0;
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * */
-        name: 0,
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {String}
+     * */
+    Unit.prototype.cache = 'local';
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {String}
-         * */
-        cache: 'local',
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Number}
+     * */
+    Unit.prototype.maxAge = 0;
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Number}
-         * */
-        maxAge: 0,
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Object}
+     * */
+    Unit.prototype.params = {};
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        params: {},
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Object}
+     * */
+    Unit.prototype.settings = {};
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        settings: {},
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Object}
+     * */
+    Unit.prototype.depsArgs = {};
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        depsArgs: {},
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Object}
+     * */
+    Unit.prototype.depsMap = {};
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Object}
-         * */
-        depsMap: {},
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Array}
+     * */
+    Unit.prototype.deps = [];
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @property
-         * @type {Array}
-         * */
-        deps: [],
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Track} track
+     * @param {Context} context
+     *
+     * @returns {*}
+     * */
+    Unit.prototype.identify = function _$Unit$prototype$identify(track, context) {
+        return 'static';
+    };
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @method
-         *
-         * @returns {*}
-         * */
-        identify: function _$Unit$prototype$identify() {
-            return 'static';
-        },
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Object} track
+     * @param {Object} context
+     *
+     * @returns {*}
+     * */
+    Unit.prototype.main = function (track, context) {
+        /*eslint no-unused-vars: 0*/
+    };
 
-        /**
-         * @public
-         * @memberOf {Unit}
-         * @method
-         *
-         * @param {Object} track
-         * @param {Object} context
-         *
-         * @returns {*}
-         * */
-        main: /* istanbul ignore next */ function (track, context) {
-            /*eslint no-unused-vars: 0*/
-        },
-
-        run: function $Unit$ptototype$run(track, args, done) {
-            new Runtime(app, this, track, null, args, done).run();
-        }
+    /**
+     * @public
+     * @memberOf {Unit}
+     * @method
+     *
+     * @param {Track} track
+     * @param {Object} args
+     * @param {Function} done
+     * */
+    Unit.prototype.run = function $Unit$prototype$run(track, args, done) {
+        new Runtime(app, this, track, null, args, done).run();
     };
 
     /**
@@ -245,7 +255,7 @@ function init(app) {
 
     /**
      * @public
-     * @memberOf {Agent}
+     * @memberOf {Core}
      * @property
      * @type {Function}
      * */
