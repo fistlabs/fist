@@ -300,7 +300,7 @@ describe('core/server', function () {
     describe('server.listen()', function () {
         var asker = require('vow-asker');
 
-        it('Should create and run http server', function (done) {
+        it('Should create and run http server', function () {
             var server = new Server();
             server.route('/', {
                 name: 'foo',
@@ -317,16 +317,15 @@ describe('core/server', function () {
             var port = Math.min(Number(Math.random().toString().slice(3, 8)), 65535);
             var srv = server.listen(port);
 
-            asker({
+            return asker({
                 host: 'localhost',
                 path: '/',
                 port: port,
                 timeout: 10000
-            }).done(function (res) {
-                assert.deepEqual(res.data, new Buffer('foo'));
+            }).then(function (res) {
                 srv.close();
-                done();
-            }, done);
+                assert.deepEqual(res.data, new Buffer('foo'));
+            });
 
         });
     });
