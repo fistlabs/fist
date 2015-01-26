@@ -94,7 +94,7 @@ module.exports = function (app) {
 };
 ```
 
-_fist_plugins/units/controllers/hello_page.js:_
+_fist_plugins/controllers/hello_page.js:_
 
 ```js
 module.exports = function (app) {
@@ -108,7 +108,7 @@ module.exports = function (app) {
 };
 ```
 
-_fist_plugins/units/models/greeting_data.js:_
+_fist_plugins/models/greeting_data.js:_
 
 ```js
 module.exports = function (app) {

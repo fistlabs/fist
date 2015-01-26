@@ -85,7 +85,7 @@ _Read the [plugins guide](/docs/guides/using-plugins.md)_
 
 Now we should to create model unit for our documentation pages. The pages are so similar, therefore we only need to create just one general model.
 
-_[fist_plugins/units/models/document.js](/examples/njsdoc/fist_plugins/units/models/document.js):_
+_[fist_plugins/models/document.js](/examples/njsdoc/fist_plugins/models/document.js):_
 
 ```js
 module.exports = function (app) {
@@ -123,7 +123,7 @@ _Read [power of units](/docs/guides/power-of-units.md) guide_
 
 Now, we ready to write the controller for our page. It it just the unit related to route, which will be called if route will be matched.
 
-_[fist_plugins/units/controllers/doc_page.js](/examples/njsdoc/fist_plugins/units/controllers/doc_page.js)_
+_[fist_plugins/controllers/doc_page.js](/examples/njsdoc/fist_plugins/controllers/doc_page.js)_
 
 ```js
 var marked = require('marked');

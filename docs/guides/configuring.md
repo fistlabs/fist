@@ -70,7 +70,7 @@ module.exports = function (app) {
 
 Router plugin is done. Next I should write units to handle my routes. Units also may be installed from plugins.
 
-_fist_plugins/units/controllers/index.js:_
+_fist_plugins/controllers/index.js:_
 
 ```js
 module.exports = function (app) {
@@ -83,7 +83,7 @@ module.exports = function (app) {
 };
 ```
 
-Tip: keep the plugins which installing units in ```fist_plugins/units``` and divide their in subdirectories by semantics.
+Tip: keep the plugins which installing units in ```fist_plugins/``` and divide their in subdirectories by semantics.
 
 ##Configuring units
 Sometimes units need to get some static configuration. There is a way to pass it:
@@ -101,7 +101,7 @@ module.exports = {
 };
 ```
 
-_fist_plugins/units/models/news.list.js:_
+_fist_plugins/models/news.list.js:_
 
 ```js
 module.exports = function (app) {
