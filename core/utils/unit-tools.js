@@ -47,7 +47,7 @@ function buildDepsIndexMap(unit) {
 
 function buildRuntimeInitBits(unit) {
     if (!(unit.maxAge > 0)) {
-        return parseInt('00000010', 2);
+        return parseInt('00010000', 2);
     }
 
     return 0;

@@ -6,11 +6,11 @@
 var assert = require('assert');
 var inherit = require('inherit');
 
-function Unit() {}
+function SpyUnit() {}
 
-Unit.prototype.name = 0;
+SpyUnit.prototype.name = 0;
 
-Unit.inherit = function (members, statics) {
+SpyUnit.inherit = function (members, statics) {
     return inherit(this, members, statics);
 };
 
@@ -20,7 +20,7 @@ describe('core/utils/core-tools', function () {
     describe('ctools.createUnitClasses()', function () {
         it('Should create classes object from declaration', function () {
             var core = {
-                Unit: Unit,
+                Unit: SpyUnit,
                 _decls: []
             };
             var classes = ctools.createUnitClasses(core);
@@ -31,7 +31,7 @@ describe('core/utils/core-tools', function () {
 
         it('Should implicitly inherit from base unit', function () {
             var core = {
-                Unit: Unit,
+                Unit: SpyUnit,
                 logger: {
                     debug: function () {}
                 },
@@ -53,7 +53,7 @@ describe('core/utils/core-tools', function () {
 
         it('Should explicitly inherit from specified unit', function () {
             var core = {
-                Unit: Unit,
+                Unit: SpyUnit,
                 logger: {
                     debug: function () {}
                 },
@@ -90,7 +90,7 @@ describe('core/utils/core-tools', function () {
 
         it('Should correct create few classes with same base', function () {
             var core = {
-                Unit: Unit,
+                Unit: SpyUnit,
                 logger: {
                     debug: function () {}
                 },
@@ -140,7 +140,7 @@ describe('core/utils/core-tools', function () {
 
         it('Should be failed if no base found', function () {
             var core = {
-                Unit: Unit,
+                Unit: SpyUnit,
                 logger: {
                     debug: function () {}
                 },
@@ -174,7 +174,7 @@ describe('core/utils/core-tools', function () {
         it('Should create units from classes', function () {
             var core = {
                 _class: {
-                    foo: Unit
+                    foo: SpyUnit
                 }
             };
             var units = ctools.createUnits(core);
