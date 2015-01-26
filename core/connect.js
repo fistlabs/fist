@@ -50,6 +50,22 @@ function Connect(agent, logger, req, res) {
      * @public
      * @memberOf {Connect}
      * @property
+     * @type {Array<String>}
+     * */
+    this.matches = null;
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @property
+     * @type {Number}
+     * */
+    this.routeIndex = -1;
+
+    /**
+     * @public
+     * @memberOf {Connect}
+     * @property
      * @type {Object}
      * */
     this.url = urlParse(this.getProtocol() +

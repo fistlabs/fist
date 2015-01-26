@@ -143,10 +143,12 @@ Server.prototype._runTrack = function (req, res, logger) {
 
     if (matches.length) {
         track = new Connect(this, logger, req, res);
+        track.matches = matches;
+        track.routeIndex = 0;
         res.on('close', function () {
             track._isFlushed = true;
         });
-        this._nextRun(track, matches, 0);
+        this._nextRun(track);
         return;
     }
 
@@ -167,37 +169,39 @@ Server.prototype._runTrack = function (req, res, logger) {
  * @memberOf {Connect}
  * @method
  * */
-Server.prototype._nextRun = function (track, matches, pos) {
+Server.prototype._nextRun = function (track) {
     var match;
-    var self = this;
 
-    if (pos === matches.length) {
+    if (track.routeIndex === track.matches.length) {
         track.logger.debug('No one controller did responded');
         track.status(404).send();
         return;
     }
 
-    match = matches[pos];
+    match = track.matches[track.routeIndex];
     track.params = match.args;
     track.route = match.data.name;
     track.logger.debug('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
 
-    /** @this {Server} */
-    this.getUnit(match.data.unit).run(track, null, function () {
-        if (track.wasSent()) {
-            return;
-        }
-
-        if (this.isRejected()) {
-            track.status(500).send();
-            return;
-        }
-
-        track.logger.debug('The "%(data.unit)s" controller did not responded', match);
-
-        self._nextRun(track, matches, pos + 1);
-    });
+    this.getUnit(match.data.unit).run(track, null, onControllerRun);
 };
+
+/**
+ * @this {Runtime}
+ * */
+function onControllerRun() {
+    if (this.track.wasSent()) {
+        return;
+    }
+
+    if (this.isRejected()) {
+        this.track.status(500).send();
+        return;
+    }
+
+    this.track.routeIndex += 1;
+    this.app._nextRun(this.track);
+}
 
 /**
  * Запускает сервер и инициализацию приложения
