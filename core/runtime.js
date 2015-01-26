@@ -365,6 +365,11 @@ Runtime.prototype.onCacheGot = function $Runtime$prototype$onCacheGot(err, res) 
     this.callUnitMain();
 };
 
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ * */
 Runtime.prototype.finish = function $Runtime$prototype$finish() {
     if (this.statusBits & B00000010) {
         // is rejected
@@ -379,19 +384,51 @@ Runtime.prototype.finish = function $Runtime$prototype$finish() {
     this.track.calls[this.runId].emitDone(this);
 };
 
+/**
+ * @public
+ * @static
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {Runtime} self
+ *
+ * @returns {*}
+ * */
 Runtime.callUnitMain = function $Runtime$callUnitMain(self) {
     return self.unit.main(self.track, self.context);
 };
 
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {*} res
+ * */
 Runtime.prototype.onMainFulfilled = function $Runtime$prototype$onMainFulfilled(res) {
     this.afterMainCalled(res, B00000001);
 };
 
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {*} err
+ * */
 Runtime.prototype.onMainRejected = function $Runtime$prototype$onMainRejected(err) {
     this.logger.error(err);
     this.afterMainCalled(err, B00000010);
 };
 
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {*} value
+ * @param {Number} statusBitMask
+ * */
 Runtime.prototype.afterMainCalled = function $Runtime$prototype$afterMainCalled(value, statusBitMask) {
 
     if (this.track.isFlushed()) {
@@ -411,6 +448,13 @@ Runtime.prototype.afterMainCalled = function $Runtime$prototype$afterMainCalled(
     this.finish();
 };
 
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {*} err
+ * */
 Runtime.prototype.onCacheSet = function $Runtime$prototype$onCacheSet(err) {
     if (err) {
         this.logger.warn(err);
