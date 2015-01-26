@@ -16,6 +16,14 @@ function Track(agent, logger) {
      * @public
      * @memberOf {Track}
      * @property
+     * @type {String}
+     * */
+    this.id = null;
+
+    /**
+     * @public
+     * @memberOf {Track}
+     * @property
      * @type {Logger}
      * */
     this.logger = logger;

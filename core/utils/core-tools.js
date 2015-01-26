@@ -85,7 +85,7 @@ function assertAllUnitDepsOk(self) {
 
             if (_.contains(unitDepsPath, depName)) {
                 throw new FistError(FistError.DEPS_CONFLICT,
-                    f('Recursive dependencies found: %j < %j', unitDepsPath.join('" < "'), depName));
+                    f('Recursive dependencies found: "%s" < "%s"', unitDepsPath.join('" < "'), depName));
             }
 
             assertUnitDepsOk(depUnit, unitDepsPath.concat(depName));

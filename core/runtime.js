@@ -41,7 +41,6 @@ var vow = require('vow');
  * */
 function Runtime(app, unit, track, parent, args, done) {
     /*eslint max-params: 0*/
-
     /**
      * The host application instance
      *
@@ -158,7 +157,7 @@ function Runtime(app, unit, track, parent, args, done) {
      * @property
      * @type {Context}
      * */
-    this.logger = track.logger.bind(unit.name);
+    this.logger = unit.logger.bind(track.id);
 
     /**
      * Runtime context
@@ -190,6 +189,8 @@ function Runtime(app, unit, track, parent, args, done) {
      * @type {String}
      * */
     this.runId = unit.name + '-' + this.identity;
+
+    this.logger = this.context.logger = this.logger.bind(this.identity);
 }
 
 /**
@@ -232,10 +233,9 @@ Runtime.prototype.start = function $Runtime$prototype$run() {
     var i;
     var l;
 
-    if (this.track.calls.hasOwnProperty(this.runId)) {
-        this.logger.debug('Waiting until %(runId)j is finished', this);
-    } else {
-        this.logger.debug('Starting %(runId)j', this);
+    if (!this.track.calls.hasOwnProperty(this.runId)) {
+        //  unique unit request
+        this.logger.debug('Running...');
         this.track.calls[this.runId] = new RuntimeFinishWait();
     }
 

@@ -17,20 +17,27 @@ describe('core/runtime', function () {
                 return 'static';
             },
             name: 'foo',
-            runtimeInitBits: 0
-        }, track || {
-            calls: {},
-            params: {
-                bar: 2
-            },
+            runtimeInitBits: 0,
             logger: {
                 bind: function () {
                     return {
                         debug: function () {},
                         warn: function () {},
-                        error: function () {}
+                        error: function () {},
+                        bind: function () {
+                            return {
+                                debug: function () {},
+                                warn: function () {},
+                                error: function () {}
+                            };
+                        }
                     };
                 }
+            }
+        }, track || {
+            calls: {},
+            params: {
+                bar: 2
             }
         }, parent || null, args || null, done || function () {});
     }
@@ -38,7 +45,11 @@ describe('core/runtime', function () {
     describe('new Runtime()', function () {
         it('Should take (app, unit, track, parent, args, done) arguments', function () {
             var app = {};
-            var boundLogger = {};
+            var boundLogger = {
+                debug: function () {},
+                warn: function () {},
+                error: function () {}
+            };
             var unit = {
                 name: 'foo',
                 params: {
@@ -48,16 +59,23 @@ describe('core/runtime', function () {
                 identify: function () {
                     return 'static';
                 },
-                runtimeInitBits: 0
+                runtimeInitBits: 0,
+                logger: {
+                    bind: function () {
+                        return {
+                            debug: function () {},
+                            warn: function () {},
+                            error: function () {},
+                            bind: function () {
+                                return boundLogger;
+                            }
+                        };
+                    }
+                }
             };
             var track = {
                 params: {
                     bar: 2
-                },
-                logger: {
-                    bind: function () {
-                        return boundLogger;
-                    }
                 }
             };
             var parent = {};
@@ -209,6 +227,22 @@ describe('core/runtime', function () {
                 identify: function () {
                     return 'static';
                 },
+                logger: {
+                    bind: function () {
+                        return {
+                            debug: function () {},
+                            warn: function () {},
+                            error: function () {},
+                            bind: function () {
+                                return {
+                                    debug: function () {},
+                                    warn: function () {},
+                                    error: function () {}
+                                };
+                            }
+                        };
+                    }
+                },
                 runtimeInitBits: 0
             });
 
@@ -237,7 +271,23 @@ describe('core/runtime', function () {
                         identify: function () {
                             return 'static';
                         },
-                        runtimeInitBits: 0
+                        runtimeInitBits: 0,
+                        logger: {
+                            bind: function () {
+                                return {
+                                    debug: function () {},
+                                    warn: function () {},
+                                    error: function () {},
+                                    bind: function () {
+                                        return {
+                                            debug: function () {},
+                                            warn: function () {},
+                                            error: function () {}
+                                        };
+                                    }
+                                };
+                            }
+                        }
                     }
                 },
                 getUnit: function (name) {
@@ -255,7 +305,23 @@ describe('core/runtime', function () {
                 identify: function () {
                     return 'static';
                 },
-                runtimeInitBits: 0
+                runtimeInitBits: 0,
+                logger: {
+                    bind: function () {
+                        return {
+                            debug: function () {},
+                            warn: function () {},
+                            error: function () {},
+                            bind: function () {
+                                return {
+                                    debug: function () {},
+                                    warn: function () {},
+                                    error: function () {}
+                                };
+                            }
+                        };
+                    }
+                }
             });
 
             var dependency = runtime.createDependency('bar');

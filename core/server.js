@@ -55,9 +55,14 @@ Server.prototype.getHandler = function () {
 
     return function (req, res) {
         var dExecStart = new Date();
-        //  TODO tests for this stuff
-        var requestId = getRequestId(req);
-        var logger = self.logger.bind(requestId);
+        var logger;
+
+        //  TODO write tests for this stuff
+        if (!req.id) {
+            req.id = req.headers['x-request-id'] || uniqueId();
+        }
+
+        logger = self.logger.bind(req.id);
 
         logger.info('Incoming %(method)s %(url)s %s', function () {
             var name;
@@ -143,6 +148,7 @@ Server.prototype._runTrack = function (req, res, logger) {
 
     if (matches.length) {
         track = new Connect(this, logger, req, res);
+        track.id = req.id;
         track.matches = matches;
         track.routeIndex = 0;
         res.on('close', function () {
@@ -266,9 +272,5 @@ Server.prototype._getReady = function () {
         }, this);
     }, this);
 };
-
-function getRequestId(req) {
-    return req.id || req.headers['x-request-id'] || uniqueId();
-}
 
 module.exports = Server;

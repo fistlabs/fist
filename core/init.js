@@ -61,6 +61,14 @@ function init(app) {
          * @public
          * @memberOf {Unit}
          * @property
+         * @type {Logger}
+         * */
+        this.logger = app.logger.bind(this.name);
+
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
          * @type {Array<String>}
          * */
         this.deps = utools.buildDeps(this);
