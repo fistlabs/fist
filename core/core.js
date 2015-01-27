@@ -132,7 +132,7 @@ Core.prototype.unit = function (members, statics) {
     var name = members.name;
 
     if (!(_.has(members, 'name') && _.isString(name) && R_NAME.test(name))) {
-        throw new FistError(FistError.BAD_UNIT, f('Unit name %j should be identifier (%(source)s)', name, R_NAME));
+        throw new FistError(FistError.BAD_UNIT, f('Unit name %j should be identifier (%s)', name, R_NAME.source));
     }
 
     members = Object(members);
