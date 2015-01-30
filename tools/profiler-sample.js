@@ -2,7 +2,7 @@
 'use strict';
 
 var buildDepsTest = require('../tools/build-deps-test');
-var samples = 100000;
+var samples = 1000;
 
 buildDepsTest(32, 32, function (run) {
     run(function done() {
