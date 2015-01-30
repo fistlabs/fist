@@ -11,6 +11,14 @@ function noop() {
     return this.name;
 }
 
+function pad(s, n) {
+    s = String(s);
+    while (s.length < n) {
+        s = '0' + s;
+    }
+    return s;
+}
+
 function buildDeps(unitsCount, depsPerUnit, onInit) {
     var app = new Core({
         logging: {
@@ -21,20 +29,21 @@ function buildDeps(unitsCount, depsPerUnit, onInit) {
     var depsCount;
     var unitName = f('u%s', unitsCount);
     var i;
+    var n = unitsCount.toString().length;
 
     while (unitsCount) {
         deps = [];
         depsCount = Math.min(unitsCount - 1, depsPerUnit);
 
         for (i = 0; i < depsCount; i += 1) {
-            deps[deps.length] = f('u%s', unitsCount - i - 1);
+            deps[deps.length] = f('u%s', pad(unitsCount - i - 1, n));
         }
 
-        console.log('%s ("%s")', f('u%s', unitsCount), deps.join('", "'));
+        console.log('%s (%s)', f('u%s', pad(unitsCount, n)), deps.join(', '));
 
         app.unit({
             base: 0,
-            name: f('u%s', unitsCount),
+            name: f('u%s', pad(unitsCount, n)),
             deps: deps,
             main: noop
         });

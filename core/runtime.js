@@ -22,15 +22,14 @@ var B00011101 = B00011000 | B00000100 | B00000001;
 
 var Context = /** @type Context */ require('./context');
 var Obus = /** @type Obus */ require('obus');
-var RuntimeFinishWait = /** @type RuntimeFinishWait */ require('./utils/runtime-finish-wait');
 
+var maxRunDepth = 1;
 var vow = require('vow');
 
 /**
  * @class Runtime
  * @extends Context
  *
- * @param {Core} app
  * @param {Unit} unit
  * @param {Track} track
  * @param {Runtime} [parent]
@@ -39,17 +38,9 @@ var vow = require('vow');
  *
  * @constructs
  * */
-function Runtime(app, unit, track, parent, args, done) {
-    /*eslint max-params: 0*/
-    /**
-     * The host application instance
-     *
-     * @public
-     * @memberOf {Runtime}
-     * @property
-     * @type {Core}
-     * */
-    this.app = app;
+function Runtime(unit, track, parent, args, done) {
+    var context = new Context(Context.createParams(unit.params, track.params, args),
+        new Obus(), new Obus(), unit.logger.bind(track.id));
 
     /**
      * Invoking unit
@@ -120,16 +111,6 @@ function Runtime(app, unit, track, parent, args, done) {
     this.creationDate = new Date();
 
     /**
-     * The key for cache
-     *
-     * @public
-     * @memberOf {Runtime}
-     * @property
-     * @type {String}
-     * */
-    this.cacheKey = '';
-
-    /**
      * The result, returned from runtime
      *
      * @public
@@ -157,8 +138,7 @@ function Runtime(app, unit, track, parent, args, done) {
      * @property
      * @type {Context}
      * */
-    this.context = new Context(new Obus(), new Obus(), new Obus(),
-        unit.logger.bind(track.id)).setParams(unit.params, track.params, args);
+    this.context = context;
 
     /**
      * Runtime identity is a part of cacheKey and memorization key
@@ -168,7 +148,7 @@ function Runtime(app, unit, track, parent, args, done) {
      * @property
      * @type {String}
      * */
-    this.identity = unit.identify(track, this.context);
+    this.identity = unit.identify(track, context);
 
     /**
      * Runtime logger
@@ -178,18 +158,80 @@ function Runtime(app, unit, track, parent, args, done) {
      * @property
      * @type {Context}
      * */
-    this.logger = this.context.logger = this.context.logger.bind(this.identity);
+    this.logger = context.logger = context.logger.bind(this.identity);
 
     /**
-     * The id of this runtime
-     *
      * @public
      * @memberOf {Runtime}
      * @property
-     * @type {String}
+     * @type {Array<Runtime>}
      * */
-    this.runId = unit.name + '-' + this.identity;
+    this.listeners = [];
 }
+
+/**
+ * @public
+ * @static
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {Unit} unit
+ * @param {Track} track
+ * @param {Object} args
+ * @param {Function} done
+ * */
+Runtime.startRun = function (unit, track, args, done) {
+    var app = unit.app;
+    var calls = track.calls;
+    var deps;
+    var l;
+    var pos = 0;
+    var runId;
+    var runtime = new Runtime(unit, track, null, args, done);
+    var unitRuns;
+    var stack = new Array(maxRunDepth);
+
+    stack[pos] = runtime;
+
+    do {
+        runtime = stack[pos];
+        unit = runtime.unit;
+
+        if (calls.hasOwnProperty(unit.name)) {
+            unitRuns = calls[unit.name];
+        } else {
+            unitRuns = calls[unit.name] = {};
+        }
+
+        runId = runtime.identity;
+
+        if (unitRuns.hasOwnProperty(runId)) {
+            unitRuns[runId].wait(runtime);
+            continue;
+        }
+
+        runtime.logger.debug('Running...');
+        unitRuns[runId] = runtime;
+
+        l = runtime.pathsLeft;
+
+        if (l === 0) {
+            $Runtime$execute(runtime);
+            continue;
+        }
+
+        deps = unit.deps;
+
+        while (l) {
+            l -= 1;
+            stack[pos] = $Runtime$fork(runtime, app.getUnit(deps[l]));
+            pos += 1;
+        }
+
+        maxRunDepth = Math.max(pos, maxRunDepth);
+        /*eslint no-plusplus: 0*/
+    } while (pos--);
+};
 
 /**
  * @public
@@ -205,196 +247,25 @@ Runtime.prototype.constructor = Runtime;
  * @memberOf {Runtime}
  * @method
  *
- * @param {Function} func
+ * @param {Runtime} sameIdentityRuntime
+ * */
+Runtime.prototype.wait = function (sameIdentityRuntime) {
+    this.listeners.push(sameIdentityRuntime);
+};
+
+/**
+ * The key for cache
  *
- * @returns {Function}
- * */
-Runtime.prototype.fbind = function $Runtime$prototype$fbind(func) {
-
-    function $Runtime$prototype$bound(err, res) {
-        $Runtime$prototype$bound.self.__tmpMethod = $Runtime$prototype$bound.func;
-        return $Runtime$prototype$bound.self.__tmpMethod(err, res);
-    }
-
-    $Runtime$prototype$bound.func = func;
-    $Runtime$prototype$bound.self = this;
-
-    return $Runtime$prototype$bound;
-};
-
-/**
  * @public
  * @memberOf {Runtime}
- * @method
+ * @property
+ * @type {String}
  * */
-Runtime.prototype.start = function $Runtime$prototype$run() {
-    var i;
-    var l;
-
-    if (!this.track.calls.hasOwnProperty(this.runId)) {
-        //  unique unit request
-        this.logger.debug('Running...');
-        this.track.calls[this.runId] = new RuntimeFinishWait();
+Object.defineProperty(Runtime.prototype, 'cacheKey', {
+    get: function () {
+        return this.unit.name + '-' + this.identity + '-' + this.keys.join('-');
     }
-
-    if (this.track.calls[this.runId].wait(this)) {
-        return;
-    }
-
-    l = this.pathsLeft;
-
-    if (l === 0) {
-        this.syncCache();
-        return;
-    }
-
-    for (i = 0; i < l; i += 1) {
-        this.createDependency(this.unit.deps[i]).start();
-    }
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {String} name
- *
- * @returns {Runtime}
- * */
-Runtime.prototype.createDependency = function $Runtime$prototype$createDependency(name) {
-    return new Runtime(this.app, this.app.getUnit(name), this.track, this,
-        this.unit.depsArgs[name](this.track, this.context), this.doneAsDependency);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- * */
-Runtime.prototype.doneAsDependency = function $Runtime$prototype$doneAsDependency() {
-
-    //  parent skipped
-    if (this.parent.statusBits & B00000100) {
-        return;
-    }
-
-    //  this skipped
-    if (this.statusBits & B00000100) {
-        //  set parent is skipped
-        this.parent.statusBits |= B00000100;
-        this.parent.finish();
-        return;
-    }
-
-    //  is rejected
-    if (this.statusBits & B00000010) {
-        //  set parent skip cache
-        this.parent.statusBits |= B00010000;
-        Obus.add(this.parent.context.errors, this.parent.unit.depsMap[this.unit.name], this.value);
-    } else {
-        //  set need update to parent if this is updated
-        this.parent.statusBits |= this.statusBits & B00001000;
-        this.parent.keys[this.parent.unit.depsIndexMap[this.unit.name]] = this.identity;
-        Obus.add(this.parent.context.result, this.parent.unit.depsMap[this.unit.name], this.value);
-    }
-
-    this.parent.pathsLeft -= 1;
-
-    if (this.parent.pathsLeft === 0) {
-        this.parent.syncCache();
-    }
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- * */
-Runtime.prototype.syncCache = function $Runtime$prototype$syncCache() {
-    this.cacheKey = this.unit.name + '-' + this.identity + '-' + this.keys.join('-');
-
-    // need update or need skip cache
-    if (this.statusBits & B00011000) {
-        this.callUnitMain();
-        return;
-    }
-
-    this.unit.cache.get(this.cacheKey, this.fbind(this.onCacheGot));
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- * */
-Runtime.prototype.callUnitMain = function $Runtime$prototype$callUnitMain() {
-    vow.invoke(Runtime.callUnitMain, this).
-        done(this.onMainFulfilled, this.onMainRejected, this);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {*} err
- * @param {*} res
- * */
-Runtime.prototype.onCacheGot = function $Runtime$prototype$onCacheGot(err, res) {
-    if (!err && res) {
-        this.logger.debug('Found in cache');
-        this.value = res.value;
-        // set is accepted
-        this.statusBits |= B00000001;
-        this.finish();
-        return;
-    }
-
-    if (err) {
-        this.logger.warn(err);
-    } else {
-        this.logger.debug('Outdated');
-    }
-
-    // set need update
-    this.statusBits |= B00001000;
-
-    this.callUnitMain();
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- * */
-Runtime.prototype.finish = function $Runtime$prototype$finish() {
-    if (this.statusBits & B00000010) {
-        // is rejected
-        this.logger.debug('Rejected in %dms', this.getTimePassed());
-    } else if (this.statusBits & B00000001) {
-        // is accepted
-        this.logger.debug('Accepted in %dms', this.getTimePassed());
-    } else {
-        this.logger.debug('Skipping in %dms', this.getTimePassed());
-    }
-
-    this.track.calls[this.runId].emitDone(this);
-};
-
-/**
- * @public
- * @static
- * @memberOf {Runtime}
- * @method
- *
- * @param {Runtime} self
- *
- * @returns {*}
- * */
-Runtime.callUnitMain = function $Runtime$callUnitMain(self) {
-    return self.unit.main(self.track, self.context);
-};
+});
 
 /**
  * @public
@@ -404,7 +275,7 @@ Runtime.callUnitMain = function $Runtime$callUnitMain(self) {
  * @param {*} res
  * */
 Runtime.prototype.onMainFulfilled = function $Runtime$prototype$onMainFulfilled(res) {
-    this.afterMainCalled(res, B00000001);
+    $Runtime$afterMainCalled(this, res, B00000001);
 };
 
 /**
@@ -416,49 +287,7 @@ Runtime.prototype.onMainFulfilled = function $Runtime$prototype$onMainFulfilled(
  * */
 Runtime.prototype.onMainRejected = function $Runtime$prototype$onMainRejected(err) {
     this.logger.error(err);
-    this.afterMainCalled(err, B00000010);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {*} value
- * @param {Number} statusBitMask
- * */
-Runtime.prototype.afterMainCalled = function $Runtime$prototype$afterMainCalled(value, statusBitMask) {
-
-    if (this.track.isFlushed()) {
-        // set is skipped
-        this.statusBits |= B00000100;
-    }
-
-    this.value = value;
-    // set updated and (accepted or rejected)
-    this.statusBits |= B00001000 | statusBitMask;
-
-    // !skip cache & updating & !skipping & accepted
-    if ((this.statusBits & B00011101) === B00001001) {
-        this.unit.cache.set(this.cacheKey, {value: value}, this.unit.maxAge, this.fbind(this.onCacheSet));
-    }
-
-    this.finish();
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {*} err
- * */
-Runtime.prototype.onCacheSet = function $Runtime$prototype$onCacheSet(err) {
-    if (err) {
-        this.logger.warn(err);
-    } else {
-        this.logger.debug('Updated');
-    }
+    $Runtime$afterMainCalled(this, err, B00000010);
 };
 
 /**
@@ -515,5 +344,163 @@ Runtime.prototype.isRejected = function () {
 Runtime.prototype.isResolved = function () {
     return (this.statusBits & B00000011) > 0;
 };
+
+function $Runtime$fbind(func, self) {
+
+    function $Runtime$bound(err, res) {
+        return func(self, err, res);
+    }
+
+    return $Runtime$bound;
+}
+
+function $Runtime$fork(self, unit) {
+    var track = self.track;
+    return new Runtime(unit, track, self,
+        self.unit.depsArgs[unit.name](track, self.context), $Runtime$doneAsDependency);
+}
+
+function $Runtime$doneAsDependency() {
+    var name;
+    var self = this;
+    var parent = self.parent;
+
+    //  parent skipped
+    if (parent.statusBits & B00000100) {
+        return;
+    }
+
+    //  this skipped
+    if (self.statusBits & B00000100) {
+        //  set parent is skipped
+        parent.statusBits |= B00000100;
+        $Runtime$finish(parent);
+        return;
+    }
+
+    name = self.unit.name;
+
+    //  is accepted
+    if (self.statusBits & B00000001) {
+        //  set need update to parent if this is updated
+        parent.statusBits |= self.statusBits & B00001000;
+        parent.keys[parent.unit.depsIndexMap[name]] = self.identity;
+        Obus.add(parent.context.result, parent.unit.depsMap[name], self.value);
+    } else {
+        //  is rejected
+        //  set parent skip cache
+        parent.statusBits |= B00010000;
+        Obus.add(parent.context.errors, parent.unit.depsMap[name], self.value);
+    }
+
+    parent.pathsLeft -= 1;
+
+    if (parent.pathsLeft === 0) {
+        $Runtime$execute(parent);
+    }
+}
+
+function $Runtime$execute(self) {
+    // need update or need skip cache
+    if (self.statusBits & B00011000) {
+        $Runtime$callUnit(self);
+        return;
+    }
+
+    self.unit.cache.get(self.cacheKey, $Runtime$fbind($Runtime$onCacheGot, self));
+}
+
+function $Runtime$callUnit(self) {
+    vow.invoke($Runtime$callUnitMain, self).
+        done(self.onMainFulfilled, self.onMainRejected, self);
+}
+
+function $Runtime$onCacheGot(self, err, res) {
+    if (!err && res) {
+        self.logger.debug('Found in cache');
+        self.value = res.value;
+        // set is accepted
+        self.statusBits |= B00000001;
+        $Runtime$finish(self);
+        return;
+    }
+
+    if (err) {
+        self.logger.warn(err);
+    } else {
+        self.logger.debug('Outdated');
+    }
+
+    // set need update
+    self.statusBits |= B00001000;
+
+    $Runtime$callUnit(self);
+}
+
+function $Runtime$finish(self) {
+    var i;
+    var l;
+    var listeners = self.listeners;
+
+    self.wait = $Runtime$doneImmediately;
+
+    if (self.statusBits & B00000001) {
+        //  is accepted
+        self.logger.debug('Accepted in %dms', self.getTimePassed());
+    } else if (self.statusBits & B00000010) {
+        //  is rejected
+        self.logger.debug('Rejected in %dms', self.getTimePassed());
+    } else {
+        self.logger.debug('Skipping in %dms', self.getTimePassed());
+    }
+
+    self.done();
+
+    for (i = 0, l = listeners.length; i < l; i += 1) {
+        $Runtime$doneOther(self, listeners[i]);
+    }
+}
+
+function $Runtime$doneImmediately(other) {
+    $Runtime$doneOther(this, other);
+}
+
+function $Runtime$doneOther(self, other) {
+    self.done = other.done;
+    self.parent = other.parent;
+    self.done();
+}
+
+function $Runtime$callUnitMain(self) {
+    return self.unit.main(self.track, self.context);
+}
+
+function $Runtime$afterMainCalled(self, value, statusBitMask) {
+
+    if (self.track.isFlushed()) {
+        // set is skipped
+        self.statusBits |= B00000100;
+    }
+
+    self.value = value;
+    // set updated and (accepted or rejected)
+    self.statusBits |= B00001000 | statusBitMask;
+
+    // !skip cache & updating & !skipping & accepted
+    if ((self.statusBits & B00011101) === B00001001) {
+        value = {value: value};
+        self.unit.cache.set(self.cacheKey, value, self.unit.maxAge, $Runtime$fbind($Runtime$onCacheSet, self));
+    }
+
+    $Runtime$finish(self);
+}
+
+function $Runtime$onCacheSet(self, err) {
+    if (err) {
+        self.logger.warn(err);
+    } else {
+        self.logger.debug('Updated');
+    }
+}
 
 module.exports = Runtime;

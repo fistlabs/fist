@@ -42,10 +42,19 @@ function init(app) {
          * @public
          * @memberOf {Unit}
          * @property
+         * @type {Core}
+         * */
+        this.app = app;
+
+        /**
+         * @public
+         * @memberOf {Unit}
+         * @property
          * @type {Object}
          * */
         this.params = _.extend({}, this.params);
 
+        //  TODO move to unit-tools
         if (!_.has(app.caches, this.cache)) {
             throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
         }
@@ -217,7 +226,7 @@ function init(app) {
      * @param {Function} done
      * */
     Unit.prototype.run = function $Unit$prototype$run(track, args, done) {
-        new Runtime(app, this, track, null, args, done).start();
+        Runtime.startRun(this, track, args, done);
     };
 
     /**
