@@ -5,5 +5,5 @@
 /test
 /tools
 Gulpfile.js
-.log
+*.log
 .*
