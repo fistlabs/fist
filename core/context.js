@@ -5,9 +5,9 @@ var Obus = /** @type Obus */ require('obus');
 /**
  * @class Context
  *
- * @param {Object} params
- * @param {Object} result
- * @param {Object} errors
+ * @param {Obus} params
+ * @param {Obus} result
+ * @param {Obus} errors
  * @param {Logger} logger
  * */
 function Context(params, result, errors, logger) {
@@ -55,18 +55,22 @@ Context.prototype.constructor = Context;
 
 /**
  * @public
+ * @static
  * @memberOf {Context}
  * @method
  *
- * @returns {Context}
+ * @param {Object} [unitParams]
+ * @param {Object} [trackParams]
+ * @param {Object} [args]
+ *
+ * @returns {Obus}
  * */
-Context.prototype.setParams = function () {
-    var i;
-    var argc = arguments.length;
-    for (i = 0; i < argc; i += 1) {
-        _$Context$extendParams(this.params, arguments[i]);
-    }
-    return this;
+Context.createParams = function (unitParams, trackParams, args) {
+    var params = new Obus();
+    $Context$extendParams(params, unitParams);
+    $Context$extendParams(params, trackParams);
+    $Context$extendParams(params, args);
+    return params;
 };
 
 /**
@@ -126,7 +130,7 @@ Context.prototype.toJSON = function () {
     };
 };
 
-function _$Context$extendParams(obj, src) {
+function $Context$extendParams(obj, src) {
     var k;
     var keys = Object.keys(Object(src));
     var l = keys.length;

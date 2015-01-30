@@ -68,26 +68,20 @@ describe('core.context', function () {
         });
     });
 
-    describe('context.setParams()', function () {
+    describe('Context.createParams()', function () {
         it('Should extend context params with given one', function () {
-            var context = new Context(new Obus(), new Obus(), new Obus(), logger);
-            assert.deepEqual(context.params, {});
-            context.setParams({foo: 42});
-            assert.deepEqual(context.params, {foo: 42});
-            context.setParams({bar: 146});
-            assert.deepEqual(context.params, {foo: 42, bar: 146});
+            var params = Context.createParams({foo: 42});
+            assert.deepEqual(params, {foo: 42});
+            params = Context.createParams(params, {bar: 146});
+            assert.deepEqual(params, {foo: 42, bar: 146});
         });
         it('Should support multiple arguments', function () {
-            var context = new Context(new Obus(), new Obus(), new Obus(), logger);
-            assert.deepEqual(context.params, {});
-            context.setParams({foo: 42}, {bar: 146});
-            assert.deepEqual(context.params, {foo: 42, bar: 146});
+            var params = Context.createParams({foo: 42}, {bar: 146});
+            assert.deepEqual(params, {foo: 42, bar: 146});
         });
         it('Should not overwrite existing values with undefined', function () {
-            var context = new Context(new Obus(), new Obus(), new Obus(), logger);
-            assert.deepEqual(context.params, {});
-            context.setParams({foo: 42}, {bar: 146}, {foo: void 0, bar: void 0});
-            assert.deepEqual(context.params, {foo: 42, bar: 146});
+            var params = Context.createParams({foo: 42}, {bar: 146}, {foo: void 0, bar: void 0});
+            assert.deepEqual(params, {foo: 42, bar: 146});
         });
     });
 });

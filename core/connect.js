@@ -358,7 +358,7 @@ Connect.prototype._sendJSON = function (data) {
  * @returns {String}
  * */
 Connect.prototype.getIp = function () {
-    return proxyAddr(this.req, this._agent.params.trustProxy);
+    return proxyAddr(this.req, this._app.params.trustProxy);
 };
 
 /**
@@ -369,7 +369,7 @@ Connect.prototype.getIp = function () {
  * @returns {String}
  * */
 Connect.prototype.getIps = function () {
-    return proxyAddr.all(this.req, this._agent.params.trustProxy);
+    return proxyAddr.all(this.req, this._app.params.trustProxy);
 };
 
 /**
@@ -385,7 +385,7 @@ Connect.prototype.getHost = function () {
     var headers = req.headers;
     var host = headers['x-forwarded-host'];
 
-    if (!host || !this._agent.params.trustProxy(connection.remoteAddress)) {
+    if (!host || !this._app.params.trustProxy(connection.remoteAddress)) {
         host = headers.host;
     }
 
@@ -421,7 +421,7 @@ Connect.prototype.getProtocol = function () {
     var connection = req.connection;
     var protocol = connection.encrypted ? 'https' : 'http';
 
-    if (req.headers['x-forwarded-proto'] && this._agent.params.trustProxy(connection.remoteAddress)) {
+    if (req.headers['x-forwarded-proto'] && this._app.params.trustProxy(connection.remoteAddress)) {
         return req.headers['x-forwarded-proto'].split(/\s*,\s*/)[0];
     }
 

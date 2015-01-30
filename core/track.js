@@ -7,10 +7,11 @@ var vow = require('vow');
 
 /**
  * @class Track
- * @param {Server} agent
+ *
+ * @param {Core} app
  * @param {Logger} logger
  * */
-function Track(agent, logger) {
+function Track(app, logger) {
 
     /**
      * @public
@@ -40,9 +41,9 @@ function Track(agent, logger) {
      * @protected
      * @memberOf {Track}
      * @property
-     * @type {Server}
+     * @type {Core}
      * */
-    this._agent = agent;
+    this._app = app;
 
     /**
      * @public
@@ -82,9 +83,9 @@ Track.prototype.constructor = Track;
  * */
 Track.prototype.invoke = function (name, args) {
     var defer = vow.defer();
-    var unit = this._agent.getUnit(name);
+    var unit = this._app.getUnit(name);
 
-    if (!(unit instanceof this._agent.Unit)) {
+    if (!(unit instanceof this._app.Unit)) {
         return vow.reject(new FistError(FistError.NO_SUCH_UNIT, f('Can not invoke unknown unit %j', name)));
     }
 

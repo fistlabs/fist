@@ -206,7 +206,7 @@ function onControllerRun() {
     }
 
     this.track.routeIndex += 1;
-    this.app._nextRun(this.track);
+    this.unit.app._nextRun(this.track);
 }
 
 /**
