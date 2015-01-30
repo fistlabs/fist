@@ -1,6 +1,9 @@
 'use strict';
 
+var FistError = /** @type FistError */ require('../fist-error');
+
 var _ = require('lodash-node');
+var f = require('util').format;
 
 function buildDeps(unit) {
     return Object.freeze(_.uniq(unit.deps));
@@ -53,6 +56,14 @@ function buildRuntimeInitBits(unit) {
     return 0;
 }
 
+function buildCache(unit) {
+    if (!_.has(unit.app.caches, unit.cache)) {
+        throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', unit.cache));
+    }
+
+    return unit.app.caches[unit.cache];
+}
+
 exports.buildDeps = buildDeps;
 
 exports.buildDepsArgs = buildDepsArgs;
@@ -62,3 +73,5 @@ exports.buildDepsMap = buildDepsMap;
 exports.buildDepsIndexMap = buildDepsIndexMap;
 
 exports.buildRuntimeInitBits = buildRuntimeInitBits;
+
+exports.buildCache = buildCache;

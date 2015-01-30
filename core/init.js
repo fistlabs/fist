@@ -1,13 +1,10 @@
 'use strict';
 
-var FistError = /** @type FistError */ require('./fist-error');
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('lru-dict/core/lru-dict-ttl-async');
 var Obus = /** @type Obus */ require('obus');
 var Runtime = /** @type Runtime */ require('./runtime');
 
 var _ = require('lodash-node');
-var f = require('util').format;
-var hasProperty = Object.prototype.hasOwnProperty;
 var inherit = require('inherit');
 var utools = require('./utils/unit-tools');
 var vow = require('vow');
@@ -54,17 +51,13 @@ function init(app) {
          * */
         this.params = _.extend({}, this.params);
 
-        //  TODO move to unit-tools
-        if (!_.has(app.caches, this.cache)) {
-            throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
-        }
-
         /**
          * @public
          * @memberOf {Unit}
          * @property
+         * @type {Object}
          * */
-        this.cache = app.caches[this.cache];
+        this.cache = utools.buildCache(this);
 
         /**
          * @public
