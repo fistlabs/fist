@@ -91,4 +91,32 @@ describe('core/utils/unit-tools', function () {
             });
         });
     });
+
+    describe('utools.buildCache()', function () {
+        it('Should throw error if unit.cache is unknown', function () {
+            var unit = {
+                cache: 'foo',
+                app: {
+                    caches: {}
+                }
+            };
+
+            assert.throws(function () {
+                return utools.buildCache(unit);
+            });
+        });
+
+        it('Should return corresponding cache', function () {
+            var cache = {};
+            var unit = {
+                cache: 'foo',
+                app: {
+                    caches: {
+                        foo: cache
+                    }
+                }
+            };
+            assert.strictEqual(utools.buildCache(unit), cache);
+        });
+    });
 });
