@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = function (app) {
-    app.route('GET /hello/(<name>/)', 'hello_page');
+    app.route('GET /hello/(<name>/) s', 'hello_page');
 };
