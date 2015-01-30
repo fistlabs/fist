@@ -5,9 +5,16 @@ var STATUS_CODES = require('http').STATUS_CODES;
 
 var Track = /** @type Track */ require('./track');
 
+var _ = require('lodash-node');
+var accepts = require('accepts');
 var cookieparser = require('cookieparser');
 var hasProperty = Object.prototype.hasOwnProperty;
-var urlParse = require('url').parse;
+var libUrl = require('url');
+var libFastUrl = require('fast-url-parser');
+var urlParse = libUrl.parse;
+var urlFastParse = libFastUrl.parse;
+var urlFastFormat = libFastUrl.format;
+var f = require('util').format;
 var proxyAddr = require('proxy-addr');
 
 /**
@@ -196,6 +203,96 @@ Connect.prototype.cookie = function (name, value, opts) {
         res.setHeader('Set-Cookie', [setCookie, value]);
     } else {
         setCookie[setCookie.length] = value;
+    }
+
+    return this;
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @param {String|Array<String>} types
+ *
+ * @returns {String}
+ * */
+Connect.prototype.acceptTypes = function (types) {
+    return accepts(this.req).types(types);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @param {String|Array<String>} encodings
+ *
+ * @returns {String}
+ * */
+Connect.prototype.acceptEncodings = function (encodings) {
+    return accepts(this.req).encodings(encodings);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @param {String|Array<String>} charsets
+ *
+ * @returns {String}
+ * */
+Connect.prototype.acceptCharsets = function (charsets) {
+    return accepts(this.req).charsets(charsets);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @param {String|Array<String>} languages
+ *
+ * @returns {String}
+ * */
+Connect.prototype.acceptLanguages = function (languages) {
+    return accepts(this.req).languages(languages);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @param {String} url
+ * @param {Number} [status]
+ * */
+Connect.prototype.redirect = function (url, status) {
+    var redirectUrl = urlFastParse(url, false, true);
+
+    //   make URL absolute
+    redirectUrl = urlFastFormat({
+        // inherit protocol from incoming request if needed
+        protocol: redirectUrl.protocol || this.url.protocol,
+        // inherit host from incoming request if needed
+        host: redirectUrl.host || this.url.host,
+        // may be encoded while parsing
+        pathname: decodeURIComponent(redirectUrl.pathname),
+        search: redirectUrl.search,
+        hash: redirectUrl.hash
+    });
+
+    this.res.statusCode = status || 302;
+    this.res.setHeader('Location', redirectUrl);
+
+    if (this.acceptTypes(['html'])) {
+        redirectUrl = _.escape(redirectUrl);
+        this.res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        this.res.end(f('<a href="%s">%s</a>', redirectUrl, redirectUrl));
+    } else {
+        this.res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        this.res.end(redirectUrl);
     }
 
     return this;
@@ -427,5 +524,11 @@ Connect.prototype.getProtocol = function () {
 
     return protocol;
 };
+
+//  aliases
+Connect.prototype.acceptEncoding = Connect.prototype.acceptEncodings;
+Connect.prototype.acceptType = Connect.prototype.acceptTypes;
+Connect.prototype.acceptCharset = Connect.prototype.acceptCharsets;
+Connect.prototype.acceptLanguage = Connect.prototype.acceptLanguages;
 
 module.exports = Connect;
