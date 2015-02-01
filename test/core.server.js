@@ -302,6 +302,9 @@ describe('core/server', function () {
 
         it('Should create and run http server', function () {
             var server = new Server();
+            var port = Math.min(Number(Math.random().toString().slice(3, 8)), 65535);
+            var srv;
+
             server.route('/', {
                 name: 'foo',
                 unit: 'foo'
@@ -314,8 +317,7 @@ describe('core/server', function () {
                 }
             });
 
-            var port = Math.min(Number(Math.random().toString().slice(3, 8)), 65535);
-            var srv = server.listen(port);
+            srv = server.listen(port);
 
             return asker({
                 host: 'localhost',

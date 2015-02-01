@@ -866,9 +866,10 @@ describe('core/init', function () {
             core.unit({
                 name: 'foo',
                 main: function (track, context) {
+                    var defer;
                     i += 1;
                     assert.strictEqual(context.params.foo, 'bar');
-                    var defer = vow.defer();
+                    defer = vow.defer();
                     setTimeout(function () {
                         defer.resolve(42);
                     }, 10);
