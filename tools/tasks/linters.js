@@ -1,7 +1,7 @@
 'use strict';
 
 var linterConf = require('../linter-conf');
-var linterPipe = require('one-guide/plugins/gulp');
+var linterPipe = require('gulp-one-guide');
 
 module.exports = function () {
     this.task('lint', function () {
