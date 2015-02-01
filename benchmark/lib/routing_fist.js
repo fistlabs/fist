@@ -4,14 +4,13 @@
 var fist = require('../../fist');
 var app = fist();
 var f = require('util').format;
+var routes = 100;
+var uniqueId = require('unique-id');
+var unitName;
 
 app.logger.conf({
     logLevel: 'NOTSET'
 });
-
-var routes = 100;
-var uniqueId = require('unique-id');
-var name;
 
 console.log('%d routes, last matching', routes);
 
@@ -21,16 +20,16 @@ function send(track) {
 
 while (routes) {
     routes -= 1;
-    name = f('unit_%s', uniqueId());
+    unitName = f('unit_%s', uniqueId());
 
-    app.route(f('/<page>/%s/', name), {
-        name: name,
-        unit: name
+    app.route(f('/<page>/%s/', unitName), {
+        name: unitName,
+        unit: unitName
     });
 
     app.unit({
         base: 0,
-        name: name,
+        name: unitName,
         main: send
     });
 }

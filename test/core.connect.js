@@ -56,8 +56,9 @@ describe('core/connect', function () {
 
         it('Should return "localhost" if not Host header set', function (done) {
             supertest(function (req, res) {
+                var connect;
                 req.headers.host = void 0;
-                var connect = new Connect(new Server(), logger, req, res);
+                connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getHost(), 'localhost');
                 res.end();
             }).
@@ -168,8 +169,9 @@ describe('core/connect', function () {
     describe('connect.getProtocol()', function () {
         it('Should return "http" coz connection is not encrypted', function (done) {
             supertest(function (req, res) {
+                var connect;
                 req.connection.encrypted = false;
-                var connect = new Connect(new Server(), logger, req, res);
+                connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getProtocol(), 'http');
                 res.end();
             }).
@@ -180,8 +182,9 @@ describe('core/connect', function () {
 
         it('Should return "https" coz connection is encrypted', function (done) {
             supertest(function (req, res) {
+                var connect;
                 req.connection.encrypted = true;
-                var connect = new Connect(new Server(), logger, req, res);
+                connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.getProtocol(), 'https');
                 res.end();
             }).
@@ -301,11 +304,13 @@ describe('core/connect', function () {
 
         it('Should get url.protocol as https: if connection is encrypted', function (done) {
             supertest(function (req, res) {
+                var connect;
+                var url;
                 req.connection.encrypted = true;
-                var connect = new Connect(new Server({
+                connect = new Connect(new Server({
                     trustProxy: []
                 }), logger, req, res);
-                var url = connect.url;
+                url = connect.url;
                 assert.strictEqual(url.protocol, 'https:');
                 assert.strictEqual(connect.getProtocol(), 'https');
                 assert.strictEqual(connect.header('X-Forwarded-Proto'), 'http');
@@ -320,8 +325,9 @@ describe('core/connect', function () {
         it('Should correctly handle not only path urls', function (done) {
             var spy = 0;
             supertest(function (req, res) {
+                var connect;
                 req.url = 'http://localhost:1337/foo';
-                var connect = new Connect(new Server(), logger, req, res);
+                connect = new Connect(new Server(), logger, req, res);
                 assert.strictEqual(connect.url.path, '/foo');
                 spy = 1;
                 res.end();
