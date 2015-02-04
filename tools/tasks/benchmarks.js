@@ -8,16 +8,16 @@ var _ = require('lodash-node');
 var vow = require('vow');
 var fs = require('fs');
 
-module.exports = function () {
+module.exports = function (gulp) {
 
-    this.task('benchmark', ['test'], function (done) {
-        var runners = glob.sync(path.join(__dirname, '..', '..', 'benchmark', '*'));
+    gulp.task('benchmark', ['test'], function () {
+        var runnersFiles = glob.sync(path.join(__dirname, '..', '..', 'benchmark', '*'));
 
-        runners = runners.filter(function (name) {
-            return !fs.statSync(name).isDirectory();
+        runnersFiles = runnersFiles.filter(function (name) {
+            return fs.statSync(name).isFile();
         });
 
-        _.reduce(runners, function (promise, name) {
+        return _.reduce(runnersFiles, function (promise, name) {
             return promise.then(function () {
                 var defer = vow.defer();
                 var childProc = childProcess.spawn(name, []);
@@ -37,8 +37,6 @@ module.exports = function () {
 
                 return defer.promise();
             });
-        }, vow.resolve()).then(function () {
-            done();
-        }, done);
+        }, vow.resolve());
     });
 };

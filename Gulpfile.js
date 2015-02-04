@@ -1,17 +1,14 @@
 'use strict';
 
 var _ = require('lodash-node');
-var gulp = require('gulp');
 var glob = require('glob');
+var gulp = require('gulp');
 var path = require('path');
+var tasksPattern = path.join(__dirname, 'tools/tasks/*.js');
 
-require('loggin').conf({
-    logLevel: 'INTERNAL'
-    // logLevel: 'DISABLE'
-});
-
-_.forEach(glob.sync('tools/tasks/*.js'), function (filename) {
-    require(path.resolve(filename)).call(gulp);
+_.forEach(glob.sync(tasksPattern, {cwd: process.cwd()}), function (filename) {
+    var gulpSubFile = require(filename);
+    gulpSubFile(gulp);
 });
 
 gulp.task('default', ['test']);
