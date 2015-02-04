@@ -11,7 +11,7 @@ _Modular application structure. Automatic project files loading._
 ```
 fist_plugins/
     models/
-        user.sessionid.js
+        user.info.js
         news.list.js
         news.available_list.js
     controllers/
@@ -24,7 +24,7 @@ _Focus on unit development. Encapsulated business logic._
 ```js
 app.unit({
     name: 'news.available_list',
-    deps: ['news.list', 'user.sessionid'],
+    deps: ['news.list', 'user.info'],
 ```
 
 #####Data models
@@ -58,9 +58,9 @@ _Always clear what happening and where. More reliability._
 
 ```js
 app.unit({
-    name: 'user.sessionid',
+    name: 'user.info',
     main: function (track, context) {
-        context.logger.debug('Starting to check session by cookie\n"%s"', track.cookie('sessid'));
+        context.logger.debug('Checking user by sessid\n"%s"', track.cookie('sessid'));
 ```
 
 #####Built-in cache
