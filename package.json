@@ -24,7 +24,7 @@
   "description": "nodejs application framework",
   "devDependencies": {
     "gulp-util": "3.0.2",
-    "gulp-one-guide": "0.0.1",
+    "gulp-one-guide": "0.1.0",
     "vow-asker": "0.8.0",
     "supertest": "0.15.0",
     "glob": "4.3.5",
