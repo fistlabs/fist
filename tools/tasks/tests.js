@@ -1,8 +1,17 @@
 'use strict';
 
+var _ = require('lodash-node');
 var gulpMocha = require('gulp-mocha');
 var gulpIstanbul = require('gulp-istanbul');
 var gutil = require('gulp-util');
+var testsFiles = [
+    'test/*.js'
+];
+var filesToCover = [
+    'fist.js',
+    'core/**/*.js',
+    'fist_plugins/**/*.js'
+];
 
 function gulpMochaPipe() {
 
@@ -14,8 +23,8 @@ function gulpMochaPipe() {
     });
 }
 
-function runUnit() {
-    var stream = this.src('test/*.js').pipe(gulpMochaPipe());
+function runTests() {
+    var stream = this.src(testsFiles).pipe(gulpMochaPipe());
 
     stream.on('error', function (e) {
         gutil.log(e.stack);
@@ -24,25 +33,20 @@ function runUnit() {
     return stream;
 }
 
-function runCover(done) {
-    var self = this;
-    this.src([
-        'fist.js',
-        'core/**/*.js',
-        'fist_plugins/**/*.js'
-    ]).
+function runTestsWithCoverage(done) {
+    var getRunUnitPipe = _.bind(runTests, this);
+    this.src(filesToCover).
         pipe(gulpIstanbul()).
         pipe(gulpIstanbul.hookRequire()).
         on('finish', function () {
-            self.src('test/*.js')
-                .pipe(gulpMochaPipe())
-                .pipe(gulpIstanbul.writeReports())
-                .on('end', done);
+            return getRunUnitPipe().
+                pipe(gulpIstanbul.writeReports()).
+                on('end', done);
         });
 }
 
-module.exports = function () {
-    this.task('unit', [], runUnit);
-    this.task('cover', [], runCover);
-    this.task('test', ['lint'], runCover);
+module.exports = function (gulp) {
+    gulp.task('unit', [], runTests);
+    gulp.task('cover', [], runTestsWithCoverage);
+    gulp.task('test', ['lint'], runTestsWithCoverage);
 };
