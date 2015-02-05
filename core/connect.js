@@ -9,9 +9,7 @@ var _ = require('lodash-node');
 var accepts = require('accepts');
 var cookieparser = require('cookieparser');
 var hasProperty = Object.prototype.hasOwnProperty;
-var libUrl = require('url');
 var libFastUrl = require('fast-url-parser');
-var urlParse = libUrl.parse;
 var urlFastParse = libFastUrl.parse;
 var urlFastFormat = libFastUrl.format;
 var f = require('util').format;
@@ -21,14 +19,14 @@ var proxyAddr = require('proxy-addr');
  * @class Connect
  * @extends Track
  *
- * @param {Server} agent
+ * @param {Server} app
  * @param {Logger} logger
  * @param {IncomingMessage} req
  * @param {ServerResponse} res
  * */
-function Connect(agent, logger, req, res) {
+function Connect(app, logger, req, res) {
     //  TODO give connect and track same signature
-    Track.call(this, agent, logger);
+    Track.call(this, app, logger);
 
     /**
      * @public
@@ -84,18 +82,18 @@ Connect.prototype = Object.create(Track.prototype);
 /**
  * @public
  * @memberOf {Connect}
- * @property
+ * @getter
  * @type {Object}
  * */
 Object.defineProperty(Connect.prototype, 'url', {
     get: function () {
         if (!this._url) {
-            this._url = urlParse(this.getProtocol() +
-                '://' + this.getHost() + R_PATH.exec(this.req.url)[1], true);
+            this._url = this._getUrlObj();
         }
         return this._url;
     }
 });
+
 /**
  * @public
  * @memberOf {Connect}
@@ -345,6 +343,119 @@ Connect.prototype.send = function (data) {
 };
 
 /**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getIp = function () {
+    return proxyAddr(this.req, this._app.params.trustProxy);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getIps = function () {
+    return proxyAddr.all(this.req, this._app.params.trustProxy);
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getHost = function () {
+    var host = this.req.headers['x-forwarded-host'];
+
+    if (host && this._isAddressTrusted()) {
+        return host;
+    }
+
+    return this.req.headers.host || 'localhost';
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getHostname = function () {
+    var host = this.getHost();
+
+    if (host.charAt(0) === '[') {
+        return (host.match(/\[([^\[\]]+)]/) || [0, host])[1];
+    }
+
+    return (host.match(/([^:]+)/) || [0, host])[1];
+};
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype.getProtocol = function () {
+    var headers = this.req.headers;
+    var protocol = this.req.connection.encrypted ? 'https' : 'http';
+
+    if (headers['x-forwarded-proto'] && this._isAddressTrusted()) {
+        return headers['x-forwarded-proto'].split(/\s*,\s*/)[0];
+    }
+
+    return protocol;
+};
+
+//  aliases
+Connect.prototype.acceptEncoding = Connect.prototype.acceptEncodings;
+Connect.prototype.acceptType = Connect.prototype.acceptTypes;
+Connect.prototype.acceptCharset = Connect.prototype.acceptCharsets;
+Connect.prototype.acceptLanguage = Connect.prototype.acceptLanguages;
+
+/**
+ * @public
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {Boolean}
+ * */
+Connect.prototype._isAddressTrusted = function () {
+    return this._app.params.trustProxy(this.req.connection.remoteAddress);
+};
+
+/**
+ * @protected
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {Object}
+ * */
+Connect.prototype._getUrlObj = function $Connect$getUrlObj() {
+    return urlFastParse(this._getUrlHref(), true);
+};
+
+/**
+ * @protected
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype._getUrlHref = function $Connect$getUrlHref() {
+    return this.getProtocol() + '://' + this.getHost() + R_PATH.exec(this.req.url)[1];
+};
+
+/**
  * @protected
  * @memberOf {Connect}
  * @method
@@ -461,89 +572,5 @@ Connect.prototype._sendJSON = function (data) {
 
     outgoing.end(data);
 };
-
-/**
- * @public
- * @memberOf {Connect}
- * @method
- *
- * @returns {String}
- * */
-Connect.prototype.getIp = function () {
-    return proxyAddr(this.req, this._app.params.trustProxy);
-};
-
-/**
- * @public
- * @memberOf {Connect}
- * @method
- *
- * @returns {String}
- * */
-Connect.prototype.getIps = function () {
-    return proxyAddr.all(this.req, this._app.params.trustProxy);
-};
-
-/**
- * @public
- * @memberOf {Connect}
- * @method
- *
- * @returns {String}
- * */
-Connect.prototype.getHost = function () {
-    var req = this.req;
-    var connection = req.connection;
-    var headers = req.headers;
-    var host = headers['x-forwarded-host'];
-
-    if (!host || !this._app.params.trustProxy(connection.remoteAddress)) {
-        host = headers.host;
-    }
-
-    return host || 'localhost';
-};
-
-/**
- * @public
- * @memberOf {Connect}
- * @method
- *
- * @returns {String}
- * */
-Connect.prototype.getHostname = function () {
-    var host = this.getHost();
-
-    if (host.charAt(0) === '[') {
-        return (host.match(/\[([^\[\]]+)]/) || [0, host])[1];
-    }
-
-    return (host.match(/([^:]+)/) || [0, host])[1];
-};
-
-/**
- * @public
- * @memberOf {Connect}
- * @method
- *
- * @returns {String}
- * */
-Connect.prototype.getProtocol = function () {
-    var req = this.req;
-    var connection = req.connection;
-    var protocol = connection.encrypted ? 'https' : 'http';
-
-    if (req.headers['x-forwarded-proto'] && this._app.params.trustProxy(connection.remoteAddress)) {
-        return req.headers['x-forwarded-proto'].split(/\s*,\s*/)[0];
-    }
-
-    return protocol;
-};
-
-//  aliases
-Connect.prototype.acceptEncoding = Connect.prototype.acceptEncodings;
-Connect.prototype.acceptType = Connect.prototype.acceptTypes;
-Connect.prototype.acceptCharset = Connect.prototype.acceptCharsets;
-Connect.prototype.acceptLanguage = Connect.prototype.acceptLanguages;
 
 module.exports = Connect;
