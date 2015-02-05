@@ -19,6 +19,10 @@ function pad(s, n) {
     return s;
 }
 
+function consoleLog() {
+    //console.log.apply(console, arguments);
+}
+
 function buildDeps(unitsCount, depsPerUnit, onInit) {
     var app = new Core({
         logging: {
@@ -39,7 +43,7 @@ function buildDeps(unitsCount, depsPerUnit, onInit) {
             deps[deps.length] = f('u%s', pad(unitsCount - i - 1, n));
         }
 
-        console.log('%s (%s)', f('u%s', pad(unitsCount, n)), deps.join(', '));
+        consoleLog('%s (%s)', f('u%s', pad(unitsCount, n)), deps.join(', '));
 
         app.unit({
             base: 0,

@@ -10,7 +10,7 @@ var fs = require('fs');
 
 module.exports = function (gulp) {
 
-    gulp.task('benchmark', ['test'], function () {
+    gulp.task('benchmark', ['unit'], function () {
         var runnersFiles = glob.sync(path.join(__dirname, '..', '..', 'benchmark', '*'));
 
         runnersFiles = runnersFiles.filter(function (name) {
