@@ -31,7 +31,8 @@
     "benchmark": "1.0.0",
     "gulp": "3.8.10",
     "gulp-mocha": "2.0.0",
-    "gulp-istanbul": "0.5.0"
+    "gulp-istanbul": "0.5.0",
+    "profiler": "1.2.3"
   },
   "license": "MIT",
   "main": "fist",
