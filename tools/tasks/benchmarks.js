@@ -20,7 +20,9 @@ module.exports = function (gulp) {
         return _.reduce(runnersFiles, function (promise, name) {
             return promise.then(function () {
                 var defer = vow.defer();
-                var childProc = childProcess.spawn(name, []);
+                var childProc;
+                console.log('Starting %s', name);
+                childProc = childProcess.spawn(name, []);
                 childProc.stdout.pipe(process.stdout);
                 childProc.stderr.pipe(process.stderr);
                 childProc.on('exit', function (code) {
