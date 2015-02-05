@@ -295,10 +295,44 @@ describe('core/server', function () {
                     });
             });
         });
+
+        it('Should correctly handle fqdn urls', function (done) {
+            var app = new Server();
+            var handler;
+            var req = {
+                method: 'GET',
+                socket: {},
+                headers: {},
+                url: 'http://ya.ru'
+            };
+            var res = {
+                on: function () {},
+                getHeader: function () {},
+                setHeader: function () {},
+                removeHeader: function () {},
+                end: function (body) {
+                    assert.strictEqual(req.url, '/');
+                    assert.strictEqual(body, '!');
+                    done();
+                }
+            };
+
+            app.unit({
+                name: 'index',
+                main: function (track) {
+                    track.send('!');
+                }
+            });
+
+            app.route('GET /', 'index');
+            handler = app.getHandler();
+
+            handler(req, res);
+        });
     });
 
     describe('server.listen()', function () {
-        var asker = require('vow-asker');
+        var vowAsker = require('vow-asker');
 
         it('Should create and run http server', function () {
             var server = new Server();
@@ -319,7 +353,7 @@ describe('core/server', function () {
 
             srv = server.listen(port);
 
-            return asker({
+            return vowAsker({
                 host: 'localhost',
                 path: '/',
                 port: port,

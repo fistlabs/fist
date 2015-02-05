@@ -176,25 +176,25 @@ function $Server$handleRequest(self, req, res, logger) {
     }
 
     //  wait for init
-    promise.then(function () {
+    promise.done(function () {
         $Server$runTrack(self, req, res, logger);
     });
 }
 
 function $Server$runTrack(self, req, res, logger) {
     var matches;
-    var path = req.url;
+    var method = req.method;
+    var path = req.url = req.url.replace(/^\w+:\/\/[^\/]+/, '') || '/';
     var router = self.router;
-    var verb = req.method;
     var track;
 
-    if (!router.isImplemented(verb)) {
+    if (!router.isImplemented(method)) {
         res.statusCode = 501;
         res.end(STATUS_CODES[501]);
         return;
     }
 
-    matches = router.matchAll(path, verb);
+    matches = router.matchAll(path, method);
 
     if (matches.length) {
         track = new Connect(self, logger, req, res);

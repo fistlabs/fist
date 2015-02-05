@@ -1,6 +1,5 @@
 'use strict';
 
-var R_PATH = /^(?:\w+:\/\/[^\/]*)?([\s\S]*)$/;
 var STATUS_CODES = require('http').STATUS_CODES;
 
 var Track = /** @type Track */ require('./track');
@@ -452,7 +451,7 @@ Connect.prototype._getUrlObj = function $Connect$getUrlObj() {
  * @returns {String}
  * */
 Connect.prototype._getUrlHref = function $Connect$getUrlHref() {
-    return this.getProtocol() + '://' + this.getHost() + R_PATH.exec(this.req.url)[1];
+    return this.getProtocol() + '://' + this.getHost() + this.req.url;
 };
 
 /**
