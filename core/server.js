@@ -42,7 +42,7 @@ Server.prototype = Object.create(Core.prototype);
 Server.prototype.constructor = Server;
 
 /**
- * Возвращает коллбэк для запросов на сервер
+ * Creates incoming request handler
  *
  * @public
  * @memberOf {Server}
@@ -51,9 +51,7 @@ Server.prototype.constructor = Server;
  * @returns {Function}
  * */
 Server.prototype.getHandler = function () {
-    var self = this;
-
-    return function (req, res) {
+    function $Server$requestHandler(req, res) {
         var dExecStart = new Date();
         var logger;
 
@@ -62,18 +60,10 @@ Server.prototype.getHandler = function () {
             req.id = req.headers['x-request-id'] || uniqueId();
         }
 
-        logger = self.logger.bind(req.id);
+        logger = this.logger.bind(req.id);
 
         logger.info('Incoming %(method)s %(url)s %s', function () {
-            var name;
-            var headers = '';
-            for (name in req.headers) {
-                if (req.headers.hasOwnProperty(name)) {
-                    headers += '\n\t' + name + ': ' + req.headers[name];
-                }
-            }
-
-            return headers;
+            return _.reduce(req.headers, addHeaderString, '');
         }, req);
 
         res.on('finish', function () {
@@ -81,154 +71,32 @@ Server.prototype.getHandler = function () {
             logger.info('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
         });
 
-        self.handle(req, res, logger);
-    };
+        $Server$handleRequest(this, req, res, logger);
+    }
+
+    return _.bind($Server$requestHandler, this);
 };
 
 /**
- * @public
- * @memberOf {Server}
- * @method
- * */
-Server.prototype.handle = function (req, res, logger) {
-    var promise = this.ready();
-
-    //  -1 possible tick
-    if (promise.isFulfilled()) {
-        this._runTrack(req, res, logger);
-        return;
-    }
-
-    //  wait for init
-    promise.then(function () {
-        this._runTrack(req, res, logger);
-    }, this);
-};
-
-/**
- * @protected
- * @memberOf {Server}
- * @method
- *
- * @param {*} [params]
- *
- * @returns {Object}
- * */
-Server.prototype._createParams = function (params) {
-    params = _.extend({
-        trustProxy: 'loopback'
-    }, params);
-
-    params = Core.prototype._createParams.call(this, params);
-
-    params.trustProxy = proxyAddr.compile(params.trustProxy);
-
-    return params;
-};
-
-/**
- * @protected
- * @memberOf {Server}
- * @method
- * */
-Server.prototype._runTrack = function (req, res, logger) {
-    var matches;
-    var path = req.url;
-    var router = this.router;
-    var verb = req.method;
-    var track;
-
-    if (!router.isImplemented(verb)) {
-        res.statusCode = 501;
-        res.end(STATUS_CODES[501]);
-        return;
-    }
-
-    matches = router.matchAll(path, verb);
-
-    if (matches.length) {
-        track = new Connect(this, logger, req, res);
-        track.id = req.id;
-        track.matches = matches;
-        track.routeIndex = 0;
-        res.on('close', function () {
-            track._isFlushed = true;
-        });
-        this._nextRun(track);
-        return;
-    }
-
-    matches = router.matchVerbs(path);
-
-    if (matches.length) {
-        res.statusCode = 405;
-        res.setHeader('Allow', matches.join(', '));
-        res.end(STATUS_CODES[405]);
-    } else {
-        res.statusCode = 404;
-        res.end(STATUS_CODES[404]);
-    }
-};
-
-/**
- * @private
- * @memberOf {Connect}
- * @method
- * */
-Server.prototype._nextRun = function (track) {
-    var match;
-
-    if (track.routeIndex === track.matches.length) {
-        track.logger.debug('No one controller did responded');
-        track.status(404).send();
-        return;
-    }
-
-    match = track.matches[track.routeIndex];
-    track.params = match.args;
-    track.route = match.data.name;
-    track.logger.debug('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
-
-    this.getUnit(match.data.unit).run(track, null, onControllerRun);
-};
-
-/**
- * @this {Runtime}
- * */
-function onControllerRun() {
-    if (this.track.wasSent()) {
-        return;
-    }
-
-    if (this.isRejected()) {
-        this.track.status(500).send();
-        return;
-    }
-
-    this.track.routeIndex += 1;
-    this.unit.app._nextRun(this.track);
-}
-
-/**
- * Запускает сервер и инициализацию приложения
+ * Starts listening
  *
  * @public
  * @memberOf {Server}
  * @method
+ *
+ * @returns {http.Server}
  * */
 Server.prototype.listen = function () {
     var server = http.createServer(this.getHandler());
 
-    //  автоматически запускаю инициализацию
+    //  Asynchronous run initialization
     this.ready().done();
 
-    server.listen.apply(server, arguments);
-
-    return server;
+    return server.listen.apply(server, arguments);
 };
 
 /**
- * Определяет маршрут встроенного роутера
+ * Defines a route
  *
  * @public
  * @memberOf {Server}
@@ -258,7 +126,28 @@ Server.prototype.route = function (ruleString, ruleData) {
  * @memberOf {Server}
  * @method
  *
- * @returns {vow.Promise}
+ * @param {*} [params]
+ *
+ * @returns {Object}
+ * */
+Server.prototype._createParams = function (params) {
+    params = _.extend({
+        trustProxy: 'loopback'
+    }, params);
+
+    params = Core.prototype._createParams.call(this, params);
+
+    params.trustProxy = proxyAddr.compile(params.trustProxy);
+
+    return params;
+};
+
+/**
+ * @protected
+ * @memberOf {Server}
+ * @method
+ *
+ * @returns {Promise}
  * */
 Server.prototype._getReady = function () {
     return Core.prototype._getReady.call(this).then(function () {
@@ -272,5 +161,95 @@ Server.prototype._getReady = function () {
         }, this);
     }, this);
 };
+
+function addHeaderString(logString, value, name) {
+    return logString + '\n\t' + name + ': ' + value;
+}
+
+function $Server$handleRequest(self, req, res, logger) {
+    var promise = self.ready();
+
+    //  -1 possible tick
+    if (promise.isFulfilled()) {
+        $Server$runTrack(self, req, res, logger);
+        return;
+    }
+
+    //  wait for init
+    promise.then(function () {
+        $Server$runTrack(self, req, res, logger);
+    });
+}
+
+function $Server$runTrack(self, req, res, logger) {
+    var matches;
+    var path = req.url;
+    var router = self.router;
+    var verb = req.method;
+    var track;
+
+    if (!router.isImplemented(verb)) {
+        res.statusCode = 501;
+        res.end(STATUS_CODES[501]);
+        return;
+    }
+
+    matches = router.matchAll(path, verb);
+
+    if (matches.length) {
+        track = new Connect(self, logger, req, res);
+        track.id = req.id;
+        track.matches = matches;
+        track.routeIndex = 0;
+        res.on('close', function () {
+            track._isFlushed = true;
+        });
+        $Server$nextRun(self, track);
+        return;
+    }
+
+    matches = router.matchVerbs(path);
+
+    if (matches.length) {
+        res.statusCode = 405;
+        res.setHeader('Allow', matches.join(', '));
+        res.end(STATUS_CODES[405]);
+    } else {
+        res.statusCode = 404;
+        res.end(STATUS_CODES[404]);
+    }
+}
+
+function $Server$nextRun(self, track) {
+    var match;
+
+    if (track.routeIndex === track.matches.length) {
+        track.logger.debug('No one controller did responded');
+        track.status(404).send();
+        return;
+    }
+
+    match = track.matches[track.routeIndex];
+    track.params = match.args;
+    track.route = match.data.name;
+    track.logger.debug('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
+
+    self.getUnit(match.data.unit).run(track, null, $Server$onControllerDone);
+}
+
+function $Server$onControllerDone() {
+    if (this.track.wasSent()) {
+        return;
+    }
+
+    if (this.isRejected()) {
+        this.track.status(500).send();
+        return;
+    }
+
+    this.track.routeIndex += 1;
+
+    $Server$nextRun(this.unit.app, this.track);
+}
 
 module.exports = Server;
