@@ -20,7 +20,7 @@ function pad(s, n) {
 }
 
 function consoleLog() {
-    //console.log.apply(console, arguments);
+    // console.log.apply(console, arguments);
 }
 
 function buildDeps(unitsCount, onInit) {

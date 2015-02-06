@@ -13,11 +13,16 @@ var filesToLint = [
     '*.js'
 ];
 
+var excludeFiles = [
+    '**/node_modules/**'
+];
+
 module.exports = function (gulp) {
     gulp.task('lint', function () {
         return this.src(filesToLint).pipe(linterPipe({
             root: process.cwd(),
-            config: 'yandex-node'
+            config: 'yandex-node',
+            excludes: excludeFiles
         }));
     });
 };
