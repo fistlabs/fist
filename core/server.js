@@ -184,7 +184,7 @@ function $Server$handleRequest(self, req, res, logger) {
 function $Server$runTrack(self, req, res, logger) {
     var matches;
     var method = req.method;
-    var path = req.url = req.url.replace(/^\w+:\/\/[^\/]+/, '') || '/';
+    var path = req.url = req.url.replace(/^\w+:\/\/[^\/]+\/?/, '/');
     var router = self.router;
     var track;
 

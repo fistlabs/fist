@@ -296,7 +296,41 @@ describe('core/server', function () {
             });
         });
 
-        it('Should correctly handle fqdn urls', function (done) {
+        it('Should correctly handle fqdn url with trailng slash', function (done) {
+            var app = new Server();
+            var handler;
+            var req = {
+                method: 'GET',
+                socket: {},
+                headers: {},
+                url: 'http://ya.ru/'
+            };
+            var res = {
+                on: function () {},
+                getHeader: function () {},
+                setHeader: function () {},
+                removeHeader: function () {},
+                end: function (body) {
+                    assert.strictEqual(req.url, '/');
+                    assert.strictEqual(body, '!');
+                    done();
+                }
+            };
+
+            app.unit({
+                name: 'index',
+                main: function (track) {
+                    track.send('!');
+                }
+            });
+
+            app.route('GET /', 'index');
+            handler = app.getHandler();
+
+            handler(req, res);
+        });
+
+        it('Should correctly handle fqdn url without trailng slash', function (done) {
             var app = new Server();
             var handler;
             var req = {
