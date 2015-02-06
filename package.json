@@ -7,15 +7,15 @@
     "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
   ],
   "dependencies": {
-    "accepts": "1.2.2",
+    "accepts": "1.2.3",
     "lru-dict": "0.0.1",
-    "proxy-addr": "1.0.5",
+    "proxy-addr": "1.0.6",
     "loggin": "2.2.1",
     "obus": "1.0.0",
     "vow-fs": "0.3.4",
     "unique-id": "0.0.1",
     "finger": "1.3.2",
-    "lodash-node": "3.0.0",
+    "lodash-node": "3.1.0",
     "vow": "0.4.8",
     "inherit": "2.2.2",
     "cookieparser": "0.1.0",
@@ -23,7 +23,7 @@
   },
   "description": "nodejs application framework",
   "devDependencies": {
-    "gulp-util": "3.0.2",
+    "gulp-util": "3.0.3",
     "gulp-one-guide": "0.1.0",
     "vow-asker": "0.8.0",
     "supertest": "0.15.0",
