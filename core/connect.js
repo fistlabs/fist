@@ -24,8 +24,6 @@ var proxyAddr = require('proxy-addr');
  * @param {ServerResponse} res
  * */
 function Connect(app, logger, req, res) {
-    //  TODO give connect and track same signature
-    Track.call(this, app, logger);
 
     /**
      * @public
@@ -42,6 +40,9 @@ function Connect(app, logger, req, res) {
      * @type {ServerResponse}
      * */
     this.res = res;
+
+    //  TODO give connect and track same signature
+    Track.call(this, app, logger);
 
     /**
      * @public
@@ -101,6 +102,17 @@ Object.defineProperty(Connect.prototype, 'url', {
  * @constructs
  * */
 Connect.prototype.constructor = Connect;
+
+/**
+ * @protected
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Connect.prototype._createId = function () {
+    return this.req.id;
+};
 
 /**
  * @public

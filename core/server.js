@@ -53,25 +53,25 @@ Server.prototype.constructor = Server;
 Server.prototype.getHandler = function () {
     function $Server$requestHandler(req, res) {
         var dExecStart = new Date();
-        var logger;
+        var track;
 
         //  TODO write tests for this stuff
         if (!req.id) {
             req.id = req.headers['x-request-id'] || uniqueId();
         }
 
-        logger = this.logger.bind(req.id);
+        track = new Connect(this, this.logger.bind(req.id), req, res);
 
-        logger.info('Incoming %(method)s %(url)s %s', function () {
+        track.logger.info('Incoming %(method)s %(url)s %s', function () {
             return _.reduce(req.headers, addHeaderString, '');
         }, req);
 
         res.on('finish', function () {
             var code = res.statusCode;
-            logger.info('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
+            track.logger.info('%d %s (%dms)', code, STATUS_CODES[code], new Date() - dExecStart);
         });
 
-        $Server$handleRequest(this, req, res, logger);
+        $Server$handleRequest(this, track);
     }
 
     return _.bind($Server$requestHandler, this);
@@ -166,44 +166,35 @@ function addHeaderString(logString, value, name) {
     return logString + '\n\t' + name + ': ' + value;
 }
 
-function $Server$handleRequest(self, req, res, logger) {
+function $Server$handleRequest(self, track) {
     var promise = self.ready();
 
     //  -1 possible tick
     if (promise.isFulfilled()) {
-        $Server$runTrack(self, req, res, logger);
+        $Server$runTrack(self, track);
         return;
     }
 
     //  wait for init
     promise.done(function () {
-        $Server$runTrack(self, req, res, logger);
+        $Server$runTrack(self, track);
     });
 }
 
-function $Server$runTrack(self, req, res, logger) {
+function $Server$runTrack(self, track) {
     var matches;
-    var method = req.method;
-    var path = req.url = req.url.replace(/^\w+:\/\/[^\/]+\/?/, '/');
+    var method = track.req.method;
+    var path = track.req.url = track.req.url.replace(/^\w+:\/\/[^\/]+\/?/, '/');
     var router = self.router;
-    var track;
 
     if (!router.isImplemented(method)) {
-        res.statusCode = 501;
-        res.end(STATUS_CODES[501]);
+        track.status(501).send();
         return;
     }
 
-    matches = router.matchAll(path, method);
+    matches = track.matches = router.matchAll(path, method);
 
     if (matches.length) {
-        track = new Connect(self, logger, req, res);
-        track.id = req.id;
-        track.matches = matches;
-        track.routeIndex = 0;
-        res.on('close', function () {
-            track._isFlushed = true;
-        });
         $Server$nextRun(self, track);
         return;
     }
@@ -211,28 +202,28 @@ function $Server$runTrack(self, req, res, logger) {
     matches = router.matchVerbs(path);
 
     if (matches.length) {
-        res.statusCode = 405;
-        res.setHeader('Allow', matches.join(', '));
-        res.end(STATUS_CODES[405]);
+        track.status(405).header('Allow', matches.join(', ')).send();
     } else {
-        res.statusCode = 404;
-        res.end(STATUS_CODES[404]);
+        track.status(404).send();
     }
 }
 
 function $Server$nextRun(self, track) {
+    var index = track.routeIndex + 1;
     var match;
+    var matches = track.matches;
 
-    if (track.routeIndex === track.matches.length) {
+    if (index === matches.length) {
         track.logger.debug('No one controller did responded');
         track.status(404).send();
         return;
     }
 
-    match = track.matches[track.routeIndex];
+    match = matches[index];
     track.params = match.args;
     track.route = match.data.name;
-    track.logger.debug('Match "%(data.name)s" route, running controller %(data.unit)s(%(args)j)', match);
+    track.routeIndex = index;
+    track.logger.debug('Match %(data.name)j route, running controller %(data.unit)s(%(args)j)', match);
 
     self.getUnit(match.data.unit).run(track, null, $Server$onControllerDone);
 }
@@ -246,8 +237,6 @@ function $Server$onControllerDone() {
         this.track.status(500).send();
         return;
     }
-
-    this.track.routeIndex += 1;
 
     $Server$nextRun(this.unit.app, this.track);
 }

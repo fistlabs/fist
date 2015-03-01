@@ -2,6 +2,7 @@
 
 var FistError = /* @type FistError */ require('./fist-error');
 
+var uniqueId = require('unique-id');
 var f = require('util').format;
 var vow = require('vow');
 
@@ -19,7 +20,7 @@ function Track(app, logger) {
      * @property
      * @type {String}
      * */
-    this.id = null;
+    this.id = this._createId();
 
     /**
      * @public
@@ -70,6 +71,17 @@ function Track(app, logger) {
  * @constructs
  * */
 Track.prototype.constructor = Track;
+
+/**
+ * @protected
+ * @memberOf {Connect}
+ * @method
+ *
+ * @returns {String}
+ * */
+Track.prototype._createId = function () {
+    return uniqueId();
+};
 
 /**
  * @public
