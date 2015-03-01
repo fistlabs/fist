@@ -3,7 +3,7 @@
 var Core = /** @type Server */ require('./core');
 var Connect = /** @type Connect */ require('./connect');
 var FistError = /** @type FistError */ require('./fist-error');
-var Router = /** @type Router */ require('finger/core/router');
+var Router = /** @type Router */ require('finger');
 
 var _ = require('lodash-node');
 var f = require('util').format;
@@ -186,20 +186,21 @@ function $Server$runTrack(self, track) {
     var method = track.req.method;
     var path = track.req.url = track.req.url.replace(/^\w+:\/\/[^\/]+\/?/, '/');
     var router = self.router;
+    var allowedRules = router.getAllowedRules(method);
 
-    if (!router.isImplemented(method)) {
+    if (!allowedRules.length) {
         track.status(501).send();
         return;
     }
 
-    matches = track.matches = router.matchAll(path, method);
+    matches = track.matches = router.findMatchesFor(path, allowedRules);
 
     if (matches.length) {
         $Server$nextRun(self, track);
         return;
     }
 
-    matches = router.matchVerbs(path);
+    matches = router.findVerbs(path);
 
     if (matches.length) {
         track.status(405).header('Allow', matches.join(', ')).send();
