@@ -40,12 +40,12 @@ function buildDepsArgs(unit) {
     return Object.freeze(depsArgs);
 }
 
-function buildDepsIndexMap(unit) {
-    var depsIndexMap = {};
+function buildDepsIndex(unit) {
+    var depsIndex = {};
     _.forEach(unit.deps, function (name, i) {
-        depsIndexMap[name] = i;
+        depsIndex[name] = i;
     });
-    return Object.freeze(depsIndexMap);
+    return Object.freeze(depsIndex);
 }
 
 function buildCache(unit) {
@@ -62,6 +62,6 @@ exports.buildDepsArgs = buildDepsArgs;
 
 exports.buildDepsMap = buildDepsMap;
 
-exports.buildDepsIndexMap = buildDepsIndexMap;
+exports.buildDepsIndex = buildDepsIndex;
 
 exports.buildCache = buildCache;

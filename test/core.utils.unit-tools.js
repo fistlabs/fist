@@ -79,12 +79,12 @@ describe('core/utils/unit-tools', function () {
         });
     });
 
-    describe('utools.buildDepsIndexMap()', function () {
+    describe('utools.buildDepsIndex()', function () {
         it('Should create deps indexes by names', function () {
             var unit = {
                 deps: ['a', 'b']
             };
-            var depsIndex = utools.buildDepsIndexMap(unit);
+            var depsIndex = utools.buildDepsIndex(unit);
             assert.deepEqual(depsIndex, {
                 a: 0,
                 b: 1

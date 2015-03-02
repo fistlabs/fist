@@ -75,7 +75,7 @@ function Unit(app) {
      * @property
      * @type {Object}
      * */
-    this.depsIndexMap = utools.buildDepsIndexMap(this);
+    this.depsIndex = utools.buildDepsIndex(this);
 }
 
 /**

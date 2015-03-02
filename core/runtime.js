@@ -384,7 +384,7 @@ function $Runtime$doneAsDependency() {
     if (self.statusBits & B00000001) {
         //  set need update to parent if this is updated
         parent.statusBits |= self.statusBits & B00001000;
-        parent.keys[parent.unit.depsIndexMap[name]] = self.identity;
+        parent.keys[parent.unit.depsIndex[name]] = self.identity;
         Obus.add(parent.context.result, parent.unit.depsMap[name], self.value);
     } else {
         //  is rejected
