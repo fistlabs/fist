@@ -1,3 +1,4 @@
+// TODO Should it be inlined in Core?
 'use strict';
 
 var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('lru-dict/core/lru-dict-ttl-async');
