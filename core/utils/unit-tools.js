@@ -48,14 +48,6 @@ function buildDepsIndexMap(unit) {
     return Object.freeze(depsIndexMap);
 }
 
-function buildRuntimeInitBits(unit) {
-    if (!(unit.maxAge > 0)) {
-        return parseInt('00010000', 2);
-    }
-
-    return 0;
-}
-
 function buildCache(unit) {
     if (!_.has(unit.app.caches, unit.cache)) {
         throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', unit.cache));
@@ -71,7 +63,5 @@ exports.buildDepsArgs = buildDepsArgs;
 exports.buildDepsMap = buildDepsMap;
 
 exports.buildDepsIndexMap = buildDepsIndexMap;
-
-exports.buildRuntimeInitBits = buildRuntimeInitBits;
 
 exports.buildCache = buildCache;

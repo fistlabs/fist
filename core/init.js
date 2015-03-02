@@ -78,14 +78,6 @@ function Unit(app) {
      * @type {Object}
      * */
     this.depsIndexMap = utools.buildDepsIndexMap(this);
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Number}
-     * */
-    this.runtimeInitBits = utools.buildRuntimeInitBits(this);
 }
 
 /**

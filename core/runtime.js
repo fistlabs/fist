@@ -128,7 +128,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {Number}
      * */
-    this.statusBits = unit.runtimeInitBits;
+    this.statusBits = B00010000 * !(unit.maxAge > 0);
 
     /**
      * Runtime context
