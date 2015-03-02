@@ -362,6 +362,39 @@ describe('core/core', function () {
                 assert.strictEqual(core.getUnit('bar').y, 2);
             });
         });
+
+        describe('decl.mixins', function () {
+            it('Should support decls.mixins as unit names', function () {
+                var core = new Core();
+                core.unit({
+                    base: 0,
+                    name: 'foo',
+                    mixins: ['_mix']
+                });
+                core.unit({
+                    base: 0,
+                    name: '_mix',
+                    prop: 42
+                });
+                return core.ready().then(function () {
+                    var unit = core.getUnit('foo');
+                    assert.strictEqual(unit.prop, 42);
+                });
+            });
+            it('Should fail an initialization if no specified mixin found', function () {
+                var core = new Core();
+                core.unit({
+                    base: 0,
+                    name: 'foo',
+                    mixins: ['_mix']
+                });
+                return core.ready().then(function () {
+                    assert.ok(false);
+                }, function (err) {
+                    assert.ok(err);
+                });
+            });
+        });
     });
 
     describe('core.alias()', function () {

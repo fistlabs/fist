@@ -218,7 +218,7 @@ describe('core/init', function () {
             core.unit({
                 base: 0,
                 name: 'foo',
-                mixins: [null, Mix0, {}, null],
+                mixins: [Mix0],
                 deps: ['a']
             });
 
