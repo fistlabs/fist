@@ -138,6 +138,8 @@ Core.prototype.unit = function (members, statics) {
     members = Object(members);
     statics = Object(statics);
 
+    members.settings = _.extend({}, members.settings, this.params.unitSettings[members.name]);
+
     this._decls.push({
         members: members,
         statics: statics
