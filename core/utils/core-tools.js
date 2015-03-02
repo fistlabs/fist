@@ -10,6 +10,7 @@ function createUnits(self) {
 
     _.forOwn(self._class, function (UnitClass, name) {
         if (/^[a-z]/i.test(name)) {
+            // public unit should be exposed to be a target or dependency
             units[name] = new UnitClass();
         }
     });
@@ -32,6 +33,7 @@ function createUnitClass(self, decl) {
     var base;
     var baseDecl;
     var UnitClass;
+    var BaseUnit;
 
     if (_.isFunction(decl.__class)) {
         //  Was already created
@@ -47,7 +49,7 @@ function createUnitClass(self, decl) {
     }
 
     if (base === self.Unit.prototype.name) {
-        UnitClass = self.Unit.inherit(members, statics);
+        BaseUnit = self.Unit;
     } else {
         baseDecl = _.find(self._decls, {members: {name: base}});
 
@@ -55,9 +57,27 @@ function createUnitClass(self, decl) {
             throw new FistError(FistError.NO_SUCH_UNIT, f('No base found for unit "%s" ("%s")', name, base));
         }
 
-        //  may implicitly create
-        UnitClass = createUnitClass(self, baseDecl).inherit(members, statics);
+        BaseUnit = createUnitClass(self, baseDecl);
     }
+
+    // Base Class is done. need to compile mixins
+    members.mixins = _.map(members.mixins, function (Class) {
+        var mixinDecl;
+
+        if (_.isFunction(Class)) {
+            return Class;
+        }
+
+        mixinDecl = _.find(self._decls, {members: {name: Class}});
+
+        if (!mixinDecl) {
+            throw new FistError(FistError.NO_SUCH_UNIT, f('No mixin found for unit "%s" ("%s")', name, Class));
+        }
+
+        return createUnitClass(self, mixinDecl);
+    });
+
+    UnitClass = BaseUnit.inherit(members, statics);
 
     decl.__class = UnitClass;
 
