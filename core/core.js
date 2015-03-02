@@ -26,6 +26,14 @@ function Core(params) {
      * @property
      * @type {Object}
      * */
+    this.caches = Object.create(null);
+
+    /**
+     * @public
+     * @memberOf {Core}
+     * @property
+     * @type {Object}
+     * */
     this.params = params;
 
     /**

@@ -8,23 +8,14 @@ var inherit = require('inherit');
 function init(app) {
 
     /**
+     * default cache interface "local"
+     *
      * @public
-     * @memberOf app
+     * @memberOf app.caches
      * @property
-     * @type {Object}
+     * @type {LRUDictTtlAsync}
      * */
-    app.caches = {
-
-        /**
-         * default cache interface "local"
-         *
-         * @public
-         * @memberOf app.caches
-         * @property
-         * @type {LRUDictTtlAsync}
-         * */
-        local: new LRUDictTtlAsync(0xffff)
-    };
+    app.caches.local = new LRUDictTtlAsync(0xffff);
 
     /**
      * @class app.Unit
