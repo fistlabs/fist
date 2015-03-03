@@ -562,4 +562,10 @@ describe('core/unit', function () {
             assert.strictEqual(unit.identify(), 'static');
         });
     });
+
+    describe('unit.maxAge', function () {
+        it('Should be 0 in Unit\'s prototype', function () {
+            assert.strictEqual(Unit.prototype.maxAge, 0);
+        });
+    });
 });

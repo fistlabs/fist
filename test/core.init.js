@@ -46,21 +46,6 @@ describe('core/init', function () {
 
     });
 
-    it('Should have Number [maxAge=0] property', function (done) {
-        var core = new Core();
-
-        core.unit({
-            name: 'foo'
-        });
-
-        core.ready().done(function () {
-            var unit = core.getUnit('foo');
-            assert.strictEqual(typeof unit.maxAge, 'number');
-            assert.strictEqual(unit.maxAge, 0);
-            done();
-        });
-    });
-
     it('Should fail initialization if dependency is undefined', function (done) {
         var core = new Core();
 

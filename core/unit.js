@@ -91,13 +91,6 @@ Unit.prototype.constructor = Unit;
 Unit.prototype.name = 0;
 
 /**
- * TODO rename to cacheName?
- * TODO make cache object with options?
- * eg: {
- *  name: 'local',
- *  maxAge: 42
- * }
- *
  * @public
  * @memberOf {Unit}
  * @property
@@ -106,8 +99,6 @@ Unit.prototype.name = 0;
 Unit.prototype.cache = new LRUDictTtlAsync(0xFFFF);
 
 /**
- * TODO move to Object unit.cache ?
- *
  * @public
  * @memberOf {Unit}
  * @property
