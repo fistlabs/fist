@@ -354,59 +354,6 @@ describe('core/init', function () {
         });
     });
 
-    describe('unit.identify()', function () {
-        it('Should have identify method', function (done) {
-            var core = new Core();
-            core.unit({
-                name: 'foo'
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-                assert.strictEqual(typeof unit.identify, 'function');
-                done();
-            });
-        });
-
-        it('Should return default key by default', function (done) {
-            var core = new Core();
-
-            core.unit({
-                name: 'foo'
-            });
-
-            core.ready().done(function () {
-                var unit = core.getUnit('foo');
-                assert.strictEqual(unit.identify(), 'static');
-                done();
-            });
-        });
-
-        it('Should reuse existing context', function (done) {
-            var core = new Core();
-
-            core.unit({
-                name: 'foo',
-                identify: function () {
-                    return 'static';
-                }
-            });
-
-            core.ready().done(function () {
-                var track = new Track(core, logger);
-                var unit = core.getUnit('foo');
-
-                unit.run(track, null, function () {
-                    var self = this;
-                    unit.run(track, null, function () {
-                        assert.strictEqual(self, this);
-                        done();
-                    });
-                });
-            });
-        });
-    });
-
     describe('unit.run()', function () {
         it('Should have unit.run() method', function (done) {
             var core = new Core();
