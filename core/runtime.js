@@ -193,17 +193,19 @@ Runtime.startRun = function (unit, track, args, done) {
     var runtime = new Runtime(unit, track, null, args, done);
     var unitRuns;
     var stack = new Array(maxRunDepth);
+    var unitName;
 
     stack[pos] = runtime;
 
     do {
         runtime = stack[pos];
         unit = runtime.unit;
+        unitName = unit.name;
 
-        if (calls.hasOwnProperty(unit.name)) {
-            unitRuns = calls[unit.name];
+        if (calls.hasOwnProperty(unitName)) {
+            unitRuns = calls[unitName];
         } else {
-            unitRuns = calls[unit.name] = {};
+            unitRuns = calls[unitName] = {};
         }
 
         runId = runtime.identity;
@@ -227,7 +229,11 @@ Runtime.startRun = function (unit, track, args, done) {
 
         while (l) {
             l -= 1;
-            stack[pos] = $Runtime$fork(runtime, app.getUnit(deps[l]));
+            unitName = deps[l];
+
+            stack[pos] = new Runtime(app.getUnit(unitName), track, runtime,
+                unit.depsArgs[unitName](track, runtime.context), $Runtime$doneAsDependency);
+
             pos += 1;
         }
 
@@ -355,12 +361,6 @@ function $Runtime$fbind(func, self) {
     }
 
     return $Runtime$bound;
-}
-
-function $Runtime$fork(self, unit) {
-    var track = self.track;
-    return new Runtime(unit, track, self,
-        self.unit.depsArgs[unit.name](track, self.context), $Runtime$doneAsDependency);
 }
 
 function $Runtime$doneAsDependency() {
