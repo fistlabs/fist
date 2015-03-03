@@ -912,11 +912,6 @@ describe('core/init', function () {
 
     describe('Cache strategy', function () {
         var Cache = require('lru-dict/core/lru-dict-ttl-async');
-        function getCachingCore() {
-            var core = new Core();
-            core.caches.local = new Cache();
-            return core;
-        }
 
         it('Should provide "caches.local" property as default cache', function () {
             var core = new Core();
@@ -940,12 +935,13 @@ describe('core/init', function () {
         });
 
         it('Should cache result by `identity` for `maxAge` time', function (done) {
-            var core = getCachingCore();
+            var core = new Core();
             var spy = 0;
 
             core.unit({
                 name: 'foo',
                 maxAge: 0.05,
+                cache: new Cache(0xFFFF),
                 main: function () {
                     spy += 1;
                     return spy;
@@ -980,12 +976,13 @@ describe('core/init', function () {
         });
 
         it('Should not cache result if the track was flushed', function (done) {
-            var core = getCachingCore();
+            var core = new Core();
             var spy = 0;
 
             core.unit({
                 name: 'foo',
                 maxAge: 0.05,
+                cache: new Cache(0xFFFF),
                 main: function (track) {
                     spy += 1;
                     track.isFlushed = function () {
@@ -1013,13 +1010,14 @@ describe('core/init', function () {
         });
 
         it('Should cache result if all of deps was not updated', function (done) {
-            var core = getCachingCore();
+            var core = new Core();
             var spy = 0;
 
             core.unit({
                 name: 'foo',
                 deps: ['bar'],
                 maxAge: 10,
+                cache: new Cache(0xFFFF),
                 main: function () {
                     spy += 1;
                     return spy;
@@ -1054,13 +1052,14 @@ describe('core/init', function () {
         });
 
         it('Should update result if dependency was updated', function (done) {
-            var core = getCachingCore();
+            var core = new Core();
             var spy = 0;
 
             core.unit({
                 name: 'foo',
                 deps: ['bar'],
                 maxAge: 0.05,
+                cache: new Cache(0xFFFF),
                 main: function () {
                     spy += 1;
                     return spy;
@@ -1097,10 +1096,16 @@ describe('core/init', function () {
         });
 
         it('Should not check cache if one of deps was rejected', function (done) {
-            var core = getCachingCore();
+            var core = new Core();
             var spy = 0;
 
             core.unit({
+                name: 'base',
+                cache: new Cache(0xFFFF)
+            });
+
+            core.unit({
+                base: 'base',
                 name: 'foo',
                 deps: ['bar'],
                 maxAge: 0.10,
@@ -1111,6 +1116,7 @@ describe('core/init', function () {
             });
 
             core.unit({
+                base: 'base',
                 name: 'bar',
                 count: 0,
                 maxAge: 0.05,
@@ -1145,22 +1151,21 @@ describe('core/init', function () {
             var core = new Core();
             var spy = 0;
 
-            core.caches.local = {
-                get: function (k, fn) {
-                    setTimeout(function () {
-                        fn(new Error('O_O'));
-                    }, 0);
-                },
-                set: function (k, v, ttl, fn) {
-                    setTimeout(function () {
-                        fn(null, 'OK');
-                    }, 0);
-                }
-            };
-
             core.unit({
                 name: 'foo',
                 maxAge: 0.10,
+                cache: {
+                    get: function (k, fn) {
+                        setTimeout(function () {
+                            fn(new Error('O_O'));
+                        }, 0);
+                    },
+                    set: function (k, v, ttl, fn) {
+                        setTimeout(function () {
+                            fn(null, 'OK');
+                        }, 0);
+                    }
+                },
                 main: function () {
                     spy += 1;
                     return spy;
@@ -1193,22 +1198,21 @@ describe('core/init', function () {
             var core = new Core();
             var spy = 0;
 
-            core.caches.local = {
-                get: function (k, fn) {
-                    setTimeout(function () {
-                        fn(null, null);
-                    }, 0);
-                },
-                set: function (k, v, ttl, fn) {
-                    setTimeout(function () {
-                        fn(new Error());
-                    }, 0);
-                }
-            };
-
             core.unit({
                 name: 'foo',
                 maxAge: 0.10,
+                cache: {
+                    get: function (k, fn) {
+                        setTimeout(function () {
+                            fn(null, null);
+                        }, 0);
+                    },
+                    set: function (k, v, ttl, fn) {
+                        setTimeout(function () {
+                            fn(new Error());
+                        }, 0);
+                    }
+                },
                 main: function () {
                     spy += 1;
                     return spy;
@@ -1241,17 +1245,15 @@ describe('core/init', function () {
             var core = new Core();
             var spy = 0;
 
-            core.caches.local = {
-                set: function (k, v, ttl, fn) {
-                    spy += 1;
-                    fn();
-                }
-            };
-
             core.unit({
                 name: 'foo',
+                cache: {
+                    set: function (k, v, ttl, fn) {
+                        spy += 1;
+                        fn();
+                    }
+                },
                 deps: ['bar'],
-                cache: 'local',
                 maxAge: 0
             });
 
@@ -1274,9 +1276,15 @@ describe('core/init', function () {
         });
 
         it('Should cache result if deps are actual', function (done) {
-            var core = getCachingCore();
+            var core = new Core();
 
             core.unit({
+                name: 'base',
+                cache: new Cache(0xFFFF)
+            });
+
+            core.unit({
+                base: 'base',
                 name: 'foo',
                 deps: ['bar'],
                 maxAge: 0.10,
@@ -1286,6 +1294,7 @@ describe('core/init', function () {
             });
 
             core.unit({
+                base: 'base',
                 name: 'bar',
                 count: 0,
                 maxAge: 0.05,

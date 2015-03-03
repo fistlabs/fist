@@ -1,9 +1,11 @@
 // TODO Should it be inlined in Core?
 'use strict';
 
-var LRUDictTtlAsync = /** @type LRUDictTtlAsync */ require('lru-dict/core/lru-dict-ttl-async');
+var FistError = /** @type FistError */ require('./fist-error');
 var Unit = /** @type Unit */ require('./unit');
 
+var _ = require('lodash-node');
+var f = require('util').format;
 var inherit = require('inherit');
 
 function init(app) {
@@ -16,7 +18,7 @@ function init(app) {
      * @property
      * @type {LRUDictTtlAsync}
      * */
-    app.caches.local = new LRUDictTtlAsync(0xffff);
+    app.caches.local = Unit.prototype.cache;
 
     /**
      * @class app.Unit
@@ -33,6 +35,34 @@ function init(app) {
          * */
         __constructor: function () {
             this.__base(app);
+
+            /**
+             * @public
+             * @memberOf {app.Unit}
+             * @property
+             * @type {Object}
+             * */
+            this.cache = this.createCache();
+        },
+
+        /**
+         * @public
+         * @memberOf {app.Unit}
+         * @method
+         *
+         * @returns {Object}
+         * @throw {FistError}
+         * */
+        createCache: function () {
+            if (_.isObject(this.cache)) {
+                return this.cache;
+            }
+
+            if (!_.has(this.app.caches, this.cache)) {
+                throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
+            }
+
+            return this.app.caches[this.cache];
         }
 
     });

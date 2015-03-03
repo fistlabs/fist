@@ -1,11 +1,11 @@
-// TODO Should unit-tools be inlined here to do not break encapsulation?
 'use strict';
 
 var Runtime = /** @type Runtime */ require('./runtime');
+var LRUDictTtlAsync = require('lru-dict/core/lru-dict-ttl-async');
 
 var _ = require('lodash-node');
+var f = require('util').format;
 var inherit = require('inherit');
-var utools = require('./utils/unit-tools');
 
 /**
  * @class Unit
@@ -17,6 +17,15 @@ function Unit(app) {
      * @public
      * @memberOf {Unit}
      * @property
+     * @type {Core}
+     * */
+    this.app = app;
+
+    /**
+     * TODO rename to defaultContextParams?
+     * @public
+     * @memberOf {Unit}
+     * @property
      * @type {Object}
      * */
     this.params = _.extend({}, this.params);
@@ -25,25 +34,19 @@ function Unit(app) {
      * @public
      * @memberOf {Unit}
      * @property
-     * @type {Core}
-     * */
-    this.app = app;
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Object}
-     * */
-    this.cache = utools.buildCache(this);
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
      * @type {Logger}
      * */
-    this.logger = this.app.logger.bind(this.name);
+    this.logger = this.createLogger();
+
+    /**
+     * TODO rename to depsList ?
+     *
+     * @public
+     * @memberOf {Unit}
+     * @property
+     * @type {Array<String>}
+     * */
+    this.deps = this.freezeDepsList();
 
     /**
      * @public
@@ -51,7 +54,7 @@ function Unit(app) {
      * @property
      * @type {Array<String>}
      * */
-    this.deps = utools.buildDeps(this);
+    this.depsMap = this.freezeDepsMap();
 
     /**
      * @public
@@ -59,15 +62,7 @@ function Unit(app) {
      * @property
      * @type {Array<String>}
      * */
-    this.depsMap = utools.buildDepsMap(this);
-
-    /**
-     * @public
-     * @memberOf {Unit}
-     * @property
-     * @type {Array<String>}
-     * */
-    this.depsArgs = utools.buildDepsArgs(this);
+    this.depsArgs = this.freezeDepsArgs();
 
     /**
      * @public
@@ -75,7 +70,7 @@ function Unit(app) {
      * @property
      * @type {Object}
      * */
-    this.depsIndex = utools.buildDepsIndex(this);
+    this.depsIndex = this.freezeDepsIndex();
 }
 
 /**
@@ -96,14 +91,23 @@ Unit.prototype.constructor = Unit;
 Unit.prototype.name = 0;
 
 /**
+ * TODO rename to cacheName?
+ * TODO make cache object with options?
+ * eg: {
+ *  name: 'local',
+ *  maxAge: 42
+ * }
+ *
  * @public
  * @memberOf {Unit}
  * @property
  * @type {String}
  * */
-Unit.prototype.cache = 'local';
+Unit.prototype.cache = new LRUDictTtlAsync(0xFFFF);
 
 /**
+ * TODO move to Object unit.cache ?
+ *
  * @public
  * @memberOf {Unit}
  * @property
@@ -112,6 +116,8 @@ Unit.prototype.cache = 'local';
 Unit.prototype.maxAge = 0;
 
 /**
+ * TODO rename to defaultContextParams ?
+ *
  * @public
  * @memberOf {Unit}
  * @property
@@ -120,6 +126,8 @@ Unit.prototype.maxAge = 0;
 Unit.prototype.params = {};
 
 /**
+ * TODO rename to params ?
+ *
  * @public
  * @memberOf {Unit}
  * @property
@@ -167,6 +175,8 @@ Unit.prototype.identify = function _$Unit$prototype$identify(track, context) {
 };
 
 /**
+ * Noop by default
+ *
  * @public
  * @memberOf {Unit}
  * @method
@@ -176,9 +186,7 @@ Unit.prototype.identify = function _$Unit$prototype$identify(track, context) {
  *
  * @returns {*}
  * */
-Unit.prototype.main = function (track, context) {
-    /*eslint no-unused-vars: 0*/
-};
+Unit.prototype.main = Function.prototype;
 
 /**
  * @public
@@ -220,7 +228,7 @@ Unit.inherit = function (members, statics) {
 
     members.deps = _.reduce(mixins, function (fullDeps, Mixin) {
         if (_.isFunction(Mixin) && Mixin.prototype.deps) {
-            fullDeps = fullDeps.concat(Mixin.prototype.deps);
+            return fullDeps.concat(Mixin.prototype.deps);
         }
 
         return fullDeps;
@@ -230,6 +238,84 @@ Unit.inherit = function (members, statics) {
     members.settings = _.extend({}, this.prototype.settings, members.settings);
 
     return inherit([this].concat(mixins), members, statics);
+};
+
+/**
+ * @public
+ * @memberOf {Unit}
+ * @method
+ *
+ * @returns {Logger}
+ * */
+Unit.prototype.createLogger = function () {
+    return this.app.logger.bind(this.name);
+};
+
+/**
+ * @public
+ * @memberOf {Unit}
+ * @method
+ *
+ * @returns {Object}
+ * */
+Unit.prototype.freezeDepsList = function () {
+    return Object.freeze(_.uniq(this.deps));
+};
+
+/**
+ * @public
+ * @memberOf {Unit}
+ * @method
+ *
+ * @returns {Object}
+ * */
+Unit.prototype.freezeDepsMap = function () {
+    var depsMap = {};
+
+    _.forEach(this.deps, function (name) {
+        if (_.has(this.depsMap, name)) {
+            depsMap[name] = this.depsMap[name];
+        } else {
+            depsMap[name] = name;
+        }
+    }, this);
+
+    return Object.freeze(depsMap);
+};
+
+/**
+ * @public
+ * @memberOf {Unit}
+ * @method
+ *
+ * @returns {Object}
+ * */
+Unit.prototype.freezeDepsArgs = function () {
+    var depsArgs = {};
+
+    _.forEach(this.deps, function (name) {
+        var args = this.depsArgs[name];
+        if (_.isFunction(args)) {
+            depsArgs[name] = args.bind(this);
+        } else {
+            depsArgs[name] = function () {
+                return args;
+            };
+        }
+    }, this);
+
+    return Object.freeze(depsArgs);
+};
+
+/**
+ * @public
+ * @memberOf {Unit}
+ * @method
+ *
+ * @returns {Object}
+ * */
+Unit.prototype.freezeDepsIndex = function () {
+    return Object.freeze(_.invert(this.deps));
 };
 
 module.exports = Unit;
