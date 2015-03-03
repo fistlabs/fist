@@ -568,4 +568,142 @@ describe('core/unit', function () {
             assert.strictEqual(Unit.prototype.maxAge, 0);
         });
     });
+
+    describe('Unit.inherit()', function () {
+        it('Should be a function', function () {
+            assert.strictEqual(typeof Unit.inherit, 'function');
+        });
+        it('Should create subclass of Unit', function () {
+            var Unit2 = Unit.inherit();
+            var unit = new Unit2({
+                logger: {
+                    bind: function () {}
+                }
+            });
+            assert.ok(unit instanceof Unit);
+            assert.ok(unit instanceof Unit2);
+
+            assert.notStrictEqual(Unit, Unit2);
+        });
+        it('Should inherit static "inherit" method', function () {
+            var Unit2 = Unit.inherit();
+            assert.strictEqual(typeof Unit2.inherit, 'function');
+        });
+        it('Should inherit members', function () {
+            var Unit2 = Unit.inherit({
+                foo: 'bar',
+                baz: 'zot'
+            });
+            assert.strictEqual(Unit2.prototype.foo, 'bar');
+            assert.strictEqual(Unit2.prototype.baz, 'zot');
+        });
+        it('Should inherit statics', function () {
+            var Unit2 = Unit.inherit(null, {
+                foo: 'bar',
+                baz: 'zot'
+            });
+            assert.strictEqual(Unit2.foo, 'bar');
+            assert.strictEqual(Unit2.baz, 'zot');
+        });
+        it('Should merge parent\'s deps with own deps', function () {
+            var Unit2 = Unit.inherit({
+                deps: ['a', 'b']
+            });
+            var Unit3 = Unit2.inherit({
+                deps: ['c', 'd']
+            });
+            assert.deepEqual(Unit3.prototype.deps, ['a', 'b', 'c', 'd']);
+        });
+        it('Should automatically add mixin\'s deps', function () {
+            var Unit2;
+            function Mixin0() {}
+            function Mixin1() {}
+            Mixin0.prototype.deps = ['c', 'd'];
+            Unit2 = Unit.inherit({
+                deps: ['a', 'b'],
+                mixins: [Mixin0, Mixin1]
+            });
+            assert.deepEqual(Unit2.prototype.deps, ['a', 'b', 'c', 'd']);
+        });
+        it('Should extend parent\'s settings with own', function () {
+            var settings1 = {foo: 'bar'};
+            var settings2 = {bar: 'baz'};
+            var Unit2 = Unit.inherit({
+                settings: settings1
+            });
+            var Unit3 = Unit2.inherit({
+                settings: settings2
+            });
+            assert.deepEqual(Unit3.prototype.settings, {
+                foo: 'bar',
+                bar: 'baz'
+            });
+        });
+        it('Should not directly extend parent\'s settings', function () {
+            var settings1 = {foo: 'bar'};
+            var settings2 = {bar: 'baz'};
+            var Unit2 = Unit.inherit({
+                settings: settings1
+            });
+            var Unit3 = Unit2.inherit({
+                settings: settings2
+            });
+            assert.notStrictEqual(Unit3.prototype.settings, Unit2.prototype.settings);
+        });
+        it('Should extend parent\'s depsMap', function () {
+            var depsMap1 = {foo: 'bar'};
+            var depsMap2 = {bar: 'baz'};
+            var Unit2 = Unit.inherit({
+                deps: ['foo'],
+                depsMap: depsMap1
+            });
+            var Unit3 = Unit2.inherit({
+                deps: ['bar'],
+                depsMap: depsMap2
+            });
+            assert.deepEqual(Unit3.prototype.depsMap, {
+                foo: 'bar',
+                bar: 'baz'
+            });
+        });
+        it('Should not directly extend parent\'s depsMap', function () {
+            var depsMap1 = {foo: 'bar'};
+            var depsMap2 = {bar: 'baz'};
+            var Unit2 = Unit.inherit({
+                deps: ['foo'],
+                depsMap: depsMap1
+            });
+            var Unit3 = Unit2.inherit({
+                deps: ['bar'],
+                depsMap: depsMap2
+            });
+            assert.notStrictEqual(Unit3.prototype.depsMap, Unit2.prototype.depsMap);
+        });
+        it('Should extend parent\'s depsArgs', function () {
+            var depsArgs1 = {foo: function () {}};
+            var depsArgs2 = {bar: function () {}};
+            var Unit2 = Unit.inherit({
+                deps: ['foo'],
+                depsArgs: depsArgs1
+            });
+            var Unit3 = Unit2.inherit({
+                deps: ['bar'],
+                depsArgs: depsArgs2
+            });
+            assert.deepEqual(_.keys(Unit3.prototype.depsArgs), ['foo', 'bar']);
+        });
+        it('Should not directly extend parent\'s depsArgs', function () {
+            var depsArgs1 = {foo: 'bar'};
+            var depsArgs2 = {bar: 'baz'};
+            var Unit2 = Unit.inherit({
+                deps: ['foo'],
+                depsArgs: depsArgs1
+            });
+            var Unit3 = Unit2.inherit({
+                deps: ['bar'],
+                depsArgs: depsArgs2
+            });
+            assert.notStrictEqual(Unit3.prototype.depsArgs, Unit2.prototype.depsArgs);
+        });
+    });
 });

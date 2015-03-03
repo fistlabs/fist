@@ -210,6 +210,7 @@ Unit.inherit = function (members, statics) {
     members = Object(members);
 
     if (members.deps) {
+        // inherit parent's deps
         deps = deps.concat(members.deps);
     }
 
@@ -217,16 +218,21 @@ Unit.inherit = function (members, statics) {
         mixins = mixins.concat(members.mixins);
     }
 
+    // inherit mixins deps
     members.deps = _.reduce(mixins, function (fullDeps, Mixin) {
-        if (_.isFunction(Mixin) && Mixin.prototype.deps) {
-            return fullDeps.concat(Mixin.prototype.deps);
+        if (Mixin.prototype.deps) {
+            fullDeps = fullDeps.concat(Mixin.prototype.deps);
         }
 
         return fullDeps;
     }, deps);
 
-    // Unit's settings inherits from parent's settings
+    // inherit parent's settings
     members.settings = _.extend({}, this.prototype.settings, members.settings);
+    // inherit parent's depsMap
+    members.depsMap = _.extend({}, this.prototype.depsMap, members.depsMap);
+    // inherit parent's depsArgs
+    members.depsArgs = _.extend({}, this.prototype.depsArgs, members.depsArgs);
 
     return inherit([this].concat(mixins), members, statics);
 };

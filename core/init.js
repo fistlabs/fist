@@ -34,6 +34,7 @@ function init(app) {
          * @constructs
          * */
         __constructor: function () {
+            // Close `app` in constructor to allow to do not `this.__base(app)` in subclasses
             this.__base(app);
 
             /**
