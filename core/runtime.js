@@ -39,6 +39,7 @@ var vow = require('vow');
  * @constructs
  * */
 function Runtime(unit, track, parent, args, done) {
+    // TODO why context.result and context.errors does not creating in Context constructor?
     var context = new Context(Context.createParams(unit.params, track.params, args),
         new Obus(), new Obus(), unit.logger.bind(track.id));
 
@@ -170,6 +171,8 @@ function Runtime(unit, track, parent, args, done) {
 }
 
 /**
+ * TODO inline this method consists of to improve performance
+ *
  * @public
  * @static
  * @memberOf {Runtime}
