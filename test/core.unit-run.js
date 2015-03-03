@@ -11,7 +11,7 @@ var logging = require('loggin');
 var vow = require('vow');
 
 // behaviour tests of `unit.run(Track track, Object args, Function done)` method
-describe.only('core/unit#run()', function () {
+describe('core/unit#run()', function () {
     var Unit = require('../core/unit');
     var logger = logging.getLogger('silent-test').conf({
         handlers: []
@@ -47,15 +47,15 @@ describe.only('core/unit#run()', function () {
 
         core.ready().done(function () {
             var unit = core.getUnit('foo');
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
     });
 
-    it('Should be rejected by thrown promise', function (done) {
+    it('Should be rejected by returned rejected promise', function (done) {
         var core = new Core({
             logging: {
                 logLevel: 'SILENT'
@@ -66,15 +66,15 @@ describe.only('core/unit#run()', function () {
         core.unit({
             name: 'foo',
             main: function () {
-                throw vow.reject(42);
+                return vow.reject(42);
             }
         });
 
         core.ready().done(function () {
             var unit = core.getUnit('foo');
-            unit.run(track, null, function () {
-                assert.ok(this.isRejected());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isRejected());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
@@ -104,9 +104,9 @@ describe.only('core/unit#run()', function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
 
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 11);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 11);
                 done();
             });
         });
@@ -163,9 +163,9 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
@@ -197,9 +197,9 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
@@ -233,9 +233,9 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
@@ -272,9 +272,9 @@ describe.only('core/unit#run()', function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
 
-            unit.run(track, {x: 1}, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, {x: 1}, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
@@ -307,9 +307,8 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
-            unit.run(track, null, function () {
-                assert.ok(!this.isResolved());
-                assert.strictEqual(this.valueOf(), null);
+            unit.run(track, null, function (runtime) {
+                assert.ok(!runtime.isResolved());
                 assert.strictEqual(foo, 0);
                 done();
             });
@@ -352,10 +351,9 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
-            unit.run(track, null, function () {
+            unit.run(track, null, function (runtime) {
                 foo += 1;
-                assert.ok(!this.isResolved());
-                assert.strictEqual(this.valueOf(), null);
+                assert.ok(!runtime.isResolved());
                 setTimeout(function () {
                     assert.strictEqual(foo, 1);
                     done();
@@ -391,9 +389,8 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
-            unit.run(track, null, function () {
-                assert.ok(!this.isResolved());
-                assert.strictEqual(this.valueOf(), null);
+            unit.run(track, null, function (runtime) {
+                assert.ok(!runtime.isResolved());
                 assert.strictEqual(foo, 0);
                 done();
             });
@@ -414,9 +411,9 @@ describe.only('core/unit#run()', function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
 
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 done();
             });
         });
@@ -438,14 +435,14 @@ describe.only('core/unit#run()', function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
 
-            unit.run(track, null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), 42);
                 assert.strictEqual(i, 1);
 
-                unit.run(track, null, function () {
-                    assert.ok(this.isAccepted());
-                    assert.strictEqual(this.valueOf(), 42);
+                unit.run(track, null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), 42);
                     assert.strictEqual(i, 1);
                     done();
                 });
@@ -473,8 +470,8 @@ describe.only('core/unit#run()', function () {
                 }, 10);
                 return defer.promise();
             },
-            identify: function (track, params) {
-                return params.foo;
+            identify: function (track, context) {
+                return context.p('foo');
             }
         });
 
@@ -482,22 +479,22 @@ describe.only('core/unit#run()', function () {
             var unit = core.getUnit('foo');
             var track = new Track(core, logger);
 
-            unit.run(track, args, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, args, function (runtime) {
+                assert.ok(runtime.isAccepted());
+                assert.strictEqual(runtime.valueOf(), 42);
                 assert.strictEqual(i, 1);
                 j += 1;
             });
 
-            unit.run(track, args, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 42);
+            unit.run(track, args, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), 42);
                 assert.strictEqual(i, 1);
                 assert.strictEqual(j, 1);
 
-                unit.run(track, args, function () {
-                    assert.ok(this.isAccepted());
-                    assert.strictEqual(this.valueOf(), 42);
+                unit.run(track, args, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), 42);
                     assert.strictEqual(i, 1);
                     assert.strictEqual(j, 1);
                     done();
@@ -524,21 +521,21 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
                 assert.strictEqual(spy, 1);
-                assert.strictEqual(spy, this.valueOf());
+                assert.strictEqual(spy, runtime1.valueOf());
 
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(spy, this.valueOf());
+                    assert.strictEqual(spy, runtime2.valueOf());
 
                     setTimeout(function () {
-                        unit.run(new Track(core, logger), null, function () {
-                            assert.ok(this.isAccepted());
+                        unit.run(new Track(core, logger), null, function (runtime3) {
+                            assert.ok(runtime3.isAccepted());
                             assert.strictEqual(spy, 2);
-                            assert.strictEqual(spy, this.valueOf());
+                            assert.strictEqual(spy, runtime3.valueOf());
 
                             done();
                         });
@@ -605,18 +602,18 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
                 assert.strictEqual(spy, 1);
-                assert.strictEqual(this.valueOf(), spy);
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), spy);
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
                     assert.strictEqual(spy, 1);
-                    assert.strictEqual(this.valueOf(), spy);
-                    unit.run(new Track(core, logger), null, function () {
-                        assert.ok(this.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), spy);
+                    unit.run(new Track(core, logger), null, function (runtime3) {
+                        assert.ok(runtime3.isAccepted());
                         assert.strictEqual(spy, 1);
-                        assert.strictEqual(this.valueOf(), spy);
+                        assert.strictEqual(runtime3.valueOf(), spy);
                         done();
                     });
                 });
@@ -646,20 +643,20 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
                 assert.strictEqual(spy, 1);
-                assert.strictEqual(this.valueOf(), spy);
+                assert.strictEqual(runtime1.valueOf(), spy);
 
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
                     assert.strictEqual(spy, 2);
-                    assert.strictEqual(this.valueOf(), spy);
+                    assert.strictEqual(runtime2.valueOf(), spy);
 
-                    unit.run(new Track(core, logger), null, function () {
-                        assert.ok(this.isAccepted());
+                    unit.run(new Track(core, logger), null, function (runtime3) {
+                        assert.ok(runtime3.isAccepted());
                         assert.strictEqual(spy, 3);
-                        assert.strictEqual(this.valueOf(), spy);
+                        assert.strictEqual(runtime3.valueOf(), spy);
 
                         done();
                     });
@@ -701,18 +698,18 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
                 assert.strictEqual(spy, 1);
-                assert.strictEqual(this.valueOf(), spy);
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), spy);
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
                     assert.strictEqual(spy, 2);
-                    assert.strictEqual(this.valueOf(), spy);
-                    unit.run(new Track(core, logger), null, function () {
-                        assert.ok(this.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), spy);
+                    unit.run(new Track(core, logger), null, function (runtime3) {
+                        assert.ok(runtime3.isAccepted());
                         assert.strictEqual(spy, 3);
-                        assert.strictEqual(this.valueOf(), spy);
+                        assert.strictEqual(runtime3.valueOf(), spy);
                         done();
                     });
                 });
@@ -748,18 +745,18 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
                 assert.strictEqual(spy, 1);
-                assert.strictEqual(this.valueOf(), spy);
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), spy);
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
                     assert.strictEqual(spy, 2);
-                    assert.strictEqual(this.valueOf(), spy);
-                    unit.run(new Track(core, logger), null, function () {
-                        assert.ok(this.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), spy);
+                    unit.run(new Track(core, logger), null, function (runtime3) {
+                        assert.ok(runtime3.isAccepted());
                         assert.strictEqual(spy, 3);
-                        assert.strictEqual(this.valueOf(), spy);
+                        assert.strictEqual(runtime3.valueOf(), spy);
                         done();
                     });
                 });
@@ -795,18 +792,18 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
                 assert.strictEqual(spy, 1);
-                assert.strictEqual(this.valueOf(), spy);
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), spy);
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
                     assert.strictEqual(spy, 2);
-                    assert.strictEqual(this.valueOf(), spy);
-                    unit.run(new Track(core, logger), null, function () {
-                        assert.ok(this.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), spy);
+                    unit.run(new Track(core, logger), null, function (runtime3) {
+                        assert.ok(runtime3.isAccepted());
                         assert.strictEqual(spy, 3);
-                        assert.strictEqual(this.valueOf(), spy);
+                        assert.strictEqual(runtime3.valueOf(), spy);
                         done();
                     });
                 });
@@ -880,18 +877,61 @@ describe.only('core/unit#run()', function () {
         core.ready().done(function () {
             var unit = core.getUnit('foo');
 
-            unit.run(new Track(core, logger), null, function () {
-                assert.ok(this.isAccepted());
-                assert.strictEqual(this.valueOf(), 1);
-                unit.run(new Track(core, logger), null, function () {
-                    assert.ok(this.isAccepted());
-                    assert.strictEqual(this.valueOf(), 1);
-                    unit.run(new Track(core, logger), null, function () {
-                        assert.ok(this.isAccepted());
-                        assert.strictEqual(this.valueOf(), 1);
+            unit.run(new Track(core, logger), null, function (runtime1) {
+                assert.ok(runtime1.isAccepted());
+                assert.strictEqual(runtime1.valueOf(), 1);
+                unit.run(new Track(core, logger), null, function (runtime2) {
+                    assert.ok(runtime2.isAccepted());
+                    assert.strictEqual(runtime2.valueOf(), 1);
+                    unit.run(new Track(core, logger), null, function (runtime3) {
+                        assert.ok(runtime3.isAccepted());
+                        assert.strictEqual(runtime3.valueOf(), 1);
                         done();
                     });
                 });
+            });
+        });
+    });
+
+    it('Should have equal context as original runtime\'s', function (done) {
+        var core = new Core();
+        var spy = [];
+
+        core.unit({
+            name: 'foo',
+            main: function () {
+                return 42;
+            }
+        });
+        core.unit({
+            deps: ['foo'],
+            name: 'bar',
+            main: Function.prototype,
+            identify: function () {
+                return 'same';
+            }
+        });
+
+        core.ready().done(function () {
+            var unit = core.getUnit('bar');
+            var track = new Track(core, logger);
+
+            unit.run(track, null, function (runtime) {
+                assert.strictEqual(runtime.context.r('foo'), 42);
+                spy.push(1);
+            });
+
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.context.result.has('foo'));
+                assert.strictEqual(runtime.context.r('foo'), 42);
+                spy.push(2);
+            });
+
+            unit.run(track, null, function (runtime) {
+                assert.ok(runtime.context.result.has('foo'));
+                assert.strictEqual(runtime.context.r('foo'), 42);
+                assert.deepEqual(spy, [1, 2]);
+                done();
             });
         });
     });

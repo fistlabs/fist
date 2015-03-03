@@ -229,17 +229,17 @@ function $Server$nextRun(self, track) {
     self.getUnit(match.data.unit).run(track, null, $Server$onControllerDone);
 }
 
-function $Server$onControllerDone() {
-    if (this.track.wasSent()) {
+function $Server$onControllerDone(runtime) {
+    if (runtime.track.wasSent()) {
         return;
     }
 
-    if (this.isRejected()) {
-        this.track.status(500).send();
+    if (runtime.isRejected()) {
+        runtime.track.status(500).send();
         return;
     }
 
-    $Server$nextRun(this.unit.app, this.track);
+    $Server$nextRun(runtime.unit.app, runtime.track);
 }
 
 module.exports = Server;

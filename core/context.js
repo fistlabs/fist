@@ -2,15 +2,25 @@
 
 var Obus = /** @type Obus */ require('obus');
 
+function ContextLite() {
+    this.params = new Obus();
+}
+
+ContextLite.prototype.p = function (path, def) {
+    return Obus.get(this.params, path, def);
+};
+
+ContextLite.prototype.addParams = function (params) {
+    $Context$extendParams(this.params, params);
+};
+
 /**
  * @class Context
  *
  * @param {Obus} params
- * @param {Obus} result
- * @param {Obus} errors
  * @param {Logger} logger
  * */
-function Context(params, result, errors, logger) {
+function Context(params, logger) {
 
     /**
      * @public
@@ -26,7 +36,7 @@ function Context(params, result, errors, logger) {
      * @property
      * @type {Object}
      * */
-    this.result = result;
+    this.result = new Obus();
 
     /**
      * @public
@@ -34,7 +44,7 @@ function Context(params, result, errors, logger) {
      * @property
      * @type {Object}
      * */
-    this.errors = errors;
+    this.errors = new Obus();
 
     /**
      * @public
@@ -145,5 +155,7 @@ function $Context$extendParams(obj, src) {
 
     return obj;
 }
+
+Context.Lite = ContextLite;
 
 module.exports = Context;

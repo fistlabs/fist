@@ -101,11 +101,11 @@ Track.prototype.invoke = function (name, args) {
         return vow.reject(new FistError(FistError.NO_SUCH_UNIT, f('Can not invoke unknown unit %j', name)));
     }
 
-    unit.run(this, args, function () {
-        if (this.isRejected()) {
-            defer.reject(this.valueOf());
+    unit.run(this, args, function (runtime) {
+        if (runtime.isRejected()) {
+            defer.reject(runtime.valueOf());
         } else {
-            defer.resolve(this.valueOf());
+            defer.resolve(runtime.valueOf());
         }
     });
 

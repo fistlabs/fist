@@ -26,6 +26,8 @@ var Obus = /** @type Obus */ require('obus');
 var maxRunDepth = 1;
 var vow = require('vow');
 
+var DEFAULT_KEYS = [];
+
 /**
  * @class Runtime
  * @extends Context
@@ -39,9 +41,25 @@ var vow = require('vow');
  * @constructs
  * */
 function Runtime(unit, track, parent, args, done) {
-    // TODO why context.result and context.errors does not creating in Context constructor?
-    var context = new Context(Context.createParams(unit.params, track.params, args),
-        new Obus(), new Obus(), unit.logger.bind(track.id));
+    // Create lite context to provide an interface to check execution parameters
+    var context = new Context.Lite();
+
+    // add default context params
+    context.addParams(unit.params);
+    // add track's params
+    context.addParams(track.params);
+    // add local args
+    context.addParams(args);
+
+    /**
+     * Runtime identity is a part of cacheKey and memorization key
+     *
+     * @public
+     * @memberOf {Runtime}
+     * @property
+     * @type {String}
+     * */
+    this.identity = unit.identify(track, context);
 
     /**
      * Invoking unit
@@ -91,7 +109,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {Number}
      * */
-    this.pathsLeft = unit.deps.length;
+    this.pathsLeft = 0;
 
     /**
      * The array of dependency identities
@@ -101,7 +119,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {Array}
      * */
-    this.keys = new Array(this.pathsLeft);
+    this.keys = DEFAULT_KEYS;
 
     /**
      * @public
@@ -109,17 +127,15 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {Date}
      * */
-    this.creationDate = new Date();
+    this.creationDate = 0;
 
     /**
-     * The result, returned from runtime
-     *
      * @public
      * @memberOf {Runtime}
      * @property
      * @type {*}
      * */
-    this.value = null;
+    this.value = void 0;
 
     /**
      * The status of current runtime
@@ -129,7 +145,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {Number}
      * */
-    this.statusBits = B00010000 * !(unit.maxAge > 0);
+    this.statusBits = 0;
 
     /**
      * Runtime context
@@ -142,37 +158,19 @@ function Runtime(unit, track, parent, args, done) {
     this.context = context;
 
     /**
-     * Runtime identity is a part of cacheKey and memorization key
-     *
-     * @public
-     * @memberOf {Runtime}
-     * @property
-     * @type {String}
-     * */
-    this.identity = unit.identify(track, context);
-
-    /**
-     * Runtime logger
-     *
-     * @public
-     * @memberOf {Runtime}
-     * @property
-     * @type {Context}
-     * */
-    this.logger = context.logger = context.logger.bind(this.identity);
-
-    /**
      * @public
      * @memberOf {Runtime}
      * @property
      * @type {Array<Runtime>}
      * */
     this.listeners = [];
+
+    this.subscribeMethod = 'setListener';
+
+    this.cacheKey = '';
 }
 
 /**
- * TODO inline this method consists of to improve performance
- *
  * @public
  * @static
  * @memberOf {Runtime}
@@ -183,60 +181,95 @@ function Runtime(unit, track, parent, args, done) {
  * @param {Object} args
  * @param {Function} done
  * */
-Runtime.startRun = function (unit, track, args, done) {
+Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
+    // All request unit calls
+    var allUnitRuns = track.calls;
+    // Host application
     var app = unit.app;
-    var calls = track.calls;
     var deps;
     var l;
     var pos = 0;
-    var runId;
-    var runtime = new Runtime(unit, track, null, args, done);
+    var identity;
     var unitRuns;
     var stack = new Array(maxRunDepth);
     var unitName;
+    var runtime = new this(unit, track, null, args, done);
+    var childRuntime;
+    var childUnit;
+    var childUnitName;
+    var runtimeLogger;
+    var listener;
 
     stack[pos] = runtime;
 
     do {
+        // unpack stack item
         runtime = stack[pos];
         unit = runtime.unit;
+        identity = runtime.identity;
         unitName = unit.name;
 
-        if (calls.hasOwnProperty(unitName)) {
-            unitRuns = calls[unitName];
+        // check for allocated runs object
+        if (allUnitRuns.hasOwnProperty(unitName)) {
+            // The unit was already called
+            unitRuns = allUnitRuns[unitName];
         } else {
-            unitRuns = calls[unitName] = {};
+            // First unit call
+            unitRuns = allUnitRuns[unitName] = {};
         }
 
-        runId = runtime.identity;
-
-        if (unitRuns.hasOwnProperty(runId)) {
-            unitRuns[runId].wait(runtime);
+        // check for existing execution
+        if (unitRuns.hasOwnProperty(identity)) {
+            listener = runtime;
+            runtime = unitRuns[identity];
+            // execution exist
+            runtime[runtime.subscribeMethod](listener);
             continue;
         }
 
-        runtime.logger.debug('Running...');
-        unitRuns[runId] = runtime;
+        // bind unit's logger to track and execution identity
+        runtimeLogger = unit.logger.bind(track.id).bind(identity);
 
-        l = runtime.pathsLeft;
+        // rly need this shit? Is it makes sense?
+        runtimeLogger.debug('Running...');
+
+        // Now we can complete runtime initialization
+        runtime.context = new Context(runtime.context.params, runtimeLogger);
+
+        // TODO is it strange to always allocate Date just for debug, even that is not enabled?
+        // is it real creation date?
+        runtime.creationDate = new Date();
+
+        // Should skip cache if maxAge lt 0 or invalid
+        runtime.statusBits = B00010000 * !(unit.maxAge > 0);
+
+        // Set execution
+        unitRuns[identity] = runtime;
+
+        deps = unit.deps;
+        l = runtime.pathsLeft = deps.length;
 
         if (l === 0) {
+            // no deps, execute runtime
             $Runtime$execute(runtime);
             continue;
         }
 
-        deps = unit.deps;
+        runtime.keys = new Array(l);
 
+        // deps raises child runtimes
         while (l) {
             l -= 1;
-            unitName = deps[l];
+            childUnitName = deps[l];
+            args = unit.depsArgs[childUnitName](track, runtime.context);
+            childUnit = app.getUnit(childUnitName);
+            childRuntime = new Runtime(childUnit, track, runtime, args, $Runtime$doneChild);
 
-            stack[pos] = new Runtime(app.getUnit(unitName), track, runtime,
-                unit.depsArgs[unitName](track, runtime.context), $Runtime$doneAsDependency);
-
+            stack[pos] = childRuntime;
             pos += 1;
         }
 
+        // auto adjust initial stack size, for future runs
         maxRunDepth = Math.max(pos, maxRunDepth);
         /*eslint no-plusplus: 0*/
     } while (pos--);
@@ -256,25 +289,30 @@ Runtime.prototype.constructor = Runtime;
  * @memberOf {Runtime}
  * @method
  *
- * @param {Runtime} sameIdentityRuntime
+ * @param {Runtime} listener
  * */
-Runtime.prototype.wait = function (sameIdentityRuntime) {
-    this.listeners.push(sameIdentityRuntime);
+Runtime.prototype.setListener = function (listener) {
+    this.listeners.push(listener);
 };
 
 /**
- * The key for cache
- *
  * @public
  * @memberOf {Runtime}
- * @property
- * @type {String}
+ * @method
+ *
+ * @param {Runtime} listener
  * */
-Object.defineProperty(Runtime.prototype, 'cacheKey', {
-    get: function () {
-        return this.unit.name + '-' + this.identity + '-' + this.keys.join('-');
-    }
-});
+Runtime.prototype.doneListener = function (listener) {
+    var done = listener.done;
+
+    // copy original execution state to listener
+    listener.statusBits = this.statusBits;
+    listener.value = this.value;
+    listener.context = this.context;
+
+    // run done with no context
+    done(listener);
+};
 
 /**
  * @public
@@ -295,7 +333,7 @@ Runtime.prototype.onMainFulfilled = function $Runtime$prototype$onMainFulfilled(
  * @param {*} err
  * */
 Runtime.prototype.onMainRejected = function $Runtime$prototype$onMainRejected(err) {
-    this.logger.error(err);
+    this.context.logger.error(err);
     $Runtime$afterMainCalled(this, err, B00000010);
 };
 
@@ -363,37 +401,36 @@ function $Runtime$fbind(func, self) {
     return $Runtime$bound;
 }
 
-function $Runtime$doneAsDependency() {
+function $Runtime$doneChild(listener) {
     var name;
-    var self = this;
-    var parent = self.parent;
+    var parent = listener.parent;
 
     //  parent skipped
     if (parent.statusBits & B00000100) {
         return;
     }
 
-    //  this skipped
-    if (self.statusBits & B00000100) {
-        //  set parent is skipped
+    if (listener.statusBits & B00000100) {
+        // listener is skipped
+        // set parent is skipped
         parent.statusBits |= B00000100;
         $Runtime$finish(parent);
         return;
     }
 
-    name = self.unit.name;
+    name = listener.unit.name;
 
     //  is accepted
-    if (self.statusBits & B00000001) {
+    if (listener.statusBits & B00000001) {
         //  set need update to parent if this is updated
-        parent.statusBits |= self.statusBits & B00001000;
-        parent.keys[parent.unit.depsIndex[name]] = self.identity;
-        Obus.add(parent.context.result, parent.unit.depsMap[name], self.value);
+        parent.statusBits |= listener.statusBits & B00001000;
+        parent.keys[parent.unit.depsIndex[name]] = listener.identity;
+        Obus.add(parent.context.result, parent.unit.depsMap[name], listener.value);
     } else {
         //  is rejected
         //  set parent skip cache
         parent.statusBits |= B00010000;
-        Obus.add(parent.context.errors, parent.unit.depsMap[name], self.value);
+        Obus.add(parent.context.errors, parent.unit.depsMap[name], listener.value);
     }
 
     parent.pathsLeft -= 1;
@@ -404,12 +441,16 @@ function $Runtime$doneAsDependency() {
 }
 
 function $Runtime$execute(self) {
+    self.cacheKey = self.unit.name + '-' + self.identity + '-' + self.keys.join('-');
+
     // need update or need skip cache
     if (self.statusBits & B00011000) {
+        // do not check for cache, just invoke unit
         $Runtime$callUnit(self);
         return;
     }
 
+    // async
     self.unit.cache.get(self.cacheKey, $Runtime$fbind($Runtime$onCacheGot, self));
 }
 
@@ -420,7 +461,7 @@ function $Runtime$callUnit(self) {
 
 function $Runtime$onCacheGot(self, err, res) {
     if (!err && res) {
-        self.logger.debug('Found in cache');
+        self.context.logger.debug('Found in cache');
         self.value = res.value;
         // set is accepted
         self.statusBits |= B00000001;
@@ -429,9 +470,9 @@ function $Runtime$onCacheGot(self, err, res) {
     }
 
     if (err) {
-        self.logger.warn(err);
+        self.context.logger.warn(err);
     } else {
-        self.logger.debug('Outdated');
+        self.context.logger.debug('Outdated');
     }
 
     // set need update
@@ -444,34 +485,25 @@ function $Runtime$finish(self) {
     var i;
     var l;
     var listeners = self.listeners;
+    var done = self.done;
 
-    self.wait = $Runtime$doneImmediately;
+    self.subscribeMethod = 'doneListener';
 
     if (self.statusBits & B00000001) {
         //  is accepted
-        self.logger.debug('Accepted in %dms', self.getTimePassed());
+        self.context.logger.debug('Accepted in %dms', self.getTimePassed());
     } else if (self.statusBits & B00000010) {
         //  is rejected
-        self.logger.debug('Rejected in %dms', self.getTimePassed());
+        self.context.logger.debug('Rejected in %dms', self.getTimePassed());
     } else {
-        self.logger.debug('Skipping in %dms', self.getTimePassed());
+        self.context.logger.debug('Skipping in %dms', self.getTimePassed());
     }
 
-    self.done();
+    done(self);
 
     for (i = 0, l = listeners.length; i < l; i += 1) {
-        $Runtime$doneOther(self, listeners[i]);
+        self.doneListener(listeners[i]);
     }
-}
-
-function $Runtime$doneImmediately(other) {
-    $Runtime$doneOther(this, other);
-}
-
-function $Runtime$doneOther(self, other) {
-    self.done = other.done;
-    self.parent = other.parent;
-    self.done();
 }
 
 function $Runtime$callUnitMain(self) {
@@ -489,6 +521,7 @@ function $Runtime$afterMainCalled(self, value, statusBitMask) {
     // set updated and (accepted or rejected)
     self.statusBits |= B00001000 | statusBitMask;
 
+    // if cache skipped, why we should do this check?
     // !skip cache & updating & !skipping & accepted
     if ((self.statusBits & B00011101) === B00001001) {
         value = {value: value};
@@ -500,9 +533,9 @@ function $Runtime$afterMainCalled(self, value, statusBitMask) {
 
 function $Runtime$onCacheSet(self, err) {
     if (err) {
-        self.logger.warn(err);
+        self.context.logger.warn(err);
     } else {
-        self.logger.debug('Updated');
+        self.context.logger.debug('Updated');
     }
 }
 
