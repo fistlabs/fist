@@ -5,7 +5,7 @@ var Core = require('../core/core');
 var Track = require('../core/track');
 var Context = require('../core/context');
 var Cache = require('lru-dict/core/lru-dict-ttl-async');
-var Promise = require('bluebird');
+var Bluebird = require('bluebird');
 
 var _ = require('lodash-node');
 var assert = require('assert');
@@ -209,7 +209,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return Promise.resolve(42);
+                    return Bluebird.resolve(42);
                 }
             });
 
@@ -230,7 +230,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = Promise.defer();
+                    var defer = Bluebird.defer();
                     setTimeout(function () {
                         defer.resolve();
                     }, 0);
@@ -291,7 +291,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return Promise.reject();
+                    return Bluebird.reject();
                 }
             });
 
@@ -312,7 +312,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = Promise.defer();
+                    var defer = Bluebird.defer();
                     setTimeout(function () {
                         defer.reject();
                     }, 0);
@@ -414,7 +414,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return Promise.resolve(42);
+                    return Bluebird.resolve(42);
                 }
             });
             core.ready().done(function () {
@@ -434,7 +434,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = Promise.defer();
+                    var defer = Bluebird.defer();
                     setTimeout(function () {
                         defer.resolve(42);
                     }, 0);
@@ -477,7 +477,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return Promise.reject(42);
+                    return Bluebird.reject(42);
                 }
             });
             core.ready().done(function () {
@@ -497,7 +497,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = Promise.defer();
+                    var defer = Bluebird.defer();
                     setTimeout(function () {
                         defer.reject(42);
                     }, 0);

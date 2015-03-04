@@ -3,7 +3,7 @@
 var R_NAME = /^[_a-z]\w*(?:\.[_a-z]\w*)*$/i;
 
 var FistError = /** @type FistError */ require('./fist-error');
-var Promise = /** @type {Promise} */ require('bluebird');
+var Bluebird = /** @type Promise */ require('bluebird');
 
 var _ = require('lodash-node');
 var f = require('util').format;
@@ -11,7 +11,7 @@ var init = require('./init');
 var logging = require('loggin');
 var path = require('path');
 var ctools = require('./utils/core-tools');
-var promiseGlob = Promise.promisify(require('glob'));
+var promiseGlob = Bluebird.promisify(require('glob'));
 
 /**
  * @class Core
@@ -321,7 +321,7 @@ Core.prototype._installPlugin = function (plug) {
             return promise.bind(this).then(function () {
                 return this._installPlugin(childPlug);
             });
-        }, Promise.resolve(), this);
+        }, Bluebird.resolve(), this);
     });
 
 };
@@ -343,17 +343,17 @@ function createInstaller(moduleName) {
 function callPlugin(func) {
     if (!_.isFunction(func)) {
         //  is not a function, just resolve
-        return Promise.resolve(func);
+        return Bluebird.resolve(func);
     }
 
     if (func.length < 2) {
         //  synchronous plugin
-        return Promise.attempt(func, [this]);
+        return Bluebird.attempt(func, [this]);
     }
 
     //  asynchronous plugin
-    return Promise.attempt(function (app) {
-        var defer = Promise.defer();
+    return Bluebird.attempt(function (app) {
+        var defer = Bluebird.defer();
 
         func(app, function done(err) {
             if (arguments.length) {

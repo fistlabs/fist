@@ -1,7 +1,7 @@
 'use strict';
 
 var FistError = /* @type FistError */ require('./fist-error');
-var Promise = /** @type Promise */ require('bluebird');
+var Bluebird = /** @type Promise */ require('bluebird');
 
 var uniqueId = require('unique-id');
 var f = require('util').format;
@@ -96,11 +96,11 @@ Track.prototype._createId = function () {
  * @returns {Promise}
  * */
 Track.prototype.invoke = function (name, args) {
-    var defer = Promise.defer();
+    var defer = Bluebird.defer();
     var unit = this._app.getUnit(name);
 
     if (!(unit instanceof this._app.Unit)) {
-        return Promise.reject(new FistError(FistError.NO_SUCH_UNIT, f('Can not invoke unknown unit %j', name)));
+        return Bluebird.reject(new FistError(FistError.NO_SUCH_UNIT, f('Can not invoke unknown unit %j', name)));
     }
 
     unit.run(this, args, function (runtime) {

@@ -1,7 +1,7 @@
 /*eslint max-nested-callbacks: 0, no-console: 0*/
 'use strict';
 
-var Promise = require('bluebird');
+var Bluebird = require('bluebird');
 
 var childProcess = require('child_process');
 var glob = require('glob');
@@ -20,7 +20,7 @@ module.exports = function (gulp) {
 
         return _.reduce(runnersFiles, function (promise, name) {
             return promise.then(function () {
-                var defer = Promise.defer();
+                var defer = Bluebird.defer();
                 var childProc;
                 console.log('Starting %s', name);
                 childProc = childProcess.spawn(name, []);
@@ -40,6 +40,6 @@ module.exports = function (gulp) {
 
                 return defer.promise;
             });
-        }, Promise.resolve());
+        }, Bluebird.resolve());
     });
 };

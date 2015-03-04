@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('bluebird');
+var Bluebird = /** @type Promise */ require('bluebird');
 
 // accepted
 var B00000001 = parseInt('00000001', 2);
@@ -469,7 +469,7 @@ function $Runtime$execute(runtime) {
 }
 
 function $Runtime$callUnit(runtime) {
-    return Promise.attempt($Runtime$callUnitMain, [runtime]).
+    return Bluebird.attempt($Runtime$callUnitMain, [runtime]).
         bind(runtime).done(runtime.onMainFulfilled, runtime.onMainRejected);
 }
 
