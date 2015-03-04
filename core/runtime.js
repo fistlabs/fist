@@ -1,7 +1,5 @@
 'use strict';
 
-var Bluebird = /** @type Promise */ require('bluebird');
-
 // accepted
 var B00000001 = parseInt('00000001', 2);
 // rejected
@@ -22,6 +20,7 @@ var B00001001 = B00001000 | B00000001;
 // skip cache + updating + skipping + accepted
 var B00011101 = B00011000 | B00000100 | B00000001;
 
+var Bluebird = /** @type Promise */ require('bluebird');
 var Context = /** @type Context */ require('./context');
 var Obus = /** @type Obus */ require('obus');
 
@@ -342,11 +341,34 @@ Runtime.prototype.onMainFulfilled = function $Runtime$prototype$onMainFulfilled(
  * @memberOf {Runtime}
  * @method
  *
+ * @param {*} res
+ * */
+Runtime.prototype.onMainFulfilled2 = function $Runtime$prototype$onMainFulfilled2(res) {
+    $Runtime$afterMainCalled2(this, res, B00000001);
+};
+
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ *
  * @param {*} err
  * */
 Runtime.prototype.onMainRejected = function $Runtime$prototype$onMainRejected(err) {
     this.context.logger.error(err);
     $Runtime$afterMainCalled(this, err, B00000010);
+};
+
+/**
+ * @public
+ * @memberOf {Runtime}
+ * @method
+ *
+ * @param {*} err
+ * */
+Runtime.prototype.onMainRejected2 = function $Runtime$prototype$onMainRejected2(err) {
+    this.context.logger.error(err);
+    $Runtime$afterMainCalled2(this, err, B00000010);
 };
 
 /**
@@ -455,11 +477,18 @@ function $Runtime$doneChild(listener) {
 }
 
 function $Runtime$execute(runtime) {
+
+    if (runtime.statusBits & B00010000) {
+        // need skip cache
+        $Runtime$callUnit2(runtime);
+        return;
+    }
+
+    // init cache key
     runtime.cacheKey = runtime.unit.name + '-' + runtime.identity + '-' + runtime.keys.join('-');
 
-    // need update or need skip cache
-    if (runtime.statusBits & B00011000) {
-        // do not check for cache, just invoke unit
+    if (runtime.statusBits & B00001000) {
+        // need update
         $Runtime$callUnit(runtime);
         return;
     }
@@ -469,8 +498,13 @@ function $Runtime$execute(runtime) {
 }
 
 function $Runtime$callUnit(runtime) {
-    return Bluebird.attempt($Runtime$callUnitMain, [runtime]).
+    return Bluebird.attempt($Runtime$callUnitMain, runtime).
         bind(runtime).done(runtime.onMainFulfilled, runtime.onMainRejected);
+}
+
+function $Runtime$callUnit2(runtime) {
+    return Bluebird.attempt($Runtime$callUnitMain, runtime).
+        bind(runtime).done(runtime.onMainFulfilled2, runtime.onMainRejected2);
 }
 
 function $Runtime$onCacheGot(runtime, err, res) {
@@ -525,23 +559,25 @@ function $Runtime$callUnitMain(runtime) {
 }
 
 function $Runtime$afterMainCalled(runtime, value, statusBitMask) {
-
-    if (runtime.track.isFlushed()) {
-        // set is skipped
-        runtime.statusBits |= B00000100;
-    }
-
+    // set skipping if track is flushed + updating + accepted or rejected
+    runtime.statusBits |= B00000100 * runtime.track.isFlushed() | B00001000 | statusBitMask;
+    // assign value to runtime
     runtime.value = value;
-    // set updated and (accepted or rejected)
-    runtime.statusBits |= B00001000 | statusBitMask;
 
-    // if cache skipped, why we should do this check?
     // !skip cache & updating & !skipping & accepted
     if ((runtime.statusBits & B00011101) === B00001001) {
-        value = {value: value};
-        runtime.unit.cache.set(runtime.cacheKey, value,
+        runtime.unit.cache.set(runtime.cacheKey, {value: value},
             runtime.unit.maxAge, $Runtime$fbind($Runtime$onCacheSet, runtime));
     }
+
+    $Runtime$finish(runtime);
+}
+
+function $Runtime$afterMainCalled2(runtime, value, statusBitMask) {
+    // set skipping if track is flushed + updating + accepted or rejected
+    runtime.statusBits |= B00000100 * runtime.track.isFlushed() | B00001000 | statusBitMask;
+    // assign value to runtime
+    runtime.value = value;
 
     $Runtime$finish(runtime);
 }
