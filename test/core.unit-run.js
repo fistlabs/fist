@@ -5,11 +5,11 @@ var Core = require('../core/core');
 var Track = require('../core/track');
 var Context = require('../core/context');
 var Cache = require('lru-dict/core/lru-dict-ttl-async');
+var Promise = require('bluebird');
 
 var _ = require('lodash-node');
 var assert = require('assert');
 var logging = require('loggin');
-var vow = require('vow');
 
 function getSilentCore(params) {
     params = _.extend({}, params, {
@@ -209,7 +209,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return vow.resolve(42);
+                    return Promise.resolve(42);
                 }
             });
 
@@ -230,11 +230,11 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = vow.defer();
+                    var defer = Promise.defer();
                     setTimeout(function () {
                         defer.resolve();
                     }, 0);
-                    return defer.promise();
+                    return defer.promise;
                 }
             });
 
@@ -291,7 +291,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return vow.reject();
+                    return Promise.reject();
                 }
             });
 
@@ -312,11 +312,11 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = vow.defer();
+                    var defer = Promise.defer();
                     setTimeout(function () {
                         defer.reject();
                     }, 0);
-                    return defer.promise();
+                    return defer.promise;
                 }
             });
 
@@ -414,7 +414,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return vow.resolve(42);
+                    return Promise.resolve(42);
                 }
             });
             core.ready().done(function () {
@@ -434,11 +434,11 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = vow.defer();
+                    var defer = Promise.defer();
                     setTimeout(function () {
                         defer.resolve(42);
                     }, 0);
-                    return defer.promise();
+                    return defer.promise;
                 }
             });
             core.ready().done(function () {
@@ -477,7 +477,7 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    return vow.reject(42);
+                    return Promise.reject(42);
                 }
             });
             core.ready().done(function () {
@@ -497,11 +497,11 @@ describe('core/unit#run()', function () {
                 maxAge: 0,
                 deps: [],
                 main: function () {
-                    var defer = vow.defer();
+                    var defer = Promise.defer();
                     setTimeout(function () {
                         defer.reject(42);
                     }, 0);
-                    return defer.promise();
+                    return defer.promise;
                 }
             });
             core.ready().done(function () {

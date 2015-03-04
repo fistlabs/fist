@@ -23,7 +23,6 @@
   },
   "description": "nodejs application framework",
   "devDependencies": {
-    "vow": "0.4.8",
     "gulp-util": "3.0.3",
     "gulp-one-guide": "0.1.0",
     "vow-asker": "0.8.0",

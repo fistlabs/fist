@@ -2,6 +2,7 @@
 /*global describe, it*/
 'use strict';
 
+var Promise = require('bluebird');
 var _ = require('lodash-node');
 var assert = require('assert');
 var path = require('path');
@@ -77,11 +78,10 @@ describe('core/core', function () {
     });
 
     describe('core.ready()', function () {
-        var vow = require('vow');
 
         it('Should return promise', function () {
             var core = new Core();
-            assert.ok(vow.isPromise(core.ready()));
+            assert.ok(Promise.is(core.ready()));
         });
 
         it('Should be ready once', function () {

@@ -1,11 +1,12 @@
 /*eslint max-nested-callbacks: 0, no-console: 0*/
 'use strict';
 
+var Promise = require('bluebird');
+
 var childProcess = require('child_process');
 var glob = require('glob');
 var path = require('path');
 var _ = require('lodash-node');
-var vow = require('vow');
 var fs = require('fs');
 
 module.exports = function (gulp) {
@@ -19,7 +20,7 @@ module.exports = function (gulp) {
 
         return _.reduce(runnersFiles, function (promise, name) {
             return promise.then(function () {
-                var defer = vow.defer();
+                var defer = Promise.defer();
                 var childProc;
                 console.log('Starting %s', name);
                 childProc = childProcess.spawn(name, []);
@@ -37,8 +38,8 @@ module.exports = function (gulp) {
                     defer.reject(err);
                 });
 
-                return defer.promise();
+                return defer.promise;
             });
-        }, vow.resolve());
+        }, Promise.resolve());
     });
 };
