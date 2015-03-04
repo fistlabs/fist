@@ -28,7 +28,7 @@
     "vow-asker": "0.8.0",
     "supertest": "0.15.0",
     "benchmark": "1.0.0",
-    "gulp": "3.8.10",
+    "gulp": "3.8.11",
     "gulp-mocha": "2.0.0",
     "gulp-istanbul": "0.5.0"
   },
