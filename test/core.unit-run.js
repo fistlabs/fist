@@ -27,7 +27,7 @@ function getCoresTrack(core, params) {
 }
 
 // behaviour tests of `unit.run(Track track, Object args, Function done)` method
-describe.only('core/unit#run()', function () {
+describe('core/unit#run()', function () {
     var Unit = require('../core/unit');
     var logger = logging.getLogger('silent-test').conf({
         handlers: []
