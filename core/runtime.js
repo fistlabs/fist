@@ -1,5 +1,7 @@
 'use strict';
 
+var Promise = require('bluebird');
+
 // accepted
 var B00000001 = parseInt('00000001', 2);
 // rejected
@@ -24,7 +26,6 @@ var Context = /** @type Context */ require('./context');
 var Obus = /** @type Obus */ require('obus');
 
 var maxRunDepth = 1;
-var vow = require('vow');
 
 var DEFAULT_KEYS = [];
 
@@ -469,8 +470,8 @@ function $Runtime$execute(runtime) {
 }
 
 function $Runtime$callUnit(runtime) {
-    vow.invoke($Runtime$callUnitMain, runtime).
-        done(runtime.onMainFulfilled, runtime.onMainRejected, runtime);
+    return Promise.attempt($Runtime$callUnitMain, [runtime]).
+        bind(runtime).done(runtime.onMainFulfilled, runtime.onMainRejected);
 }
 
 function $Runtime$onCacheGot(runtime, err, res) {

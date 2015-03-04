@@ -332,7 +332,7 @@ describe('core/core', function () {
                 base: 'bar'
             });
 
-            core.ready().fail(function () {
+            core.ready().then(null, function () {
                 done();
             });
         });

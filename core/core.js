@@ -3,15 +3,15 @@
 var R_NAME = /^[_a-z]\w*(?:\.[_a-z]\w*)*$/i;
 
 var FistError = /** @type FistError */ require('./fist-error');
+var Promise = /** @type {Promise} */ require('bluebird');
 
 var _ = require('lodash-node');
 var f = require('util').format;
 var init = require('./init');
 var logging = require('loggin');
 var path = require('path');
-var vow = require('vow');
-var vowFs = require('vow-fs');
 var ctools = require('./utils/core-tools');
+var promiseGlob = Promise.promisify(require('glob'));
 
 /**
  * @class Core
@@ -187,7 +187,7 @@ Core.prototype.getUnitClass = function (name) {
  * @memberOf {Core}
  * @method
  *
- * @returns {vow.Promise}
+ * @returns {Promise}
  * */
 Core.prototype.ready = function () {
     if (this.__readyPromise) {
@@ -243,7 +243,7 @@ Core.prototype.install = function (moduleName) {
     } catch (err) {
         this.plugin(function (agent) {
             var opts = {silent: true, cwd: agent.params.root};
-            return vowFs.glob(moduleName, opts).then(function (paths) {
+            return promiseGlob(moduleName, opts).then(function (paths) {
                 _.forEach(paths, function (fileName) {
                     agent.plugin(createInstaller(fileName));
                 });
@@ -287,7 +287,7 @@ Core.prototype._createParams = function (params) {
  * @memberOf {Core}
  * @method
  *
- * @returns {vow.Promise}
+ * @returns {Promise}
  * */
 Core.prototype._getReady = function () {
     var noop = Function.prototype;
@@ -310,19 +310,19 @@ Core.prototype._getReady = function () {
  *
  * @param {Function} plug
  *
- * @returns {vow.Promise}
+ * @returns {Promise}
  * */
 Core.prototype._installPlugin = function (plug) {
-    return callPlugin.call(this, plug).then(function () {
+    return callPlugin.call(this, plug).bind(this).then(function () {
         //  install children plugins
         var plugs = this._plugs;
         this._plugs = [];
         return _.reduce(plugs, function (promise, childPlug) {
-            return promise.then(function () {
+            return promise.bind(this).then(function () {
                 return this._installPlugin(childPlug);
-            }, this);
-        }, vow.resolve(), this);
-    }, this);
+            });
+        }, Promise.resolve(), this);
+    });
 
 };
 
@@ -343,29 +343,29 @@ function createInstaller(moduleName) {
 function callPlugin(func) {
     if (!_.isFunction(func)) {
         //  is not a function, just resolve
-        return vow.resolve(func);
+        return Promise.resolve(func);
     }
 
     if (func.length < 2) {
         //  synchronous plugin
-        return vow.invoke(func, this);
+        return Promise.attempt(func, [this]);
     }
 
     //  asynchronous plugin
-    return vow.invoke(function (app) {
-        var defer = vow.defer();
+    return Promise.attempt(function (app) {
+        var defer = Promise.defer();
 
         func(app, function done(err) {
-            if (!arguments.length) {
-                //  done();
-                defer.resolve();
-            } else {
+            if (arguments.length) {
                 //  done(err);
                 defer.reject(err);
+            } else {
+                //  done();
+                defer.resolve();
             }
         });
 
-        return defer.promise();
+        return defer.promise;
     }, this);
 }
 
