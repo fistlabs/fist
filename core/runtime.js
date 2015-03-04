@@ -27,7 +27,7 @@ var Obus = /** @type Obus */ require('obus');
 
 var maxRunDepth = 1;
 
-var DEFAULT_KEYS = [];
+var DEFAULT_KEYS = Object.freeze([]);
 
 /**
  * @class Runtime
@@ -43,14 +43,13 @@ var DEFAULT_KEYS = [];
  * */
 function Runtime(unit, track, parent, args, done) {
     // Create lite context to provide an interface to check execution parameters
-    var context = new Context.Lite();
-
-    // add default context params
-    context.addParams(unit.params);
-    // add track's params
-    context.addParams(track.params);
-    // add local args
-    context.addParams(args);
+    var context = new Context.Lite().
+        // add default context params
+        addParams(unit.params).
+        // add track's params
+        addParams(track.params).
+        // add local args
+        addParams(args);
 
     /**
      * Runtime identity is a part of cacheKey and memorization key
@@ -276,7 +275,7 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
             childUnitName = deps[l];
             args = unit.depsArgs[childUnitName](track, runtime.context);
             childUnit = app.getUnit(childUnitName);
-            childRuntime = new Runtime(childUnit, track, runtime, args, $Runtime$doneChild);
+            childRuntime = new this(childUnit, track, runtime, args, $Runtime$doneChild);
 
             stack[pos] = childRuntime;
             pos += 1;

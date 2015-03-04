@@ -2,16 +2,46 @@
 
 var Obus = /** @type Obus */ require('obus');
 
+/**
+ * @class ContextLite
+ * */
 function ContextLite() {
+
+    /**
+     * @public
+     * @memberOf {ContextLite}
+     * @property
+     * @type {Obus}
+     * */
     this.params = new Obus();
 }
 
+/**
+ * @public
+ * @memberOf {ContextLite}
+ * @method
+ *
+ * @param {String} path
+ * @param {*} [def]
+ *
+ * @returns {*}
+ * */
 ContextLite.prototype.p = function (path, def) {
     return Obus.get(this.params, path, def);
 };
 
+/**
+ * @public
+ * @memberOf {Context}
+ * @method
+ *
+ * @param {Object} params
+ *
+ * @returns {ContextLite}
+ * */
 ContextLite.prototype.addParams = function (params) {
     $Context$extendParams(this.params, params);
+    return this;
 };
 
 /**
@@ -55,6 +85,8 @@ function Context(params, logger) {
     this.logger = logger;
 }
 
+Context.prototype = Object.create(ContextLite.prototype);
+
 /**
  * @public
  * @memberOf {Context}
@@ -62,26 +94,6 @@ function Context(params, logger) {
  * @constructs
  * */
 Context.prototype.constructor = Context;
-
-/**
- * @public
- * @static
- * @memberOf {Context}
- * @method
- *
- * @param {Object} [unitParams]
- * @param {Object} [trackParams]
- * @param {Object} [args]
- *
- * @returns {Obus}
- * */
-Context.createParams = function (unitParams, trackParams, args) {
-    var params = new Obus();
-    $Context$extendParams(params, unitParams);
-    $Context$extendParams(params, trackParams);
-    $Context$extendParams(params, args);
-    return params;
-};
 
 /**
  * @public
@@ -109,20 +121,6 @@ Context.prototype.r = function (path, def) {
  * */
 Context.prototype.e = function (path, def) {
     return Obus.get(this.errors, path, def);
-};
-
-/**
- * @public
- * @memberOf {Context}
- * @method
- *
- * @param {String} path
- * @param {*} [def]
- *
- * @returns {*}
- * */
-Context.prototype.p = function (path, def) {
-    return Obus.get(this.params, path, def);
 };
 
 /**

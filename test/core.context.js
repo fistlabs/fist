@@ -68,19 +68,29 @@ describe('core.context', function () {
         });
     });
 
-    describe('Context.createParams()', function () {
+    describe('Context.Lite.addParams()', function () {
         it('Should extend context params with given one', function () {
-            var params = Context.createParams({foo: 42});
+            var context = new Context.Lite();
+            var params = context.
+                addParams({foo: 42}).
+                params;
             assert.deepEqual(params, {foo: 42});
-            params = Context.createParams(params, {bar: 146});
+            params = context.addParams({bar: 146}).params;
             assert.deepEqual(params, {foo: 42, bar: 146});
         });
-        it('Should support multiple arguments', function () {
-            var params = Context.createParams({foo: 42}, {bar: 146});
+        it('Should support multiple calls', function () {
+            var params = new Context.Lite().
+                addParams({foo: 42}).
+                addParams({bar: 146}).
+                params;
             assert.deepEqual(params, {foo: 42, bar: 146});
         });
         it('Should not overwrite existing values with undefined', function () {
-            var params = Context.createParams({foo: 42}, {bar: 146}, {foo: void 0, bar: void 0});
+            var params = new Context.Lite().
+                addParams({foo: 42}).
+                addParams({bar: 146}).
+                addParams({foo: void 0, bar: void 0}).
+                params;
             assert.deepEqual(params, {foo: 42, bar: 146});
         });
     });
