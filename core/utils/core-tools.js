@@ -5,10 +5,10 @@ var FistError = /** @type FistError */ require('../fist-error');
 var _ = require('lodash-node');
 var f = require('util').format;
 
-function createUnits(self) {
+function createUnits(app) {
     var units = {};
 
-    _.forOwn(self._class, function (UnitClass, name) {
+    _.forOwn(app._class, function (UnitClass, name) {
         if (/^[a-z]/i.test(name)) {
             // public unit should be exposed to be a target or dependency
             units[name] = new UnitClass();
@@ -18,15 +18,15 @@ function createUnits(self) {
     return Object.freeze(units);
 }
 
-function createUnitClasses(self) {
+function createUnitClasses(app) {
     var classes = {};
-    _.forEach(self._decls, function (decl) {
-        classes[decl.members.name] = createUnitClass(self, decl);
+    _.forEach(app._decls, function (decl) {
+        classes[decl.members.name] = createUnitClass(app, decl);
     });
     return Object.freeze(classes);
 }
 
-function createUnitClass(self, decl) {
+function createUnitClass(app, decl) {
     var members = decl.members;
     var statics = decl.statics;
     var name = members.name;
@@ -44,20 +44,20 @@ function createUnitClass(self, decl) {
 
     //  Looking for base
     if (_.isUndefined(base)) {
-        base = self.params.implicitBase;
-        self.logger.debug('The base for unit "%s" is implicitly defined as "%s"', name, base);
+        base = app.params.implicitBase;
+        app.logger.debug('The base for unit "%s" is implicitly defined as "%s"', name, base);
     }
 
-    if (base === self.Unit.prototype.name) {
-        BaseUnit = self.Unit;
+    if (base === app.Unit.prototype.name) {
+        BaseUnit = app.Unit;
     } else {
-        baseDecl = _.find(self._decls, {members: {name: base}});
+        baseDecl = _.find(app._decls, {members: {name: base}});
 
         if (!baseDecl) {
             throw new FistError(FistError.NO_SUCH_UNIT, f('No base found for unit "%s" ("%s")', name, base));
         }
 
-        BaseUnit = createUnitClass(self, baseDecl);
+        BaseUnit = createUnitClass(app, baseDecl);
     }
 
     // Base Class is done. need to compile mixins
@@ -68,13 +68,13 @@ function createUnitClass(self, decl) {
             return Class;
         }
 
-        mixinDecl = _.find(self._decls, {members: {name: Class}});
+        mixinDecl = _.find(app._decls, {members: {name: Class}});
 
         if (!mixinDecl) {
             throw new FistError(FistError.NO_SUCH_UNIT, f('No mixin found for unit "%s" ("%s")', name, Class));
         }
 
-        return createUnitClass(self, mixinDecl);
+        return createUnitClass(app, mixinDecl);
     });
 
     UnitClass = BaseUnit.inherit(members, statics);
@@ -84,9 +84,9 @@ function createUnitClass(self, decl) {
     return UnitClass;
 }
 
-function assertAllUnitDepsOk(self) {
+function assertAllUnitDepsOk(app) {
 
-    _.forOwn(self._units, function (unit) {
+    _.forOwn(app._units, function (unit) {
         assertUnitDepsOk(unit, []);
     });
 
@@ -96,7 +96,7 @@ function assertAllUnitDepsOk(self) {
         }
 
         _.forEach(unit.deps, function (depName) {
-            var depUnit = self._units[depName];
+            var depUnit = app._units[depName];
 
             if (!depUnit) {
                 throw new FistError(FistError.NO_SUCH_UNIT,

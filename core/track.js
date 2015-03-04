@@ -23,6 +23,8 @@ function Track(app, logger) {
     this.id = this._createId();
 
     /**
+     * TODO Deprecate?
+     *
      * @public
      * @memberOf {Track}
      * @property

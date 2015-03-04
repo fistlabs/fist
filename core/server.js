@@ -166,26 +166,26 @@ function addHeaderString(logString, value, name) {
     return logString + '\n\t' + name + ': ' + value;
 }
 
-function $Server$handleRequest(self, track) {
-    var promise = self.ready();
+function $Server$handleRequest(app, track) {
+    var promise = app.ready();
 
     //  -1 possible tick
     if (promise.isFulfilled()) {
-        $Server$runTrack(self, track);
+        $Server$runTrack(app, track);
         return;
     }
 
     //  wait for init
     promise.done(function () {
-        $Server$runTrack(self, track);
+        $Server$runTrack(app, track);
     });
 }
 
-function $Server$runTrack(self, track) {
+function $Server$runTrack(app, track) {
     var matches;
     var method = track.req.method;
     var path = track.req.url = track.req.url.replace(/^\w+:\/\/[^\/]+\/?/, '/');
-    var router = self.router;
+    var router = app.router;
     var allowedRules = router.getAllowedRules(method);
 
     if (!allowedRules.length) {
@@ -196,7 +196,7 @@ function $Server$runTrack(self, track) {
     matches = track.matches = router.findMatchesFor(path, allowedRules);
 
     if (matches.length) {
-        $Server$nextRun(self, track);
+        $Server$nextRun(app, track);
         return;
     }
 
@@ -209,7 +209,7 @@ function $Server$runTrack(self, track) {
     }
 }
 
-function $Server$nextRun(self, track) {
+function $Server$nextRun(app, track) {
     var index = track.routeIndex + 1;
     var match;
     var matches = track.matches;
@@ -226,7 +226,7 @@ function $Server$nextRun(self, track) {
     track.routeIndex = index;
     track.logger.debug('Match %(data.name)j route, running controller %(data.unit)s(%(args)j)', match);
 
-    self.getUnit(match.data.unit).run(track, null, $Server$onControllerDone);
+    app.getUnit(match.data.unit).run(track, null, $Server$onControllerDone);
 }
 
 function $Server$onControllerDone(runtime) {

@@ -21,6 +21,9 @@ function init(app) {
     app.caches.local = Unit.prototype.cache;
 
     /**
+     * @public
+     * @memberOf {Core}
+     * @property
      * @class app.Unit
      * @extends Unit
      * */

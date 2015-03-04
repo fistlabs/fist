@@ -165,8 +165,20 @@ function Runtime(unit, track, parent, args, done) {
      * */
     this.listeners = [];
 
+    /**
+     * @public
+     * @memberOf {Runtime}
+     * @property
+     * @type {String}
+     * */
     this.subscribeMethod = 'setListener';
 
+    /**
+     * @public
+     * @memberOf {Runtime}
+     * @property
+     * @type {String}
+     * */
     this.cacheKey = '';
 }
 
@@ -392,10 +404,10 @@ Runtime.prototype.isResolved = function () {
     return (this.statusBits & B00000011) > 0;
 };
 
-function $Runtime$fbind(func, self) {
+function $Runtime$fbind(func, runtime) {
 
     function $Runtime$bound(err, res) {
-        return func(self, err, res);
+        return func(runtime, err, res);
     }
 
     return $Runtime$bound;
@@ -405,7 +417,9 @@ function $Runtime$doneChild(listener) {
     var name;
     var parent = listener.parent;
 
-    //  parent skipped
+    //  parent skipped, do nothing
+    // NOTE: it is possible if one dependency flushes the track, and flush was bubbled to parent,
+    // then, next dependency tries to finish execution
     if (parent.statusBits & B00000100) {
         return;
     }
@@ -440,102 +454,103 @@ function $Runtime$doneChild(listener) {
     }
 }
 
-function $Runtime$execute(self) {
-    self.cacheKey = self.unit.name + '-' + self.identity + '-' + self.keys.join('-');
+function $Runtime$execute(runtime) {
+    runtime.cacheKey = runtime.unit.name + '-' + runtime.identity + '-' + runtime.keys.join('-');
 
     // need update or need skip cache
-    if (self.statusBits & B00011000) {
+    if (runtime.statusBits & B00011000) {
         // do not check for cache, just invoke unit
-        $Runtime$callUnit(self);
+        $Runtime$callUnit(runtime);
         return;
     }
 
     // async
-    self.unit.cache.get(self.cacheKey, $Runtime$fbind($Runtime$onCacheGot, self));
+    runtime.unit.cache.get(runtime.cacheKey, $Runtime$fbind($Runtime$onCacheGot, runtime));
 }
 
-function $Runtime$callUnit(self) {
-    vow.invoke($Runtime$callUnitMain, self).
-        done(self.onMainFulfilled, self.onMainRejected, self);
+function $Runtime$callUnit(runtime) {
+    vow.invoke($Runtime$callUnitMain, runtime).
+        done(runtime.onMainFulfilled, runtime.onMainRejected, runtime);
 }
 
-function $Runtime$onCacheGot(self, err, res) {
+function $Runtime$onCacheGot(runtime, err, res) {
     if (!err && res) {
-        self.context.logger.debug('Found in cache');
-        self.value = res.value;
+        runtime.context.logger.debug('Found in cache');
+        runtime.value = res.value;
         // set is accepted
-        self.statusBits |= B00000001;
-        $Runtime$finish(self);
+        runtime.statusBits |= B00000001;
+        $Runtime$finish(runtime);
         return;
     }
 
     if (err) {
-        self.context.logger.warn(err);
+        runtime.context.logger.warn(err);
     } else {
-        self.context.logger.debug('Outdated');
+        runtime.context.logger.debug('Outdated');
     }
 
     // set need update
-    self.statusBits |= B00001000;
+    runtime.statusBits |= B00001000;
 
-    $Runtime$callUnit(self);
+    $Runtime$callUnit(runtime);
 }
 
-function $Runtime$finish(self) {
+function $Runtime$finish(runtime) {
     var i;
     var l;
-    var listeners = self.listeners;
-    var done = self.done;
+    var listeners = runtime.listeners;
+    var done = runtime.done;
 
-    self.subscribeMethod = 'doneListener';
+    runtime.subscribeMethod = 'doneListener';
 
-    if (self.statusBits & B00000001) {
+    if (runtime.statusBits & B00000001) {
         //  is accepted
-        self.context.logger.debug('Accepted in %dms', self.getTimePassed());
-    } else if (self.statusBits & B00000010) {
+        runtime.context.logger.debug('Accepted in %dms', runtime.getTimePassed());
+    } else if (runtime.statusBits & B00000010) {
         //  is rejected
-        self.context.logger.debug('Rejected in %dms', self.getTimePassed());
+        runtime.context.logger.debug('Rejected in %dms', runtime.getTimePassed());
     } else {
-        self.context.logger.debug('Skipping in %dms', self.getTimePassed());
+        runtime.context.logger.debug('Skipping in %dms', runtime.getTimePassed());
     }
 
-    done(self);
+    done(runtime);
 
     for (i = 0, l = listeners.length; i < l; i += 1) {
-        self.doneListener(listeners[i]);
+        runtime.doneListener(listeners[i]);
     }
 }
 
-function $Runtime$callUnitMain(self) {
-    return self.unit.main(self.track, self.context);
+function $Runtime$callUnitMain(runtime) {
+    return runtime.unit.main(runtime.track, runtime.context);
 }
 
-function $Runtime$afterMainCalled(self, value, statusBitMask) {
+function $Runtime$afterMainCalled(runtime, value, statusBitMask) {
 
-    if (self.track.isFlushed()) {
+    if (runtime.track.isFlushed()) {
         // set is skipped
-        self.statusBits |= B00000100;
+        runtime.statusBits |= B00000100;
     }
 
-    self.value = value;
+    runtime.value = value;
     // set updated and (accepted or rejected)
-    self.statusBits |= B00001000 | statusBitMask;
+    runtime.statusBits |= B00001000 | statusBitMask;
 
     // if cache skipped, why we should do this check?
     // !skip cache & updating & !skipping & accepted
-    if ((self.statusBits & B00011101) === B00001001) {
+    if ((runtime.statusBits & B00011101) === B00001001) {
         value = {value: value};
-        self.unit.cache.set(self.cacheKey, value, self.unit.maxAge, $Runtime$fbind($Runtime$onCacheSet, self));
+        runtime.unit.cache.set(runtime.cacheKey, value,
+            runtime.unit.maxAge, $Runtime$fbind($Runtime$onCacheSet, runtime));
     }
 
-    $Runtime$finish(self);
+    $Runtime$finish(runtime);
 }
 
-function $Runtime$onCacheSet(self, err) {
+function $Runtime$onCacheSet(runtime, err) {
     if (err) {
-        self.context.logger.warn(err);
+        runtime.context.logger.warn(err);
     } else {
-        self.context.logger.debug('Updated');
+        runtime.context.logger.debug('Updated');
     }
 }
 

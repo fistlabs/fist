@@ -352,10 +352,10 @@ function callPlugin(func) {
     }
 
     //  asynchronous plugin
-    return vow.invoke(function (self) {
+    return vow.invoke(function (app) {
         var defer = vow.defer();
 
-        func(self, function done(err) {
+        func(app, function done(err) {
             if (!arguments.length) {
                 //  done();
                 defer.resolve();
