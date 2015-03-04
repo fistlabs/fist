@@ -200,11 +200,11 @@ Core.prototype.ready = function () {
     this.__readyPromise = this._getReady();
 
     /** @this {Core} */
-    this.__readyPromise.done(function () {
+    this.__readyPromise.bind(this).done(function () {
         this.logger.debug('Ready.');
     }, function (err) {
         this.logger.fatal(err);
-    }, this);
+    });
 
     return this.__readyPromise;
 };
@@ -241,11 +241,11 @@ Core.prototype.install = function (moduleName) {
         this.plugin(createInstaller(moduleName));
 
     } catch (err) {
-        this.plugin(function (agent) {
-            var opts = {silent: true, cwd: agent.params.root};
+        this.plugin(function (app) {
+            var opts = {silent: true, cwd: app.params.root};
             return promiseGlob(moduleName, opts).then(function (paths) {
                 _.forEach(paths, function (fileName) {
-                    agent.plugin(createInstaller(fileName));
+                    app.plugin(createInstaller(fileName));
                 });
             });
         });
@@ -275,9 +275,7 @@ Core.prototype._createParams = function (params) {
         implicitBase: 0
     }, params);
 
-    params.unitSettings = _.mapValues(params.unitSettings, function (settings) {
-        return _.clone(settings);
-    });
+    params.unitSettings = _.mapValues(params.unitSettings, _.clone);
 
     return params;
 };
@@ -291,16 +289,14 @@ Core.prototype._createParams = function (params) {
  * */
 Core.prototype._getReady = function () {
     var noop = Function.prototype;
-    return this._installPlugin(noop).
+    /** @this {Core} */
+    return this._installPlugin(noop).bind(this).
         then(function () {
             this._class = ctools.createUnitClasses(this);
-        }, this).
-        then(function () {
             this._units = ctools.createUnits(this);
-        }, this).
-        then(function () {
-            return ctools.assertAllUnitDepsOk(this);
-        }, this);
+
+            ctools.assertAllUnitDepsOk(this);
+        });
 };
 
 /**
@@ -313,34 +309,30 @@ Core.prototype._getReady = function () {
  * @returns {Promise}
  * */
 Core.prototype._installPlugin = function (plug) {
-    return callPlugin.call(this, plug).bind(this).then(function () {
-        //  install children plugins
+    /** @this {Core} */
+    return this._callPlugin(plug).bind(this).then(function () {
         var plugs = this._plugs;
         this._plugs = [];
+        //  install children plugins
         return _.reduce(plugs, function (promise, childPlug) {
-            return promise.bind(this).then(function () {
+            return promise.then(function () {
                 return this._installPlugin(childPlug);
             });
-        }, Bluebird.resolve(), this);
+        }, Bluebird.resolve().bind(this), this);
     });
 
 };
 
-function createInstaller(moduleName) {
-    return function (agent) {
-        if (_.has(agent._installed, moduleName)) {
-            agent.logger.debug('The plugin %s has already installed, skipping', moduleName);
-            return;
-        }
-
-        agent._installed[moduleName] = true;
-
-        agent.logger.debug('Installing plugin %s', moduleName);
-        agent.plugin(require(moduleName));
-    };
-}
-
-function callPlugin(func) {
+/**
+ * @private
+ * @memberOf {Core}
+ * @method
+ *
+ * @param {Function} func
+ *
+ * @returns {Promise}
+ * */
+Core.prototype._callPlugin = function (func) {
     if (!_.isFunction(func)) {
         //  is not a function, just resolve
         return Bluebird.resolve(func);
@@ -366,7 +358,21 @@ function callPlugin(func) {
         });
 
         return defer.promise;
-    }, this);
+    }, [this]);
+};
+
+function createInstaller(moduleName) {
+    return function (app) {
+        if (_.has(app._installed, moduleName)) {
+            app.logger.debug('The plugin %s has already installed, skipping', moduleName);
+            return;
+        }
+
+        app._installed[moduleName] = true;
+
+        app.logger.debug('Installing plugin %s', moduleName);
+        app.plugin(require(moduleName));
+    };
 }
 
 module.exports = Core;
