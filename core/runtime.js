@@ -24,8 +24,6 @@ var Obus = /** @type Obus */ require('obus');
 
 var maxRunDepth = 1;
 
-var DEFAULT_KEYS = [];
-
 /**
  * @class Runtime
  * @extends Context
@@ -116,7 +114,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {Array}
      * */
-    this.keys = DEFAULT_KEYS;
+    this.keys = [];
 
     /**
      * @public
@@ -364,18 +362,23 @@ function $Runtime$doneChild(runtime, parent) {
     if (runtime.statusBits & B00000001) {
         //  set need update to parent if this is updated
         parent.statusBits |= runtime.statusBits & B00001000;
+        // add children identity to parent as part for cache key
         parent.keys[parent.unit.depsIndex[name]] = runtime.identity;
+        // add children execution result to parent's context
         Obus.add(parent.context.result, parent.unit.depsMap[name], runtime.value);
     } else {
         //  is rejected
         //  set parent skip cache
         parent.statusBits |= B00010000;
+        // add children execution fail reason to parent's context
         Obus.add(parent.context.errors, parent.unit.depsMap[name], runtime.value);
     }
 
+    // reduce the counter of resolved dependencies
     parent.pathsLeft -= 1;
 
     if (parent.pathsLeft === 0) {
+        // all the dependencies was resolved
         $Runtime$execute(parent);
     }
 }
@@ -387,6 +390,7 @@ function $Runtime$execute(runtime) {
         return;
     }
 
+    // TODO add some application identity to cacheKey to prevent cross application cache collisions
     // init cache key
     runtime.cacheKey = runtime.unit.name + '-' + runtime.identity + '-' + runtime.keys.join('-');
 
@@ -402,30 +406,26 @@ function $Runtime$execute(runtime) {
 
 function $Runtime$callUnit(runtime) {
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
-        bind(runtime).done($Runtime$prototype$onMainFulfilled, $Runtime$prototype$onMainRejected);
-}
-
-function $Runtime$prototype$onMainFulfilled(res) {
-    $Runtime$afterMainCalled(this, res, B00000001);
-}
-
-function $Runtime$prototype$onMainRejected(err) {
-    this.context.logger.error(err);
-    $Runtime$afterMainCalled(this, err, B00000010);
+        done(function (res) {
+            $Runtime$afterMainCalled(runtime, res, B00000001);
+        }, function (err) {
+            runtime.context.logger.error(err);
+            $Runtime$afterMainCalled(runtime, err, B00000010);
+        });
 }
 
 function $Runtime$callUnitWithNoCacheUpdating(runtime) {
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
-        bind(runtime).done($Runtime$prototype$onMainFulfilled2, $Runtime$prototype$onMainRejected2);
+        done(function (res) {
+            $Runtime$afterMainCalled2(runtime, res, B00000001);
+        }, function (err) {
+            runtime.context.logger.error(err);
+            $Runtime$afterMainCalled2(runtime, err, B00000010);
+        });
 }
 
-function $Runtime$prototype$onMainFulfilled2(res) {
-    $Runtime$afterMainCalled2(this, res, B00000001);
-}
-
-function $Runtime$prototype$onMainRejected2(err) {
-    this.context.logger.error(err);
-    $Runtime$afterMainCalled2(this, err, B00000010);
+function $Runtime$callUnitMain(runtime) {
+    return runtime.unit.main(runtime.track, runtime.context);
 }
 
 function $Runtime$onCacheGot(runtime, err, res) {
@@ -476,10 +476,6 @@ function $Runtime$finish(runtime) {
         listener = listeners[i];
         (0, listener.done)(runtime, listener.parent);
     }
-}
-
-function $Runtime$callUnitMain(runtime) {
-    return runtime.unit.main(runtime.track, runtime.context);
 }
 
 function $Runtime$afterMainCalled(runtime, value, statusBitMask) {
