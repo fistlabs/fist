@@ -24,7 +24,7 @@ var Obus = /** @type Obus */ require('obus');
 
 var maxRunDepth = 1;
 
-var DEFAULT_KEYS = Object.freeze([]);
+var DEFAULT_KEYS = [];
 
 /**
  * @class Runtime
@@ -183,7 +183,6 @@ function Runtime(unit, track, parent, args, done) {
  * @param {Function} done
  * */
 Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
-    /*eslint complexity: 0*/
     // All request unit calls
     var runtimeCache = track.calls;
     // Host application
@@ -194,20 +193,17 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
     var identity;
     var existingRuns;
     var stack = new Array(maxRunDepth);
+    var runtime = new this(unit, track, null, args, done);
     var unitName;
-    var parent = new this(unit, track, null, args, done);
-    var runtime;
-    var childUnit;
-    var childUnitName;
     var logger;
 
-    stack[pos] = parent;
+    stack[pos] = runtime;
 
     do {
         // unpack stack item
-        parent = stack[pos];
-        unit = parent.unit;
-        identity = parent.identity;
+        runtime = stack[pos];
+        unit = runtime.unit;
+        identity = runtime.identity;
         unitName = unit.name;
 
         // check for allocated runs object
@@ -222,60 +218,47 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         // check for existing execution
         if (existingRuns.hasOwnProperty(identity)) {
             // execution exist
-            runtime = parent;
-            parent = existingRuns[identity];
-
-            if (parent.statusBits & B00100000) {
-                // finished
-                (0, runtime.done)(parent, runtime.parent);
-            } else {
-                // intermediate
-                parent.listeners.push(runtime);
-            }
+            $Runtime$addListener(existingRuns[identity], runtime);
 
             continue;
         }
 
         // Save execution
-        existingRuns[identity] = parent;
+        existingRuns[identity] = runtime;
 
         // bind unit's logger to track and execution identity
         logger = unit.logger.bind(track.id).bind(identity);
 
-        // rly need this shit? Is it makes sense?
-        logger.debug('Running...');
-
         // Now we can complete runtime initialization
 
         // Upgrade ContextLite to Context
-        parent.context = new Context(parent.context.params, logger);
+        runtime.context = new Context(runtime.context.params, logger);
+
+        logger.debug('Running...');
 
         // Set runtime creation date
-        parent.creationDate = new Date();
+        runtime.creationDate = new Date();
 
         // Should skip cache if maxAge lt 0 or invalid
-        parent.statusBits = B00010000 * !(unit.maxAge > 0);
+        runtime.statusBits = B00010000 * !(unit.maxAge > 0);
 
         deps = unit.deps;
-        l = parent.pathsLeft = deps.length;
+        l = runtime.pathsLeft = deps.length;
 
         if (l === 0) {
             // no deps, execute runtime
-            $Runtime$execute(parent);
+            $Runtime$execute(runtime);
             continue;
         }
 
-        parent.keys = new Array(l);
+        runtime.keys = new Array(l);
 
         // deps raises child runtimes
         while (l) {
             l -= 1;
-            childUnitName = deps[l];
-            args = unit.depsArgs[childUnitName](track, parent.context);
-            childUnit = app.getUnit(childUnitName);
-            runtime = new this(childUnit, track, parent, args, $Runtime$doneChild);
-
-            stack[pos] = runtime;
+            unitName = deps[l];
+            args = unit.depsArgs[unitName](track, runtime.context);
+            stack[pos] = new this(app.getUnit(unitName), track, runtime, args, $Runtime$doneChild);
             pos += 1;
         }
 
@@ -284,6 +267,16 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         /*eslint no-plusplus: 0*/
     } while (pos--);
 };
+
+function $Runtime$addListener(parent, runtime) {
+    if (parent.statusBits & B00100000) {
+        // finished
+        (0, runtime.done)(parent, runtime.parent);
+    } else {
+        // intermediate
+        parent.listeners.push(runtime);
+    }
+}
 
 /**
  * @public
@@ -464,10 +457,10 @@ function $Runtime$callUnitWithNoCacheUpdating(runtime) {
 }
 
 function $Runtime$onCacheGot(runtime, err, res) {
-    if (!err && res) {
+    if (res) {
         runtime.context.logger.debug('Found in cache');
         runtime.value = res.value;
-        // set is accepted
+        // set accepted bit
         runtime.statusBits |= B00000001;
         $Runtime$finish(runtime);
         return;
