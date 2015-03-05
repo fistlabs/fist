@@ -10,15 +10,13 @@ var B00000100 = parseInt('00000100', 2);
 var B00001000 = parseInt('00001000', 2);
 // skip cache
 var B00010000 = parseInt('00010000', 2);
+// finished
+var B00100000 = parseInt('00100000', 2);
 
-// accepted and rejected
+// accepted + rejected
 var B00000011 = B00000010 | B00000001;
-// skip cache + updating
-var B00011000 = B00010000 | B00001000;
-// updated + accepted
-var B00001001 = B00001000 | B00000001;
-// skip cache + updating + skipping + accepted
-var B00011101 = B00011000 | B00000100 | B00000001;
+// skipping + rejected
+var B00000110 = B00000100 | B00000010;
 
 var Bluebird = /** @type Promise */ require('bluebird');
 var Context = /** @type Context */ require('./context');
@@ -170,14 +168,6 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {String}
      * */
-    this.subscribeMethod = 'setListener';
-
-    /**
-     * @public
-     * @memberOf {Runtime}
-     * @property
-     * @type {String}
-     * */
     this.cacheKey = '';
 }
 
@@ -193,6 +183,7 @@ function Runtime(unit, track, parent, args, done) {
  * @param {Function} done
  * */
 Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
+    /*eslint complexity: 0*/
     // All request unit calls
     var allUnitRuns = track.calls;
     // Host application
@@ -231,12 +222,23 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
 
         // check for existing execution
         if (unitRuns.hasOwnProperty(identity)) {
+            // execution exist
             listener = runtime;
             runtime = unitRuns[identity];
-            // execution exist
-            runtime[runtime.subscribeMethod](listener);
+
+            if (runtime.statusBits & B00100000) {
+                // finished
+                (0, listener.done)(runtime, listener.parent);
+            } else {
+                // intermediate
+                runtime.listeners.push(listener);
+            }
+
             continue;
         }
+
+        // Save execution
+        unitRuns[identity] = runtime;
 
         // bind unit's logger to track and execution identity
         runtimeLogger = unit.logger.bind(track.id).bind(identity);
@@ -245,17 +247,15 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         runtimeLogger.debug('Running...');
 
         // Now we can complete runtime initialization
+
+        // Upgrade ContextLite to Context
         runtime.context = new Context(runtime.context.params, runtimeLogger);
 
-        // TODO is it strange to always allocate Date just for debug, even that is not enabled?
-        // is it real creation date?
+        // Set runtime creation date
         runtime.creationDate = new Date();
 
         // Should skip cache if maxAge lt 0 or invalid
         runtime.statusBits = B00010000 * !(unit.maxAge > 0);
-
-        // Set execution
-        unitRuns[identity] = runtime;
 
         deps = unit.deps;
         l = runtime.pathsLeft = deps.length;
@@ -294,36 +294,6 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
  * @constructs
  * */
 Runtime.prototype.constructor = Runtime;
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {Runtime} listener
- * */
-Runtime.prototype.setListener = function (listener) {
-    this.listeners.push(listener);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {Runtime} listener
- * */
-Runtime.prototype.doneListener = function (listener) {
-    var done = listener.done;
-
-    // copy original execution state to listener
-    listener.statusBits = this.statusBits;
-    listener.value = this.value;
-    listener.context = this.context;
-
-    // run done with no context
-    done(listener);
-};
 
 /**
  * @public
@@ -369,17 +339,6 @@ Runtime.prototype.onMainRejected = function $Runtime$prototype$onMainRejected(er
 Runtime.prototype.onMainRejected2 = function $Runtime$prototype$onMainRejected2(err) {
     this.context.logger.error(err);
     $Runtime$afterMainCalled2(this, err, B00000010);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @returns {Number}
- * */
-Runtime.prototype.getTimePassed = function $Runtime$prototype$getTimePassed() {
-    return new Date() - this.creationDate;
 };
 
 /**
@@ -435,9 +394,8 @@ function $Runtime$fbind(func, runtime) {
     return $Runtime$bound;
 }
 
-function $Runtime$doneChild(listener) {
+function $Runtime$doneChild(runtime, parent) {
     var name;
-    var parent = listener.parent;
 
     //  parent skipped, do nothing
     // NOTE: it is possible if one dependency flushes the track, and flush was bubbled to parent,
@@ -446,27 +404,27 @@ function $Runtime$doneChild(listener) {
         return;
     }
 
-    if (listener.statusBits & B00000100) {
-        // listener is skipped
+    if (runtime.statusBits & B00000100) {
+        // runtime is skipped
         // set parent is skipped
         parent.statusBits |= B00000100;
         $Runtime$finish(parent);
         return;
     }
 
-    name = listener.unit.name;
+    name = runtime.unit.name;
 
     //  is accepted
-    if (listener.statusBits & B00000001) {
+    if (runtime.statusBits & B00000001) {
         //  set need update to parent if this is updated
-        parent.statusBits |= listener.statusBits & B00001000;
-        parent.keys[parent.unit.depsIndex[name]] = listener.identity;
-        Obus.add(parent.context.result, parent.unit.depsMap[name], listener.value);
+        parent.statusBits |= runtime.statusBits & B00001000;
+        parent.keys[parent.unit.depsIndex[name]] = runtime.identity;
+        Obus.add(parent.context.result, parent.unit.depsMap[name], runtime.value);
     } else {
         //  is rejected
         //  set parent skip cache
         parent.statusBits |= B00010000;
-        Obus.add(parent.context.errors, parent.unit.depsMap[name], listener.value);
+        Obus.add(parent.context.errors, parent.unit.depsMap[name], runtime.value);
     }
 
     parent.pathsLeft -= 1;
@@ -477,10 +435,9 @@ function $Runtime$doneChild(listener) {
 }
 
 function $Runtime$execute(runtime) {
-
     if (runtime.statusBits & B00010000) {
         // need skip cache
-        $Runtime$callUnit2(runtime);
+        $Runtime$callUnitWithNoCacheUpdating(runtime);
         return;
     }
 
@@ -502,7 +459,7 @@ function $Runtime$callUnit(runtime) {
         bind(runtime).done(runtime.onMainFulfilled, runtime.onMainRejected);
 }
 
-function $Runtime$callUnit2(runtime) {
+function $Runtime$callUnitWithNoCacheUpdating(runtime) {
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
         bind(runtime).done(runtime.onMainFulfilled2, runtime.onMainRejected2);
 }
@@ -532,25 +489,28 @@ function $Runtime$onCacheGot(runtime, err, res) {
 function $Runtime$finish(runtime) {
     var i;
     var l;
+    var listener;
     var listeners = runtime.listeners;
-    var done = runtime.done;
+    var timePassed = new Date() - runtime.creationDate;
 
-    runtime.subscribeMethod = 'doneListener';
+    // set `finished` bit
+    runtime.statusBits |= B00100000;
 
     if (runtime.statusBits & B00000001) {
         //  is accepted
-        runtime.context.logger.debug('Accepted in %dms', runtime.getTimePassed());
+        runtime.context.logger.debug('Accepted in %dms', timePassed);
     } else if (runtime.statusBits & B00000010) {
         //  is rejected
-        runtime.context.logger.debug('Rejected in %dms', runtime.getTimePassed());
+        runtime.context.logger.debug('Rejected in %dms', timePassed);
     } else {
-        runtime.context.logger.debug('Skipping in %dms', runtime.getTimePassed());
+        runtime.context.logger.debug('Skipping in %dms', timePassed);
     }
 
-    done(runtime);
+    (0, runtime.done)(runtime, runtime.parent);
 
     for (i = 0, l = listeners.length; i < l; i += 1) {
-        runtime.doneListener(listeners[i]);
+        listener = listeners[i];
+        (0, listener.done)(runtime, listener.parent);
     }
 }
 
@@ -564,8 +524,8 @@ function $Runtime$afterMainCalled(runtime, value, statusBitMask) {
     // assign value to runtime
     runtime.value = value;
 
-    // !skip cache & updating & !skipping & accepted
-    if ((runtime.statusBits & B00011101) === B00001001) {
+    // skipping or rejected
+    if ((runtime.statusBits & B00000110) === 0) {
         runtime.unit.cache.set(runtime.cacheKey, {value: value},
             runtime.unit.maxAge, $Runtime$fbind($Runtime$onCacheSet, runtime));
     }

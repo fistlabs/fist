@@ -1243,6 +1243,30 @@ describe('core/unit#run()', function () {
             });
         });
 
+        it('Should support same unit with different parents', function (done) {
+            // u1 have different parents, we should switch it!
+            var core = getSilentCore();
+            core.unit({
+                name: 'u3',
+                deps: ['u2', 'u1']
+            });
+            core.unit({
+                name: 'u2',
+                deps: ['u1']
+            });
+            core.unit({
+                name: 'u1',
+                deps: []
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('u3');
+                unit.run(getCoresTrack(core), null, function () {
+                    done();
+                });
+            });
+        });
+
         it('Should add accepted deps results to context.result by unit.name', function (done) {
             var core = getSilentCore();
             var spy = [];
