@@ -292,52 +292,6 @@ Runtime.prototype.constructor = Runtime;
  * @memberOf {Runtime}
  * @method
  *
- * @param {*} res
- * */
-Runtime.prototype.onMainFulfilled = function $Runtime$prototype$onMainFulfilled(res) {
-    $Runtime$afterMainCalled(this, res, B00000001);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {*} res
- * */
-Runtime.prototype.onMainFulfilled2 = function $Runtime$prototype$onMainFulfilled2(res) {
-    $Runtime$afterMainCalled2(this, res, B00000001);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {*} err
- * */
-Runtime.prototype.onMainRejected = function $Runtime$prototype$onMainRejected(err) {
-    this.context.logger.error(err);
-    $Runtime$afterMainCalled(this, err, B00000010);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
- * @param {*} err
- * */
-Runtime.prototype.onMainRejected2 = function $Runtime$prototype$onMainRejected2(err) {
-    this.context.logger.error(err);
-    $Runtime$afterMainCalled2(this, err, B00000010);
-};
-
-/**
- * @public
- * @memberOf {Runtime}
- * @method
- *
  * @returns {*}
  * */
 Runtime.prototype.valueOf = function () {
@@ -448,12 +402,30 @@ function $Runtime$execute(runtime) {
 
 function $Runtime$callUnit(runtime) {
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
-        bind(runtime).done(runtime.onMainFulfilled, runtime.onMainRejected);
+        bind(runtime).done($Runtime$prototype$onMainFulfilled, $Runtime$prototype$onMainRejected);
+}
+
+function $Runtime$prototype$onMainFulfilled(res) {
+    $Runtime$afterMainCalled(this, res, B00000001);
+}
+
+function $Runtime$prototype$onMainRejected(err) {
+    this.context.logger.error(err);
+    $Runtime$afterMainCalled(this, err, B00000010);
 }
 
 function $Runtime$callUnitWithNoCacheUpdating(runtime) {
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
-        bind(runtime).done(runtime.onMainFulfilled2, runtime.onMainRejected2);
+        bind(runtime).done($Runtime$prototype$onMainFulfilled2, $Runtime$prototype$onMainRejected2);
+}
+
+function $Runtime$prototype$onMainFulfilled2(res) {
+    $Runtime$afterMainCalled2(this, res, B00000001);
+}
+
+function $Runtime$prototype$onMainRejected2(err) {
+    this.context.logger.error(err);
+    $Runtime$afterMainCalled2(this, err, B00000010);
 }
 
 function $Runtime$onCacheGot(runtime, err, res) {
