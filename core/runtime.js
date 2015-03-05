@@ -22,7 +22,7 @@ var Bluebird = /** @type Promise */ require('bluebird');
 var Context = /** @type Context */ require('./context');
 var Obus = /** @type Obus */ require('obus');
 
-var maxRunDepth = 1;
+var maxStackSize = 1;
 
 /**
  * @class Runtime
@@ -130,7 +130,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {*}
      * */
-    this.value = void 0;
+    this.value = undefined;
 
     /**
      * The status of current runtime
@@ -190,7 +190,7 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
     var pos = 0;
     var identity;
     var existingRuns;
-    var stack = new Array(maxRunDepth);
+    var stack = new Array(maxStackSize);
     var runtime = new this(unit, track, null, args, done);
     var unitName;
     var logger;
@@ -209,19 +209,18 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
             // The unit was already called
             existingRuns = runtimeCache[unitName];
         } else {
-            // First unit call
+            // First time unit call
             existingRuns = runtimeCache[unitName] = {};
         }
 
         // check for existing execution
         if (existingRuns.hasOwnProperty(identity)) {
-            // execution exist
+            // execution exist, set finish listener for existing execution
             $Runtime$addListener(existingRuns[identity], runtime);
-
             continue;
         }
 
-        // Save execution
+        // memorize new execution by identity
         existingRuns[identity] = runtime;
 
         // bind unit's logger to track and execution identity
@@ -232,23 +231,25 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         // Upgrade ContextLite to Context
         runtime.context = new Context(runtime.context.params, logger);
 
+        // is not it so extraneous?
         logger.debug('Running...');
 
         // Set runtime creation date
         runtime.creationDate = new Date();
 
-        // Should skip cache if maxAge lt 0 or invalid
+        // Set `skip cache` bit if maxAge less than 0 or not a number
         runtime.statusBits = B00010000 * !(unit.maxAge > 0);
 
         deps = unit.deps;
         l = runtime.pathsLeft = deps.length;
 
         if (l === 0) {
-            // no deps, execute runtime
+            // no deps, immediately execute runtime
             $Runtime$execute(runtime);
             continue;
         }
 
+        // Allocate an array for deps identities
         runtime.keys = new Array(l);
 
         // deps raises child runtimes
@@ -261,20 +262,10 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         }
 
         // auto adjust initial stack size, for future runs
-        maxRunDepth = Math.max(pos, maxRunDepth);
+        maxStackSize = Math.max(pos, maxStackSize);
         /*eslint no-plusplus: 0*/
     } while (pos--);
 };
-
-function $Runtime$addListener(parent, runtime) {
-    if (parent.statusBits & B00100000) {
-        // finished
-        (0, runtime.done)(parent, runtime.parent);
-    } else {
-        // intermediate
-        parent.listeners.push(runtime);
-    }
-}
 
 /**
  * @public
@@ -329,28 +320,35 @@ Runtime.prototype.isResolved = function () {
     return (this.statusBits & B00000011) > 0;
 };
 
-function $Runtime$fbind(func, runtime) {
-
-    function $Runtime$bound(err, res) {
-        return func(runtime, err, res);
+function $Runtime$addListener(parent, runtime) {
+    if (parent.statusBits & B00100000) {
+        // has `finished` bit
+        (0, runtime.done)(parent, runtime.parent);
+    } else {
+        // intermediate yet
+        parent.listeners.push(runtime);
     }
+}
 
-    return $Runtime$bound;
+function $Runtime$fbind(func, runtime) {
+    return function $Runtime$bound(err, res) {
+        return func(runtime, err, res);
+    };
 }
 
 function $Runtime$doneChild(runtime, parent) {
     var name;
 
-    //  parent skipped, do nothing
-    // NOTE: it is possible if one dependency flushes the track, and flush was bubbled to parent,
-    // then, next dependency tries to finish execution
+    //  parent has `skipping` bit
+    //  NOTE: it is possible if one dependency flushes the track, and flush was bubbled to parent,
+    //  then, next dependency tries to finish execution, this guard needed to prevent multiple runtime finishing
     if (parent.statusBits & B00000100) {
         return;
     }
 
     if (runtime.statusBits & B00000100) {
-        // runtime is skipped
-        // set parent is skipped
+        // runtime has `skipping` bit
+        // set `skipping` bit to parent
         parent.statusBits |= B00000100;
         $Runtime$finish(parent);
         return;
@@ -358,16 +356,16 @@ function $Runtime$doneChild(runtime, parent) {
 
     name = runtime.unit.name;
 
-    //  is accepted
     if (runtime.statusBits & B00000001) {
-        //  set need update to parent if this is updated
+        //  runtime has `accepted` bit
+        //  set `updating` bit to parent if runtime has `updating` bit
         parent.statusBits |= runtime.statusBits & B00001000;
         // add children identity to parent as part for cache key
         parent.keys[parent.unit.depsIndex[name]] = runtime.identity;
         // add children execution result to parent's context
         Obus.add(parent.context.result, parent.unit.depsMap[name], runtime.value);
     } else {
-        //  is rejected
+        //  has `rejected` bit
         //  set parent skip cache
         parent.statusBits |= B00010000;
         // add children execution fail reason to parent's context
@@ -385,7 +383,7 @@ function $Runtime$doneChild(runtime, parent) {
 
 function $Runtime$execute(runtime) {
     if (runtime.statusBits & B00010000) {
-        // need skip cache
+        // has `skip cache` bit
         $Runtime$callUnitWithNoCacheUpdating(runtime);
         return;
     }
@@ -394,26 +392,30 @@ function $Runtime$execute(runtime) {
     runtime.cacheKey += '-' + runtime.unit.name + '-' + runtime.identity + '-' + runtime.keys.join('-');
 
     if (runtime.statusBits & B00001000) {
-        // need update
+        // has `updating` bit
         $Runtime$callUnit(runtime);
         return;
     }
 
-    // async
+    // Try to get cached result for runtime
     runtime.unit.cache.get(runtime.cacheKey, $Runtime$fbind($Runtime$onCacheGot, runtime));
 }
 
 function $Runtime$callUnit(runtime) {
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
         done(function (res) {
+            // Tear down unit.main() call
             $Runtime$afterMainCalled(runtime, res, B00000001);
         }, function (err) {
+            // unit.main() was not successfully completed
             runtime.context.logger.error(err);
+            // Tear down unit.main() call
             $Runtime$afterMainCalled(runtime, err, B00000010);
         });
 }
 
 function $Runtime$callUnitWithNoCacheUpdating(runtime) {
+    // Same as $Runtime$callUnit, but does not tries to update cache with returned result
     return Bluebird.attempt($Runtime$callUnitMain, runtime).
         done(function (res) {
             $Runtime$afterMainCalled2(runtime, res, B00000001);
@@ -431,7 +433,7 @@ function $Runtime$onCacheGot(runtime, err, res) {
     if (res) {
         runtime.context.logger.debug('Found in cache');
         runtime.value = res.value;
-        // set accepted bit
+        // set `accepted` bit
         runtime.statusBits |= B00000001;
         $Runtime$finish(runtime);
         return;
@@ -440,10 +442,11 @@ function $Runtime$onCacheGot(runtime, err, res) {
     if (err) {
         runtime.context.logger.warn(err);
     } else {
+        // value was not found in cache
         runtime.context.logger.debug('Outdated');
     }
 
-    // set need update
+    // set `updating` bit, schedule update
     runtime.statusBits |= B00001000;
 
     $Runtime$callUnit(runtime);
@@ -460,31 +463,34 @@ function $Runtime$finish(runtime) {
     runtime.statusBits |= B00100000;
 
     if (runtime.statusBits & B00000001) {
-        //  is accepted
+        //  has `accepted` bit
         runtime.context.logger.debug('Accepted in %dms', timePassed);
     } else if (runtime.statusBits & B00000010) {
-        //  is rejected
+        //  has `rejected` bit
         runtime.context.logger.debug('Rejected in %dms', timePassed);
     } else {
+        // has no both `accepted` and `rejected` bits
         runtime.context.logger.debug('Skipping in %dms', timePassed);
     }
 
+    // call runtime.done without context
     (0, runtime.done)(runtime, runtime.parent);
 
     for (i = 0, l = listeners.length; i < l; i += 1) {
         listener = listeners[i];
+        // call listener.done without context
         (0, listener.done)(runtime, listener.parent);
     }
 }
 
 function $Runtime$afterMainCalled(runtime, value, statusBitMask) {
-    // set skipping if track is flushed + updating + accepted or rejected
+    // set `skipping` bit if track is flushed + `updating` + statusBitMask bits
     runtime.statusBits |= B00000100 * runtime.track.isFlushed() | B00001000 | statusBitMask;
-    // assign value to runtime
+    // assign value to a runtime
     runtime.value = value;
 
-    // skipping or rejected
     if ((runtime.statusBits & B00000110) === 0) {
+        // has no `skipping` and/or `rejected` bits
         runtime.unit.cache.set(runtime.cacheKey, {value: value},
             runtime.unit.maxAge, $Runtime$fbind($Runtime$onCacheSet, runtime));
     }
@@ -493,15 +499,16 @@ function $Runtime$afterMainCalled(runtime, value, statusBitMask) {
 }
 
 function $Runtime$afterMainCalled2(runtime, value, statusBitMask) {
-    // set skipping if track is flushed + updating + accepted or rejected
+    // set `skipping` bit if track is flushed + `updating` + statusBitMask bits
     runtime.statusBits |= B00000100 * runtime.track.isFlushed() | B00001000 | statusBitMask;
-    // assign value to runtime
+    // assign value to a runtime
     runtime.value = value;
 
     $Runtime$finish(runtime);
 }
 
 function $Runtime$onCacheSet(runtime, err) {
+    // Just noop function, cache set issues
     if (err) {
         runtime.context.logger.warn(err);
     } else {
