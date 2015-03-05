@@ -7,7 +7,6 @@ var Track = /** @type Track */ require('./track');
 var _ = require('lodash-node');
 var accepts = require('accepts');
 var cookieparser = require('cookieparser');
-var hasProperty = Object.prototype.hasOwnProperty;
 var libFastUrl = require('fast-url-parser');
 var urlFastParse = libFastUrl.parse;
 var urlFastFormat = libFastUrl.format;
@@ -176,13 +175,9 @@ Connect.prototype.header = function (name, value) {
     }
 
     if (name && typeof name === 'object') {
-        value = name;
-
-        for (name in value) {
-            if (hasProperty.call(value, name)) {
-                res.setHeader(name, value[name]);
-            }
-        }
+        _.forOwn(name, function (v, k) {
+            res.setHeader(k, v);
+        });
 
         return this;
     }
