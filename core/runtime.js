@@ -185,98 +185,97 @@ function Runtime(unit, track, parent, args, done) {
 Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
     /*eslint complexity: 0*/
     // All request unit calls
-    var allUnitRuns = track.calls;
+    var runtimeCache = track.calls;
     // Host application
     var app = unit.app;
     var deps;
     var l;
     var pos = 0;
     var identity;
-    var unitRuns;
+    var existingRuns;
     var stack = new Array(maxRunDepth);
     var unitName;
-    var runtime = new this(unit, track, null, args, done);
-    var childRuntime;
+    var parent = new this(unit, track, null, args, done);
+    var runtime;
     var childUnit;
     var childUnitName;
-    var runtimeLogger;
-    var listener;
+    var logger;
 
-    stack[pos] = runtime;
+    stack[pos] = parent;
 
     do {
         // unpack stack item
-        runtime = stack[pos];
-        unit = runtime.unit;
-        identity = runtime.identity;
+        parent = stack[pos];
+        unit = parent.unit;
+        identity = parent.identity;
         unitName = unit.name;
 
         // check for allocated runs object
-        if (allUnitRuns.hasOwnProperty(unitName)) {
+        if (runtimeCache.hasOwnProperty(unitName)) {
             // The unit was already called
-            unitRuns = allUnitRuns[unitName];
+            existingRuns = runtimeCache[unitName];
         } else {
             // First unit call
-            unitRuns = allUnitRuns[unitName] = {};
+            existingRuns = runtimeCache[unitName] = {};
         }
 
         // check for existing execution
-        if (unitRuns.hasOwnProperty(identity)) {
+        if (existingRuns.hasOwnProperty(identity)) {
             // execution exist
-            listener = runtime;
-            runtime = unitRuns[identity];
+            runtime = parent;
+            parent = existingRuns[identity];
 
-            if (runtime.statusBits & B00100000) {
+            if (parent.statusBits & B00100000) {
                 // finished
-                (0, listener.done)(runtime, listener.parent);
+                (0, runtime.done)(parent, runtime.parent);
             } else {
                 // intermediate
-                runtime.listeners.push(listener);
+                parent.listeners.push(runtime);
             }
 
             continue;
         }
 
         // Save execution
-        unitRuns[identity] = runtime;
+        existingRuns[identity] = parent;
 
         // bind unit's logger to track and execution identity
-        runtimeLogger = unit.logger.bind(track.id).bind(identity);
+        logger = unit.logger.bind(track.id).bind(identity);
 
         // rly need this shit? Is it makes sense?
-        runtimeLogger.debug('Running...');
+        logger.debug('Running...');
 
         // Now we can complete runtime initialization
 
         // Upgrade ContextLite to Context
-        runtime.context = new Context(runtime.context.params, runtimeLogger);
+        parent.context = new Context(parent.context.params, logger);
 
         // Set runtime creation date
-        runtime.creationDate = new Date();
+        parent.creationDate = new Date();
 
         // Should skip cache if maxAge lt 0 or invalid
-        runtime.statusBits = B00010000 * !(unit.maxAge > 0);
+        parent.statusBits = B00010000 * !(unit.maxAge > 0);
 
         deps = unit.deps;
-        l = runtime.pathsLeft = deps.length;
+        l = parent.pathsLeft = deps.length;
 
         if (l === 0) {
             // no deps, execute runtime
-            $Runtime$execute(runtime);
+            $Runtime$execute(parent);
             continue;
         }
 
-        runtime.keys = new Array(l);
+        parent.keys = new Array(l);
 
         // deps raises child runtimes
         while (l) {
             l -= 1;
             childUnitName = deps[l];
-            args = unit.depsArgs[childUnitName](track, runtime.context);
+            args = unit.depsArgs[childUnitName](track, parent.context);
             childUnit = app.getUnit(childUnitName);
-            childRuntime = new this(childUnit, track, runtime, args, $Runtime$doneChild);
+            runtime = new this(childUnit, track, parent, args, $Runtime$doneChild);
 
-            stack[pos] = childRuntime;
+            stack[pos] = runtime;
             pos += 1;
         }
 
