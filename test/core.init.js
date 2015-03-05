@@ -3,93 +3,80 @@
 'use strict';
 
 var Core = require('../core/core');
+var FistError = require('../core/fist-error');
 
+var _ = require('lodash-node');
 var assert = require('assert');
+var inherit = require('inherit');
+
+function getSilentCore(params) {
+    params = _.extend({}, params, {
+        logging: {
+            enabled: []
+        }
+    });
+    return new Core(params);
+}
 
 describe('core/init', function () {
 
-    it('Should be an instance of core.Unit', function (done) {
-        var core = new Core();
-        core.unit({
-            name: 'foo'
+    describe('app.Unit', function () {
+        it('Should be a function', function () {
+            var app = getSilentCore();
+            assert.strictEqual(typeof app.Unit, 'function');
         });
 
-        core.ready().done(function () {
-            assert.ok(core.getUnit('foo') instanceof core.Unit);
-            done();
-        });
-    });
-
-    it('Should have Object params property', function (done) {
-        var core = new Core();
-
-        core.unit({
-            name: 'foo',
-            params: {
-                bar: 'baz'
-            }
-        });
-
-        core.ready().done(function () {
-            var unit = core.getUnit('foo');
-            assert.ok(unit.params);
-            assert.strictEqual(typeof unit.params, 'object');
-            assert.deepEqual(unit.params, {
-                bar: 'baz'
+        describe('app.Unit#createCache()', function () {
+            it('Should have a method createCache', function () {
+                var app = getSilentCore();
+                assert.strictEqual(typeof app.Unit.prototype.createCache, 'function');
             });
-            done();
-        });
+            it('The result should be unit.cache', function () {
+                var app = getSilentCore();
+                var cache = {};
+                var Unit2 = inherit(app.Unit, {
+                    createCache: function () {
+                        return cache;
+                    }
+                });
+                var unit = new Unit2();
+                assert.strictEqual(unit.cache, cache);
+            });
+            it('Should return unit.cache if it is an object', function () {
+                var app = getSilentCore();
+                var cache = {};
+                var Unit2 = inherit(app.Unit, {
+                    cache: cache
+                });
+                var unit = new Unit2();
+                assert.strictEqual(unit.cache, cache);
+            });
+            it('Should return app.caches[unit.cache] if it is not an object', function () {
+                var app = getSilentCore();
+                var cache = {};
+                var unit;
+                var Unit2;
 
-    });
+                app.caches.test = cache;
 
-    it('Should fail initialization if dependency is undefined', function (done) {
-        var core = new Core();
+                Unit2 = inherit(app.Unit, {
+                    cache: 'test'
+                });
+                unit = new Unit2();
+                assert.strictEqual(unit.cache, cache);
+            });
 
-        core.unit({
-            base: 0,
-            name: 'foo',
-            deps: ['bar']
-        });
+            it('Should throw FistError if unit.cache is not an object but not a key in app.caches', function () {
+                var app = getSilentCore();
+                var Unit2;
 
-        core.ready().done(null, function (err) {
-            assert.ok(err);
-            done();
-        });
-    });
-
-    it('Should fail initialization one of deps is self', function (done) {
-        var core = new Core();
-
-        core.unit({
-            base: 0,
-            name: 'foo',
-            deps: ['foo']
-        });
-
-        core.ready().done(null, function (err) {
-            assert.ok(err);
-            done();
-        });
-    });
-
-    it('Should fail initialization if recursive deps found', function (done) {
-        var core = new Core();
-
-        core.unit({
-            base: 0,
-            name: 'foo',
-            deps: ['bar']
-        });
-
-        core.unit({
-            base: 0,
-            name: 'bar',
-            deps: ['foo']
-        });
-
-        core.ready().done(null, function (err) {
-            assert.ok(err);
-            done();
+                Unit2 = inherit(app.Unit, {
+                    cache: 'test' + Math.random()
+                });
+                assert.throws(function () {
+                    return new Unit2();
+                }, FistError);
+            });
         });
     });
 

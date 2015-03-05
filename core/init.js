@@ -37,7 +37,7 @@ function init(app) {
          * @constructs
          * */
         __constructor: function () {
-            // Close `app` in constructor to allow to do not `this.__base(app)` in subclasses
+            // Close `app` in constructor to allow to simplify base calls in subclasses
             this.__base(app);
 
             /**
@@ -62,11 +62,11 @@ function init(app) {
                 return this.cache;
             }
 
-            if (!_.has(this.app.caches, this.cache)) {
-                throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
+            if (_.has(this.app.caches, this.cache)) {
+                return this.app.caches[this.cache];
             }
 
-            return this.app.caches[this.cache];
+            throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
         }
 
     });
