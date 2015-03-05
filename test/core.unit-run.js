@@ -9,7 +9,6 @@ var Bluebird = require('bluebird');
 
 var _ = require('lodash-node');
 var assert = require('assert');
-var logging = require('loggin');
 
 function getSilentCore(params) {
     params = _.extend({}, params, {
@@ -29,9 +28,6 @@ function getCoresTrack(core, params) {
 // behaviour tests of `unit.run(Track track, Object args, Function done)` method
 describe('core/unit#run()', function () {
     var Unit = require('../core/unit');
-    var logger = logging.getLogger('silent-test').conf({
-        handlers: []
-    });
     it('Should be a function', function () {
         assert.strictEqual(typeof Unit.prototype.run, 'function');
     });
@@ -1888,7 +1884,7 @@ describe('core/unit#run()', function () {
         });
 
         it('Should not set cache if maxAge <= 0', function (done) {
-            var core = new Core();
+            var core = getSilentCore();
             var spy = 0;
 
             core.unit({
@@ -1912,7 +1908,7 @@ describe('core/unit#run()', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                unit.run(new Track(core, logger), null, function () {
+                unit.run(getCoresTrack(core), null, function () {
                     setTimeout(function () {
                         assert.strictEqual(spy, 0);
                         done();
@@ -1922,7 +1918,7 @@ describe('core/unit#run()', function () {
         });
 
         it('Should cache result if deps are actual', function (done) {
-            var core = new Core();
+            var core = getSilentCore();
 
             core.unit({
                 name: 'base',
@@ -1953,17 +1949,97 @@ describe('core/unit#run()', function () {
             core.ready().done(function () {
                 var unit = core.getUnit('foo');
 
-                unit.run(new Track(core, logger), null, function (runtime1) {
+                unit.run(getCoresTrack(core), null, function (runtime1) {
                     assert.ok(runtime1.isAccepted());
                     assert.strictEqual(runtime1.valueOf(), 1);
-                    unit.run(new Track(core, logger), null, function (runtime2) {
+                    unit.run(getCoresTrack(core), null, function (runtime2) {
                         assert.ok(runtime2.isAccepted());
                         assert.strictEqual(runtime2.valueOf(), 1);
-                        unit.run(new Track(core, logger), null, function (runtime3) {
+                        unit.run(getCoresTrack(core), null, function (runtime3) {
                             assert.ok(runtime3.isAccepted());
                             assert.strictEqual(runtime3.valueOf(), 1);
                             done();
                         });
+                    });
+                });
+            });
+        });
+
+        it('Cache key should consist of application name, unit name, identity and deps identities', function (done) {
+            var core = getSilentCore({
+                name: 'app-name'
+            });
+            var cache = new Cache(0xFFFF);
+            var spyCache = new Cache(0xFFFF);
+            var spy = [];
+            var cacheGet = spyCache.get;
+            var cacheSet = spyCache.set;
+
+            spyCache.get = function (k) {
+                assert.ok(/\bapp-name\b/.test(k));
+                assert.ok(/\bbar-id\b/.test(k));
+                assert.ok(/\bbaz-id\b/.test(k));
+                assert.ok(/\bfoo\b/.test(k));
+                spy.push('got');
+                return cacheGet.apply(this, arguments);
+            };
+
+            spyCache.set = function (k) {
+                assert.ok(/\bapp-name\b/.test(k));
+                assert.ok(/\bbar-id\b/.test(k));
+                assert.ok(/\bbaz-id\b/.test(k));
+                assert.ok(/\bfoo\b/.test(k));
+                spy.push('set');
+                return cacheSet.apply(this, arguments);
+            };
+
+            core.unit({
+                name: 'base',
+                cache: cache
+            });
+
+            core.unit({
+                base: 'base',
+                name: 'bar',
+                maxAge: 1,
+                main: function () {
+                    return 'bar-result';
+                },
+                identify: function () {
+                    return 'bar-id';
+                }
+            });
+
+            core.unit({
+                base: 'base',
+                name: 'baz',
+                maxAge: 1,
+                main: function () {
+                    return 'baz-result';
+                },
+                identify: function () {
+                    return 'baz-id';
+                }
+            });
+
+            core.unit({
+                base: 0,
+                name: 'foo',
+                deps: ['bar', 'baz'],
+                maxAge: 0.10,
+                cache: spyCache,
+                main: function () {
+                    return 42;
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('foo');
+                unit.run(getCoresTrack(core), null, function () {
+                    assert.deepEqual(spy, ['set']);
+                    unit.run(getCoresTrack(core), null, function () {
+                        assert.deepEqual(spy, ['set', 'got']);
+                        done();
                     });
                 });
             });

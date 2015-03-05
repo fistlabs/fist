@@ -166,7 +166,7 @@ function Runtime(unit, track, parent, args, done) {
      * @property
      * @type {String}
      * */
-    this.cacheKey = '';
+    this.cacheKey = unit.app.params.name;
 }
 
 /**
@@ -390,9 +390,8 @@ function $Runtime$execute(runtime) {
         return;
     }
 
-    // TODO add some application identity to cacheKey to prevent cross application cache collisions
     // init cache key
-    runtime.cacheKey = runtime.unit.name + '-' + runtime.identity + '-' + runtime.keys.join('-');
+    runtime.cacheKey += '-' + runtime.unit.name + '-' + runtime.identity + '-' + runtime.keys.join('-');
 
     if (runtime.statusBits & B00001000) {
         // need update
