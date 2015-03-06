@@ -2,10 +2,10 @@
 
 var Core = /** @type Server */ require('./core');
 var Connect = /** @type Connect */ require('./connect');
-var FistError = /** @type FistError */ require('./fist-error');
 var Router = /** @type Router */ require('finger');
 
 var _ = require('lodash-node');
+var errors = require('./errors');
 var f = require('util').format;
 var http = require('http');
 
@@ -156,7 +156,7 @@ Server.prototype._getReady = function () {
             if (controller instanceof this.Unit) {
                 return;
             }
-            throw new FistError(FistError.NO_SUCH_UNIT,
+            throw new errors.NoSuchUnitError(
                 f('There is no controller %j for route %j', rule.data.unit, rule.data.name));
         }, this);
     }, this);

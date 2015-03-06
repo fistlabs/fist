@@ -1,8 +1,7 @@
 'use strict';
 
-var FistError = /** @type FistError */ require('../fist-error');
-
 var _ = require('lodash-node');
+var errors = require('../errors');
 var f = require('util').format;
 
 function createUnits(app) {
@@ -54,7 +53,7 @@ function createUnitClass(app, decl) {
         baseDecl = _.find(app._decls, {members: {name: base}});
 
         if (!baseDecl) {
-            throw new FistError(FistError.NO_SUCH_UNIT, f('No base found for unit "%s" ("%s")', name, base));
+            throw new errors.NoSuchUnitError(f('No such base "%s" found for unit "%s"', base, name));
         }
 
         BaseUnit = createUnitClass(app, baseDecl);
@@ -71,7 +70,7 @@ function createUnitClass(app, decl) {
         mixinDecl = _.find(app._decls, {members: {name: Class}});
 
         if (!mixinDecl) {
-            throw new FistError(FistError.NO_SUCH_UNIT, f('No mixin found for unit "%s" ("%s")', name, Class));
+            throw new errors.NoSuchUnitError(f('No such mixin "%s" found for unit "%s"', Class, name));
         }
 
         return createUnitClass(app, mixinDecl);
@@ -85,13 +84,14 @@ function createUnitClass(app, decl) {
 }
 
 function assertAllUnitDepsOk(app) {
+    var valid = Object.create(null);
 
     _.forOwn(app._units, function (unit) {
         assertUnitDepsOk(unit, []);
     });
 
     function assertUnitDepsOk(unit, unitDepsPath) {
-        if (unit.__valid) {
+        if (valid[unit.name]) {
             return;
         }
 
@@ -99,19 +99,18 @@ function assertAllUnitDepsOk(app) {
             var depUnit = app._units[depName];
 
             if (!depUnit) {
-                throw new FistError(FistError.NO_SUCH_UNIT,
-                    f('There is no dependency %j for unit %j', depName, unit.name));
+                throw new errors.NoSuchUnitError(f('No such dependency %j for unit %j', depName, unit.name));
             }
 
             if (_.contains(unitDepsPath, depName)) {
-                throw new FistError(FistError.DEPS_CONFLICT,
+                throw new errors.DepsConflictError(
                     f('Recursive dependencies found: "%s" < "%s"', unitDepsPath.join('" < "'), depName));
             }
 
             assertUnitDepsOk(depUnit, unitDepsPath.concat(depName));
         });
 
-        unit.__valid = true;
+        valid[unit.name] = true;
     }
 }
 

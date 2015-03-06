@@ -2,9 +2,8 @@
 /*global describe, it*/
 'use strict';
 
-var FistError = require('../core/fist-error');
-
 var assert = require('assert');
+var errors = require('../core/errors');
 var logger = require('loggin');
 
 describe('core/track', function () {
@@ -66,7 +65,7 @@ describe('core/track', function () {
                 return track.invoke('foo').then(function () {
                     throw 0;
                 }, function (err) {
-                    assert.ok(err instanceof FistError);
+                    assert.ok(err instanceof errors.NoSuchUnitError);
                 });
             });
         });

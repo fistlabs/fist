@@ -1,9 +1,9 @@
 'use strict';
 
-var FistError = /** @type FistError */ require('./fist-error');
 var Unit = /** @type Unit */ require('./unit');
 
 var _ = require('lodash-node');
+var errors = require('./errors');
 var f = require('util').format;
 var inherit = require('inherit');
 
@@ -20,20 +20,15 @@ function init(app) {
     app.caches.local = Unit.prototype.cache;
 
     /**
-     * @public
-     * @memberOf {Core}
-     * @property
      * @class app.Unit
      * @extends Unit
      * */
     app.Unit = inherit(Unit, /** @lends app.Unit.prototype */ {
 
         /**
-         * @private
+         * @public
          * @memberOf {app.Unit}
          * @method
-         *
-         * @constructs
          * */
         __constructor: function () {
             // Close `app` in constructor to allow to simplify base calls in subclasses
@@ -65,7 +60,7 @@ function init(app) {
                 return this.app.caches[this.cache];
             }
 
-            throw new FistError('NO_SUCH_CACHE', f('You should define app.caches[%j] interface', this.cache));
+            throw new errors.NoSuchCacheError(f('You should define app.caches[%j] interface', this.cache));
         }
 
     });

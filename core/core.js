@@ -2,10 +2,10 @@
 
 var R_NAME = /^[_a-z]\w*(?:\.[_a-z]\w*)*$/i;
 
-var FistError = /** @type FistError */ require('./fist-error');
 var Bluebird = /** @type Promise */ require('bluebird');
 
 var _ = require('lodash-node');
+var errors = require('./errors');
 var f = require('util').format;
 var init = require('./init');
 var logging = require('loggin');
@@ -140,7 +140,7 @@ Core.prototype.unit = function (members, statics) {
     var name = members.name;
 
     if (!(_.has(members, 'name') && _.isString(name) && R_NAME.test(name))) {
-        throw new FistError(FistError.BAD_UNIT, f('Unit name %j should be identifier (%s)', name, R_NAME.source));
+        throw new errors.BadUnitError(f('Unit name %j should be identifier (%s)', name, R_NAME.source));
     }
 
     members = Object(members);

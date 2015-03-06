@@ -3,10 +3,10 @@
 'use strict';
 
 var Core = require('../core/core');
-var FistError = require('../core/fist-error');
 
 var _ = require('lodash-node');
 var assert = require('assert');
+var errors = require('../core/errors');
 var inherit = require('inherit');
 
 function getSilentCore(params) {
@@ -75,7 +75,7 @@ describe('core/init', function () {
                 });
                 assert.throws(function () {
                     return new Unit2();
-                }, FistError);
+                }, errors.NoSuchCacheError);
             });
         });
     });
