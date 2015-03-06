@@ -7,9 +7,6 @@ var _ = require('lodash-node');
 var f = require('util').format;
 var inherit = require('inherit');
 
-// TODO it is not good to overwrite original unit.prototype properties
-// TODO prefix compiledProperties with "$" to save original properties
-
 /**
  * @class Unit
  * @param {Core} app

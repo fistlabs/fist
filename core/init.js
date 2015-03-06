@@ -1,4 +1,3 @@
-// TODO Should it be inlined in Core?
 'use strict';
 
 var FistError = /** @type FistError */ require('./fist-error');
@@ -66,7 +65,7 @@ function init(app) {
                 return this.app.caches[this.cache];
             }
 
-            throw new FistError('UNKNOWN_CACHE', f('You should define app.caches[%j] interface', this.cache));
+            throw new FistError('NO_SUCH_CACHE', f('You should define app.caches[%j] interface', this.cache));
         }
 
     });

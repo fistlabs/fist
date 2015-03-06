@@ -1,3 +1,4 @@
+// TODO make errors subclasses of FistError
 'use strict';
 
 var f = require('util').format;
@@ -10,7 +11,19 @@ var f = require('util').format;
  * @param {String} msg
  * */
 function FistError(code, msg) {
-    var err = new Error(f('(%s) %s', code, msg));
+    var err;
+
+    switch (arguments.length) {
+        case 0:
+            err = new Error();
+            break;
+        case 1:
+            err = new Error(f('(%s)', code));
+            break;
+        default:
+            err = new Error(f('(%s) %s', code, msg));
+            break;
+    }
 
     err.name = this.name;
 

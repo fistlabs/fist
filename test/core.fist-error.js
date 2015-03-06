@@ -30,9 +30,19 @@ describe('core/fist-error', function () {
         assert.strictEqual(e.code, 'UNKNOWN');
     });
 
-    it('Should take message', function () {
-        var e = new FistError('UNKNOWN', 'foo');
-        assert.strictEqual(e.message, '(UNKNOWN) foo');
+    describe('error.message', function () {
+        it('Should work without arguments', function () {
+            var e = new FistError();
+            assert.strictEqual(String(e), 'FistError');
+        });
+        it('Should work with 1 argument as code', function () {
+            var e = new FistError('CODE');
+            assert.strictEqual(String(e), 'FistError: (CODE)');
+        });
+        it('Should work with 2 arguments as code and message', function () {
+            var e = new FistError('CODE', 'foo-bar');
+            assert.strictEqual(String(e), 'FistError: (CODE) foo-bar');
+        });
     });
 
     _.forEach(codes, function (code) {
