@@ -43,8 +43,6 @@ function Unit(app) {
     this.logger = this.createLogger();
 
     /**
-     * TODO rename to depsList ?
-     *
      * @public
      * @memberOf {Unit}
      * @property
