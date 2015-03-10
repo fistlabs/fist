@@ -3,8 +3,10 @@
 'use strict';
 
 var Bluebird = require('bluebird');
+
 var _ = require('lodash-node');
 var assert = require('assert');
+var inherit = require('inherit');
 var path = require('path');
 
 describe('core/core', function () {
@@ -49,6 +51,19 @@ describe('core/core', function () {
         });
 
         describe('core.logger', function () {
+            it('Should be just result of core.createLogger()', function () {
+                var logger = {};
+                var Core2 = inherit(Core, {
+                    createLogger: function () {
+                        return logger;
+                    }
+                });
+                var core = new Core2();
+                assert.strictEqual(core.logger, logger);
+            });
+        });
+
+        describe('core.createLogger()', function () {
             var Logger = require('loggin/core/logger');
 
             it('Should create logger', function () {
