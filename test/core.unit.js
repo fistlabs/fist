@@ -705,5 +705,29 @@ describe('core/unit', function () {
             });
             assert.notStrictEqual(Unit3.prototype.depsArgs, Unit2.prototype.depsArgs);
         });
+
+        it('Should extend parent\'s params', function () {
+            var params1 = {foo: function () {}};
+            var params2 = {bar: function () {}};
+            var Unit2 = Unit.inherit({
+                params: params1
+            });
+            var Unit3 = Unit2.inherit({
+                params: params2
+            });
+            assert.deepEqual(_.keys(Unit3.prototype.params), ['foo', 'bar']);
+        });
+
+        it('Should not directly extend parent\'s params', function () {
+            var params1 = {foo: 'bar'};
+            var params2 = {bar: 'baz'};
+            var Unit2 = Unit.inherit({
+                params: params1
+            });
+            var Unit3 = Unit2.inherit({
+                params: params2
+            });
+            assert.notStrictEqual(Unit3.prototype.params, Unit2.prototype.params);
+        });
     });
 });

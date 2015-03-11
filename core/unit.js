@@ -232,6 +232,8 @@ Unit.inherit = function (members, statics) {
     members.depsMap = _.extend({}, this.prototype.depsMap, members.depsMap);
     // inherit parent's depsArgs
     members.depsArgs = _.extend({}, this.prototype.depsArgs, members.depsArgs);
+    // inherit parent's defaultContextParams
+    members.params = _.extend({}, this.prototype.params, members.params);
 
     return inherit([this].concat(mixins), members, statics);
 };
