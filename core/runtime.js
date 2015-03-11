@@ -224,7 +224,7 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         existingRuns[identity] = runtime;
 
         // bind unit's logger to track and execution identity
-        logger = unit.logger.bind(track.id).bind(identity);
+        logger = unit.logger.bind(track.id);
 
         // Now we can complete runtime initialization
 
