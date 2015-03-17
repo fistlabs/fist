@@ -225,7 +225,6 @@ describe('core/core', function () {
         it('Should declare unit', function (done) {
             var core = new Core();
             core.unit({
-                base: 0,
                 name: 'foo'
             });
 
@@ -251,7 +250,6 @@ describe('core/core', function () {
             var core = new Core();
 
             core.unit({
-                base: 0,
                 name: 'foo'
             });
 
@@ -284,7 +282,6 @@ describe('core/core', function () {
         it('Should ignore the units which names starts with "_"', function (done) {
             var core = new Core();
             core.unit({
-                base: 0,
                 name: '_foo'
             });
 
@@ -343,7 +340,6 @@ describe('core/core', function () {
             });
 
             core.unit({
-                base: 0,
                 name: 'foo',
                 x: 1
             });
@@ -367,12 +363,10 @@ describe('core/core', function () {
             it('Should support decls.mixins as unit names', function () {
                 var core = new Core();
                 core.unit({
-                    base: 0,
                     name: 'foo',
                     mixins: ['_mix']
                 });
                 core.unit({
-                    base: 0,
                     name: '_mix',
                     prop: 42
                 });
@@ -384,7 +378,6 @@ describe('core/core', function () {
             it('Should fail an initialization if no specified mixin found', function () {
                 var core = new Core();
                 core.unit({
-                    base: 0,
                     name: 'foo',
                     mixins: ['_mix']
                 });

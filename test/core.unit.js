@@ -180,8 +180,8 @@ describe('core/unit', function () {
     });
 
     describe('unit.name', function () {
-        it('Should be 0 in Unit\'s prototype', function () {
-            assert.strictEqual(Unit.prototype.name, 0);
+        it('Should be null in Unit\'s prototype', function () {
+            assert.strictEqual(Unit.prototype.name, null);
         });
     });
 

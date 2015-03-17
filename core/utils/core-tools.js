@@ -44,7 +44,7 @@ function createUnitClass(app, decl) {
     //  Looking for base
     if (_.isUndefined(base)) {
         base = app.params.implicitBase;
-        app.logger.debug('The base for unit "%s" is implicitly defined as "%s"', name, base);
+        app.logger.debug('The base for unit %j is implicitly defined as %j', name, base);
     }
 
     if (base === app.Unit.prototype.name) {
@@ -53,7 +53,7 @@ function createUnitClass(app, decl) {
         baseDecl = _.find(app._decls, {members: {name: base}});
 
         if (!baseDecl) {
-            throw new errors.NoSuchUnitError(f('No such base "%s" found for unit "%s"', base, name));
+            throw new errors.NoSuchUnitError(f('No such base %j found for unit %j', base, name));
         }
 
         BaseUnit = createUnitClass(app, baseDecl);
@@ -70,7 +70,7 @@ function createUnitClass(app, decl) {
         mixinDecl = _.find(app._decls, {members: {name: Class}});
 
         if (!mixinDecl) {
-            throw new errors.NoSuchUnitError(f('No such mixin "%s" found for unit "%s"', Class, name));
+            throw new errors.NoSuchUnitError(f('No such mixin %j found for unit %j', Class, name));
         }
 
         return createUnitClass(app, mixinDecl);
