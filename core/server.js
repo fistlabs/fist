@@ -230,7 +230,7 @@ function $Server$nextRun(app, track) {
 }
 
 function $Server$onControllerDone(runtime) {
-    if (runtime.track.wasSent()) {
+    if (runtime.track.isFlushed()) {
         return;
     }
 
