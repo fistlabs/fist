@@ -553,6 +553,21 @@ describe('core/connect', function () {
                     end(done);
             });
 
+            it('Should pipe fs.readStream to response', function (done) {
+                var fs = require('fs');
+                supertest(function (req, res) {
+                    var connect = new Connect(new Server(), logger, req, res);
+                    var readable = fs.createReadStream(__filename);
+                    connect.header('Content-Type', 'application/javascript');
+                    connect.send(readable);
+                }).
+                    get('/').
+                    expect('Content-Type', /application\/javascript/).
+                    expect('Transfer-Encoding', 'chunked').
+                    expect(200).
+                    end(done);
+            });
+
             it('Should not overwrite explicit type', function (done) {
                 supertest(function (req, res) {
                     var connect = new Connect(new Server(), logger, req, res);
