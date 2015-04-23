@@ -539,6 +539,9 @@ Connect.prototype._sendReadable = function (data) {
         res.setHeader('Content-Type', 'application/octet-stream');
     }
 
+    // force flushing
+    this._isFlushed = true;
+
     data.pipe(res);
 };
 
