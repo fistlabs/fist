@@ -232,7 +232,7 @@ Runtime.startRun = function $Runtime$startRun(unit, track, args, done) {
         runtime.context = new Context(runtime.context.params, logger);
 
         // is not it so extraneous?
-        logger.debug('Running...');
+        logger.internal('[%(identity)s] Running...', runtime);
 
         // Set runtime creation date
         runtime.creationDate = new Date();
@@ -431,7 +431,7 @@ function $Runtime$callUnitMain(runtime) {
 
 function $Runtime$onCacheGot(runtime, err, res) {
     if (res) {
-        runtime.context.logger.debug('Found in cache');
+        runtime.context.logger.internal('[%(identity)s] Found cache by "%(cacheKey)s"', runtime);
         runtime.value = res.value;
         // set `accepted` bit
         runtime.statusBits |= B00000001;
@@ -443,7 +443,7 @@ function $Runtime$onCacheGot(runtime, err, res) {
         runtime.context.logger.warn(err);
     } else {
         // value was not found in cache
-        runtime.context.logger.debug('Outdated');
+        runtime.context.logger.internal('[%(identity)s] Outdated by "%(cacheKey)s"', runtime);
     }
 
     // set `updating` bit, schedule update
@@ -464,13 +464,13 @@ function $Runtime$finish(runtime) {
 
     if (runtime.statusBits & B00000001) {
         //  has `accepted` bit
-        runtime.context.logger.debug('Accepted in %dms', timePassed);
+        runtime.context.logger.debug('[%(identity)s] Accepted in %dms', timePassed, runtime);
     } else if (runtime.statusBits & B00000010) {
         //  has `rejected` bit
-        runtime.context.logger.debug('Rejected in %dms', timePassed);
+        runtime.context.logger.debug('[%(identity)s] Rejected in %dms', timePassed, runtime);
     } else {
         // has no both `accepted` and `rejected` bits
-        runtime.context.logger.debug('Skipping in %dms', timePassed);
+        runtime.context.logger.debug('[%(identity)s] Skipping in %dms', timePassed, runtime);
     }
 
     // call runtime.done without context
@@ -508,11 +508,11 @@ function $Runtime$afterMainCalled2(runtime, value, statusBitMask) {
 }
 
 function $Runtime$onCacheSet(runtime, err) {
-    // Just noop function, cache set issues
+    // Just noop function, log cache set issues
     if (err) {
         runtime.context.logger.warn(err);
     } else {
-        runtime.context.logger.debug('Updated');
+        runtime.context.logger.internal('[%(identity)s] Updated by "%(cacheKey)s"', runtime);
     }
 }
 

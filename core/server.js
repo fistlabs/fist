@@ -62,9 +62,10 @@ Server.prototype.getHandler = function () {
 
         track = new Connect(this, this.logger.bind(req.id), req, res);
 
-        track.logger.info('Incoming %(method)s %(url)s %s', function () {
+        track.logger.info('Incoming %(method)s %(url)s', req);
+        track.logger.debug('Request headers: %s', function () {
             return _.reduce(req.headers, addHeaderString, '');
-        }, req);
+        });
 
         res.on('finish', function () {
             var code = res.statusCode;
