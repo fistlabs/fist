@@ -44,7 +44,7 @@ function createUnitClass(app, decl) {
     //  Looking for base
     if (_.isUndefined(base)) {
         base = app.params.implicitBase;
-        app.logger.debug('The base for unit "%s" is implicitly defined as "%s"', name, base);
+        app.logger.internal('The base for unit "%s" is implicitly defined as "%s"', name, base);
     }
 
     if (base === app.Unit.prototype.name) {

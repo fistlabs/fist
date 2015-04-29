@@ -364,13 +364,13 @@ Core.prototype._callPlugin = function (func) {
 function createInstaller(moduleName) {
     return function (app) {
         if (_.has(app._installed, moduleName)) {
-            app.logger.debug('The plugin %s has already installed, skipping', moduleName);
+            app.logger.internal('The plugin %s has already installed, skipping', moduleName);
             return;
         }
 
         app._installed[moduleName] = true;
 
-        app.logger.debug('Installing plugin %s', moduleName);
+        app.logger.internal('Installing plugin %s', moduleName);
         app.plugin(require(moduleName));
     };
 }

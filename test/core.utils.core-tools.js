@@ -33,7 +33,7 @@ describe('core/utils/core-tools', function () {
             var core = {
                 Unit: SpyUnit,
                 logger: {
-                    debug: function () {}
+                    internal: function () {}
                 },
                 params: {
                     implicitBase: 0
@@ -55,7 +55,7 @@ describe('core/utils/core-tools', function () {
             var core = {
                 Unit: SpyUnit,
                 logger: {
-                    debug: function () {}
+                    internal: function () {}
                 },
                 params: {
                     implicitBase: 0
@@ -92,7 +92,7 @@ describe('core/utils/core-tools', function () {
             var core = {
                 Unit: SpyUnit,
                 logger: {
-                    debug: function () {}
+                    internal: function () {}
                 },
                 params: {
                     implicitBase: 0
@@ -142,7 +142,7 @@ describe('core/utils/core-tools', function () {
             var core = {
                 Unit: SpyUnit,
                 logger: {
-                    debug: function () {}
+                    internal: function () {}
                 },
                 params: {
                     implicitBase: 0
