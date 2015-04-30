@@ -88,7 +88,13 @@ Server.prototype.getHandler = function () {
  * @returns {http.Server}
  * */
 Server.prototype.listen = function () {
+    var self = this;
     var server = http.createServer(this.getHandler());
+
+    server.once('listening', function () {
+        // WARNING: server._connectionKey looking private
+        self.logger.log('Listening %(_connectionKey)s', server);
+    });
 
     //  Asynchronous run initialization
     this.ready().done();
