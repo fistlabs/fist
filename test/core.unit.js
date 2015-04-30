@@ -498,10 +498,8 @@ describe('core/unit', function () {
     describe('unit.createLogger()', function () {
         it('Should be a function', function () {
             var unit = getUnit({
-                logger: {
-                    bind: function () {
-                        return {};
-                    }
+                params: {
+                    logging: {}
                 }
             }, {
                 freezeDepsList: function () {},
@@ -512,14 +510,10 @@ describe('core/unit', function () {
             });
             assert.strictEqual(typeof unit.createLogger, 'function');
         });
-        it('Should return logger, bound to unit name', function () {
-            var logger = {};
+        it('Should return logger named as unit', function () {
             var unit = getUnit({
-                logger: {
-                    bind: function (name) {
-                        assert.strictEqual(name, 'foo');
-                        return logger;
-                    }
+                params: {
+                    logging: {}
                 }
             }, {
                 name: 'foo',
@@ -529,7 +523,45 @@ describe('core/unit', function () {
                 freezeDepsArgs: function () {},
                 freezeDepsIndex: function () {}
             });
-            assert.strictEqual(unit.logger, logger);
+            assert.strictEqual(unit.logger.context, 'foo');
+        });
+        it('Should extend app.params.logging with unit.settings.logging', function () {
+            var unit = getUnit({
+                params: {
+                    logging: {
+                        logLevel: 'DEBUG'
+                    }
+                }
+            }, {
+                name: 'foo',
+                settings: {},
+                freezeDepsList: function () {},
+                createCache: function () {},
+                freezeDepsMap: function () {},
+                freezeDepsArgs: function () {},
+                freezeDepsIndex: function () {}
+            });
+            var unit2 = getUnit({
+                params: {
+                    logging: {
+                        logLevel: 'DEBUG'
+                    }
+                }
+            }, {
+                name: 'bar',
+                settings: {
+                    logging: {
+                        logLevel: 'FATAL'
+                    }
+                },
+                freezeDepsList: function () {},
+                createCache: function () {},
+                freezeDepsMap: function () {},
+                freezeDepsArgs: function () {},
+                freezeDepsIndex: function () {}
+            });
+            assert.strictEqual(unit.logger.logLevel, 'DEBUG');
+            assert.strictEqual(unit2.logger.logLevel, 'FATAL');
         });
     });
     describe('unit.main()', function () {
@@ -576,8 +608,8 @@ describe('core/unit', function () {
         it('Should create subclass of Unit', function () {
             var Unit2 = Unit.inherit();
             var unit = new Unit2({
-                logger: {
-                    bind: function () {}
+                params: {
+                    logging: {}
                 }
             });
             assert.ok(unit instanceof Unit);
