@@ -297,7 +297,7 @@ Connect.prototype.redirect = function (url, status) {
         // inherit host from incoming request if needed
         host: redirectUrl.host || this.url.host,
         // may be encoded while parsing
-        pathname: decodeURIComponent(redirectUrl.pathname),
+        pathname: this._app.router.params.basePath + decodeURIComponent(redirectUrl.pathname),
         search: redirectUrl.search,
         hash: redirectUrl.hash
     });
