@@ -21,7 +21,7 @@ module.exports = function () {
 };
 ```
 
-* `unit.logger` - also static logging context extends `app.logger`. It can be used for logging some unit's daemons.
+* `unit.logger` - also static logging context. It can be used for logging some unit's daemons.
 
 ```js
 app.unit({
@@ -32,6 +32,10 @@ app.unit({
         setInterval(function () {
             self.checkDbConnection();
         }, 5000);
+    },
+    checkDbConnection: function () {
+        this.logger.debug(...);
+        // Stuff...
     }
 })
 ```
@@ -70,6 +74,31 @@ app.unit({
         context.logger.log('This message is bound to current unit execution runtime!');
         var logger = context.logger.bind('foo');
         logger.log('Also bound to "foo"');
+    }
+});
+```
+
+##Unit own logging settings
+
+`unit.logger` is not a descendant of `app.logger`, it is standalone logger also configured with `app.params.logging`. You can override logging options by `unit.settings.logging`:
+
+```js
+var app = fist({
+    logging: {
+        // only significant stuff
+        logLevel: 'LOG'
+    }
+});
+app.unit({
+    name: 'foo',
+    settings: {
+        logging: {
+            // easy debug, no need to reduce global log level
+            logLevel: 'DEBUG'
+        }
+    },
+    main: function (track, context) {
+        context.logger.debug('Called!');
     }
 });
 ```
