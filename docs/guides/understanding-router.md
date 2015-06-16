@@ -120,6 +120,46 @@ var app - fist({
 app.route('GET /news/ sI');
 ```
 
+##Base path support
+
+Router supports base url path for application.
+
+```js
+var app = fist({
+    router: {
+        basePath: '/blog'
+    }
+});
+app.route('GET /post/<postId>');
+```
+
+It means that you should not add `/blog` for any route, fist will add it automatically.
+```
+GET /blog/post/42 - 200
+GET /post/42 - 404
+```
+
+Also it affecting to redirects.
+
+```js
+var app = fist({
+    router: {
+        basePath: '/blog'
+    }
+});
+app.route('GET /', 'index');
+app.unit({
+    name: 'index',
+    main: function () {
+        track.redirect('/feed', 302);
+    }
+});
+```
+
+```
+GET /blog/ - 302 (/blog/feed)
+```
+
 ##Controllers
 It would be great to know that anu unit assigned to handle routed request is controller by semantics.
 
