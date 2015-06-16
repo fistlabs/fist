@@ -289,6 +289,11 @@ Connect.prototype.acceptLanguages = function (languages) {
  * */
 Connect.prototype.redirect = function (url, status) {
     var redirectUrl = urlFastParse(url, false, true);
+    var pathname = decodeURIComponent(redirectUrl.pathname);
+
+    if (!redirectUrl.host) {
+        pathname = this._app.router.params.basePath + pathname;
+    }
 
     //   make URL absolute
     redirectUrl = urlFastFormat({
@@ -297,7 +302,7 @@ Connect.prototype.redirect = function (url, status) {
         // inherit host from incoming request if needed
         host: redirectUrl.host || this.url.host,
         // may be encoded while parsing
-        pathname: this._app.router.params.basePath + decodeURIComponent(redirectUrl.pathname),
+        pathname: pathname,
         search: redirectUrl.search,
         hash: redirectUrl.hash
     });

@@ -85,4 +85,32 @@ describe('base-path-support', function () {
                 end(done);
         });
     });
+
+    it('Should not autocomplete redirect url pathname if the url is absolute', function (done) {
+        var server = new Server({
+            logging: {
+                logLevel: 'SILENT'
+            },
+            router: {
+                basePath: '/site'
+            }
+        });
+
+        server.route('GET /page/', 'index');
+
+        server.unit({
+            name: 'index',
+            main: function (track) {
+                track.redirect('//example.com/dest-page', 302);
+            }
+        });
+
+        server.ready().done(function () {
+            supertest(server.getHandler()).
+                get('/site/page/').
+                expect(302).
+                expect('Location', /\/example\.com\/dest-page/).
+                end(done);
+        });
+    });
 });
