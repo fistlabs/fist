@@ -9,6 +9,9 @@ var _ = require('lodash-node');
 var assert = require('chai').assert;
 var doConnect = require('./util/connect');
 var vow = require('vow');
+var uniqueId = require('unique-id');
+var Server = require('../core/server');
+var supertest = require('supertest');
 
 describe('core/track/connect', function () {
     /*eslint max-nested-callbacks: [2, 5]*/
@@ -86,6 +89,39 @@ describe('core/track/connect', function () {
                 assert.ok(!err);
                 assert.deepEqual(res.headers['set-cookie'], ['name=value']);
                 done();
+            });
+        });
+
+        it('Should send 413 on large cookies', function (done) {
+            function gen(size) {
+                var cookies = new Buffer(0);
+                var cookie;
+
+                while (cookies.length < size) {
+                    cookie = new Buffer(uniqueId() + '=' + uniqueId() + ';');
+                    cookies = Buffer.concat([cookies, cookie]);
+                }
+
+                return cookies.toString('utf-8');
+            }
+
+            var app = new Server();
+
+            app.unit({
+                path: 'test',
+                data: function (track) {
+                    return track.send(track.cookie('foo'));
+                }
+            });
+
+            app.route('GET /', 'test');
+
+            app.ready().done(function () {
+                supertest(app.getHandler()).
+                    get('/').
+                    set('Cookie', gen(1024 * 10)).
+                    expect(400).
+                    end(done);
             });
         });
     });

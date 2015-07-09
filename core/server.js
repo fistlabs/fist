@@ -94,8 +94,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
 
             return this.__next(track);
         }, function (err) {
+            var statusCode = track.response.getStatus();
 
-            return track.response.respond(500, err);
+            if (200 === statusCode) {
+                statusCode = 500;
+            }
+
+            return track.response.respond(statusCode, err);
         }, this);
     },
 
@@ -234,8 +239,13 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
 
                 return this.__next(track);
             }, function (err) {
+                var statusCode = track.response.getStatus();
 
-                return track.response.respond(500, err);
+                if (200 === statusCode) {
+                    statusCode = 500;
+                }
+
+                return track.response.respond(statusCode, err);
             }, this);
     },
 

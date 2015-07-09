@@ -1,52 +1,53 @@
 {
-    "author": {
-        "name": "Golyshev Dmitrii",
-        "email": "golyshev.dmitry@yandex.ru"
-    },
-    "bugs": {
-        "url": "https://github.com/fistlabs/fist/issues"
-    },
-    "contributors": [
-        "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
-    ],
-    "dependencies": {
-        "vow-asker": "0.6.6",
-        "lru-cache": "2.5.0",
-        "unique-id": "0.0.1",
-        "finger": "0.3.0",
-        "lodash-node": "2.4.1",
-        "vow": "0.4.5",
-        "inherit": "2.2.2",
-        "cookieparser": "0.1.0",
-        "media-typer": "0.2.0",
-        "attach-parser": "0.0.1",
-        "glob": "4.0.5",
-        "negotiator": "0.4.7",
-        "fast-url-parser": "1.0.6-0",
-        "double-ended-queue": "2.0.0-0"
-    },
-    "description": "nodejs application framework",
-    "devDependencies": {
-        "gulp": "3.8.7",
-        "gulp-mocha": "0.5.2",
-        "gulp-istanbul": "0.2.1",
-        "gulp-eslint": "0.2.0",
-        "gulp-util": "3.0.0",
-        "through2": "0.5.1",
-        "minimatch": "1.0.0",
-        "gulp-jscs": "1.3.1",
-        "chai": "1.9.1",
-        "express": "4.7.4"
-    },
-    "license": "MIT",
-    "main": "fist",
-    "name": "fist",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/fistlabs/fist.git"
-    },
-    "engines": {
-        "node": ">= 0.10.0"
-    },
-    "version": "2.0.4"
+  "author": {
+    "name": "Golyshev Dmitrii",
+    "email": "golyshev.dmitry@yandex.ru"
+  },
+  "bugs": {
+    "url": "https://github.com/fistlabs/fist/issues"
+  },
+  "contributors": [
+    "Golyshev Dmitrii <golyshev.dmitry@yandex.ru>"
+  ],
+  "dependencies": {
+    "attach-parser": "0.0.1",
+    "cookieparser": "0.1.0",
+    "double-ended-queue": "2.0.0-0",
+    "fast-url-parser": "1.0.6-0",
+    "finger": "0.3.0",
+    "glob": "4.0.5",
+    "inherit": "2.2.2",
+    "lodash-node": "2.4.1",
+    "lru-cache": "2.5.0",
+    "media-typer": "0.2.0",
+    "negotiator": "0.4.7",
+    "supertest": "^1.0.1",
+    "unique-id": "0.0.1",
+    "vow": "0.4.5",
+    "vow-asker": "0.6.6"
+  },
+  "description": "nodejs application framework",
+  "devDependencies": {
+    "gulp": "3.8.7",
+    "gulp-mocha": "0.5.2",
+    "gulp-istanbul": "0.2.1",
+    "gulp-eslint": "0.2.0",
+    "gulp-util": "3.0.0",
+    "through2": "0.5.1",
+    "minimatch": "1.0.0",
+    "gulp-jscs": "1.3.1",
+    "chai": "1.9.1",
+    "express": "4.7.4"
+  },
+  "license": "MIT",
+  "main": "fist",
+  "name": "fist",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fistlabs/fist.git"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "version": "2.0.4"
 }

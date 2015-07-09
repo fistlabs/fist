@@ -173,17 +173,22 @@ var Connect = inherit(Track, /** @lends Connect.prototype */ {
      * */
     cookie: function (name, value, opts) {
 
-        if ( 0 === arguments.length ) {
+        try {
+            if ( 0 === arguments.length ) {
 
-            return this.request.getCookies();
+                return this.request.getCookies();
+            }
+
+            if ( 1 === arguments.length ) {
+
+                return this.request.getCookie(name);
+            }
+
+            this.response.setCookie(name, value, opts);
+        } catch (err) {
+            this.response.setStatus(400);
+            throw err;
         }
-
-        if ( 1 === arguments.length ) {
-
-            return this.request.getCookie(name);
-        }
-
-        this.response.setCookie(name, value, opts);
 
         return this;
     },

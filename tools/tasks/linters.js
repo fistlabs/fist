@@ -66,5 +66,5 @@ function runEslint (done) {
 module.exports = function () {
     this.task('jscs', [], runJscs);
     this.task('eslint', [], runEslint);
-    this.task('lint', ['jscs'], runEslint);
+    this.task('lint', ['jscs']);
 };
