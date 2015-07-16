@@ -236,6 +236,34 @@ describe('core/server', function () {
         });
     });
 
+    it('Should respond 400 if the uri malformed', function (done) {
+        var server = new Server();
+        var origServer;
+
+        try {
+            Fs.unlinkSync(sock);
+        } catch (err) {}
+
+        origServer = server.listen(sock);
+
+        server.route('GET /archive/<id>/', 'foo');
+
+        vowAsker({
+            path: '/archive/%%/',
+            socketPath: sock,
+            statusFilter: function () {
+
+                return {
+                    accept: true
+                };
+            }
+        }).done(function (res) {
+            assert.strictEqual(res.statusCode, 400);
+            origServer.close();
+            done();
+        });
+    });
+
     it('Should continue routing if controller has not sent', function (done) {
 
         var server = new Server();

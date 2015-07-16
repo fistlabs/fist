@@ -186,10 +186,17 @@ var Server = inherit(Tracker, /** @lends Server.prototype */ {
      * @returns {vow.Promise}
      * */
     __next: function (track) {
-        //  выбирается маршрут
-        var result = this.router.
-            find(track.method, track.url.pathname, track.route);
+        var result;
         var sys = this.channel('sys');
+
+        try {
+            //  выбирается маршрут (может быть uri-error)
+            result = this.router.
+                find(track.method, track.url.pathname, track.route);
+        } catch (err) {
+            sys.emit('ematch', track);
+            return track.response.respond(400);
+        }
 
         //  однозначно нет такого маршрута
         if ( _.isNull(result) ) {
