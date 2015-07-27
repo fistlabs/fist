@@ -42,5 +42,5 @@
   "engines": {
     "node": ">= 0.10.36"
   },
-  "version": "3.6.1"
+  "version": "3.6.2"
 }
