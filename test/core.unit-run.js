@@ -1917,6 +1917,39 @@ describe('core/unit#run()', function () {
             });
         });
 
+        it('Should not set cache if one of deps are outdated', function (done) {
+            var core = getSilentCore();
+            var spy = 0;
+
+            core.unit({
+                name: 'foo',
+                maxAge: 0
+            });
+
+            core.unit({
+                deps: ['foo'],
+                name: 'bar',
+                maxAge: 100500,
+                cache: {
+                    set: function (k, v, ttl, fn) {
+                        spy += 1;
+                        fn(null, 100500);
+                    }
+                }
+            });
+
+            core.ready().done(function () {
+                var unit = core.getUnit('bar');
+
+                unit.run(getCoresTrack(core), null, function () {
+                    setTimeout(function () {
+                        assert.strictEqual(spy, 0);
+                        done();
+                    }, 50);
+                });
+            });
+        });
+
         it('Should cache result if deps are actual', function (done) {
             var core = getSilentCore();
 

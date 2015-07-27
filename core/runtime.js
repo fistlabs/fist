@@ -346,6 +346,11 @@ function $Runtime$doneChild(runtime, parent) {
         return;
     }
 
+    if (runtime.statusBits & B00010000) {
+        // runtime has `skip cache` bit
+        parent.statusBits |= B00010000;
+    }
+
     if (runtime.statusBits & B00000100) {
         // runtime has `skipping` bit
         // set `skipping` bit to parent
