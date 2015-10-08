@@ -42,7 +42,7 @@ function Core(params) {
      * @property
      * @type {Logger}
      * */
-    this.logger = logging.getLogger(params.name).conf(params.logging);
+    this.logger = this.createLogger();
 
     /**
      * @protected
@@ -95,6 +95,17 @@ function Core(params) {
  * @constructs
  * */
 Core.prototype.constructor = Core;
+
+/**
+ * @public
+ * @memberOf {Core}
+ * @method
+ *
+ * @returns {Logger}
+ * */
+Core.prototype.createLogger = function () {
+    return logging.getLogger(this.params.name).conf(this.params.logging);
+};
 
 /**
  * @public
@@ -364,13 +375,13 @@ Core.prototype._callPlugin = function (func) {
 function createInstaller(moduleName) {
     return function (app) {
         if (_.has(app._installed, moduleName)) {
-            app.logger.debug('The plugin %s has already installed, skipping', moduleName);
+            app.logger.internal('The plugin %s has already installed, skipping', moduleName);
             return;
         }
 
         app._installed[moduleName] = true;
 
-        app.logger.debug('Installing plugin %s', moduleName);
+        app.logger.internal('Installing plugin %s', moduleName);
         app.plugin(require(moduleName));
     };
 }

@@ -6,6 +6,7 @@ var LRUDictTtlAsync = require('lru-dict/core/lru-dict-ttl-async');
 var _ = require('lodash-node');
 var f = require('util').format;
 var inherit = require('inherit');
+var logging = require('loggin');
 
 /**
  * @class Unit
@@ -246,7 +247,8 @@ Unit.inherit = function (members, statics) {
  * @returns {Logger}
  * */
 Unit.prototype.createLogger = function () {
-    return this.app.logger.bind(this.name);
+    var config = _.extend({}, this.app.params.logging, this.settings.logging);
+    return logging.getLogger(this.name).conf(config);
 };
 
 /**
