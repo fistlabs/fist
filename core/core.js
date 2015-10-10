@@ -42,7 +42,7 @@ function Core(params) {
      * @property
      * @type {Logger}
      * */
-    this.logger = logging.getLogger(params.name).conf(params.logging);
+    this.logger = this.createLogger();
 
     /**
      * @protected
@@ -95,6 +95,17 @@ function Core(params) {
  * @constructs
  * */
 Core.prototype.constructor = Core;
+
+/**
+ * @public
+ * @memberOf {Core}
+ * @method
+ *
+ * @returns {Logger}
+ * */
+Core.prototype.createLogger = function () {
+    return logging.getLogger(this.params.name).conf(this.params.logging);
+};
 
 /**
  * @public
