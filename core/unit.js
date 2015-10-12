@@ -87,7 +87,7 @@ Unit.prototype.constructor = Unit;
  * @property
  * @type {String}
  * */
-Unit.prototype.name = 0;
+Unit.prototype.name = null;
 
 /**
  * @public

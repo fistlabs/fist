@@ -8,7 +8,7 @@ var inherit = require('inherit');
 
 function SpyUnit() {}
 
-SpyUnit.prototype.name = 0;
+SpyUnit.prototype.name = null;
 
 SpyUnit.inherit = function (members, statics) {
     return inherit(this, members, statics);
@@ -36,7 +36,7 @@ describe('core/utils/core-tools', function () {
                     debug: function () {}
                 },
                 params: {
-                    implicitBase: 0
+                    implicitBase: null
                 },
                 _decls: [
                     {
@@ -58,7 +58,7 @@ describe('core/utils/core-tools', function () {
                     debug: function () {}
                 },
                 params: {
-                    implicitBase: 0
+                    implicitBase: null
                 },
                 _decls: [
                     {
@@ -95,7 +95,7 @@ describe('core/utils/core-tools', function () {
                     debug: function () {}
                 },
                 params: {
-                    implicitBase: 0
+                    implicitBase: null
                 },
                 _decls: [
                     {
@@ -145,7 +145,7 @@ describe('core/utils/core-tools', function () {
                     debug: function () {}
                 },
                 params: {
-                    implicitBase: 0
+                    implicitBase: null
                 },
                 _decls: [
                     {

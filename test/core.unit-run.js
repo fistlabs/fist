@@ -1155,7 +1155,6 @@ describe('core/unit#run()', function () {
             var core = getSilentCore();
 
             core.unit({
-                base: 0,
                 name: 'foo',
                 deps: ['bar', 'baz'],
                 main: function () {
@@ -2056,7 +2055,6 @@ describe('core/unit#run()', function () {
             });
 
             core.unit({
-                base: 0,
                 name: 'foo',
                 deps: ['bar', 'baz'],
                 maxAge: 0.10,

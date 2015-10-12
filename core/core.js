@@ -272,7 +272,7 @@ Core.prototype._createParams = function (params) {
 
     params = _.extend({
         root: path.dirname(parent.filename),
-        implicitBase: 0
+        implicitBase: null
     }, params);
 
     params.unitSettings = _.mapValues(params.unitSettings, _.clone);
